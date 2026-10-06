@@ -2,6 +2,10 @@
 // relative cost. Ungraded numeric/text columns retain their original behavior.
 // `field` picks one figure of a cell that holds several (value, time, memory,
 // score); without it, or with "grade", a graded cell sorts by class.
+// One collator for every comparison: making one per call, as localeCompare
+// with options does, is what made sorting thousands of names slow.
+const collator = new Intl.Collator('en', { numeric: true })
+
 export function compareCells(a, b, { numeric, descending = false, field }) {
   if (field && field !== 'grade') {
     const absent = (c) => c.dataset[field] === '' || c.dataset[field] === undefined
@@ -17,7 +21,7 @@ export function compareCells(a, b, { numeric, descending = false, field }) {
   }
   const comparison = numeric
     ? Number(a.dataset.v) - Number(b.dataset.v)
-    : a.textContent.trim().toLowerCase().localeCompare(b.textContent.trim().toLowerCase(), 'en', { numeric: true })
+    : collator.compare(a.textContent.trim().toLowerCase(), b.textContent.trim().toLowerCase())
   return direction * comparison
 }
 

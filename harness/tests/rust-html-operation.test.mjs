@@ -22,6 +22,9 @@ async function run(adapter, accept = true) {
       if (message.phase === 'verification') {
         try {
           verifyResults(message.outputs)
+          // A program that rejects its input exits before reading the commands; the
+          // write then fails with EPIPE, which is expected and not the test's concern.
+          child.stdin.on('error', () => {})
           child.stdin.end(accept ? 'verified\n{"count":1000,"minMs":10}\nsettle\nexit\n' : 'exit\n')
         } catch (error) { verificationError = error; child.stdin.end('exit\n') }
       }

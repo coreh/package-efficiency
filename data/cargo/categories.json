@@ -37,7 +37,7 @@
   "addr2line": {
     "category": "other",
     "confidence": "low",
-    "note": "DWARF symbolication; no peer category"
+    "note": "symbolication"
   },
   "adler": {
     "category": "checksums",
@@ -56,9 +56,8 @@
     "confidence": "high"
   },
   "aes": {
-    "category": "other",
-    "confidence": "low",
-    "note": "bare block cipher, out of scope for AEAD"
+    "category": "symmetric-ciphers",
+    "confidence": "high"
   },
   "aes-gcm": {
     "category": "authenticated-encryption",
@@ -69,9 +68,8 @@
     "confidence": "high"
   },
   "aho-corasick": {
-    "category": "other",
-    "confidence": "high",
-    "note": "multi-pattern substring search; literal search excluded from regex-matching"
+    "category": "substring-search",
+    "confidence": "high"
   },
   "alloc-no-stdlib": {
     "category": "language-ergonomics",
@@ -99,16 +97,16 @@
   "anes": {
     "category": "other",
     "confidence": "low",
-    "note": "ANSI escape sequence parser/provider"
+    "note": "ANSI escape sequence provider and parser"
   },
   "ansi_term": {
     "category": "terminal-styling",
     "confidence": "high"
   },
   "anstream": {
-    "category": "other",
+    "category": "ansi-text-layout",
     "confidence": "low",
-    "note": "colored-output stream adapters; no category"
+    "note": "colored stream adapters that strip ANSI; partial fit"
   },
   "anstyle": {
     "category": "terminal-styling",
@@ -135,7 +133,7 @@
   "approx": {
     "category": "other",
     "confidence": "low",
-    "note": "approximate float comparison; no peers"
+    "note": "Approximate float comparison; see float-cmp"
   },
   "arbitrary": {
     "category": "language-ergonomics",
@@ -148,9 +146,9 @@
     "note": "atomically swappable Arc; no peer"
   },
   "ark-ff": {
-    "category": "other",
+    "category": "arbitrary-precision-math",
     "confidence": "low",
-    "note": "finite field arithmetic"
+    "note": "Finite field arithmetic; nearest category"
   },
   "ark-ff-asm": {
     "category": "macro-support",
@@ -205,7 +203,7 @@
   "arrow-ipc": {
     "category": "other",
     "confidence": "low",
-    "note": "Arrow IPC columnar format; no peers"
+    "note": "Columnar data format; excluded from binary-serialization"
   },
   "arrow-ord": {
     "category": "library-internals",
@@ -230,7 +228,7 @@
   "ascii": {
     "category": "other",
     "confidence": "low",
-    "note": "ASCII-only string types"
+    "note": "ASCII-only string types; no peers"
   },
   "asn1-rs": {
     "category": "asn1-der-decoding",
@@ -252,7 +250,7 @@
   "assert-json-diff": {
     "category": "other",
     "confidence": "low",
-    "note": "JSON assertion diffing; no peers"
+    "note": "JSON assertion diff with output; text-diff excludes assertion printers"
   },
   "async-broadcast": {
     "category": "message-channels",
@@ -283,9 +281,8 @@
     "note": "async I/O reactor and timers"
   },
   "async-lock": {
-    "category": "other",
-    "confidence": "high",
-    "note": "async synchronization primitives"
+    "category": "synchronization-primitives",
+    "confidence": "high"
   },
   "async-process": {
     "category": "process-execution",
@@ -316,16 +313,15 @@
   "async-task": {
     "category": "other",
     "confidence": "low",
-    "note": "executor task primitive"
+    "note": "Executor task building block; no matching category"
   },
   "async-trait": {
     "category": "macro-support",
     "confidence": "high"
   },
   "atoi": {
-    "category": "other",
-    "confidence": "low",
-    "note": "integer parsing from byte slices"
+    "category": "number-parsing",
+    "confidence": "high"
   },
   "atomic": {
     "category": "language-ergonomics",
@@ -455,12 +451,12 @@
   "backtrace": {
     "category": "other",
     "confidence": "low",
-    "note": "stack trace capture; no peer category"
+    "note": "stack trace capture"
   },
   "base16ct": {
     "category": "other",
-    "confidence": "high",
-    "note": "hex encoding"
+    "confidence": "low",
+    "note": "constant-time hex"
   },
   "base64": {
     "category": "base64-encoding",
@@ -518,7 +514,7 @@
   "block-padding": {
     "category": "other",
     "confidence": "low",
-    "note": "block cipher padding schemes"
+    "note": "block padding schemes"
   },
   "block2": {
     "category": "system-bindings",
@@ -548,17 +544,17 @@
   "bs58": {
     "category": "other",
     "confidence": "low",
-    "note": "base58 codec; no peers"
+    "note": "Base58 is out of scope for base64-encoding"
   },
   "bstr": {
-    "category": "other",
+    "category": "utf8-validation",
     "confidence": "low",
-    "note": "byte string type (non-UTF-8 string ops); no peer"
+    "note": "byte string type with UTF-8 handling"
   },
   "bumpalo": {
     "category": "other",
     "confidence": "low",
-    "note": "bump arena allocator; no category"
+    "note": "bump arena allocator"
   },
   "bytecheck": {
     "category": "library-internals",
@@ -570,9 +566,8 @@
     "confidence": "high"
   },
   "bytecount": {
-    "category": "other",
-    "confidence": "low",
-    "note": "byte counting; no peers"
+    "category": "substring-search",
+    "confidence": "high"
   },
   "bytemuck": {
     "category": "language-ergonomics",
@@ -586,17 +581,17 @@
   "byteorder": {
     "category": "other",
     "confidence": "low",
-    "note": "byte-order number read/write helpers; no peer category"
+    "note": "endian read/write helpers"
   },
   "byteorder-lite": {
     "category": "other",
     "confidence": "low",
-    "note": "byte-order read/write helpers"
+    "note": "Endian read/write helpers; see scroll"
   },
   "bytes": {
     "category": "other",
-    "confidence": "high",
-    "note": "byte buffer types; no category"
+    "confidence": "low",
+    "note": "byte buffer types, no peer"
   },
   "bytes-utils": {
     "category": "language-ergonomics",
@@ -622,13 +617,13 @@
   },
   "camino": {
     "category": "other",
-    "confidence": "high",
-    "note": "UTF-8 path type"
+    "confidence": "low",
+    "note": "UTF-8 path types"
   },
   "cargo_metadata": {
     "category": "other",
-    "confidence": "high",
-    "note": "cargo metadata output reader"
+    "confidence": "low",
+    "note": "cargo metadata output types"
   },
   "cargo-platform": {
     "category": "library-internals",
@@ -644,9 +639,8 @@
     "confidence": "high"
   },
   "cbc": {
-    "category": "other",
-    "confidence": "high",
-    "note": "bare block cipher mode, not AEAD"
+    "category": "symmetric-ciphers",
+    "confidence": "high"
   },
   "cbindgen": {
     "category": "macro-support",
@@ -657,14 +651,13 @@
     "confidence": "high"
   },
   "cesu8": {
-    "category": "other",
+    "category": "charset-transcoding",
     "confidence": "low",
-    "note": "CESU-8 transcoding"
+    "note": "CESU-8 conversion; nearest category"
   },
   "cexpr": {
-    "category": "other",
-    "confidence": "low",
-    "note": "C expression parser, no peers"
+    "category": "expression-evaluation",
+    "confidence": "high"
   },
   "cfg_aliases": {
     "category": "language-ergonomics",
@@ -672,18 +665,16 @@
     "note": "cfg shorthand build helper"
   },
   "cfg-expr": {
-    "category": "other",
-    "confidence": "low",
-    "note": "cfg expression parser"
+    "category": "expression-evaluation",
+    "confidence": "high"
   },
   "cfg-if": {
     "category": "language-ergonomics",
     "confidence": "high"
   },
   "chacha20": {
-    "category": "other",
-    "confidence": "high",
-    "note": "bare stream cipher"
+    "category": "symmetric-ciphers",
+    "confidence": "high"
   },
   "chacha20poly1305": {
     "category": "authenticated-encryption",
@@ -757,12 +748,12 @@
   "codespan-reporting": {
     "category": "other",
     "confidence": "low",
-    "note": "diagnostic rendering; no peers"
+    "note": "Diagnostic reporting; see miette"
   },
   "color_quant": {
     "category": "other",
     "confidence": "low",
-    "note": "color quantization, image-processing excludes single-purpose"
+    "note": "Color quantization; no peers"
   },
   "colorchoice": {
     "category": "environment-detection",
@@ -782,9 +773,8 @@
     "confidence": "high"
   },
   "compact_str": {
-    "category": "other",
-    "confidence": "low",
-    "note": "small-string type; no peers"
+    "category": "small-strings",
+    "confidence": "high"
   },
   "compression-codecs": {
     "category": "block-compression",
@@ -801,9 +791,8 @@
     "confidence": "high"
   },
   "config": {
-    "category": "other",
-    "confidence": "low",
-    "note": "layered configuration manager, no peers"
+    "category": "layered-configuration",
+    "confidence": "high"
   },
   "console": {
     "category": "terminal-styling",
@@ -839,16 +828,15 @@
   "constant_time_eq": {
     "category": "other",
     "confidence": "low",
-    "note": "constant-time comparison; no peer"
+    "note": "constant-time comparison"
   },
   "convert_case": {
     "category": "case-conversion",
     "confidence": "high"
   },
   "cookie": {
-    "category": "other",
-    "confidence": "high",
-    "note": "cookie parsing and jar"
+    "category": "cookie-parsing",
+    "confidence": "high"
   },
   "core-foundation": {
     "category": "system-bindings",
@@ -863,9 +851,8 @@
     "confidence": "high"
   },
   "cpp_demangle": {
-    "category": "other",
-    "confidence": "low",
-    "note": "C++ symbol demangler"
+    "category": "symbol-demangling",
+    "confidence": "high"
   },
   "cpufeatures": {
     "category": "environment-detection",
@@ -910,14 +897,14 @@
     "confidence": "high"
   },
   "crossbeam-deque": {
-    "category": "other",
+    "category": "queues-and-linked-lists",
     "confidence": "low",
-    "note": "work-stealing deque; no category"
+    "note": "work-stealing deque, loosely a deque"
   },
   "crossbeam-epoch": {
     "category": "other",
     "confidence": "low",
-    "note": "epoch GC concurrency primitive; no category"
+    "note": "epoch-based memory reclamation"
   },
   "crossbeam-queue": {
     "category": "message-channels",
@@ -926,12 +913,12 @@
   "crossbeam-utils": {
     "category": "other",
     "confidence": "low",
-    "note": "concurrency utilities grab bag"
+    "note": "grab-bag of concurrency utilities"
   },
   "crossterm": {
     "category": "other",
     "confidence": "low",
-    "note": "terminal manipulation/input"
+    "note": "terminal control and input events"
   },
   "crossterm_winapi": {
     "category": "system-bindings",
@@ -964,38 +951,35 @@
     "confidence": "high"
   },
   "csv": {
-    "category": "other",
-    "confidence": "high",
-    "note": "CSV parsing; missing category"
+    "category": "csv-parsing",
+    "confidence": "high"
   },
   "csv-core": {
-    "category": "other",
-    "confidence": "high",
-    "note": "CSV parsing; missing category"
+    "category": "csv-parsing",
+    "confidence": "high"
   },
   "ctor": {
     "category": "macro-support",
     "confidence": "high"
   },
   "ctr": {
-    "category": "other",
-    "confidence": "low",
-    "note": "bare block cipher mode, out of scope for AEAD"
+    "category": "symmetric-ciphers",
+    "confidence": "high"
   },
   "ctrlc": {
     "category": "other",
     "confidence": "low",
-    "note": "Ctrl-C signal handler"
+    "note": "Signal handler; no peers"
   },
   "ctutils": {
     "category": "other",
     "confidence": "low",
-    "note": "constant-time crypto utilities"
+    "note": "Constant-time utilities; no peers"
   },
   "curve25519-dalek": {
     "category": "other",
-    "confidence": "high",
-    "note": "curve group operations, not signatures"
+    "confidence": "low",
+    "note": "group operations, not signatures"
   },
   "curve25519-dalek-derive": {
     "category": "macro-support",
@@ -1034,9 +1018,8 @@
     "confidence": "high"
   },
   "deadpool": {
-    "category": "other",
-    "confidence": "low",
-    "note": "async resource pool; no peers"
+    "category": "resource-pools",
+    "confidence": "high"
   },
   "deadpool-runtime": {
     "category": "library-internals",
@@ -1090,7 +1073,7 @@
   "dialoguer": {
     "category": "other",
     "confidence": "low",
-    "note": "interactive CLI prompts"
+    "note": "Interactive terminal prompts; no peers"
   },
   "diff": {
     "category": "text-diff",
@@ -1125,9 +1108,8 @@
     "confidence": "high"
   },
   "dlv-list": {
-    "category": "other",
-    "confidence": "low",
-    "note": "vector-backed linked list"
+    "category": "queues-and-linked-lists",
+    "confidence": "high"
   },
   "doc-comment": {
     "category": "macro-support",
@@ -1154,9 +1136,9 @@
     "confidence": "high"
   },
   "dunce": {
-    "category": "other",
+    "category": "path-manipulation",
     "confidence": "low",
-    "note": "Windows path normalization; no peer"
+    "note": "Windows path normalization, touches fs for canonicalize"
   },
   "dyn-clone": {
     "category": "language-ergonomics",
@@ -1195,17 +1177,16 @@
   "ena": {
     "category": "other",
     "confidence": "low",
-    "note": "union-find unification"
+    "note": "Union-find and unification; no peers"
   },
   "encode_unicode": {
-    "category": "other",
+    "category": "utf8-validation",
     "confidence": "low",
-    "note": "UTF-8/16 char types"
+    "note": "UTF-8/UTF-16 char types"
   },
   "encoding_rs": {
-    "category": "other",
-    "confidence": "low",
-    "note": "charset transcoding; no peer category"
+    "category": "charset-transcoding",
+    "confidence": "high"
   },
   "enum-as-inner": {
     "category": "macro-support",
@@ -1249,9 +1230,9 @@
     "confidence": "high"
   },
   "event-listener": {
-    "category": "other",
+    "category": "synchronization-primitives",
     "confidence": "low",
-    "note": "async/thread notification primitive"
+    "note": "async notification primitive"
   },
   "event-listener-strategy": {
     "category": "language-ergonomics",
@@ -1290,12 +1271,12 @@
   "fiat-crypto": {
     "category": "other",
     "confidence": "low",
-    "note": "generated field arithmetic for crypto; no peers"
+    "note": "Generated field arithmetic for crypto; unclear peers"
   },
   "filetime": {
     "category": "other",
     "confidence": "low",
-    "note": "file timestamp accessors; no peer"
+    "note": "file timestamp accessors"
   },
   "find-msvc-tools": {
     "category": "build-tooling",
@@ -1317,7 +1298,7 @@
   "float-cmp": {
     "category": "other",
     "confidence": "low",
-    "note": "approximate float comparison"
+    "note": "Approximate float comparison; see approx"
   },
   "flume": {
     "category": "message-channels",
@@ -1340,9 +1321,8 @@
     "confidence": "high"
   },
   "form_urlencoded": {
-    "category": "other",
-    "confidence": "low",
-    "note": "query-string codec; no category (url-parsing excludes query-string decoding)"
+    "category": "query-string-parsing",
+    "confidence": "high"
   },
   "fraction": {
     "category": "arbitrary-precision-math",
@@ -1359,7 +1339,7 @@
   "fs-err": {
     "category": "other",
     "confidence": "low",
-    "note": "std::fs wrapper with better errors"
+    "note": "std::fs wrapper with better errors; no peers"
   },
   "fs2": {
     "category": "file-locking",
@@ -1416,7 +1396,7 @@
   "futures-timer": {
     "category": "other",
     "confidence": "low",
-    "note": "async timers"
+    "note": "future timeouts"
   },
   "futures-util": {
     "category": "frameworks",
@@ -1445,28 +1425,25 @@
     "note": "OS entropy source wrapper; no matching category"
   },
   "ghash": {
-    "category": "other",
-    "confidence": "low",
-    "note": "GF(2^128) universal hash for MACs; no matching category"
+    "category": "message-authentication-codes",
+    "confidence": "high"
   },
   "gif": {
-    "category": "other",
-    "confidence": "low",
-    "note": "single-format GIF codec; image-processing excludes single-format codecs"
+    "category": "image-decoding",
+    "confidence": "high"
   },
   "gimli": {
     "category": "other",
     "confidence": "low",
-    "note": "DWARF reading; no peer category"
+    "note": "DWARF reading"
   },
   "git2": {
     "category": "system-bindings",
     "confidence": "high"
   },
   "glam": {
-    "category": "other",
-    "confidence": "low",
-    "note": "3D math library; no peers"
+    "category": "linear-algebra",
+    "confidence": "high"
   },
   "glob": {
     "category": "file-globbing",
@@ -1485,18 +1462,17 @@
     "confidence": "high"
   },
   "governor": {
-    "category": "other",
-    "confidence": "low",
-    "note": "rate limiter"
+    "category": "rate-limiting",
+    "confidence": "high"
   },
   "group": {
     "category": "language-ergonomics",
     "confidence": "high"
   },
   "h2": {
-    "category": "other",
+    "category": "http-client",
     "confidence": "low",
-    "note": "HTTP/2 client and server protocol; no category"
+    "note": "HTTP/2 protocol implementation; could issue GET requests but is a low-level protocol crate"
   },
   "half": {
     "category": "other",
@@ -1526,7 +1502,7 @@
   "headers": {
     "category": "other",
     "confidence": "low",
-    "note": "typed HTTP header parsing; no peers"
+    "note": "Typed HTTP header collection; no peers"
   },
   "headers-core": {
     "category": "language-ergonomics",
@@ -1547,31 +1523,27 @@
   "hex": {
     "category": "other",
     "confidence": "low",
-    "note": "hex codec; no category (base64-encoding excludes other alphabets)"
+    "note": "hex encoding; base64-encoding excludes other alphabets"
   },
   "hex-literal": {
     "category": "macro-support",
     "confidence": "high"
   },
   "hickory-proto": {
-    "category": "other",
-    "confidence": "low",
-    "note": "DNS protocol library"
+    "category": "dns-message-codec",
+    "confidence": "high"
   },
   "hickory-resolver": {
-    "category": "other",
-    "confidence": "low",
-    "note": "DNS stub resolver"
+    "category": "dns-message-codec",
+    "confidence": "high"
   },
   "hkdf": {
-    "category": "other",
-    "confidence": "high",
-    "note": "key derivation function"
+    "category": "key-derivation",
+    "confidence": "high"
   },
   "hmac": {
-    "category": "other",
-    "confidence": "low",
-    "note": "HMAC; excluded from hashing categories"
+    "category": "message-authentication-codes",
+    "confidence": "high"
   },
   "home": {
     "category": "environment-detection",
@@ -1602,7 +1574,7 @@
   "http-range-header": {
     "category": "other",
     "confidence": "low",
-    "note": "Range header parser"
+    "note": "Single header parser; excluded from http-message-parsing"
   },
   "httparse": {
     "category": "http-message-parsing",
@@ -1660,26 +1632,25 @@
   "icu_locale_core": {
     "category": "other",
     "confidence": "low",
-    "note": "locale identifiers; no peer category"
+    "note": "locale identifier handling"
   },
   "icu_locid": {
-    "category": "other",
+    "category": "placeholder-packages",
     "confidence": "low",
-    "note": "deprecated ICU locale crate"
+    "note": "Deprecated stub crate"
   },
   "icu_locid_transform": {
-    "category": "other",
+    "category": "placeholder-packages",
     "confidence": "low",
-    "note": "deprecated locale transform crate"
+    "note": "Deprecated stub crate"
   },
   "icu_locid_transform_data": {
     "category": "static-data",
     "confidence": "high"
   },
   "icu_normalizer": {
-    "category": "other",
-    "confidence": "low",
-    "note": "Unicode normalization; no peer category"
+    "category": "unicode-normalization",
+    "confidence": "high"
   },
   "icu_normalizer_data": {
     "category": "static-data",
@@ -1703,18 +1674,16 @@
     "confidence": "high"
   },
   "id-arena": {
-    "category": "other",
-    "confidence": "low",
-    "note": "arena allocator, no peers"
+    "category": "slot-arenas",
+    "confidence": "high"
   },
   "ident_case": {
     "category": "case-conversion",
     "confidence": "high"
   },
   "idna": {
-    "category": "other",
-    "confidence": "high",
-    "note": "IDNA/punycode domain conversion; no category"
+    "category": "idna-punycode",
+    "confidence": "high"
   },
   "idna_adapter": {
     "category": "library-internals",
@@ -1730,23 +1699,21 @@
     "confidence": "high"
   },
   "image-webp": {
-    "category": "other",
-    "confidence": "low",
-    "note": "single-format WebP codec"
+    "category": "image-decoding",
+    "confidence": "high"
   },
   "indenter": {
     "category": "other",
     "confidence": "low",
-    "note": "display indentation adder, excluded from indentation-stripping"
+    "note": "Adds indentation to formatter output; indentation stripping is the reverse"
   },
   "indexmap": {
     "category": "hash-maps",
     "confidence": "high"
   },
   "indicatif": {
-    "category": "other",
-    "confidence": "low",
-    "note": "terminal progress bars; no peers"
+    "category": "terminal-progress-bars",
+    "confidence": "high"
   },
   "indoc": {
     "category": "indentation-stripping",
@@ -1794,14 +1761,12 @@
     "confidence": "high"
   },
   "ipnet": {
-    "category": "other",
-    "confidence": "low",
-    "note": "IP network/CIDR types; only one such peer here"
+    "category": "ip-address-parsing",
+    "confidence": "high"
   },
   "ipnetwork": {
-    "category": "other",
-    "confidence": "low",
-    "note": "IP CIDR handling (ip-address-parsing missing)"
+    "category": "ip-address-parsing",
+    "confidence": "high"
   },
   "iri-string": {
     "category": "url-parsing",
@@ -1822,8 +1787,8 @@
   },
   "itoa": {
     "category": "other",
-    "confidence": "high",
-    "note": "integer to string formatting; float-formatting excludes integers"
+    "confidence": "low",
+    "note": "integer-to-string formatting; float-formatting excludes integers"
   },
   "jiff": {
     "category": "date-time",
@@ -1844,21 +1809,19 @@
   "jobserver": {
     "category": "other",
     "confidence": "low",
-    "note": "GNU make jobserver client"
+    "note": "GNU make jobserver"
   },
   "jpeg-decoder": {
-    "category": "other",
-    "confidence": "low",
-    "note": "single-format JPEG codec"
+    "category": "image-decoding",
+    "confidence": "high"
   },
   "js-sys": {
     "category": "system-bindings",
     "confidence": "high"
   },
   "json-patch": {
-    "category": "other",
-    "confidence": "low",
-    "note": "JSON Patch is out of scope for json-path-query"
+    "category": "json-patch",
+    "confidence": "high"
   },
   "json5": {
     "category": "config-format-parsing",
@@ -1909,7 +1872,7 @@
   "language-tags": {
     "category": "other",
     "confidence": "low",
-    "note": "BCP47 language tag parsing"
+    "note": "Language tag parsing; no peers"
   },
   "lazy_static": {
     "category": "language-ergonomics",
@@ -1920,23 +1883,21 @@
     "confidence": "high"
   },
   "leb128fmt": {
-    "category": "other",
+    "category": "binary-serialization",
     "confidence": "low",
-    "note": "LEB128 integer codec"
+    "note": "LEB128 integer codec only; nearest category"
   },
   "lexical-core": {
     "category": "float-formatting",
     "confidence": "high"
   },
   "lexical-parse-float": {
-    "category": "other",
-    "confidence": "low",
-    "note": "float parsing from strings, no peers"
+    "category": "number-parsing",
+    "confidence": "high"
   },
   "lexical-parse-integer": {
-    "category": "other",
-    "confidence": "low",
-    "note": "integer parsing from strings, no peers"
+    "category": "number-parsing",
+    "confidence": "high"
   },
   "lexical-util": {
     "category": "library-internals",
@@ -1949,7 +1910,7 @@
   "lexical-write-integer": {
     "category": "other",
     "confidence": "low",
-    "note": "integer formatting, no peers"
+    "note": "Integer formatting; excluded from float-formatting"
   },
   "libc": {
     "category": "system-bindings",
@@ -1994,9 +1955,9 @@
     "note": "flat sorted-Vec map, not tree-based"
   },
   "litrs": {
-    "category": "other",
+    "category": "macro-support",
     "confidence": "low",
-    "note": "Rust literal parsing; no peers"
+    "note": "Rust literal parser aimed at proc macros; could be standalone"
   },
   "lock_api": {
     "category": "library-internals",
@@ -2010,7 +1971,7 @@
   "logos": {
     "category": "other",
     "confidence": "low",
-    "note": "lexer generator; lexer-only out of scope of parser-combinators"
+    "note": "Lexer generator; lexer-only generators excluded from parser-combinators"
   },
   "logos-derive": {
     "category": "macro-support",
@@ -2068,9 +2029,8 @@
     "note": "URL router only"
   },
   "matrixmultiply": {
-    "category": "other",
-    "confidence": "low",
-    "note": "matrix multiplication; no peers"
+    "category": "linear-algebra",
+    "confidence": "high"
   },
   "md-5": {
     "category": "cryptographic-hashing",
@@ -2081,9 +2041,8 @@
     "confidence": "high"
   },
   "memchr": {
-    "category": "other",
-    "confidence": "high",
-    "note": "substring/byte search; literal search excluded from regex-matching"
+    "category": "substring-search",
+    "confidence": "high"
   },
   "memmap2": {
     "category": "system-bindings",
@@ -2105,26 +2064,24 @@
   "miette": {
     "category": "other",
     "confidence": "low",
-    "note": "diagnostic reporting"
+    "note": "Diagnostic reporting; see codespan-reporting"
   },
   "miette-derive": {
     "category": "macro-support",
     "confidence": "high"
   },
   "mime": {
-    "category": "other",
+    "category": "media-type-parsing",
     "confidence": "low",
-    "note": "typed MIME; no category"
+    "note": "strongly typed media types; could also be mime-type-lookup"
   },
   "mime_guess": {
-    "category": "other",
-    "confidence": "high",
-    "note": "extension to MIME lookup"
+    "category": "mime-type-lookup",
+    "confidence": "high"
   },
   "minimal-lexical": {
-    "category": "other",
-    "confidence": "low",
-    "note": "float parsing; no peer category"
+    "category": "number-parsing",
+    "confidence": "high"
   },
   "miniz_oxide": {
     "category": "deflate-compression",
@@ -2151,21 +2108,20 @@
   "moxcms": {
     "category": "other",
     "confidence": "low",
-    "note": "ICC color management; not CSS color parsing"
+    "note": "ICC color management; css-color-parsing covers CSS strings only"
   },
   "multer": {
     "category": "other",
     "confidence": "low",
-    "note": "multipart/form-data parser, no peers"
+    "note": "multipart/form-data parser; excluded from query-string-parsing"
   },
   "multimap": {
     "category": "hash-maps",
     "confidence": "high"
   },
   "nalgebra": {
-    "category": "other",
-    "confidence": "low",
-    "note": "linear algebra"
+    "category": "linear-algebra",
+    "confidence": "high"
   },
   "nanorand": {
     "category": "random-number-generation",
@@ -2177,9 +2133,8 @@
     "note": "wrapper over platform TLS"
   },
   "ndarray": {
-    "category": "other",
-    "confidence": "low",
-    "note": "n-dimensional array, no peers"
+    "category": "linear-algebra",
+    "confidence": "high"
   },
   "new_debug_unreachable": {
     "category": "language-ergonomics",
@@ -2201,7 +2156,7 @@
   "normalize-line-endings": {
     "category": "other",
     "confidence": "low",
-    "note": "line ending normalizer"
+    "note": "Line ending normalization; no peers"
   },
   "notify": {
     "category": "file-watching",
@@ -2247,7 +2202,7 @@
   "num-complex": {
     "category": "other",
     "confidence": "low",
-    "note": "complex numbers; no peer"
+    "note": "complex numbers, not dense linear algebra"
   },
   "num-conv": {
     "category": "language-ergonomics",
@@ -2297,7 +2252,7 @@
   "object": {
     "category": "other",
     "confidence": "low",
-    "note": "object file format reader/writer; no category"
+    "note": "object file format reading"
   },
   "object_store": {
     "category": "service-sdks",
@@ -2420,29 +2375,26 @@
     "confidence": "high"
   },
   "parking": {
-    "category": "other",
-    "confidence": "low",
-    "note": "thread parking primitive"
+    "category": "synchronization-primitives",
+    "confidence": "high"
   },
   "parking_lot": {
-    "category": "other",
-    "confidence": "high",
-    "note": "synchronization primitives; no peer category"
+    "category": "synchronization-primitives",
+    "confidence": "high"
   },
   "parking_lot_core": {
-    "category": "other",
-    "confidence": "high",
-    "note": "synchronization primitives; no peer category"
+    "category": "synchronization-primitives",
+    "confidence": "high"
   },
   "parquet": {
     "category": "other",
     "confidence": "low",
-    "note": "Parquet file format reader/writer"
+    "note": "Parquet file format; file-format readers excluded from dataframes"
   },
   "parse-zoneinfo": {
     "category": "other",
     "confidence": "low",
-    "note": "tz database file parser"
+    "note": "Time zone database parser; excluded from date-time"
   },
   "password-hash": {
     "category": "language-ergonomics",
@@ -2457,33 +2409,28 @@
     "confidence": "high"
   },
   "pathdiff": {
-    "category": "other",
-    "confidence": "low",
-    "note": "relative path computation"
+    "category": "path-manipulation",
+    "confidence": "high"
   },
   "pbkdf2": {
-    "category": "other",
-    "confidence": "high",
-    "note": "key derivation; missing category"
+    "category": "key-derivation",
+    "confidence": "high"
   },
   "peeking_take_while": {
     "category": "language-ergonomics",
     "confidence": "high"
   },
   "pem": {
-    "category": "other",
-    "confidence": "high",
-    "note": "PEM encode/decode"
+    "category": "pem-encoding",
+    "confidence": "high"
   },
   "pem-rfc7468": {
-    "category": "other",
-    "confidence": "low",
-    "note": "PEM encoding; no peer"
+    "category": "pem-encoding",
+    "confidence": "high"
   },
   "percent-encoding": {
-    "category": "other",
-    "confidence": "high",
-    "note": "percent encoding/decoding; no category"
+    "category": "percent-encoding",
+    "confidence": "high"
   },
   "pest": {
     "category": "parser-combinators",
@@ -2503,9 +2450,8 @@
     "confidence": "high"
   },
   "petgraph": {
-    "category": "other",
-    "confidence": "low",
-    "note": "graph data structures and algorithms"
+    "category": "graph-algorithms",
+    "confidence": "high"
   },
   "phf": {
     "category": "hash-maps",
@@ -2581,9 +2527,8 @@
     "confidence": "high"
   },
   "png": {
-    "category": "other",
-    "confidence": "high",
-    "note": "single-format image codec"
+    "category": "image-decoding",
+    "confidence": "high"
   },
   "polling": {
     "category": "system-bindings",
@@ -2591,14 +2536,12 @@
     "note": "epoll/kqueue portable interface"
   },
   "poly1305": {
-    "category": "other",
-    "confidence": "low",
-    "note": "Poly1305 MAC, no category"
+    "category": "message-authentication-codes",
+    "confidence": "high"
   },
   "polyval": {
-    "category": "other",
-    "confidence": "low",
-    "note": "universal hash/MAC primitive"
+    "category": "message-authentication-codes",
+    "confidence": "high"
   },
   "portable-atomic": {
     "category": "language-ergonomics",
@@ -2634,7 +2577,7 @@
   "predicates": {
     "category": "other",
     "confidence": "low",
-    "note": "boolean predicate combinators"
+    "note": "boolean predicate functions"
   },
   "predicates-core": {
     "category": "language-ergonomics",
@@ -2643,7 +2586,7 @@
   "predicates-tree": {
     "category": "other",
     "confidence": "low",
-    "note": "predicate result tree rendering"
+    "note": "Renders predicate results as a tree; no peers"
   },
   "pretty_assertions": {
     "category": "value-inspection",
@@ -2782,12 +2725,12 @@
   "quinn": {
     "category": "other",
     "confidence": "low",
-    "note": "QUIC implementation; no peer"
+    "note": "QUIC implementation"
   },
   "quinn-proto": {
     "category": "other",
     "confidence": "low",
-    "note": "QUIC state machine; no peer"
+    "note": "QUIC state machine"
   },
   "quinn-udp": {
     "category": "system-bindings",
@@ -2825,7 +2768,7 @@
   "rand_distr": {
     "category": "other",
     "confidence": "low",
-    "note": "sampling from distributions; random-number-generation excludes distributions"
+    "note": "Statistical distributions are excluded from random-number-generation"
   },
   "rand_hc": {
     "category": "random-number-generation",
@@ -2868,7 +2811,7 @@
   "rcgen": {
     "category": "other",
     "confidence": "low",
-    "note": "X.509 certificate generation"
+    "note": "X.509 certificate generation; no peers"
   },
   "redis": {
     "category": "redis-client",
@@ -2908,14 +2851,13 @@
     "confidence": "high"
   },
   "relative-path": {
-    "category": "other",
-    "confidence": "low",
-    "note": "relative path type"
+    "category": "path-manipulation",
+    "confidence": "high"
   },
   "remove_dir_all": {
     "category": "other",
     "confidence": "low",
-    "note": "recursive directory removal, no peers"
+    "note": "Recursive directory removal; no peers"
   },
   "rend": {
     "category": "language-ergonomics",
@@ -2933,7 +2875,7 @@
   "resolv-conf": {
     "category": "other",
     "confidence": "low",
-    "note": "resolv.conf parser"
+    "note": "resolv.conf parser; no peers"
   },
   "rfc6979": {
     "category": "library-internals",
@@ -2967,9 +2909,9 @@
     "confidence": "high"
   },
   "ron": {
-    "category": "other",
+    "category": "config-format-parsing",
     "confidence": "low",
-    "note": "RON config format parser, not JSON superset"
+    "note": "RON is not a JSON superset; nearest category"
   },
   "roxmltree": {
     "category": "markup-parsing",
@@ -3005,9 +2947,8 @@
     "note": "probes rustc version at build time"
   },
   "rustc-demangle": {
-    "category": "other",
-    "confidence": "low",
-    "note": "symbol demangling; no peer category"
+    "category": "symbol-demangling",
+    "confidence": "high"
   },
   "rustc-hash": {
     "category": "non-cryptographic-hashing",
@@ -3024,7 +2965,7 @@
   "rustls": {
     "category": "other",
     "confidence": "low",
-    "note": "TLS library; no category"
+    "note": "TLS library, no category"
   },
   "rustls-native-certs": {
     "category": "environment-detection",
@@ -3032,9 +2973,8 @@
     "note": "loads platform cert store; weak fit"
   },
   "rustls-pemfile": {
-    "category": "other",
-    "confidence": "low",
-    "note": "PEM parsing; no peer category"
+    "category": "pem-encoding",
+    "confidence": "high"
   },
   "rustls-pki-types": {
     "category": "library-internals",
@@ -3049,7 +2989,7 @@
   "rustls-webpki": {
     "category": "other",
     "confidence": "low",
-    "note": "Web PKI cert verification; no category"
+    "note": "X.509 path verification, ASN.1 verification excluded"
   },
   "rustversion": {
     "category": "macro-support",
@@ -3064,14 +3004,13 @@
     "confidence": "high"
   },
   "salsa20": {
-    "category": "other",
-    "confidence": "low",
-    "note": "Salsa20 bare stream cipher"
+    "category": "symmetric-ciphers",
+    "confidence": "high"
   },
   "same-file": {
     "category": "other",
     "confidence": "low",
-    "note": "same-file check; no category"
+    "note": "file identity comparison"
   },
   "schannel": {
     "category": "system-bindings",
@@ -3080,7 +3019,7 @@
   "schemars": {
     "category": "other",
     "confidence": "low",
-    "note": "JSON Schema generation; no peer category"
+    "note": "JSON schema generation from types"
   },
   "schemars_derive": {
     "category": "macro-support",
@@ -3097,17 +3036,17 @@
   "scroll": {
     "category": "other",
     "confidence": "low",
-    "note": "endian-aware byte buffer read/write"
+    "note": "Endian-aware read/write traits; see byteorder-lite"
   },
   "sct": {
     "category": "other",
     "confidence": "low",
-    "note": "SCT verification; no peer"
+    "note": "SCT verification"
   },
   "sdd": {
     "category": "other",
     "confidence": "low",
-    "note": "lock-free memory reclamation"
+    "note": "Lock-free memory reclamation; no peers"
   },
   "seahash": {
     "category": "non-cryptographic-hashing",
@@ -3116,7 +3055,7 @@
   "sec1": {
     "category": "other",
     "confidence": "low",
-    "note": "SEC1 EC key encoding"
+    "note": "EC key encoding formats"
   },
   "secp256k1": {
     "category": "digital-signatures",
@@ -3192,9 +3131,8 @@
     "note": "serde error path wrapper"
   },
   "serde_qs": {
-    "category": "other",
-    "confidence": "low",
-    "note": "querystring serde"
+    "category": "query-string-parsing",
+    "confidence": "high"
   },
   "serde_repr": {
     "category": "macro-support",
@@ -3205,9 +3143,8 @@
     "confidence": "high"
   },
   "serde_urlencoded": {
-    "category": "other",
-    "confidence": "low",
-    "note": "form-urlencoded serde; no peer category"
+    "category": "query-string-parsing",
+    "confidence": "high"
   },
   "serde_with": {
     "category": "language-ergonomics",
@@ -3265,9 +3202,8 @@
     "confidence": "high"
   },
   "sharded-slab": {
-    "category": "other",
-    "confidence": "low",
-    "note": "concurrent slab allocator"
+    "category": "slot-arenas",
+    "confidence": "high"
   },
   "shell-words": {
     "category": "shell-word-splitting",
@@ -3297,16 +3233,15 @@
   "simba": {
     "category": "other",
     "confidence": "low",
-    "note": "SIMD algebra"
+    "note": "SIMD algebra abstractions; no peers"
   },
   "simd-adler32": {
     "category": "checksums",
     "confidence": "high"
   },
   "simdutf8": {
-    "category": "other",
-    "confidence": "high",
-    "note": "UTF-8 validation"
+    "category": "utf8-validation",
+    "confidence": "high"
   },
   "similar": {
     "category": "text-diff",
@@ -3325,18 +3260,16 @@
     "confidence": "high"
   },
   "slab": {
-    "category": "other",
-    "confidence": "high",
-    "note": "slab allocator; excluded from hash-maps"
+    "category": "slot-arenas",
+    "confidence": "high"
   },
   "slog": {
     "category": "structured-logging",
     "confidence": "high"
   },
   "slotmap": {
-    "category": "other",
-    "confidence": "low",
-    "note": "slot map arena container"
+    "category": "slot-arenas",
+    "confidence": "high"
   },
   "smallvec": {
     "category": "inline-vectors",
@@ -3345,12 +3278,11 @@
   "smawk": {
     "category": "other",
     "confidence": "low",
-    "note": "SMAWK matrix minima algorithm"
+    "note": "Row minima in monotone matrices; no peers"
   },
   "smol_str": {
-    "category": "other",
-    "confidence": "low",
-    "note": "small-string optimized type; small-string types excluded from inline-vectors"
+    "category": "small-strings",
+    "confidence": "high"
   },
   "snafu": {
     "category": "language-ergonomics",
@@ -3369,9 +3301,8 @@
     "confidence": "high"
   },
   "spin": {
-    "category": "other",
-    "confidence": "low",
-    "note": "spin lock primitives; no category"
+    "category": "synchronization-primitives",
+    "confidence": "high"
   },
   "spki": {
     "category": "asn1-der-decoding",
@@ -3379,9 +3310,8 @@
     "note": "X.509 SPKI types"
   },
   "sqlparser": {
-    "category": "other",
-    "confidence": "low",
-    "note": "SQL parser"
+    "category": "sql-parsing",
+    "confidence": "high"
   },
   "sqlx": {
     "category": "postgres-client",
@@ -3420,7 +3350,7 @@
   "string_cache": {
     "category": "other",
     "confidence": "low",
-    "note": "string interning"
+    "note": "String interning; small-strings excludes interning"
   },
   "string_cache_codegen": {
     "category": "macro-support",
@@ -3429,12 +3359,11 @@
   "stringprep": {
     "category": "other",
     "confidence": "low",
-    "note": "stringprep algorithm; no peers"
+    "note": "stringprep profiles excluded from unicode-normalization"
   },
   "strsim": {
-    "category": "other",
-    "confidence": "high",
-    "note": "string edit-distance metrics; no category"
+    "category": "edit-distance",
+    "confidence": "high"
   },
   "structopt": {
     "category": "cli-argument-parsing",
@@ -3496,17 +3425,15 @@
   "target-lexicon": {
     "category": "other",
     "confidence": "low",
-    "note": "target triple types; no peer"
+    "note": "target triple types"
   },
   "tempfile": {
-    "category": "other",
-    "confidence": "high",
-    "note": "temporary file management; no category"
+    "category": "temporary-files",
+    "confidence": "high"
   },
   "tendril": {
-    "category": "other",
-    "confidence": "low",
-    "note": "compact string buffer"
+    "category": "small-strings",
+    "confidence": "high"
   },
   "term": {
     "category": "terminal-styling",
@@ -3524,12 +3451,11 @@
   "termtree": {
     "category": "other",
     "confidence": "low",
-    "note": "tree rendering for terminal"
+    "note": "tree visualization output"
   },
   "textwrap": {
-    "category": "other",
-    "confidence": "low",
-    "note": "word wrapping; no peer category"
+    "category": "ansi-text-layout",
+    "confidence": "high"
   },
   "thiserror": {
     "category": "language-ergonomics",
@@ -3542,7 +3468,7 @@
   "thread_local": {
     "category": "other",
     "confidence": "low",
-    "note": "thread-local storage primitive; no peer category"
+    "note": "per-object thread-local storage"
   },
   "threadpool": {
     "category": "async-concurrency",
@@ -3553,9 +3479,8 @@
     "confidence": "high"
   },
   "tiff": {
-    "category": "other",
-    "confidence": "low",
-    "note": "single-format TIFF codec"
+    "category": "image-decoding",
+    "confidence": "high"
   },
   "tikv-jemalloc-sys": {
     "category": "system-bindings",
@@ -3582,9 +3507,8 @@
     "confidence": "high"
   },
   "tinystr": {
-    "category": "other",
-    "confidence": "low",
-    "note": "small ASCII string type; no category"
+    "category": "small-strings",
+    "confidence": "high"
   },
   "tinytemplate": {
     "category": "template-rendering",
@@ -3660,19 +3584,18 @@
     "confidence": "high"
   },
   "toml_write": {
-    "category": "other",
+    "category": "toml-parsing",
     "confidence": "low",
-    "note": "writes TOML; taxonomy only covers parsing"
+    "note": "Writes TOML rather than parsing; nearest category"
   },
   "toml_writer": {
     "category": "other",
     "confidence": "low",
-    "note": "TOML writing only; toml-parsing is parse-focused"
+    "note": "TOML writing; toml-parsing covers parsing only"
   },
   "tonic": {
-    "category": "other",
-    "confidence": "low",
-    "note": "gRPC framework; no peer"
+    "category": "grpc-rpc",
+    "confidence": "high"
   },
   "tonic-build": {
     "category": "macro-support",
@@ -3749,7 +3672,7 @@
   "ttf-parser": {
     "category": "other",
     "confidence": "low",
-    "note": "font parser"
+    "note": "Font parsing; no peers"
   },
   "tungstenite": {
     "category": "websocket-messaging",
@@ -3787,7 +3710,7 @@
   "unicase": {
     "category": "other",
     "confidence": "low",
-    "note": "case-insensitive string wrapper; no peer"
+    "note": "case-insensitive string wrapper"
   },
   "unicode_categories": {
     "category": "static-data",
@@ -3797,7 +3720,7 @@
   "unicode-bidi": {
     "category": "other",
     "confidence": "low",
-    "note": "Unicode bidi algorithm; no peer category"
+    "note": "bidi algorithm, no category"
   },
   "unicode-ident": {
     "category": "static-data",
@@ -3805,14 +3728,12 @@
     "note": "Unicode XID property tables"
   },
   "unicode-linebreak": {
-    "category": "other",
-    "confidence": "low",
-    "note": "unicode line breaking algorithm has no peer"
+    "category": "unicode-segmentation",
+    "confidence": "high"
   },
   "unicode-normalization": {
-    "category": "other",
-    "confidence": "low",
-    "note": "Unicode normalization; no peer category"
+    "category": "unicode-normalization",
+    "confidence": "high"
   },
   "unicode-properties": {
     "category": "other",
@@ -3820,9 +3741,8 @@
     "note": "unicode property queries"
   },
   "unicode-segmentation": {
-    "category": "other",
-    "confidence": "low",
-    "note": "Unicode text segmentation; no peer category"
+    "category": "unicode-segmentation",
+    "confidence": "high"
   },
   "unicode-width": {
     "category": "terminal-string-width",
@@ -3864,24 +3784,21 @@
     "confidence": "high"
   },
   "urlencoding": {
-    "category": "other",
-    "confidence": "high",
-    "note": "percent encoding"
+    "category": "percent-encoding",
+    "confidence": "high"
   },
   "utf-8": {
-    "category": "other",
-    "confidence": "low",
-    "note": "incremental UTF-8 decoding; no peers"
+    "category": "utf8-validation",
+    "confidence": "high"
   },
   "utf16_iter": {
-    "category": "other",
+    "category": "charset-transcoding",
     "confidence": "low",
-    "note": "UTF-16 iterator"
+    "note": "Iterates chars over UTF-16; nearest is encoding conversion"
   },
   "utf8_iter": {
-    "category": "other",
-    "confidence": "low",
-    "note": "UTF-8 iterator helper"
+    "category": "utf8-validation",
+    "confidence": "high"
   },
   "utf8parse": {
     "category": "library-internals",
@@ -3925,12 +3842,12 @@
   "vte": {
     "category": "other",
     "confidence": "low",
-    "note": "terminal escape parser"
+    "note": "Terminal escape sequence parser; no peers"
   },
   "wait-timeout": {
     "category": "other",
     "confidence": "low",
-    "note": "child process wait with timeout"
+    "note": "wait on child with timeout"
   },
   "waker-fn": {
     "category": "language-ergonomics",
@@ -3984,7 +3901,7 @@
   "wasm-encoder": {
     "category": "other",
     "confidence": "low",
-    "note": "WebAssembly binary encoder"
+    "note": "WebAssembly binary encoder; no peers"
   },
   "wasm-metadata": {
     "category": "build-tooling",
@@ -3998,8 +3915,8 @@
   },
   "wasmparser": {
     "category": "other",
-    "confidence": "high",
-    "note": "WebAssembly binary parser"
+    "confidence": "low",
+    "note": "wasm binary parsing"
   },
   "wayland-sys": {
     "category": "system-bindings",
@@ -4016,7 +3933,7 @@
   "webpki": {
     "category": "other",
     "confidence": "low",
-    "note": "X.509 certificate chain verification, no peers"
+    "note": "X.509 certificate verification; excluded from asn1-der-decoding"
   },
   "webpki-root-certs": {
     "category": "static-data",
@@ -4042,7 +3959,7 @@
   "widestring": {
     "category": "other",
     "confidence": "low",
-    "note": "wide string types"
+    "note": "Wide string types for FFI; no peers"
   },
   "winapi": {
     "category": "system-bindings",
@@ -4208,7 +4125,7 @@
   "x25519-dalek": {
     "category": "other",
     "confidence": "low",
-    "note": "X25519 key exchange"
+    "note": "Diffie-Hellman key exchange; excluded from digital-signatures"
   },
   "x509-parser": {
     "category": "asn1-der-decoding",
@@ -4253,7 +4170,7 @@
   "zbus": {
     "category": "other",
     "confidence": "low",
-    "note": "D-Bus IPC client; no peers"
+    "note": "D-Bus client; no peers"
   },
   "zbus_macros": {
     "category": "macro-support",
@@ -4303,9 +4220,8 @@
     "confidence": "high"
   },
   "zip": {
-    "category": "other",
-    "confidence": "high",
-    "note": "zip archive reader/writer; no zip category"
+    "category": "zip-archiving",
+    "confidence": "high"
   },
   "zlib-rs": {
     "category": "deflate-compression",
@@ -4337,9 +4253,8 @@
     "confidence": "high"
   },
   "zune-jpeg": {
-    "category": "other",
-    "confidence": "low",
-    "note": "single-format JPEG decoder"
+    "category": "image-decoding",
+    "confidence": "high"
   },
   "zvariant": {
     "category": "binary-serialization",

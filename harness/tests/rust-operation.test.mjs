@@ -18,6 +18,9 @@ async function run(adapter, fixtures, commands) {
     let stdout = '', stderr = ''
     child.stdout.on('data', c => stdout += c)
     child.stderr.on('data', c => stderr += c)
+    // A program that rejects its input exits before reading the commands; the
+    // write then fails with EPIPE, which is expected and not the test's concern.
+    child.stdin.on('error', () => {})
     child.stdin.end(commands)
     const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve) })
     return { code, stderr, messages: stdout.trim().split('\n').map(l => JSON.parse(l.slice(2))) }

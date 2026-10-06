@@ -4,6 +4,20 @@ import { compareCells, sortColumnKey, matchingSortColumn } from './sort.mjs'
 
 document.documentElement.classList.add('js')
 
+// Every row of a table, in order. A long table keeps only the page being
+// shown in the document and the rest in this list (`table.allRows`), so the
+// browser lays out thirty rows, not thousands; sorting, filtering and copying
+// all go through here to reach the rows that are not on show.
+const rowsOf = (table) => table.allRows ?? [...table.tBodies[0].rows]
+
+// Remember which category the reader is in, so a package that belongs to
+// several opens the side menu at that one (the swap itself is inline in the
+// page, to happen before anything is drawn).
+const sideCategory = document.querySelector('nav.side')?.dataset.category
+try {
+  if (sideCategory) sessionStorage.setItem('category', sideCategory)
+} catch {}
+
 // Search across packages, tasks and categories. Typing part of a name, its
 // initials ("jas" for JSON API server) or a few of its letters in order all
 // find it; the best match is listed first and the matched letters are marked.
@@ -208,9 +222,13 @@ for (const runtimeSwitch of document.querySelectorAll('.switch:has(input[name="r
     runtimeSwitch.hidden = radios.length === 1
     continue
   }
-  const field = document.createElement('fieldset')
+  const field = document.createElement('div')
   field.className = 'switch language-switch'
-  const legend = document.createElement('legend')
+  field.setAttribute('role', 'radiogroup')
+  field.setAttribute('aria-label', 'Language')
+  const legend = document.createElement('span')
+  legend.className = 'legend'
+  legend.setAttribute('aria-hidden', 'true')
   legend.textContent = 'Language'
   field.append(legend)
   const languageRadios = languages.map((language) => {
@@ -242,7 +260,8 @@ for (const runtimeSwitch of document.querySelectorAll('.switch:has(input[name="r
     target.dispatchEvent(new Event('change', { bubbles: true }))
   })
   runtimeSwitch.addEventListener('change', syncLanguage)
-  runtimeSwitch.before(field)
+  // Language leads the row, whatever else is in it.
+  runtimeSwitch.parentElement.prepend(field)
   syncLanguage()
 }
 
@@ -286,16 +305,27 @@ for (const control of document.querySelectorAll('input[name^="order"]')) {
 // variant. Cells that have both sort by whichever is showing.
 function applySettings() {
   const tuned = document.querySelector('input[name="settings"][value="tuned"]')?.checked ?? true
-  for (const cell of document.querySelectorAll('td[data-tuned-v]')) {
+  const cells = [...document.querySelectorAll('table.sortable')].flatMap((table) => rowsOf(table).flatMap((row) => (row.className === 'unmeasured' ? [] : [...row.querySelectorAll('td[data-tuned-v]')])))
+  for (const cell of cells) {
     cell.dataset.installedGrade ??= cell.dataset.grade
     cell.dataset.installedV ??= cell.dataset.v
     cell.dataset.installedValue ??= cell.dataset.value
-    cell.dataset.grade = tuned ? cell.dataset.tunedGrade : cell.dataset.installedGrade
     cell.dataset.v = tuned ? cell.dataset.tunedV : cell.dataset.installedV
+    // The Medals cell has only a sort number, no class or figure.
+    if (cell.dataset.tunedGrade === undefined) continue
+    cell.dataset.grade = tuned ? cell.dataset.tunedGrade : cell.dataset.installedGrade
     cell.dataset.value = tuned ? cell.dataset.tunedValue : cell.dataset.installedValue
   }
 }
-for (const control of document.querySelectorAll('input[name="settings"]')) control.addEventListener('change', applySettings)
+// The figures a column sorts by have just changed, so a table that is sorted
+// by one of them is sorted again, the same way.
+function resort() {
+  for (const table of document.querySelectorAll('table.sortable')) {
+    const heading = table.querySelector('thead th[aria-sort]')
+    if (heading?.querySelector('td, [data-sort]') && rowsOf(table).some((row) => row.className !== 'unmeasured' && row.querySelector('td[data-tuned-v]'))) sortTable(table, columnKey(heading), heading.getAttribute('aria-sort') === 'descending', heading.dataset.field)
+  }
+}
+for (const control of document.querySelectorAll('input[name="settings"]')) control.addEventListener('change', () => (applySettings(), resort()))
 applySettings()
 
 // All panels are rendered up front, so switching tabs reveals the same order.
@@ -321,10 +351,17 @@ function sortTable(table, key, descending, field) {
     const slot = heading.querySelector('.sort-field')
     if (slot) slot.textContent = FIELD_LABELS[field] ?? field
   }
-  const rows = [...table.tBodies[0].rows]
-  const numeric = rows.some(row => row.children[column].dataset.v !== undefined)
-  rows.sort((a,b) => compareCells(a.children[column], b.children[column], {numeric,descending,field}))
-  table.tBodies[0].append(...rows)
+  // Each cell is read once into a plain copy and the copies are sorted, so
+  // the thousands of comparisons never touch the page.
+  const copies = rowsOf(table).map((row) => {
+    const cell = row.children[column]
+    return { row, cell: { dataset: { ...cell.dataset }, textContent: cell.textContent } }
+  })
+  const numeric = copies.some(({ cell }) => cell.dataset.v !== undefined)
+  copies.sort((a, b) => compareCells(a.cell, b.cell, { numeric, descending, field }))
+  const rows = copies.map(({ row }) => row)
+  if (table.allRows) table.allRows = rows
+  else table.tBodies[0].append(...rows)
   table.dispatchEvent(new Event('sorted'))
 }
 for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
@@ -336,7 +373,8 @@ for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
     const sorted = heading.getAttribute('aria-sort')
     let field
     let descending = false
-    if (fields.length === 0) descending = sorted === 'ascending'
+    // A column can ask to start from its largest values (data-first).
+    if (fields.length === 0) descending = sorted ? sorted === 'ascending' : heading.dataset.first === 'descending'
     else if (!sorted) field = fields[0]
     else if (sorted === 'ascending') [field, descending] = [heading.dataset.field, true]
     else field = fields[(fields.indexOf(heading.dataset.field) + 1) % fields.length]
@@ -346,60 +384,304 @@ for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
   })
 }
 
-// Long tables are shown a page at a time. Every row is still in the page, so
-// sorting covers all of them and a link to a row opens the page it is on.
-const PAGE_SIZE = 30
-for (const table of document.querySelectorAll('table.sortable')) {
+// Tables that list packages or tasks of several kinds get a row of filters,
+// built from the values their rows carry (data-status, data-ecosystem, ...).
+// A filter with only one value to choose from is left out.
+const FILTER_TITLES = { status: 'Show', ecosystem: 'Ecosystem', group: 'Group' }
+const STATUS_ORDER = ['Measured', 'Not benchmarked yet', 'Not measured yet', 'No comparable task']
+let filterCount = 0
+function buildFilters(table) {
+  if (table.dataset.filtered) return
   const body = table.tBodies[0]
-  if (!body || body.rows.length <= PAGE_SIZE) continue
-  const pager = document.createElement('nav')
-  pager.className = 'pager'
-  pager.setAttribute('aria-label', 'Table pages')
-  const status = document.createElement('span')
-  status.setAttribute('aria-live', 'polite')
-  const button = (text, action) => {
-    const control = document.createElement('button')
-    control.type = 'button'
-    control.textContent = text
-    control.addEventListener('click', action)
-    return control
+  const chosen = {}
+  const groups = []
+  for (const key of table.dataset.filters.split(',')) {
+    const counts = new Map()
+    for (const row of rowsOf(table)) counts.set(row.dataset[key], (counts.get(row.dataset[key]) ?? 0) + 1)
+    if (counts.size < 2) continue
+    const values = [...counts.keys()].sort((a, b) => (key === 'status' ? STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b) : 0))
+    const group = document.createElement('div')
+    group.className = 'switch'
+    group.setAttribute('role', 'radiogroup')
+    group.setAttribute('aria-label', FILTER_TITLES[key] ?? key)
+    const legend = document.createElement('span')
+    legend.className = 'legend'
+    legend.setAttribute('aria-hidden', 'true')
+    legend.textContent = FILTER_TITLES[key] ?? key
+    group.append(legend)
+    const name = `filter-${++filterCount}-${key}`
+    ;[null, ...values].forEach((value, i) => {
+      const radio = document.createElement('input')
+      radio.type = 'radio'
+      radio.name = name
+      radio.id = `${name}-${i}`
+      radio.checked = value === null
+      const label = document.createElement('label')
+      label.htmlFor = radio.id
+      // The mark that goes with the value in the table, where it has one.
+      const mark = value !== null && rowsOf(table).find((row) => row.dataset[key] === value)?.querySelector(`td .ico`)
+      if (key === 'ecosystem' && mark) label.append(mark.cloneNode(true))
+      label.append(value ?? 'All')
+      const count = document.createElement('small')
+      count.textContent = (value === null ? rowsOf(table).length : counts.get(value)).toLocaleString('en-US')
+      label.append(count)
+      radio.addEventListener('change', () => {
+        chosen[key] = value
+        for (const row of rowsOf(table)) {
+          const out = Object.entries(chosen).some(([k, wanted]) => wanted !== null && row.dataset[k] !== wanted)
+          if (out) row.dataset.out = '1'
+          else delete row.dataset.out
+          if (!table.allRows) row.hidden = out
+        }
+        table.dispatchEvent(new Event('filtered'))
+      })
+      group.append(radio, label)
+    })
+    groups.push(group)
   }
+  if (groups.length === 0) return
+  table.dataset.filtered = 'true'
+  const row = document.createElement('div')
+  row.className = 'switches filters'
+  row.append(...groups)
+  ;(table.closest('.scroll') ?? table).before(row)
+}
+for (const table of document.querySelectorAll('table[data-filters]')) {
+  buildFilters(table)
+  // A table that gains rows later may only then have something to filter by.
+  table.addEventListener('grown', () => buildFilters(table))
+}
+
+// Long tables are shown a page at a time, with the same controls above and
+// below. Every row is still in the page, so sorting covers all of them and a
+// link to a row opens the page it is on.
+const PAGE_SIZE = 30
+function paginate(table) {
+  const body = table.tBodies[0]
+  if (!body || rowsOf(table).length <= PAGE_SIZE || table.dataset.paged) return
+  table.dataset.paged = 'true'
+  // From here on the table's rows live in `allRows`; only a page of them is
+  // in the document at a time.
+  table.allRows = rowsOf(table)
   let page = 0
   let all = false
-  const pages = () => Math.ceil(body.rows.length / PAGE_SIZE)
+  // Rows a filter has taken out are not counted or shown.
+  const kept = () => table.allRows.filter((row) => !row.dataset.out)
+  const pages = () => Math.ceil(kept().length / PAGE_SIZE)
+  const pagers = ['above', 'below'].map((place) => {
+    const nav = document.createElement('nav')
+    nav.className = `pager ${place}`
+    nav.setAttribute('aria-label', `Table pages, ${place} the table`)
+    const control = (text, action) => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.textContent = text
+      button.addEventListener('click', () => {
+        action()
+        show()
+        // Paging from the bottom would otherwise leave the reader below a
+        // table that just got shorter.
+        if (place === 'below') wrapper.previousElementSibling.scrollIntoView({ block: 'nearest' })
+      })
+      nav.append(button)
+      return button
+    }
+    const previous = control('Previous', () => page--)
+    const status = document.createElement('span')
+    status.className = 'status'
+    nav.append(status)
+    const next = control('Next', () => page++)
+    const everything = control('', () => ((all = !all), (page = 0)))
+    everything.className = 'all'
+    return { nav, previous, status, next, everything }
+  })
+  pagers[1].status.setAttribute('aria-live', 'polite')
+  const wrapper = table.closest('.scroll') ?? table
+  wrapper.after(pagers[1].nav)
+  // The upper pager shares a row with the switches that belong to the table
+  // (its filters, or its group's runtime and settings switches) and keeps the
+  // top right corner of it; the switches wrap in the space to its left.
+  let bar = wrapper.previousElementSibling?.classList.contains('switches') ? wrapper.previousElementSibling : table.closest('.pick')?.querySelector(':scope > .switches')
+  if (!bar) {
+    bar = document.createElement('div')
+    bar.className = 'switches'
+    wrapper.before(bar)
+  }
+  if (!bar.classList.contains('has-pager')) {
+    const groups = document.createElement('div')
+    groups.className = 'switch-groups'
+    groups.append(...bar.childNodes)
+    bar.append(groups)
+    bar.classList.add('has-pager')
+  }
+  bar.append(pagers[0].nav)
+
   const show = () => {
-    const total = body.rows.length
+    const rows = kept()
+    const total = rows.length
     const start = all ? 0 : page * PAGE_SIZE
     const end = all ? total : Math.min(total, start + PAGE_SIZE)
-    ;[...body.rows].forEach((row, i) => (row.hidden = i < start || i >= end))
-    status.textContent = `${(start + 1).toLocaleString('en-US')}–${end.toLocaleString('en-US')} of ${total.toLocaleString('en-US')}`
-    previous.disabled = all || page === 0
-    next.disabled = all || page >= pages() - 1
-    everything.textContent = all ? `Show ${PAGE_SIZE} at a time` : 'Show all'
+    body.replaceChildren(...rows.slice(start, end))
+    for (const pager of pagers) {
+      pager.status.textContent = total ? `${(start + 1).toLocaleString('en-US')}–${end.toLocaleString('en-US')} of ${total.toLocaleString('en-US')}` : 'No rows'
+      pager.previous.disabled = all || page === 0
+      pager.next.disabled = all || page >= pages() - 1
+      pager.everything.textContent = all ? `Show ${PAGE_SIZE} at a time` : 'Show all'
+    }
   }
-  const previous = button('Previous', () => (page--, show()))
-  const next = button('Next', () => (page++, show()))
-  const everything = button('', () => ((all = !all), (page = 0), show()))
-  pager.append(previous, status, next, everything)
-  ;(table.closest('.scroll') ?? table).after(pager)
+
+  // A table sizes its columns to the rows on show, so they would shift from
+  // page to page. Each column is held at the width its widest content needs.
+  // Laying out every row to find that is slow for thousands of them, so the
+  // rows measured are, for each column, the few with the longest text in it:
+  // those decide the width. Measured again when the space for the table
+  // changes, which is also when a table in a hidden tab first appears.
+  let widestRows = null
+  const widest = () => {
+    if (widestRows) return widestRows
+    // One pass: for each column, the three rows with the longest text so far.
+    const top = headings.map(() => [])
+    for (const row of table.allRows) {
+      for (let column = 0; column < top.length; column++) {
+        const length = row.children[column]?.textContent.length ?? 0
+        const held = top[column]
+        if (held.length < 3 || length > held[2].length) {
+          held.push({ row, length })
+          held.sort((a, b) => b.length - a.length)
+          held.length = Math.min(held.length, 3)
+        }
+      }
+    }
+    return (widestRows = [...new Set(top.flat().map((entry) => entry.row))])
+  }
+  const headings = [...table.querySelectorAll('thead tr:last-child th')]
+  let measuredAt = -1
+  const holdColumns = () => {
+    // The outer width: the inner one changes whenever a scrollbar comes or
+    // goes with the number of rows, which is not a reason to measure again.
+    const space = Math.round(wrapper.getBoundingClientRect().width)
+    // Several tables can share one row of switches, one per tab; only the
+    // table on show keeps its pager there.
+    pagers[0].nav.hidden = space === 0
+    if (space === 0 || space === measuredAt) return
+    measuredAt = space
+    body.replaceChildren(...(table.allRows.length <= 200 ? table.allRows : widest()))
+    table.style.width = table.style.minWidth = ''
+    for (const th of headings) th.style.width = th.style.minWidth = ''
+    const widths = headings.map((th) => th.getBoundingClientRect().width)
+    const whole = table.getBoundingClientRect().width
+    headings.forEach((th, i) => (th.style.width = th.style.minWidth = `${widths[i]}px`))
+    table.style.width = table.style.minWidth = `${whole}px`
+    show()
+  }
+  new ResizeObserver(holdColumns).observe(wrapper)
+  document.fonts?.ready.then(() => ((measuredAt = -1), holdColumns()))
+
   table.addEventListener('sorted', () => ((page = 0), show()))
+  table.addEventListener('filtered', () => ((page = 0), show()))
+  // Rows were added: count them, and measure the columns again.
+  table.addEventListener('grown', () => ((page = 0), (measuredAt = -1), (widestRows = null), holdColumns()))
   const reveal = () => {
-    const target = location.hash.length > 1 && !location.hash.includes('=') && document.getElementById(decodeURIComponent(location.hash.slice(1)))
-    if (!target || !body.contains(target)) return
-    page = Math.floor([...body.rows].indexOf(target.closest('tr')) / PAGE_SIZE)
+    // The row may not be in the document, so it is looked up in the list.
+    const id = location.hash.length > 1 && !location.hash.includes('=') && decodeURIComponent(location.hash.slice(1))
+    const target = id && table.allRows.find((row) => row.id === id)
+    if (!target) return
+    all = false
+    if (target.dataset.out) return
+    page = Math.floor(kept().indexOf(target) / PAGE_SIZE)
     show()
     target.scrollIntoView({ block: 'center' })
   }
   addEventListener('hashchange', reveal)
   show()
+  holdColumns()
   reveal()
+}
+for (const table of document.querySelectorAll('table.sortable')) paginate(table)
+
+// The package table can list every known package, not only the measured ones.
+// The rest come from one file, fetched once, and are added to a tab's table
+// the first time that tab is shown: a tab for a language gets that language's
+// registries, the "All" tab gets everything. They have no figures, so they
+// follow the measured rows, most used first.
+const REGISTRIES_OF = { javascript: ['npm', 'jsr'], python: ['pypi'], ruby: ['rubygems'], go: ['gomod'], rust: ['cargo'] }
+const LANGUAGE_OF = { npm: 'JavaScript', jsr: 'JavaScript', pypi: 'Python', rubygems: 'Ruby', gomod: 'Go', cargo: 'Rust' }
+let catalog = null
+async function fillPanel(host, panel) {
+  if (panel.dataset.filled) return
+  panel.dataset.filled = 'true'
+  catalog ??= fetch('/data/catalog.json').then((r) => r.json())
+  const { registries, packages } = await catalog
+  const language = host.querySelector(`input[name="runtime"][value="${panel.dataset.runtime}"]`)?.dataset.language
+  const wanted = language && language !== 'all' ? (REGISTRIES_OF[language] ?? []) : Object.keys(registries)
+  const table = panel.querySelector('table')
+  const heads = [...table.querySelectorAll('thead tr:last-child th')].map((th) => (th.querySelector('[data-sort]') ?? th).textContent.trim())
+  const rows = []
+  for (const [registry, name, version, use, share, category, categoryUrl, rank, status] of packages) {
+    if (!wanted.includes(registry)) continue
+    const row = document.createElement('tr')
+    row.className = 'unmeasured'
+    row.dataset.status = status
+    for (const [i, head] of heads.entries()) {
+      const cell = document.createElement('td')
+      const link = (href, text) => Object.assign(document.createElement('a'), { href, textContent: text })
+      if (i === 0) {
+        const ver = Object.assign(document.createElement('span'), { className: 'ver', textContent: version ?? '', title: version ?? '' })
+        const named = link(`/${registry}/${name}/`, name)
+        // Long names are cut short in the table; the whole name is in the tooltip.
+        named.title = name
+        cell.append(named, ver)
+      } else if (head === 'Use') {
+        cell.dataset.v = share
+        cell.title = registries[registry].measure
+        cell.textContent = use >= 1e9 ? `${(use / 1e9).toFixed(1)}B` : use >= 1e6 ? `${(use / 1e6).toFixed(use >= 1e7 ? 0 : 1)}M` : use >= 1e3 ? `${(use / 1e3).toFixed(use >= 1e4 ? 0 : 1)}K` : String(use)
+      } else if (head === 'Rank') {
+        cell.dataset.v = rank
+        cell.title = `In ${registries[registry].title}, by ${registries[registry].measure}`
+        cell.textContent = rank
+      } else if (head === 'Status') {
+        cell.className = 'l'
+        cell.textContent = status
+      } else if (head === 'Language') {
+        cell.className = 'l'
+        cell.textContent = LANGUAGE_OF[registry]
+      } else if (head === 'Categories') {
+        cell.className = 'l categories'
+        if (category) cell.append(link(categoryUrl, category))
+      } else if (head === 'Ecosystem') {
+        cell.className = 'l'
+        const mark = document.querySelector(`.side a[href="/${registry}/"] .ico`)
+        if (mark) cell.append(mark.cloneNode(true))
+        cell.append(link(`/${registry}/`, registries[registry].title))
+      } else {
+        cell.className = 'na'
+        cell.textContent = '—'
+      }
+      row.append(cell)
+    }
+    rows.push(row)
+  }
+  // The new rows join the list without entering the document; the pager
+  // puts a page of them there.
+  table.allRows = [...rowsOf(table), ...rows]
+  paginate(table)
+  table.dispatchEvent(new Event('grown'))
+}
+for (const host of document.querySelectorAll('.pick[data-catalog]')) {
+  const shown = () => [...host.querySelectorAll('.panel')].filter((panel) => panel.offsetParent).forEach((panel) => fillPanel(host, panel))
+  host.addEventListener('change', () => setTimeout(shown, 0))
+  shown()
 }
 
 // --- Menus --------------------------------------------------------------------
 
-// A short message that confirms a copy or reports why it failed.
+// A short message that confirms a copy or reports why it failed. It appears
+// just above where the reader last clicked, since that is where they are
+// looking. `hold` keeps it up until the next message replaces it.
 let toastTimer
-function toast(text) {
+let lastClick = null
+document.addEventListener('pointerdown', (event) => (lastClick = { x: event.clientX, y: event.clientY }), true)
+function toast(content, { hold = false } = {}) {
   let box = document.querySelector('.toast')
   if (!box) {
     box = document.createElement('div')
@@ -407,10 +689,14 @@ function toast(text) {
     box.setAttribute('role', 'status')
     document.body.append(box)
   }
-  box.textContent = text
+  box.replaceChildren(content)
   box.hidden = false
+  const { width, height } = box.getBoundingClientRect()
+  const at = lastClick ?? { x: innerWidth / 2, y: innerHeight - 24 }
+  box.style.left = `${Math.min(Math.max(8, at.x - width / 2), innerWidth - width - 8)}px`
+  box.style.top = `${at.y - height - 14 < 8 ? at.y + 18 : at.y - height - 14}px`
   clearTimeout(toastTimer)
-  toastTimer = setTimeout(() => (box.hidden = true), 2200)
+  if (!hold) toastTimer = setTimeout(() => (box.hidden = true), 2400)
 }
 
 // Menus are <details class="menu">: they open without this script. Here they
@@ -450,6 +736,56 @@ function save(blob, name) {
   setTimeout(() => URL.revokeObjectURL(link.href), 10_000)
 }
 
+// "Copy page" copies what the reader has on screen. The Markdown file holds
+// every row of every table; where the page shows a table a page at a time,
+// filtered or sorted, that table is swapped for the rows on show, under a line
+// saying which rows they are and how they were chosen.
+// A cell's visible text, piece by piece, so a name, its version and a class
+// letter do not run together. Class letters go in brackets.
+function cellText(cell) {
+  const pieces = []
+  const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT)
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const text = node.textContent.replace(/\s+/g, ' ').trim()
+    if (!text || node.parentElement.getClientRects().length === 0) continue
+    pieces.push(node.parentElement.classList.contains('cls') ? `(${text})` : text)
+  }
+  return pieces.join(' ').replace(/\|/g, '\\|')
+}
+function tableOnScreen(table, fullUrl) {
+  const headings = [...table.querySelectorAll('thead tr:last-child th')]
+  const titles = headings.map((th) => (th.querySelector('[data-sort]') ?? th).textContent.replace(/\s+/g, ' ').trim())
+  const kept = rowsOf(table).filter((row) => !row.dataset.out)
+  const shown = table.allRows ? [...table.tBodies[0].rows] : kept.filter((row) => !row.hidden)
+  const lines = shown.map((row) => {
+    const cells = [...row.cells].map(cellText)
+    const link = row.cells[0].querySelector('a[href]')
+    const name = link?.textContent.replace(/\s+/g, ' ').trim()
+    if (name) cells[0] = cells[0].replace(name, `[${name}](${link.href})`)
+    return `| ${cells.join(' | ')} |`
+  })
+  // Which rows, and the switches and sort order that chose them.
+  const first = kept.indexOf(shown[0]) + 1
+  const state = [shown.length === kept.length ? `All ${kept.length.toLocaleString('en-US')} rows` : `Rows ${first.toLocaleString('en-US')}–${(first + shown.length - 1).toLocaleString('en-US')} of ${kept.length.toLocaleString('en-US')}`]
+  const bars = new Set([table.closest('.scroll')?.previousElementSibling, table.closest('.pick')?.querySelector(':scope > .switches')].filter((bar) => bar?.classList.contains('switches')))
+  for (const bar of bars) {
+    for (const group of bar.querySelectorAll('.switch:not([hidden])')) {
+      const checked = [...group.querySelectorAll('input')].find((input) => input.checked && !input.hidden)
+      const label = checked?.nextElementSibling
+      if (label) state.push(`${group.getAttribute('aria-label')}: ${[...label.childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join('').trim() || label.textContent.trim()}`)
+    }
+  }
+  const sorted = headings.findIndex((th) => th.hasAttribute('aria-sort'))
+  if (sorted >= 0) state.push(`sorted by ${titles[sorted]}${headings[sorted].dataset.field ? ` (${FIELD_LABELS[headings[sorted].dataset.field] ?? headings[sorted].dataset.field})` : ''}, ${headings[sorted].getAttribute('aria-sort')}`)
+  return `> ${state.join('; ')}. This is the table as it was on the page when copied; every row is in ${fullUrl}\n\n| ${titles.join(' | ')} |\n| ${titles.map(() => '---').join(' | ')} |\n${lines.join('\n')}`
+}
+function asOnScreen(text, fullUrl) {
+  return text.replace(/<!-- table:([a-z]+) -->\n[\s\S]*?\n<!-- \/table -->/g, (block, key) => {
+    const table = [...document.querySelectorAll(`table[data-md="${key}"]`)].find((candidate) => candidate.offsetParent)
+    return table ? tableOnScreen(table, fullUrl) : block
+  })
+}
+
 // The page as Markdown, ready to paste into a language model.
 for (const menu of document.querySelectorAll('.page-menu')) {
   const markdown = new URL(menu.dataset.markdown, location.href).href
@@ -458,13 +794,60 @@ for (const menu of document.querySelectorAll('.page-menu')) {
   button.className = 'copy-page'
   button.append(menu.querySelector('summary svg').cloneNode(true), 'Copy page')
   button.title = 'Copy this page as Markdown, ready to paste into a language model'
-  button.addEventListener('click', () => copy('text/plain', fetch(markdown).then((r) => r.text()), 'Page copied as Markdown'))
+  button.addEventListener('click', () => copy('text/plain', fetch(markdown).then((r) => r.text()).then((text) => asOnScreen(text, markdown)), 'Page copied as Markdown, as shown'))
   menu.prepend(button)
   menu.classList.add('split')
   menu.querySelector('summary').setAttribute('aria-label', 'More ways to copy and download')
-  const claude = menu.querySelector('[data-open-claude]')
-  claude.href = `https://claude.ai/new?q=${encodeURIComponent(`Read ${markdown} and help me understand these package efficiency results.`)}`
-  claude.target = '_blank'
+  // Each assistant takes a question in the address of a new chat. They read
+  // the page from its address, so this works once the site is public.
+  const question = encodeURIComponent(`Read ${markdown} and help me understand these package efficiency results.`)
+  const ASSISTANT_LINKS = {
+    chatgpt: `https://chatgpt.com/?hints=search&q=${question}`,
+    claude: `https://claude.ai/new?q=${question}`,
+    perplexity: `https://www.perplexity.ai/search?q=${question}`,
+    grok: `https://grok.com/?q=${question}`,
+    deepseek: `https://chat.deepseek.com/?q=${question}`,
+  }
+  // These take no question in the address: the question is copied instead,
+  // ready to paste once the chat opens.
+  const PASTE_INTO = { kimi: 'https://www.kimi.com/', zai: 'https://chat.z.ai/' }
+  for (const link of menu.querySelectorAll('[data-assistant]')) {
+    const id = link.dataset.assistant
+    link.href = ASSISTANT_LINKS[id] ?? PASTE_INTO[id]
+    link.target = '_blank'
+    if (!PASTE_INTO[id]) continue
+    link.title += ' (copies the question to paste there)'
+    // The question is copied, then the chat opens after a short countdown, so
+    // there is time to read that it needs pasting. If the browser will not
+    // open a tab that late, the message turns into the link itself.
+    link.addEventListener('click', async (event) => {
+      event.preventDefault()
+      const name = link.querySelector('small').textContent
+      try {
+        await navigator.clipboard.writeText(decodeURIComponent(question))
+      } catch {
+        return toast('Copying was blocked by the browser.')
+      }
+      for (let seconds = 3; seconds > 0; seconds--) {
+        toast(`Question copied. Paste it into ${name}, opening in ${seconds}…`, { hold: true })
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+      // (No "noopener" here: with it the call reports nothing even when the
+      // tab opens, and whether it opened is what decides the next message.)
+      const opened = window.open(link.href, '_blank')
+      if (opened) {
+        opened.opener = null
+        return toast(`Question copied. Paste it into ${name}.`)
+      }
+      const open = document.createElement('a')
+      open.href = link.href
+      open.target = '_blank'
+      open.rel = 'noopener'
+      open.textContent = `Question copied. Open ${name} and paste it`
+      open.addEventListener('click', () => toast(`Question copied. Paste it into ${name}.`))
+      toast(open, { hold: true })
+    })
+  }
 }
 
 // --- Label menu ---------------------------------------------------------------

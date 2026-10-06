@@ -1,20 +1,20 @@
 # Package categories: Go modules
 
-1000 of 1000 packages categorized into 96 categories.
+1000 of 1000 packages categorized into 131 categories.
 
 | Category | Packages | Benchmarkable | Candidate benchmark |
 | --- | ---: | --- | --- |
-| Other (no peers yet) (`other`) | 222 | no |  |
+| Other (no peers yet) (`other`) | 149 | no |  |
 | Service SDKs and telemetry (`service-sdks`) | 119 | no |  |
 | Build, lint and test tooling (`build-tooling`) | 116 | no |  |
 | System and foreign bindings (`system-bindings`) | 47 | no |  |
-| Library internals (`library-internals`) | 37 | no |  |
+| Library internals (`library-internals`) | 42 | no |  |
 | Applications and daemons (`applications`) | 32 | no |  |
 | Generated API and schema types (`generated-api-types`) | 29 | no |  |
+| Language-level abstractions (`language-ergonomics`) | 18 | no |  |
+| Environment detection (`environment-detection`) | 18 | no |  |
 | Structured logging (`structured-logging`) | 18 | yes | Log 1,000,000 records with five key-value fields each as JSON lines to a null sink. |
-| Language-level abstractions (`language-ergonomics`) | 17 | no |  |
-| Environment detection (`environment-detection`) | 17 | no |  |
-| Tooling internals (AST and code utilities) (`tooling-internals`) | 14 | no |  |
+| Tooling internals (AST and code utilities) (`tooling-internals`) | 15 | no |  |
 | Framework and tool extensions (`framework-extensions`) | 14 | no |  |
 | Binary serialization (`binary-serialization`) | 13 | yes | Encode and decode 100,000 records with nested integers, strings and arrays. |
 | Frameworks and broad libraries (`frameworks`) | 12 | no |  |
@@ -24,38 +24,38 @@
 | CLI argument parsing (`cli-argument-parsing`) | 9 | yes | Declare the same set of flags, typed options and positionals, then parse a fixed set of argv arrays into option objects. |
 | HTTP server routing (`http-server-routing`) | 9 | yes | Register 100 parameterized routes with two middleware and dispatch a fixed mix of requests to handlers that return JSON. |
 | INI and properties parsing (`ini-parsing`) | 9 | yes | Parse the same 5,000-line INI document of sections and key=value pairs, then read every value back by section and key. |
+| Text diffing (`text-diff`) | 8 | yes | Diff pairs of 10,000-line text files that differ by 1%, 10% and 50% of their lines. |
 | JSON path queries (`json-path-query`) | 8 | yes | Compile a fixed set of path expressions and evaluate each against a 1 MB nested document. |
 | Metrics instrumentation (`metrics-instrumentation`) | 8 | yes | Register 100 labelled counters, gauges and histograms, apply 10,000,000 updates from several threads, then render one text snapshot of the registry. |
 | Terminal string styling (`terminal-styling`) | 7 | yes | Apply a fixed mix of single and nested color/bold/underline styles to 100,000 short strings and concatenate the output. |
 | Value inspection and formatting (`value-inspection`) | 7 | yes | Format a fixed set of nested objects, arrays, Maps, Sets and primitives into strings. |
 | HTTP clients (`http-client`) | 7 | yes | Issue 10,000 GET requests for a small JSON body to a local HTTP server and parse each response. |
 | Non-cryptographic hashing (`non-cryptographic-hashing`) | 7 | yes | Hash 1,000,000 short keys and one 64 MB buffer to a 64-bit value. |
-| Text diffing (`text-diff`) | 7 | yes | Diff pairs of 10,000-line text files that differ by 1%, 10% and 50% of their lines. |
 | Embedded key-value stores (`embedded-key-value-stores`) | 7 | yes | Write 1,000,000 key-value pairs in batches to a fresh on-disk store, read each back at random, then scan a key range in order. |
 | Schema validation (`schema-validation`) | 6 | yes | Define one equivalent nested object schema and validate a fixed batch of valid and invalid JSON documents against it. |
 | Static data and patterns (`static-data`) | 6 | no |  |
+| Identifier case conversion (`case-conversion`) | 6 | yes | Convert 1,000,000 mixed identifiers to snake, camel and kebab case. |
+| Template rendering (`template-rendering`) | 6 | yes | Compile a template that loops over 1,000 records with a conditional and escaped interpolation, then render it 1,000 times. |
 | Histograms and quantile sketches (`quantile-sketches`) | 6 | yes | Record a fixed stream of 10,000,000 latency samples and query the 50th, 90th, 99th and 99.9th percentiles. |
 | Config format parsing (`config-format-parsing`) | 5 | yes | Parse the same large nested configuration document, expressed in the subset every member accepts, into a plain object. |
-| Identifier case conversion (`case-conversion`) | 5 | yes | Convert 1,000,000 mixed identifiers to snake, camel and kebab case. |
+| JSON parsing (`json-parsing`) | 5 | yes | Parse the same large standard JSON document string into a JavaScript value. |
+| ASN.1 DER decoding (`asn1-der-decoding`) | 5 | yes | Decode a fixed set of 1,000 DER-encoded X.509 certificates into their fields. |
 | Retry policies (`retry-policies`) | 5 | yes | Wrap a function that fails a fixed number of times before succeeding and call it 100,000 times with zero delay. |
 | Shell word splitting (`shell-word-splitting`) | 5 | yes | Split a fixed list of 100,000 command lines with mixed single quotes, double quotes and backslash escapes into their argument words. |
-| JSON parsing (`json-parsing`) | 4 | yes | Parse the same large standard JSON document string into a JavaScript value. |
 | JWT signing and verification (`jwt-signing`) | 4 | yes | Sign a fixed claims payload with HS256 and verify the resulting compact token, 10,000 times. |
 | Arbitrary-precision arithmetic (`arbitrary-precision-math`) | 4 | yes | Compute the factorial of 1,000 by repeated multiplication and convert the result to a decimal string. |
 | LRU caches (`lru-cache`) | 4 | yes | Replay a fixed Zipf-distributed trace of 1,000,000 get/set operations against a cache capped at 10,000 entries. |
-| ASN.1 DER decoding (`asn1-der-decoding`) | 4 | yes | Decode a fixed set of 1,000 DER-encoded X.509 certificates into their fields. |
+| Digital signatures (`digital-signatures`) | 4 | yes | Generate a key pair, then sign and verify 10,000 short messages. |
+| Markdown rendering (`markdown-parsing`) | 4 | yes | Render a fixed corpus of Markdown documents totalling several megabytes to HTML. |
+| Text table rendering (`text-table-rendering`) | 4 | yes | Render a table of 10,000 rows and 8 mixed-type columns to a string. |
 | WebSocket messaging (`websocket-messaging`) | 4 | yes | Echo 100,000 text and binary messages over a loopback connection, or through the codec in memory. |
-| Template rendering (`template-rendering`) | 4 | yes | Compile a template that loops over 1,000 records with a conditional and escaped interpolation, then render it 1,000 times. |
 | Semantic version comparison (`semver-comparison`) | 4 | yes | Parse a fixed list of 10,000 version strings, sort them, and test each against a fixed set of range constraints. |
 | Sorted maps and prefix trees (`sorted-maps`) | 4 | yes | Insert 1,000,000 string keys, look each up, then run a fixed set of range and prefix scans in key order. |
 | Glob matching (`glob-matching`) | 3 | yes | Compile a fixed set of glob patterns and match each against a fixed list of 10,000 path strings. |
 | URL and URI parsing (`url-parsing`) | 3 | yes | Parse a fixed list of 100,000 absolute URLs into components and serialize them back. |
 | UI components and hooks (`ui-components`) | 3 | no |  |
 | TOML parsing (`toml-parsing`) | 3 | yes | Parse a fixed corpus of TOML documents, including a 5,000-line lockfile. |
-| Digital signatures (`digital-signatures`) | 3 | yes | Generate a key pair, then sign and verify 10,000 short messages. |
 | Date and time (`date-time`) | 3 | yes | Parse 100,000 ISO 8601 timestamps, add calendar durations and format each back to a string. |
-| Markdown rendering (`markdown-parsing`) | 3 | yes | Render a fixed corpus of Markdown documents totalling several megabytes to HTML. |
-| Text table rendering (`text-table-rendering`) | 3 | yes | Render a table of 10,000 rows and 8 mixed-type columns to a string. |
 | PostgreSQL clients (`postgres-client`) | 3 | yes | Against a local PostgreSQL server, insert 100,000 rows with a prepared statement and read them back. |
 | Redis clients (`redis-client`) | 3 | yes | Against a local Redis server, run 100,000 SET and GET commands, both one at a time and in pipelines of 100. |
 | Dotenv loading (`dotenv-loading`) | 3 | yes | Parse the same .env text of 1,000 assignments with quotes, comments and variable references into a key-value map. |
@@ -64,6 +64,10 @@
 | Deep cloning (`deep-cloning`) | 3 | yes | Deep-copy the same nested value of 10,000 maps, lists and records 100 times and verify the copies share no mutable state. |
 | Human-readable size formatting (`human-size-formatting`) | 3 | yes | Format a fixed list of 1,000,000 byte counts as human-readable sizes and parse each resulting string back to a number. |
 | MongoDB clients (`mongodb-client`) | 3 | yes | Against a local server, insert 10,000 documents into a collection and read them back with a query that returns ten fields each. |
+| Wrapping, slicing and stripping styled terminal text (`ansi-text-layout`) | 3 | yes | Take 10,000 lines of 200 visible columns with ANSI color codes every few words, strip the escape codes from each line and word-wrap each line to 80 columns, each member running the operations it offers. |
+| Syntax highlighting (`syntax-highlighting`) | 3 | yes | Highlight a 1 MB source file to HTML, 10 times over. |
+| Object-relational mapping (`object-relational-mapping`) | 3 | yes | Against an in-memory SQLite database, insert 100,000 model objects, load them back with a filtered query and update one field on each. |
+| Embedded script interpreters (`embedded-script-interpreters`) | 3 | yes | Run a script that computes fib(30) recursively and one that sorts a 1,000,000-element array, each 10 times. |
 | Source map decoding (`source-map-decoding`) | 2 | yes | Load one large real-world source map and decode all of its mappings into position segments. |
 | Deep equality (`deep-equality`) | 2 | yes | Compare a fixed set of equal and unequal pairs of nested objects, arrays, Maps and Dates. |
 | Object merging (`object-merging`) | 2 | yes | Merge a fixed sequence of nested plain option objects into one result object, 100,000 times. |
@@ -75,11 +79,24 @@
 | Cryptographic hashing (`cryptographic-hashing`) | 2 | yes | Digest a 64 MB buffer and 100,000 64-byte messages with the package's primary algorithm. |
 | Regular expression matching (`regex-matching`) | 2 | yes | Compile a fixed set of 20 patterns and find all matches of each in a 10 MB text corpus. |
 | CSS selector matching (`css-selector-matching`) | 2 | yes | Run a fixed list of 100 selectors against a parsed 1 MB HTML document and count the matches. |
+| Typed object mapping (`typed-object-mapping`) | 2 | yes | Build 100,000 nested record objects from plain dictionaries and convert them back to dictionaries. |
 | Immutable collections (`immutable-collections`) | 2 | yes | Build a 100,000-entry immutable map by successive inserts, then run a fixed mix of lookups and updates on it. |
 | Chart rendering (`chart-rendering`) | 2 | yes | Render a line chart with 10 series of 10,000 points each to SVG or PNG. |
 | File locking (`file-locking`) | 2 | yes | Acquire and release an uncontended lock file 100,000 times, then repeat with several contending processes. |
 | MySQL clients (`mysql-client`) | 2 | yes | Against a local MySQL server, insert 100,000 rows with a prepared statement and read them back. |
 | Message translation (`message-translation`) | 2 | yes | Load a catalog of 5,000 messages in two locales and perform 100,000 lookups with interpolation and pluralization. |
+| Edit distance and string similarity (`edit-distance`) | 2 | yes | Compute the Levenshtein distance for 100,000 fixed pairs of strings of 5 to 200 characters. |
+| Query string parsing (`query-string-parsing`) | 2 | yes | Parse 100,000 query strings of 20 percent-encoded key-value pairs each and serialize the results back to strings. |
+| IP address and CIDR parsing (`ip-address-parsing`) | 2 | yes | Parse 100,000 IPv4 and IPv6 address strings and test each against 100 CIDR ranges. |
+| Terminal progress bars and spinners (`terminal-progress-bars`) | 2 | yes | Advance a progress bar 1,000,000 times toward a fixed total while it renders to an in-memory, non-interactive stream. |
+| GraphQL execution (`graphql-execution`) | 2 | yes | Against a schema of 50 types, parse, validate and execute 10,000 queries that each resolve about 100 fields from in-memory data. |
+| JSON Patch (`json-patch`) | 2 | yes | Apply 100,000 patches of 10 operations each to a 100 KB JSON document. |
+| Queues and linked lists (`queues-and-linked-lists`) | 2 | yes | Push 10,000,000 items to the back and pop them from the front, keeping the queue at a steady length of 1,000. |
+| Resource pools (`resource-pools`) | 2 | yes | From a pool of 10 resources, check out and return a resource 1,000,000 times across 32 concurrent callers. |
+| Rate limiting (`rate-limiting`) | 2 | yes | Check 10,000,000 requests spread over 10,000 keys against a limit of 100 per second using an in-memory store. |
+| Kafka clients (`kafka-client`) | 2 | yes | Against a local single-node broker, produce 1,000,000 records of 1 KB to one topic and consume them all back. |
+| gRPC (`grpc-rpc`) | 2 | yes | Make 100,000 unary calls with a 1 KB request and response, and stream 1,000,000 messages, between a client and server on the loopback interface. |
+| Expression evaluation (`expression-evaluation`) | 2 | yes | Compile 1,000 expressions of about 20 operators each and evaluate every one against 10,000 variable bindings. |
 | Runtime helpers and shims (`runtime-shims`) | 1 | no |  |
 | HTML and XML parsing (`markup-parsing`) | 1 | yes | Parse one large well-formed XHTML document, valid as both HTML and XML, and count the elements seen. |
 | Filesystem globbing (`file-globbing`) | 1 | yes | Expand a fixed set of glob patterns such as **/*.js against a fixture directory tree and collect the matching paths. |
@@ -94,239 +111,184 @@
 | Base64 encoding (`base64-encoding`) | 1 | yes | Encode and decode a 16 MB buffer and 100,000 32-byte values with the standard alphabet. |
 | Parser combinators and generators (`parser-combinators`) | 1 | yes | Implement the same JSON grammar with each library and parse a 10 MB JSON document. |
 | HTML sanitizing (`html-sanitizing`) | 1 | yes | Sanitize a fixed set of 1,000 HTML fragments containing scripts, event handlers and unknown tags with a default allow-list. |
-| Typed object mapping (`typed-object-mapping`) | 1 | yes | Build 100,000 nested record objects from plain dictionaries and convert them back to dictionaries. |
 | Dataframes (`dataframes`) | 1 | yes | Load a 1,000,000-row table, filter it, group by a key column and compute sum and mean aggregates. |
 | Image processing (`image-processing`) | 1 | yes | Decode a fixed set of JPEG and PNG photos, resize each to a thumbnail and re-encode it. |
 | PDF reading (`pdf-text-extraction`) | 1 | yes | Extract the text of every page from a fixed set of PDF documents totalling 1,000 pages. |
 | PDF generation (`pdf-generation`) | 1 | yes | Generate a 100-page PDF of paragraphs and a table from fixed input data. |
+| Character encoding detection (`charset-detection`) | 1 | yes | Detect the encoding of a fixed corpus of 1,000 text files in assorted legacy and Unicode encodings. |
 | Dynamic attribute objects (`dynamic-attribute-objects`) | 1 | yes | Wrap a fixed nested document of 1,000 keys and perform 100,000 attribute reads and writes at varying depths. |
+| QR code generation (`qr-code-generation`) | 1 | yes | Encode a fixed set of URLs and text payloads at a given error-correction level and produce the module matrix or SVG for each. |
+| Cron expression scheduling (`cron-scheduling`) | 1 | yes | Parse a fixed set of cron expressions and compute the next 1,000 occurrence times of each from a fixed start date. |
+| Dependency injection containers (`dependency-injection`) | 1 | yes | Register a fixed graph of a few hundred interdependent services with singleton and transient lifetimes, then resolve the root services repeatedly. |
+| Placeholder and test packages (`placeholder-packages`) | 1 | no |  |
+| Path string manipulation (`path-manipulation`) | 1 | yes | Normalize 100,000 path strings with mixed separators and dot segments, and compute the relative path between 100,000 pairs. |
+| Atomic file writing (`atomic-file-writing`) | 1 | yes | Atomically replace 1,000 files of 64 KiB each, 10 times over. |
+| Temporary files and directories (`temporary-files`) | 1 | yes | Create 10,000 temporary files and 1,000 temporary directories, write 1 KiB to each file and clean everything up. |
+| Layered configuration loading (`layered-configuration`) | 1 | yes | Load a 1,000-key configuration from two files plus 100 environment overrides and read every key 100 times. |
+| Unicode text segmentation (`unicode-segmentation`) | 1 | yes | Iterate over all grapheme cluster and word boundaries of a 50 MB multilingual corpus. |
+| Noun pluralization (`noun-inflection`) | 1 | yes | Pluralize and then singularize a fixed list of 100,000 English nouns, 5 percent of them irregular. |
+| Natural sort order (`natural-sorting`) | 1 | yes | Sort 1,000,000 strings that mix letters and digit runs into natural order. |
+| Key derivation (`key-derivation`) | 1 | yes | Derive 100,000 32-byte keys with HKDF-SHA-256 and 100 keys with PBKDF2-HMAC-SHA-256 at 100,000 iterations, each member running the functions it offers. |
+| Synchronization primitives (`synchronization-primitives`) | 1 | yes | Have 8 threads each lock and unlock one shared mutex around a counter increment 1,000,000 times. |
+| DNS messages and resolution (`dns-message-codec`) | 1 | yes | Decode and re-encode 1,000,000 DNS response messages that carry 10 mixed A, AAAA, CNAME, MX and TXT records each. |
+| SSH and SFTP clients (`ssh-client`) | 1 | yes | Against a local SSH server, run 1,000 short commands over one connection and transfer a 100 MB file there and back over SFTP. |
+| Git repository access (`git-repository-access`) | 1 | yes | In a repository of 10,000 commits and 5,000 files, walk the full history and read every blob of the head tree. |
+| SOCKS proxy clients (`socks-proxy-client`) | 1 | yes | Open 10,000 connections through a local SOCKS5 proxy to a local echo server and send 1 KB over each. |
+| Symbol demangling (`symbol-demangling`) | 1 | yes | Demangle 1,000,000 mangled symbol names taken from a large binary. |
 
 ## Other (no peers yet)
 
 Packages that are benchmarkable in principle but have no functionally equivalent peers in the list yet; revisit as the list grows.
 
-- `github.com/kr/text` #16, 198,489 dependents (low confidence: paragraph wrapping/indent text helpers; no clear peer)
-- `golang.org/x/time` #47, 138,657 dependents (low confidence: rate limiter and time utilities; no peer)
-- `github.com/google/gofuzz` #49, 132,006 dependents (low confidence: populates Go values with random data for fuzzing; no peer)
-- `github.com/golang/groupcache` #56, 125,744 dependents (low confidence: distributed cache with peer de-duplication; no peer)
-- `github.com/google/renameio` #64, 120,047 dependents (low confidence: atomic file replacement; explicitly out of scope for recursive-file-copy)
-- `github.com/go-logfmt/logfmt` #74, 109,669 dependents (low confidence: logfmt encode/decode; no peer except kr/logfmt)
-- `github.com/spf13/afero` #79, 107,896 dependents (low confidence: virtual filesystem abstraction; out of scope for recursive-file-copy)
-- `github.com/spf13/cast` #97, 102,491 dependents (low confidence: type conversion helpers (cast); no peer)
-- `github.com/kr/logfmt` #99, 102,292 dependents (low confidence: logfmt decoder; same task as go-logfmt)
-- `github.com/cpuguy83/go-md2man/v2` #110, 100,432 dependents (low confidence: converts markdown to roff man pages, not HTML)
-- `gopkg.in/tomb.v1` #111, 99,833 dependents (low confidence: goroutine lifecycle helper)
-- `github.com/mwitkow/go-conntrack` #114, 98,821 dependents (low confidence: net connection tracking metrics wrapper)
-- `github.com/spf13/viper` #116, 97,868 dependents (low confidence: layered configuration manager, explicitly out of scope for ini/dotenv)
-- `github.com/hpcloud/tail` #121, 96,790 dependents (low confidence: tails the appended lines of a log file, out of scope for file-watching)
-- `github.com/chzyer/readline` #122, 96,252 dependents (low confidence: terminal line editing library)
-- `github.com/shurcooL/sanitized_anchor_name` #128, 92,275 dependents (low confidence: anchor slug sanitizer)
-- `github.com/ianlancetaylor/demangle` #129, 90,975 dependents (low confidence: C++/Rust symbol demangler)
-- `github.com/jtolds/gls` #143, 82,349 dependents (low confidence: goroutine-local storage)
-- `github.com/bgentry/speakeasy` #145, 80,129 dependents (low confidence: password prompt without echo)
-- `github.com/miekg/dns` #149, 78,390 dependents (low confidence: DNS library)
-- `github.com/jonboulle/clockwork` #152, 75,231 dependents (low confidence: fake clock for tests)
-- `github.com/posener/complete` #159, 73,252 dependents (low confidence: shell completion generator)
-- `github.com/xiang90/probing` #165, 71,859 dependents (low confidence: health probing between nodes)
-- `github.com/pascaldekloe/goe` #166, 71,749 dependents (low confidence: unrecognized small utility)
-- `github.com/coreos/pkg` #167, 71,625 dependents (low confidence: grab-bag of utility packages)
-- `github.com/soheilhy/cmux` #168, 71,444 dependents (low confidence: connection multiplexer by payload)
-- `github.com/hashicorp/go-sockaddr` #170, 70,949 dependents (low confidence: socket address and IP helpers)
-- `github.com/tmc/grpc-websocket-proxy` #171, 70,749 dependents (low confidence: proxies websockets to gRPC)
-- `github.com/hashicorp/go-rootcerts` #172, 70,718 dependents (low confidence: loads CA certificates for TLS)
-- `github.com/armon/circbuf` #177, 69,214 dependents (low confidence: circular buffer)
-- `github.com/hashicorp/memberlist` #178, 69,172 dependents (low confidence: gossip cluster membership library)
-- `github.com/hashicorp/go-syslog` #182, 68,574 dependents (low confidence: syslog writer)
-- `github.com/hashicorp/mdns` #185, 67,489 dependents (low confidence: mDNS library)
-- `github.com/mailru/easyjson` #186, 67,176 dependents (low confidence: JSON code generator with marshaler helpers)
-- `github.com/prometheus/tsdb` #195, 60,336 dependents (low confidence: time series storage database)
-- `github.com/nxadm/tail` #199, 59,688 dependents (low confidence: tail follower for files)
-- `github.com/mitchellh/iochan` #201, 58,952 dependents (low confidence: no clear peers)
-- `github.com/hashicorp/go.net` #202, 58,111 dependents (low confidence: fork of x/net)
-- `github.com/go-openapi/jsonreference` #219, 53,054 dependents (low confidence: JSON reference parsing, no peers)
-- `github.com/pkg/sftp` #222, 52,308 dependents
-- `github.com/gregjones/httpcache` #231, 48,545 dependents
-- `github.com/valyala/bytebufferpool` #232, 47,683 dependents
-- `github.com/gorilla/context` #239, 46,896 dependents
-- `github.com/tidwall/pretty` #245, 44,589 dependents (low confidence: JSON prettifier)
-- `gopkg.in/cheggaaa/pb.v1` #246, 44,461 dependents
-- `github.com/google/go-querystring` #247, 44,458 dependents
-- `github.com/evanphx/json-patch` #251, 44,181 dependents
-- `github.com/elazarl/goproxy` #261, 42,211 dependents
-- `github.com/munnerz/goautoneg` #263, 41,822 dependents
-- `github.com/Azure/go-ansiterm` #266, 40,992 dependents (low confidence: ANSI terminal parser)
-- `gopkg.in/natefinch/lumberjack.v2` #278, 39,753 dependents
-- `github.com/mxk/go-flowrate` #280, 39,401 dependents (low confidence: rate-limited io readers)
-- `github.com/jinzhu/inflection` #281, 38,832 dependents
-- `github.com/eapache/queue` #284, 37,407 dependents
-- `github.com/benbjohnson/clock` #289, 36,875 dependents
-- `github.com/Shopify/sarama` #290, 36,794 dependents
-- `github.com/docker/go-connections` #300, 34,367 dependents (low confidence: network connection helpers)
-- `github.com/oklog/run` #307, 33,499 dependents
-- `github.com/go-task/slim-sprig` #309, 32,560 dependents (low confidence: Template function library for text/template, not a template engine)
-- `github.com/denisenkom/go-mssqldb` #312, 32,069 dependents
-- `github.com/josharian/intern` #315, 31,908 dependents
-- `github.com/docker/spdystream` #319, 30,953 dependents (low confidence: SPDY stream multiplexing; no peers)
-- `github.com/pquerna/cachecontrol` #322, 30,632 dependents
-- `github.com/xeipuuv/gojsonreference` #323, 30,612 dependents (low confidence: JSON reference parsing; no description)
-- `github.com/mitchellh/go-wordwrap` #326, 30,471 dependents
-- `github.com/jmoiron/sqlx` #330, 29,495 dependents (low confidence: database/sql extensions; no peers)
-- `github.com/pkg/profile` #339, 28,348 dependents
-- `github.com/nats-io/nats.go` #340, 28,313 dependents
-- `github.com/mitchellh/reflectwalk` #341, 28,199 dependents (low confidence: Reflection-based structure walker; no peers)
-- `github.com/streadway/amqp` #342, 28,168 dependents
-- `github.com/montanaflynn/stats` #347, 27,358 dependents
-- `github.com/gliderlabs/ssh` #354, 26,795 dependents
-- `github.com/armon/go-socks5` #359, 25,808 dependents (low confidence: SOCKS5 server; no description)
-- `github.com/containerd/continuity` #360, 25,667 dependents (low confidence: Filesystem manifest and copy tooling; no description)
-- `github.com/Knetic/govaluate` #372, 25,129 dependents (low confidence: Expression evaluator; no description)
-- `github.com/valyala/tcplisten` #375, 24,834 dependents
-- `github.com/labstack/gommon` #393, 22,864 dependents (low confidence: Grab-bag utilities (color, log, bytes); no description)
-- `gorm.io/gorm` #398, 22,361 dependents (low confidence: ORM; no ORM peers in taxonomy)
-- `github.com/samuel/go-zookeeper` #399, 22,324 dependents (low confidence: ZooKeeper client; no description)
-- `github.com/cyphar/filepath-securejoin` #405, 21,974 dependents (low confidence: Symlink-safe path joining; no peers)
-- `github.com/moby/spdystream` #408, 21,746 dependents (low confidence: SPDY stream multiplexing; no peers)
-- `github.com/huandu/xstrings` #410, 21,740 dependents (low confidence: String algorithm helpers; no peers)
-- `github.com/golang/freetype` #412, 21,651 dependents (low confidence: Font rasterization onto images; no peers)
-- `github.com/casbin/casbin/v2` #413, 21,595 dependents (low confidence: Authorization policy engine; no peers)
-- `github.com/fatih/structs` #415, 21,470 dependents (low confidence: Struct-to-map utilities; no peers)
-- `github.com/xdg-go/stringprep` #425, 21,156 dependents (low confidence: RFC 3454 stringprep; no peers except its xdg duplicate)
-- `github.com/xdg-go/scram` #427, 21,093 dependents (low confidence: SCRAM SASL auth; no peers except its xdg duplicate)
-- `github.com/xdg-go/pbkdf2` #431, 21,044 dependents (low confidence: PBKDF2 key derivation; password-hashing excludes general KDF)
-- `github.com/xanzy/ssh-agent` #443, 20,285 dependents (low confidence: SSH agent client; no peers)
-- `github.com/containerd/ttrpc` #450, 20,171 dependents (low confidence: Low-level RPC protocol; no peers)
-- `github.com/youmark/pkcs8` #460, 19,859 dependents (low confidence: PKCS#8 key parsing; no peers)
-- `github.com/Masterminds/goutils` #465, 19,393 dependents (low confidence: String utilities; no peers)
-- `github.com/xdg/stringprep` #475, 19,014 dependents (low confidence: RFC 3454 stringprep; no peers except its xdg-go duplicate)
-- `github.com/jackc/pgpassfile` #477, 18,982 dependents (low confidence: Parser for .pgpass files; no peers)
-- `github.com/xdg/scram` #478, 18,975 dependents (low confidence: SCRAM SASL auth; deprecated duplicate)
-- `github.com/shurcooL/go` #482, 18,482 dependents (low confidence: Unrecognized grab-bag package)
-- `github.com/getkin/kin-openapi` #483, 18,476 dependents (low confidence: OpenAPI loader and validator; no peers)
-- `github.com/fogleman/gg` #500, 18,004 dependents (low confidence: 2D graphics drawing; no peers)
-- `github.com/jackc/puddle` #503, 17,921 dependents (low confidence: generic resource pool, no peers)
-- `modernc.org/mathutil` #504, 17,875 dependents (low confidence: math utility grab bag)
-- `github.com/jackc/pgmock` #505, 17,819 dependents (low confidence: PostgreSQL server mock, no peers)
-- `github.com/xlab/treeprint` #515, 17,349 dependents (low confidence: ASCII tree rendering, no peers)
-- `modernc.org/strutil` #520, 17,197 dependents (low confidence: string utilities)
-- `github.com/agnivade/levenshtein` #521, 17,177 dependents
-- `github.com/hashicorp/yamux` #522, 17,112 dependents (low confidence: stream multiplexer, no peers)
+- `github.com/google/gofuzz` #49, 132,006 dependents (low confidence: no matching category)
+- `github.com/golang/groupcache` #56, 125,744 dependents (low confidence: no matching category)
+- `github.com/go-logfmt/logfmt` #74, 109,669 dependents (low confidence: no matching category)
+- `github.com/spf13/afero` #79, 107,896 dependents (low confidence: no matching category)
+- `github.com/spf13/cast` #97, 102,491 dependents (low confidence: no matching category)
+- `github.com/kr/logfmt` #99, 102,292 dependents (low confidence: no matching category)
+- `gopkg.in/tomb.v1` #111, 99,833 dependents (low confidence: no matching category)
+- `github.com/mwitkow/go-conntrack` #114, 98,821 dependents (low confidence: no matching category)
+- `github.com/hpcloud/tail` #121, 96,790 dependents (low confidence: no matching category)
+- `github.com/chzyer/readline` #122, 96,252 dependents (low confidence: no matching category)
+- `github.com/shurcooL/sanitized_anchor_name` #128, 92,275 dependents (low confidence: no matching category)
+- `github.com/jtolds/gls` #143, 82,349 dependents (low confidence: no matching category)
+- `github.com/bgentry/speakeasy` #145, 80,129 dependents (low confidence: no matching category)
+- `github.com/jonboulle/clockwork` #152, 75,231 dependents (low confidence: no matching category)
+- `github.com/posener/complete` #159, 73,252 dependents (low confidence: no matching category)
+- `github.com/xiang90/probing` #165, 71,859 dependents (low confidence: no matching category)
+- `github.com/pascaldekloe/goe` #166, 71,749 dependents (low confidence: no matching category)
+- `github.com/coreos/pkg` #167, 71,625 dependents (low confidence: no matching category)
+- `github.com/soheilhy/cmux` #168, 71,444 dependents (low confidence: no matching category)
+- `github.com/tmc/grpc-websocket-proxy` #171, 70,749 dependents (low confidence: no matching category)
+- `github.com/hashicorp/go-rootcerts` #172, 70,718 dependents (low confidence: no matching category)
+- `github.com/hashicorp/memberlist` #178, 69,172 dependents (low confidence: no matching category)
+- `github.com/hashicorp/go-syslog` #182, 68,574 dependents (low confidence: no matching category)
+- `github.com/hashicorp/mdns` #185, 67,489 dependents (low confidence: no matching category)
+- `github.com/prometheus/tsdb` #195, 60,336 dependents (low confidence: no matching category)
+- `github.com/nxadm/tail` #199, 59,688 dependents (low confidence: no matching category)
+- `github.com/mitchellh/iochan` #201, 58,952 dependents (low confidence: no matching category)
+- `github.com/hashicorp/go.net` #202, 58,111 dependents (low confidence: no matching category)
+- `github.com/go-openapi/jsonreference` #219, 53,054 dependents (low confidence: no matching category)
+- `github.com/gregjones/httpcache` #231, 48,545 dependents (low confidence: no matching category)
+- `github.com/gorilla/context` #239, 46,896 dependents (low confidence: no matching category)
+- `github.com/tidwall/pretty` #245, 44,589 dependents (low confidence: no matching category)
+- `github.com/elazarl/goproxy` #261, 42,211 dependents (low confidence: no matching category)
+- `github.com/munnerz/goautoneg` #263, 41,822 dependents (low confidence: no matching category)
+- `github.com/Azure/go-ansiterm` #266, 40,992 dependents (low confidence: no matching category)
+- `gopkg.in/natefinch/lumberjack.v2` #278, 39,753 dependents (low confidence: no matching category)
+- `github.com/mxk/go-flowrate` #280, 39,401 dependents (low confidence: no matching category)
+- `github.com/benbjohnson/clock` #289, 36,875 dependents (low confidence: no matching category)
+- `github.com/docker/go-connections` #300, 34,367 dependents (low confidence: no matching category)
+- `github.com/oklog/run` #307, 33,499 dependents (low confidence: no matching category)
+- `github.com/go-task/slim-sprig` #309, 32,560 dependents (low confidence: no matching category)
+- `github.com/denisenkom/go-mssqldb` #312, 32,069 dependents (low confidence: no matching category)
+- `github.com/josharian/intern` #315, 31,908 dependents (low confidence: no matching category)
+- `github.com/docker/spdystream` #319, 30,953 dependents (low confidence: no matching category)
+- `github.com/pquerna/cachecontrol` #322, 30,632 dependents (low confidence: no matching category)
+- `github.com/jmoiron/sqlx` #330, 29,495 dependents (low confidence: no matching category)
+- `github.com/pkg/profile` #339, 28,348 dependents (low confidence: no matching category)
+- `github.com/nats-io/nats.go` #340, 28,313 dependents (low confidence: no matching category)
+- `github.com/mitchellh/reflectwalk` #341, 28,199 dependents (low confidence: no matching category)
+- `github.com/streadway/amqp` #342, 28,168 dependents (low confidence: no matching category)
+- `github.com/montanaflynn/stats` #347, 27,358 dependents (low confidence: no matching category)
+- `github.com/gliderlabs/ssh` #354, 26,795 dependents (low confidence: no matching category)
+- `github.com/armon/go-socks5` #359, 25,808 dependents (low confidence: no matching category)
+- `github.com/containerd/continuity` #360, 25,667 dependents (low confidence: no matching category)
+- `github.com/valyala/tcplisten` #375, 24,834 dependents (low confidence: no matching category)
+- `github.com/labstack/gommon` #393, 22,864 dependents (low confidence: no matching category)
+- `github.com/samuel/go-zookeeper` #399, 22,324 dependents (low confidence: no matching category)
+- `github.com/moby/spdystream` #408, 21,746 dependents (low confidence: no matching category)
+- `github.com/golang/freetype` #412, 21,651 dependents (low confidence: no matching category)
+- `github.com/casbin/casbin/v2` #413, 21,595 dependents (low confidence: no matching category)
+- `github.com/fatih/structs` #415, 21,470 dependents (low confidence: no matching category)
+- `github.com/xdg-go/stringprep` #425, 21,156 dependents (low confidence: no matching category)
+- `github.com/xdg-go/scram` #427, 21,093 dependents (low confidence: no matching category)
+- `github.com/xanzy/ssh-agent` #443, 20,285 dependents (low confidence: no matching category)
+- `github.com/Masterminds/goutils` #465, 19,393 dependents (low confidence: no matching category)
+- `github.com/xdg/stringprep` #475, 19,014 dependents (low confidence: no matching category)
+- `github.com/jackc/pgpassfile` #477, 18,982 dependents (low confidence: no matching category)
+- `github.com/xdg/scram` #478, 18,975 dependents (low confidence: no matching category)
+- `github.com/shurcooL/go` #482, 18,482 dependents (low confidence: no matching category)
+- `github.com/getkin/kin-openapi` #483, 18,476 dependents (low confidence: no matching category)
+- `github.com/fogleman/gg` #500, 18,004 dependents (low confidence: no matching category)
+- `modernc.org/mathutil` #504, 17,875 dependents (low confidence: no matching category)
+- `github.com/jackc/pgmock` #505, 17,819 dependents
+- `modernc.org/strutil` #520, 17,197 dependents
+- `github.com/hashicorp/yamux` #522, 17,112 dependents
 - `github.com/gorilla/securecookie` #528, 16,980 dependents
-- `github.com/bugsnag/panicwrap` #532, 16,907 dependents (low confidence: panic capture wrapper)
-- `github.com/dimchansky/utfbom` #533, 16,889 dependents (low confidence: BOM detection, not encoding guessing)
-- `github.com/hashicorp/go-plugin` #544, 16,164 dependents (low confidence: plugin RPC system over subprocesses)
-- `github.com/docker/docker-credential-helpers` #549, 15,848 dependents (low confidence: credential helper protocol libs)
-- `github.com/containernetworking/cni` #552, 15,794 dependents (low confidence: CNI container networking, not clear)
-- `github.com/sagikazarmark/crypt` #559, 15,581 dependents (low confidence: remote config provider, no peers)
-- `github.com/jinzhu/gorm` #560, 15,547 dependents (low confidence: ORM, no peers)
-- `github.com/opencontainers/runtime-tools` #565, 15,361 dependents (low confidence: OCI runtime tooling)
-- `github.com/gorilla/sessions` #569, 15,256 dependents (low confidence: session management, no peers)
-- `github.com/shurcooL/httpfs` #570, 15,117 dependents (low confidence: http.FileSystem helpers)
-- `gomodules.xyz/jsonpatch/v2` #575, 15,053 dependents
-- `github.com/twitchyliquid64/golang-asm` #576, 14,862 dependents (low confidence: Go assembler fork)
-- `github.com/cockroachdb/logtags` #577, 14,822 dependents (low confidence: context log tags)
-- `github.com/cockroachdb/errors` #578, 14,822 dependents (low confidence: error library, no peers)
-- `github.com/Masterminds/sprig` #581, 14,710 dependents (low confidence: template function map, not a template engine)
-- `go.etcd.io/etcd/raft/v3` #591, 14,238 dependents (low confidence: Raft consensus, no peers)
-- `github.com/otiai10/curr` #598, 14,079 dependents (low confidence: unknown small utility)
-- `github.com/vektah/gqlparser` #612, 13,679 dependents (low confidence: GraphQL parser, no peers)
-- `github.com/go-git/go-billy/v5` #616, 13,460 dependents (low confidence: filesystem abstraction)
-- `github.com/d2g/dhcp4client` #625, 13,175 dependents (low confidence: DHCP client)
-- `github.com/d2g/dhcp4` #626, 13,175 dependents (low confidence: DHCP protocol library)
-- `github.com/peterh/liner` #627, 13,161 dependents (low confidence: line editor, no peers)
-- `github.com/pkg/browser` #628, 13,135 dependents (low confidence: open browser helper)
-- `github.com/dgryski/go-rendezvous` #631, 13,080 dependents (low confidence: rendezvous hashing, no peers)
-- `golang.org/x/arch` #636, 12,717 dependents (low confidence: architecture disassemblers)
-- `github.com/d2g/dhcp4server` #637, 12,691 dependents (low confidence: DHCP server library)
-- `github.com/moby/locker` #639, 12,582 dependents (low confidence: keyed mutex locker)
-- `github.com/containers/ocicrypt` #640, 12,575 dependents (low confidence: OCI image encryption)
-- `github.com/d2g/hardwareaddr` #644, 12,492 dependents (low confidence: hardware address type)
-- `github.com/moby/sys/symlink` #647, 12,238 dependents (low confidence: symlink resolution in scope)
-- `github.com/nbutton23/zxcvbn-go` #648, 12,211 dependents (low confidence: password strength estimator)
-- `github.com/containerd/imgcrypt` #650, 12,165 dependents (low confidence: image encryption)
-- `github.com/containerd/nri` #654, 12,092 dependents (low confidence: node resource interface)
-- `github.com/stefanberger/go-pkcs11uri` #655, 12,078 dependents (low confidence: PKCS#11 URI parser)
-- `github.com/j-keck/arping` #658, 11,972 dependents (low confidence: ARP ping)
-- `github.com/mitchellh/go-ps` #659, 11,931 dependents (low confidence: process listing)
-- `github.com/google/go-containerregistry` #663, 11,790 dependents (low confidence: container registry client, no peers)
-- `go.starlark.net` #672, 11,302 dependents (low confidence: Starlark interpreter, no peers)
-- `github.com/yudai/gojsondiff` #676, 11,120 dependents (low confidence: structured JSON diff; excluded from text-diff)
-- `github.com/boombuler/barcode` #677, 11,067 dependents (low confidence: barcode generation)
-- `github.com/sourcegraph/go-diff` #705, 10,335 dependents (low confidence: Parses unified diff files rather than computing diffs; no matching category)
-- `github.com/patrickmn/go-cache` #720, 10,239 dependents (low confidence: TTL in-memory cache without LRU bound; no peers)
-- `github.com/zclconf/go-cty` #734, 9,832 dependents (low confidence: Config type system (cty); no peers)
-- `github.com/ProtonMail/go-crypto` #736, 9,820 dependents (low confidence: OpenPGP/crypto fork spanning many tasks; no single category)
-- `github.com/juju/ratelimit` #738, 9,793 dependents
-- `github.com/agext/levenshtein` #739, 9,736 dependents
-- `github.com/btcsuite/go-socks` #744, 9,527 dependents (low confidence: SOCKS proxy client; no category)
-- `github.com/hailocab/go-hostpool` #748, 9,485 dependents (low confidence: Host pool selection for load balancing; no category)
-- `github.com/kkdai/bstream` #756, 9,377 dependents (low confidence: Bit stream reader/writer; no category)
-- `gopkg.in/src-d/go-billy.v4` #757, 9,358 dependents (low confidence: Filesystem abstraction (billy); no category)
-- `github.com/kelseyhightower/envconfig` #760, 9,196 dependents (low confidence: Decodes env vars into structs; excluded from dotenv and no match)
-- `github.com/bitly/go-hostpool` #762, 9,164 dependents (low confidence: Host pool selection; no category)
-- `github.com/bradfitz/gomemcache` #763, 9,137 dependents (low confidence: Memcached client; no category)
-- `github.com/cheggaaa/pb` #765, 9,124 dependents
-- `github.com/eclipse/paho.mqtt.golang` #767, 9,111 dependents (low confidence: MQTT client; no category)
-- `github.com/apparentlymart/go-textseg` #773, 9,013 dependents (low confidence: Unicode text segmentation; no category)
-- `github.com/bradfitz/go-smtpd` #778, 8,887 dependents (low confidence: SMTP server library; no category)
-- `grpc.go4.org` #779, 8,885 dependents (low confidence: gRPC implementation; no category)
-- `github.com/jellevandenhooff/dkim` #781, 8,855 dependents (low confidence: DKIM verification; no category)
+- `github.com/bugsnag/panicwrap` #532, 16,907 dependents
+- `github.com/hashicorp/go-plugin` #544, 16,164 dependents
+- `github.com/docker/docker-credential-helpers` #549, 15,848 dependents (low confidence: unknown)
+- `github.com/containernetworking/cni` #552, 15,794 dependents (low confidence: unknown)
+- `github.com/sagikazarmark/crypt` #559, 15,581 dependents (low confidence: unknown)
+- `github.com/opencontainers/runtime-tools` #565, 15,361 dependents (low confidence: unknown)
+- `github.com/gorilla/sessions` #569, 15,256 dependents
+- `github.com/shurcooL/httpfs` #570, 15,117 dependents (low confidence: unknown)
+- `github.com/cockroachdb/logtags` #577, 14,822 dependents (low confidence: unknown)
+- `go.etcd.io/etcd/raft/v3` #591, 14,238 dependents
+- `github.com/otiai10/curr` #598, 14,079 dependents (low confidence: unknown package)
+- `github.com/go-git/go-billy/v5` #616, 13,460 dependents
+- `github.com/d2g/dhcp4client` #625, 13,175 dependents
+- `github.com/d2g/dhcp4` #626, 13,175 dependents
+- `github.com/peterh/liner` #627, 13,161 dependents
+- `github.com/pkg/browser` #628, 13,135 dependents
+- `github.com/dgryski/go-rendezvous` #631, 13,080 dependents
+- `golang.org/x/arch` #636, 12,717 dependents
+- `github.com/d2g/dhcp4server` #637, 12,691 dependents
+- `github.com/containers/ocicrypt` #640, 12,575 dependents (low confidence: unknown)
+- `github.com/d2g/hardwareaddr` #644, 12,492 dependents (low confidence: unknown)
+- `github.com/moby/sys/symlink` #647, 12,238 dependents
+- `github.com/nbutton23/zxcvbn-go` #648, 12,211 dependents
+- `github.com/containerd/imgcrypt` #650, 12,165 dependents (low confidence: unknown)
+- `github.com/containerd/nri` #654, 12,092 dependents (low confidence: unknown)
+- `github.com/stefanberger/go-pkcs11uri` #655, 12,078 dependents
+- `github.com/j-keck/arping` #658, 11,972 dependents
+- `github.com/mitchellh/go-ps` #659, 11,931 dependents
+- `github.com/google/go-containerregistry` #663, 11,790 dependents
+- `github.com/sourcegraph/go-diff` #705, 10,335 dependents
+- `github.com/patrickmn/go-cache` #720, 10,239 dependents
+- `github.com/zclconf/go-cty` #734, 9,832 dependents
+- `github.com/hailocab/go-hostpool` #748, 9,485 dependents
+- `github.com/kkdai/bstream` #756, 9,377 dependents (low confidence: unknown)
+- `gopkg.in/src-d/go-billy.v4` #757, 9,358 dependents
+- `github.com/bitly/go-hostpool` #762, 9,164 dependents
+- `github.com/bradfitz/gomemcache` #763, 9,137 dependents
+- `github.com/eclipse/paho.mqtt.golang` #767, 9,111 dependents
+- `github.com/bradfitz/go-smtpd` #778, 8,887 dependents
+- `github.com/jellevandenhooff/dkim` #781, 8,855 dependents
 - `github.com/gocql/gocql` #784, 8,661 dependents
-- `github.com/robfig/cron/v3` #785, 8,632 dependents
-- `github.com/Nvveen/Gotty` #786, 8,611 dependents (low confidence: terminfo parser)
-- `github.com/jackpal/go-nat-pmp` #789, 8,576 dependents (low confidence: NAT-PMP client; no category)
-- `github.com/go-xmlfmt/xmlfmt` #797, 8,395 dependents (low confidence: XML formatter; no category)
+- `github.com/Nvveen/Gotty` #786, 8,611 dependents
+- `github.com/jackpal/go-nat-pmp` #789, 8,576 dependents
+- `github.com/go-xmlfmt/xmlfmt` #797, 8,395 dependents
 - `github.com/huin/goupnp` #806, 8,310 dependents
-- `github.com/lunixbochs/vtclean` #815, 8,228 dependents (low confidence: strips terminal escape codes; no peer)
 - `github.com/AndreasBriese/bbloom` #817, 8,226 dependents
 - `github.com/lucas-clemente/quic-go` #818, 8,222 dependents
-- `github.com/phayes/checkstyle` #821, 8,202 dependents (low confidence: checkstyle XML file format; no peers)
-- `github.com/sourcegraph/annotate` #827, 8,031 dependents (low confidence: source text annotation for highlighting; no peers)
-- `github.com/sourcegraph/syntaxhighlight` #828, 8,028 dependents
-- `github.com/google/cel-go` #829, 7,971 dependents (low confidence: CEL expression language; unrecognized fit)
-- `gopkg.in/src-d/go-git.v4` #830, 7,932 dependents
-- `github.com/segmentio/kafka-go` #836, 7,788 dependents
+- `github.com/phayes/checkstyle` #821, 8,202 dependents
+- `github.com/sourcegraph/annotate` #827, 8,031 dependents (low confidence: unknown)
 - `github.com/sclevine/agouti` #837, 7,748 dependents
-- `github.com/bgentry/go-netrc` #838, 7,744 dependents (low confidence: netrc file parser; no peers)
-- `github.com/aokoli/goutils` #840, 7,719 dependents (low confidence: string utility functions)
+- `github.com/bgentry/go-netrc` #838, 7,744 dependents
+- `github.com/aokoli/goutils` #840, 7,719 dependents
 - `github.com/monochromegane/go-gitignore` #842, 7,684 dependents
-- `github.com/mitchellh/hashstructure` #843, 7,675 dependents (low confidence: hashes arbitrary Go values; unrecognized fit)
-- `github.com/cznic/mathutil` #853, 7,348 dependents (low confidence: math utility functions)
-- `sigs.k8s.io/kustomize/api` #854, 7,288 dependents (low confidence: dummy main for kustomize API release)
+- `github.com/mitchellh/hashstructure` #843, 7,675 dependents
+- `github.com/cznic/mathutil` #853, 7,348 dependents
 - `github.com/c-bata/go-prompt` #857, 7,202 dependents
-- `github.com/ajg/form` #862, 7,108 dependents (low confidence: form-urlencoded encode/decode; no peers)
-- `github.com/shurcooL/highlight_go` #866, 7,053 dependents
-- `github.com/shurcooL/highlight_diff` #867, 7,051 dependents
-- `github.com/hashicorp/go-safetemp` #869, 7,022 dependents (low confidence: temp directory helper)
-- `github.com/fvbommel/sortorder` #872, 6,997 dependents
-- `github.com/quasilyte/regex/syntax` #873, 6,992 dependents (low confidence: regex syntax parser only; excluded from regex-matching)
+- `github.com/quasilyte/regex/syntax` #873, 6,992 dependents
 - `github.com/shurcooL/httpgzip` #877, 6,898 dependents
 - `github.com/hashicorp/go-getter` #882, 6,872 dependents
 - `github.com/jcmturner/gokrb5/v8` #883, 6,872 dependents
-- `github.com/graph-gophers/graphql-go` #884, 6,867 dependents
-- `github.com/rubiojr/go-vhd` #888, 6,830 dependents (low confidence: VHD disk image utility)
-- `github.com/influxdata/line-protocol` #891, 6,769 dependents (low confidence: InfluxDB line protocol; no peers)
-- `github.com/dop251/goja` #893, 6,737 dependents
-- `github.com/gobuffalo/here` #896, 6,717 dependents (low confidence: Go module/build info helper)
+- `github.com/rubiojr/go-vhd` #888, 6,830 dependents
+- `github.com/influxdata/line-protocol` #891, 6,769 dependents
 - `github.com/tyler-smith/go-bip39` #897, 6,702 dependents
-- `github.com/jcmturner/aescts/v2` #909, 6,575 dependents (low confidence: AES-CTS cipher mode, not AEAD)
-- `github.com/jcmturner/dnsutils/v2` #910, 6,575 dependents (low confidence: DNS SRV lookup helpers)
-- `sourcegraph.com/sourcegraph/go-diff` #912, 6,557 dependents (low confidence: unified diff parser, not a differ)
+- `sourcegraph.com/sourcegraph/go-diff` #912, 6,557 dependents
 - `github.com/golang/geo` #919, 6,524 dependents
-- `github.com/shurcooL/htmlg` #920, 6,523 dependents (low confidence: HTML node generation helpers)
-- `github.com/shurcooL/webdavfs` #922, 6,518 dependents (low confidence: WebDAV filesystem adapter)
-- `github.com/codegangsta/inject` #928, 6,513 dependents
-- `github.com/shurcooL/httperror` #930, 6,512 dependents (low confidence: HTTP framework building blocks)
-- `github.com/tomasen/realip` #941, 6,397 dependents (low confidence: client IP extraction from requests)
+- `github.com/shurcooL/htmlg` #920, 6,523 dependents
+- `github.com/shurcooL/webdavfs` #922, 6,518 dependents
+- `github.com/tomasen/realip` #941, 6,397 dependents
 - `github.com/Masterminds/squirrel` #947, 6,317 dependents
-- `github.com/fjl/memsize` #952, 6,243 dependents (low confidence: object graph size measurement)
+- `github.com/fjl/memsize` #952, 6,243 dependents
 - `github.com/go-ldap/ldap/v3` #964, 6,157 dependents
-- `github.com/status-im/keycard-go` #971, 6,056 dependents (low confidence: keycard smartcard library)
-- `github.com/apparentlymart/go-cidr` #973, 6,038 dependents
-- `github.com/yuin/gopher-lua` #974, 6,030 dependents
-- `gopkg.in/jcmturner/dnsutils.v1` #976, 6,012 dependents (low confidence: DNS helpers)
-- `gopkg.in/jcmturner/aescts.v1` #977, 6,012 dependents (low confidence: AES-CTS cipher mode)
-- `github.com/imkira/go-interpol` #994, 5,851 dependents (low confidence: named-parameter string interpolation)
-- `github.com/Masterminds/vcs` #997, 5,816 dependents (low confidence: VCS abstraction)
+- `github.com/status-im/keycard-go` #971, 6,056 dependents
+- `github.com/Masterminds/vcs` #997, 5,816 dependents (low confidence: Wraps git/svn/hg/bzr command-line tools behind one interface; does not walk history or read blobs, so git-repository-access does not fit and no peers exist.)
 
 ## Service SDKs and telemetry
 
@@ -663,8 +625,13 @@ Sub-packages that exist only as implementation pieces of one parent library outs
 - `github.com/pelletier/go-buffruneio` #793, 8,477 dependents
 - `gopkg.in/src-d/go-git-fixtures.v3` #850, 7,486 dependents (low confidence: test fixtures for go-git)
 - `github.com/huin/goutil` #856, 7,241 dependents (low confidence: unrecognized; no description)
+- `github.com/jcmturner/aescts/v2` #909, 6,575 dependents (low confidence: AES-CTS helper used by gokrb5; not AEAD)
+- `github.com/jcmturner/dnsutils/v2` #910, 6,575 dependents (low confidence: Unrecognized beyond name; likely gokrb5 DNS SRV helper)
 - `dmitri.shuralyov.com/state` #917, 6,525 dependents (low confidence: domain state types)
+- `github.com/shurcooL/httperror` #930, 6,512 dependents (low confidence: Building blocks for custom HTTP frameworks)
 - `k8s.io/component-helpers` #946, 6,331 dependents (low confidence: k8s component helpers)
+- `gopkg.in/jcmturner/dnsutils.v1` #976, 6,012 dependents (low confidence: Unrecognized beyond name; likely gokrb5 DNS SRV helper)
+- `gopkg.in/jcmturner/aescts.v1` #977, 6,012 dependents (low confidence: AES-CTS helper used by gokrb5; not AEAD)
 - `github.com/zclconf/go-cty-debug` #987, 5,948 dependents (low confidence: cty debug helpers)
 
 ## Applications and daemons
@@ -738,6 +705,52 @@ Packages that consist of message, resource and specification types, mostly gener
 - `github.com/shurcooL/events` #932, 6,512 dependents (low confidence: service definition)
 - `github.com/google/trillian` #1000, 5,812 dependents
 
+## Language-level abstractions
+
+Trait definitions, declarative macros, error types, lazy statics, marker and wrapper types that shape code at compile time and have no standalone runtime task.
+
+- `golang.org/x/xerrors` #14, 206,048 dependents
+- `github.com/pkg/errors` #17, 198,114 dependents
+- `gopkg.in/errgo.v2` #44, 141,521 dependents (low confidence: error wrapping utilities)
+- `go.uber.org/atomic` #60, 121,018 dependents
+- `github.com/go-stack/stack` #63, 120,231 dependents (low confidence: call stack capture helper)
+- `go.uber.org/multierr` #66, 117,290 dependents
+- `github.com/hashicorp/go-multierror` #134, 85,818 dependents
+- `github.com/hashicorp/errwrap` #135, 85,778 dependents
+- `github.com/antihax/optional` #179, 69,036 dependents (low confidence: optional-value types for generated API clients)
+- `gopkg.in/warnings.v0` #267, 40,961 dependents (low confidence: warnings error type)
+- `github.com/go-errors/errors` #390, 23,102 dependents
+- `github.com/Azure/go-autorest/autorest/to` #436, 20,675 dependents
+- `github.com/markbates/oncer` #452, 20,039 dependents (low confidence)
+- `github.com/markbates/safe` #453, 19,992 dependents (low confidence)
+- `github.com/jbenet/go-context` #466, 19,325 dependents (low confidence)
+- `github.com/cockroachdb/errors` #578, 14,822 dependents (low confidence: error types library)
+- `github.com/lann/builder` #943, 6,364 dependents (low confidence: fluent immutable builder helper)
+- `github.com/facebookgo/stack` #949, 6,281 dependents (low confidence: stack trace utilities)
+
+## Environment detection
+
+One-shot probes of the host such as CPU count and features, terminal state, user, host name, time zone and standard directories, which return in constant time and have no workload to scale.
+
+- `github.com/mattn/go-isatty` #21, 167,492 dependents
+- `golang.org/x/term` #25, 160,030 dependents (low confidence: terminal helpers (raw mode, size, isatty) plus password reading)
+- `github.com/inconshreveable/mousetrap` #82, 107,481 dependents (low confidence: Windows explorer launch detection)
+- `github.com/mitchellh/go-homedir` #89, 105,050 dependents
+- `github.com/moby/term` #343, 27,845 dependents
+- `github.com/klauspost/cpuid` #377, 24,625 dependents
+- `github.com/shirou/gopsutil` #470, 19,147 dependents (low confidence: System stats probes; no workload to scale)
+- `github.com/bugsnag/osext` #548, 15,888 dependents (low confidence: executable path lookup)
+- `github.com/mattn/go-ieproxy` #553, 15,787 dependents
+- `github.com/tklauser/go-sysconf` #562, 15,519 dependents
+- `github.com/tklauser/numcpus` #563, 15,502 dependents
+- `github.com/mitchellh/osext` #614, 13,478 dependents
+- `github.com/kardianos/osext` #660, 11,898 dependents
+- `github.com/phayes/freeport` #831, 7,920 dependents
+- `go.uber.org/automaxprocs` #852, 7,373 dependents
+- `github.com/gobuffalo/here` #896, 6,717 dependents (low confidence: Reports Go module/package build info; guess)
+- `github.com/xo/terminfo` #942, 6,374 dependents (low confidence: terminfo reader)
+- `github.com/lufia/plan9stats` #990, 5,930 dependents
+
 ## Structured logging
 
 Application loggers that format records with levels and key-value fields, as JSON or colored text, and write them to a sink; environment-switched debug loggers, telemetry exporters and vendor log shippers are out of scope.
@@ -761,54 +774,11 @@ Application loggers that format records with levels and key-value fields, as JSO
 - `github.com/go-logr/stdr` #776, 8,921 dependents
 - `github.com/Sirupsen/logrus` #955, 6,233 dependents
 
-## Language-level abstractions
-
-Trait definitions, declarative macros, error types, lazy statics, marker and wrapper types that shape code at compile time and have no standalone runtime task.
-
-- `golang.org/x/xerrors` #14, 206,048 dependents
-- `github.com/pkg/errors` #17, 198,114 dependents
-- `gopkg.in/errgo.v2` #44, 141,521 dependents (low confidence: error wrapping utilities)
-- `go.uber.org/atomic` #60, 121,018 dependents
-- `github.com/go-stack/stack` #63, 120,231 dependents (low confidence: call stack capture helper)
-- `go.uber.org/multierr` #66, 117,290 dependents
-- `github.com/hashicorp/go-multierror` #134, 85,818 dependents
-- `github.com/hashicorp/errwrap` #135, 85,778 dependents
-- `github.com/antihax/optional` #179, 69,036 dependents (low confidence: optional-value types for generated API clients)
-- `gopkg.in/warnings.v0` #267, 40,961 dependents (low confidence: warnings error type)
-- `github.com/go-errors/errors` #390, 23,102 dependents
-- `github.com/Azure/go-autorest/autorest/to` #436, 20,675 dependents
-- `github.com/markbates/oncer` #452, 20,039 dependents (low confidence)
-- `github.com/markbates/safe` #453, 19,992 dependents (low confidence)
-- `github.com/jbenet/go-context` #466, 19,325 dependents (low confidence)
-- `github.com/lann/builder` #943, 6,364 dependents (low confidence: fluent immutable builder helper)
-- `github.com/facebookgo/stack` #949, 6,281 dependents (low confidence: stack trace utilities)
-
-## Environment detection
-
-One-shot probes of the host such as CPU count and features, terminal state, user, host name, time zone and standard directories, which return in constant time and have no workload to scale.
-
-- `github.com/mattn/go-isatty` #21, 167,492 dependents
-- `golang.org/x/term` #25, 160,030 dependents (low confidence: terminal helpers (raw mode, size, isatty) plus password reading)
-- `github.com/inconshreveable/mousetrap` #82, 107,481 dependents (low confidence: Windows explorer launch detection)
-- `github.com/mitchellh/go-homedir` #89, 105,050 dependents
-- `github.com/moby/term` #343, 27,845 dependents
-- `github.com/klauspost/cpuid` #377, 24,625 dependents
-- `github.com/shirou/gopsutil` #470, 19,147 dependents (low confidence: System stats probes; no workload to scale)
-- `github.com/bugsnag/osext` #548, 15,888 dependents (low confidence: executable path lookup)
-- `github.com/mattn/go-ieproxy` #553, 15,787 dependents
-- `github.com/tklauser/go-sysconf` #562, 15,519 dependents
-- `github.com/tklauser/numcpus` #563, 15,502 dependents
-- `github.com/mitchellh/osext` #614, 13,478 dependents
-- `github.com/kardianos/osext` #660, 11,898 dependents
-- `github.com/phayes/freeport` #831, 7,920 dependents
-- `go.uber.org/automaxprocs` #852, 7,373 dependents
-- `github.com/xo/terminfo` #942, 6,374 dependents (low confidence: terminfo reader)
-- `github.com/lufia/plan9stats` #990, 5,930 dependents
-
 ## Tooling internals (AST and code utilities)
 
 Building blocks used inside compilers and linters, such as AST node helpers, traversal, scope analysis, tokenizing and code frames; standalone parsers are out of scope.
 
+- `github.com/twitchyliquid64/golang-asm` #576, 14,862 dependents (low confidence: assembler building block)
 - `modernc.org/xc` #685, 10,548 dependents (low confidence: C compiler support)
 - `github.com/gostaticanalysis/analysisutil` #700, 10,372 dependents
 - `github.com/go-toolsmith/astequal` #702, 10,346 dependents
@@ -969,6 +939,19 @@ Parse INI-style or Java .properties text of sections and name=value pairs into a
 - `github.com/aws/aws-sdk-go-v2/internal/ini` #695, 10,420 dependents
 - `github.com/src-d/gcfg` #835, 7,842 dependents
 
+## Text diffing
+
+Compute the line or element differences between two texts or sequences; edit-distance scores, assertion pretty-printers and structured JSON patches are out of scope.
+
+- `github.com/pmezard/go-difflib` #2, 281,215 dependents
+- `github.com/sergi/go-diff` #200, 59,574 dependents
+- `github.com/pkg/diff` #303, 34,242 dependents
+- `github.com/andreyvit/diff` #428, 21,086 dependents
+- `github.com/aryann/difflib` #456, 19,909 dependents
+- `github.com/yudai/golcs` #675, 11,158 dependents
+- `github.com/yudai/gojsondiff` #676, 11,120 dependents (low confidence: JSON structural diff)
+- `github.com/shazow/go-diff` #895, 6,720 dependents (low confidence: unrecognized; no description)
+
 ## JSON path queries
 
 Evaluate a path or query expression such as JSONPath, JMESPath or JSON Pointer against in-memory JSON-like data and return the selected values; JSON parsing, JSON Patch and schema validation are out of scope.
@@ -1043,18 +1026,6 @@ Fast hash functions for hash tables and fingerprints, such as FNV, xxHash, SipHa
 - `github.com/aead/siphash` #755, 9,401 dependents
 - `github.com/minio/highwayhash` #863, 7,097 dependents
 
-## Text diffing
-
-Compute the line or element differences between two texts or sequences; edit-distance scores, assertion pretty-printers and structured JSON patches are out of scope.
-
-- `github.com/pmezard/go-difflib` #2, 281,215 dependents
-- `github.com/sergi/go-diff` #200, 59,574 dependents
-- `github.com/pkg/diff` #303, 34,242 dependents
-- `github.com/andreyvit/diff` #428, 21,086 dependents
-- `github.com/aryann/difflib` #456, 19,909 dependents
-- `github.com/yudai/golcs` #675, 11,158 dependents
-- `github.com/shazow/go-diff` #895, 6,720 dependents (low confidence: unrecognized; no description)
-
 ## Embedded key-value stores
 
 Persistent, ordered key-value databases that run inside the application process and store data in local files, such as B+tree and LSM-tree engines; in-memory caches, SQL engines and clients for a database server are out of scope.
@@ -1089,6 +1060,28 @@ Packages that export only constant tables or a single regular expression and do 
 - `github.com/go-git/go-git-fixtures/v4` #624, 13,279 dependents (low confidence: test fixtures data)
 - `github.com/shurcooL/gofontwoff` #913, 6,548 dependents
 
+## Identifier case conversion
+
+Convert strings between naming conventions such as camelCase, snake_case and kebab-case; Unicode case folding and case-insensitive comparison are out of scope.
+
+- `github.com/stoewer/go-strcase` #361, 25,652 dependents
+- `github.com/gobuffalo/flect` #386, 23,747 dependents
+- `github.com/huandu/xstrings` #410, 21,740 dependents (low confidence: uncertain fit based on description)
+- `github.com/iancoleman/strcase` #462, 19,717 dependents
+- `github.com/fatih/camelcase` #665, 11,603 dependents
+- `github.com/naoina/go-stringutil` #769, 9,063 dependents (low confidence: Unrecognized; likely string case helpers)
+
+## Template rendering
+
+Compile a text template with embedded expressions, loops and partials (ERB, Haml, Slim, Liquid, Mustache and the like) and render it to a string with given data; Markdown conversion, HTML builders driven purely by code and framework view layers are out of scope.
+
+- `github.com/alecthomas/template` #92, 104,236 dependents
+- `github.com/valyala/fasttemplate` #364, 25,529 dependents
+- `github.com/Masterminds/sprig` #581, 14,710 dependents (low confidence: template function library)
+- `github.com/valyala/quicktemplate` #758, 9,256 dependents
+- `github.com/eknkc/amber` #889, 6,822 dependents
+- `github.com/imkira/go-interpol` #994, 5,851 dependents (low confidence: Named-parameter string interpolation; loosely a template render)
+
 ## Histograms and quantile sketches
 
 Record a stream of numeric samples into a compact fixed-memory histogram or sketch, such as HDR Histogram, t-digest or a biased quantile stream, and query percentiles from it; exact descriptive statistics over full arrays and metrics registries that export to a monitoring system are out of scope.
@@ -1110,15 +1103,25 @@ Parse human-friendly, JSON-superset configuration text (YAML, JSON5, JSON with c
 - `sigs.k8s.io/yaml` #191, 62,246 dependents
 - `sigs.k8s.io/kustomize/kyaml` #823, 8,193 dependents (low confidence: k8s-flavored YAML read/write library)
 
-## Identifier case conversion
+## JSON parsing
 
-Convert strings between naming conventions such as camelCase, snake_case and kebab-case; Unicode case folding and case-insensitive comparison are out of scope.
+Parse strict JSON text into JavaScript values with added behavior such as better errors, bigints or circular references; JSON supersets with comments and file I/O helpers are out of scope.
 
-- `github.com/stoewer/go-strcase` #361, 25,652 dependents
-- `github.com/gobuffalo/flect` #386, 23,747 dependents
-- `github.com/iancoleman/strcase` #462, 19,717 dependents
-- `github.com/fatih/camelcase` #665, 11,603 dependents
-- `github.com/naoina/go-stringutil` #769, 9,063 dependents (low confidence: Unrecognized; likely string case helpers)
+- `github.com/json-iterator/go` #40, 143,681 dependents
+- `github.com/mailru/easyjson` #186, 67,176 dependents (low confidence: uncertain fit based on description)
+- `github.com/goccy/go-json` #531, 16,915 dependents
+- `sigs.k8s.io/json` #564, 15,401 dependents
+- `github.com/bytedance/sonic` #737, 9,818 dependents
+
+## ASN.1 DER decoding
+
+Parse and encode ASN.1 structures in BER or DER, including X.509 certificates; PEM text framing, certificate chain verification and TLS are out of scope.
+
+- `github.com/youmark/pkcs8` #460, 19,859 dependents (low confidence: uncertain fit based on description)
+- `github.com/fullsailor/pkcs7` #632, 12,939 dependents (low confidence: PKCS#7 over ASN.1; not sure)
+- `go.mozilla.org/pkcs7` #635, 12,757 dependents (low confidence: PKCS#7 over ASN.1; not sure)
+- `github.com/go-asn1-ber/asn1-ber` #894, 6,728 dependents
+- `gopkg.in/asn1-ber.v1` #934, 6,474 dependents
 
 ## Retry policies
 
@@ -1139,15 +1142,6 @@ Split a command-line string into argument words following POSIX shell quoting an
 - `github.com/mattn/go-shellwords` #434, 20,760 dependents
 - `github.com/google/shlex` #546, 16,046 dependents
 - `github.com/kballard/go-shellquote` #558, 15,642 dependents
-
-## JSON parsing
-
-Parse strict JSON text into JavaScript values with added behavior such as better errors, bigints or circular references; JSON supersets with comments and file I/O helpers are out of scope.
-
-- `github.com/json-iterator/go` #40, 143,681 dependents
-- `github.com/goccy/go-json` #531, 16,915 dependents
-- `sigs.k8s.io/json` #564, 15,401 dependents
-- `github.com/bytedance/sonic` #737, 9,818 dependents
 
 ## JWT signing and verification
 
@@ -1176,14 +1170,32 @@ Bounded in-memory key-value caches that evict the least recently used entry; unb
 - `github.com/allegro/bigcache` #879, 6,895 dependents (low confidence: bounded cache with FIFO/TTL eviction rather than LRU)
 - `github.com/VictoriaMetrics/fastcache` #904, 6,615 dependents (low confidence: bounded size-capped cache, eviction is not strictly LRU)
 
-## ASN.1 DER decoding
+## Digital signatures
 
-Parse and encode ASN.1 structures in BER or DER, including X.509 certificates; PEM text framing, certificate chain verification and TLS are out of scope.
+Generate key pairs, sign messages and verify signatures with ECDSA, Ed25519 or RSA; signature trait definitions, JWT framing and certificate handling are out of scope.
 
-- `github.com/fullsailor/pkcs7` #632, 12,939 dependents (low confidence: PKCS#7 over ASN.1; not sure)
-- `go.mozilla.org/pkcs7` #635, 12,757 dependents (low confidence: PKCS#7 over ASN.1; not sure)
-- `github.com/go-asn1-ber/asn1-ber` #894, 6,728 dependents
-- `gopkg.in/asn1-ber.v1` #934, 6,474 dependents
+- `github.com/nats-io/nkeys` #338, 28,527 dependents
+- `github.com/docker/libtrust` #485, 18,262 dependents (low confidence: Key management with signing; unsure)
+- `github.com/ProtonMail/go-crypto` #736, 9,820 dependents (low confidence: OpenPGP crypto fork, broad)
+- `github.com/decred/dcrd/dcrec/secp256k1/v4` #992, 5,893 dependents
+
+## Markdown rendering
+
+Parse CommonMark-style Markdown text and render it to HTML or a syntax tree; converting HTML or office documents to Markdown, reStructuredText and terminal rendering are out of scope.
+
+- `github.com/yuin/goldmark` #51, 131,427 dependents
+- `github.com/russross/blackfriday/v2` #100, 102,165 dependents
+- `github.com/cpuguy83/go-md2man/v2` #110, 100,432 dependents (low confidence: uncertain fit based on description)
+- `github.com/shurcooL/github_flavored_markdown` #900, 6,656 dependents
+
+## Text table rendering
+
+Lay out rows of values as an aligned plain-text or ASCII table; full terminal UI toolkits, progress bars and spreadsheet files are out of scope.
+
+- `github.com/ryanuber/columnize` #164, 72,350 dependents
+- `github.com/olekukonko/tablewriter` #208, 56,368 dependents
+- `github.com/xlab/treeprint` #515, 17,349 dependents (low confidence: ASCII tree layout, closest text layout category)
+- `github.com/liggitt/tabwriter` #673, 11,258 dependents
 
 ## WebSocket messaging
 
@@ -1193,15 +1205,6 @@ Implement the WebSocket protocol as a client, a server or a bring-your-own-I/O s
 - `github.com/gobwas/ws` #604, 13,858 dependents
 - `github.com/btcsuite/websocket` #749, 9,482 dependents
 - `nhooyr.io/websocket` #935, 6,463 dependents
-
-## Template rendering
-
-Compile a text template with embedded expressions, loops and partials (ERB, Haml, Slim, Liquid, Mustache and the like) and render it to a string with given data; Markdown conversion, HTML builders driven purely by code and framework view layers are out of scope.
-
-- `github.com/alecthomas/template` #92, 104,236 dependents
-- `github.com/valyala/fasttemplate` #364, 25,529 dependents
-- `github.com/valyala/quicktemplate` #758, 9,256 dependents
-- `github.com/eknkc/amber` #889, 6,822 dependents
 
 ## Semantic version comparison
 
@@ -1253,14 +1256,6 @@ Parse TOML text into values or a document tree; JSON-superset formats such as YA
 - `github.com/pelletier/go-toml` #87, 106,210 dependents
 - `github.com/naoina/toml` #792, 8,512 dependents
 
-## Digital signatures
-
-Generate key pairs, sign messages and verify signatures with ECDSA, Ed25519 or RSA; signature trait definitions, JWT framing and certificate handling are out of scope.
-
-- `github.com/nats-io/nkeys` #338, 28,527 dependents
-- `github.com/docker/libtrust` #485, 18,262 dependents (low confidence: Key management with signing; unsure)
-- `github.com/decred/dcrd/dcrec/secp256k1/v4` #992, 5,893 dependents
-
 ## Date and time
 
 Parse, format and do calendar arithmetic on dates, times and durations; time zone database packages, HTTP-date-only helpers and clock sources are out of scope.
@@ -1268,22 +1263,6 @@ Parse, format and do calendar arithmetic on dates, times and durations; time zon
 - `github.com/Azure/go-autorest/autorest/date` #233, 47,363 dependents (low confidence: swagger date types)
 - `github.com/jinzhu/now` #308, 32,573 dependents
 - `github.com/golang-sql/civil` #349, 27,232 dependents (low confidence: Civil date/time types only)
-
-## Markdown rendering
-
-Parse CommonMark-style Markdown text and render it to HTML or a syntax tree; converting HTML or office documents to Markdown, reStructuredText and terminal rendering are out of scope.
-
-- `github.com/yuin/goldmark` #51, 131,427 dependents
-- `github.com/russross/blackfriday/v2` #100, 102,165 dependents
-- `github.com/shurcooL/github_flavored_markdown` #900, 6,656 dependents
-
-## Text table rendering
-
-Lay out rows of values as an aligned plain-text or ASCII table; full terminal UI toolkits, progress bars and spreadsheet files are out of scope.
-
-- `github.com/ryanuber/columnize` #164, 72,350 dependents
-- `github.com/olekukonko/tablewriter` #208, 56,368 dependents
-- `github.com/liggitt/tabwriter` #673, 11,258 dependents
 
 ## PostgreSQL clients
 
@@ -1348,6 +1327,38 @@ Speak the MongoDB wire protocol to run commands and encode and decode BSON docum
 - `go.mongodb.org/mongo-driver` #295, 36,142 dependents
 - `github.com/globalsign/mgo` #474, 19,023 dependents
 - `gopkg.in/mgo.v2` #593, 14,218 dependents
+
+## Wrapping, slicing and stripping styled terminal text
+
+Transform strings that may contain ANSI escape codes by stripping the codes, word-wrapping to a column width, or slicing and truncating by visible columns; only measuring display width, adding color styles and stripping indentation are out of scope.
+
+- `github.com/kr/text` #16, 198,489 dependents (low confidence: uncertain fit based on description)
+- `github.com/xeipuuv/gojsonreference` #323, 30,612 dependents
+- `github.com/lunixbochs/vtclean` #815, 8,228 dependents (low confidence: guessed from name; strips terminal escapes)
+
+## Syntax highlighting
+
+Tokenize source code in a given language and emit it as highlighted HTML or ANSI-colored text; full parsers that build an AST, linters and Markdown rendering are out of scope.
+
+- `github.com/sourcegraph/syntaxhighlight` #828, 8,028 dependents
+- `github.com/shurcooL/highlight_go` #866, 7,053 dependents
+- `github.com/shurcooL/highlight_diff` #867, 7,051 dependents (low confidence: diff-format highlighter printer)
+
+## Object-relational mapping
+
+Map declared model classes or structs to SQL tables, generate the statements for create, read, update and delete, and hydrate result rows into objects; bare database drivers, SQL parsers and schema migration tools are out of scope.
+
+- `github.com/mitchellh/go-wordwrap` #326, 30,471 dependents (low confidence: uncertain fit based on description)
+- `gorm.io/gorm` #398, 22,361 dependents
+- `github.com/jinzhu/gorm` #560, 15,547 dependents
+
+## Embedded script interpreters
+
+Run programs written in a scripting language such as JavaScript, Lua or Starlark inside the host process and exchange values with them; single-expression evaluators, template engines and bindings that only launch an external runtime binary are out of scope.
+
+- `go.starlark.net` #672, 11,302 dependents
+- `github.com/dop251/goja` #893, 6,737 dependents
+- `github.com/yuin/gopher-lua` #974, 6,030 dependents
 
 ## Source map decoding
 
@@ -1426,6 +1437,13 @@ Compile CSS selectors and find the matching elements in an already parsed HTML o
 - `github.com/PuerkitoBio/goquery` #467, 19,320 dependents
 - `github.com/andybalholm/cascadia` #469, 19,289 dependents
 
+## Typed object mapping
+
+Convert plain dictionaries and lists into instances of declared record classes and back again, following the field types; validation-first schema libraries, binary wire formats and pickling of arbitrary objects are out of scope.
+
+- `github.com/mitchellh/mapstructure` #57, 124,571 dependents
+- `github.com/kelseyhightower/envconfig` #760, 9,196 dependents (low confidence: env vars decoded into structs)
+
 ## Immutable collections
 
 Immutable or persistent maps, lists and sets whose updates return a new version, usually with structural sharing; mutable ordered, sorted or multi-value containers are out of scope.
@@ -1460,6 +1478,90 @@ Look up translated messages by key or source string in loaded catalogs, with int
 
 - `github.com/go-playground/universal-translator` #197, 59,903 dependents
 - `github.com/chai2010/gettext-go` #699, 10,384 dependents
+
+## Edit distance and string similarity
+
+Score how similar two strings are with Levenshtein, Jaro-Winkler or a related metric, or pick the closest match from a list; producing the actual diff hunks and phonetic or full-text search are out of scope.
+
+- `github.com/agnivade/levenshtein` #521, 17,177 dependents
+- `github.com/agext/levenshtein` #739, 9,736 dependents
+
+## Query string parsing
+
+Decode URL query strings or application/x-www-form-urlencoded bodies into key-value structures and encode them back; parsing the rest of the URL and multipart form bodies are out of scope.
+
+- `github.com/google/go-querystring` #247, 44,458 dependents (low confidence: uncertain fit based on description)
+- `github.com/ajg/form` #862, 7,108 dependents
+
+## IP address and CIDR parsing
+
+Parse IPv4 and IPv6 address and CIDR network strings into values, and test whether an address falls inside a network; DNS lookups, socket handling and geolocation databases are out of scope.
+
+- `github.com/hashicorp/go-sockaddr` #170, 70,949 dependents (low confidence: uncertain fit based on description)
+- `github.com/apparentlymart/go-cidr` #973, 6,038 dependents (low confidence: CIDR subnet/host arithmetic and overlap checks; closest to IP/CIDR parsing but it relies on net for parsing and may not run the contains-in-range task directly.)
+
+## Terminal progress bars and spinners
+
+Render a progress bar or spinner line for a running task and redraw it as the task advances; interactive prompts, full terminal UI toolkits and plain log output are out of scope.
+
+- `gopkg.in/cheggaaa/pb.v1` #246, 44,461 dependents
+- `github.com/cheggaaa/pb` #765, 9,124 dependents
+
+## GraphQL execution
+
+Parse GraphQL documents, validate them against a schema and execute them against in-process resolvers; HTTP clients that only send queries to a remote server and web framework integrations are out of scope.
+
+- `github.com/vektah/gqlparser` #612, 13,679 dependents (low confidence: parses and validates but does not execute)
+- `github.com/graph-gophers/graphql-go` #884, 6,867 dependents
+
+## JSON Patch
+
+Apply RFC 6902 JSON Patch or RFC 7386 merge patch operations to a JSON document, or compute the patch that turns one document into another; path queries that only read values and text diffs are out of scope.
+
+- `github.com/evanphx/json-patch` #251, 44,181 dependents
+- `gomodules.xyz/jsonpatch/v2` #575, 15,053 dependents
+
+## Queues and linked lists
+
+In-memory FIFO queues, deques, ring buffers and linked lists with push and pop at the ends; channels that pass values between threads, priority queues and persistent job queues are out of scope.
+
+- `github.com/armon/circbuf` #177, 69,214 dependents (low confidence: uncertain fit based on description)
+- `github.com/eapache/queue` #284, 37,407 dependents
+
+## Resource pools
+
+Hold a bounded set of reusable resources such as connections or buffers and check them out to and back in from concurrent callers; driver-specific connection pools, worker task pools and caches are out of scope.
+
+- `github.com/valyala/bytebufferpool` #232, 47,683 dependents
+- `github.com/jackc/puddle` #503, 17,921 dependents
+
+## Rate limiting
+
+Decide whether an action for a given key is allowed now under a token bucket, leaky bucket or fixed-window limit; retry and backoff policies, concurrency limiters and gateway products are out of scope.
+
+- `golang.org/x/time` #47, 138,657 dependents
+- `github.com/juju/ratelimit` #738, 9,793 dependents
+
+## Kafka clients
+
+Speak the Apache Kafka protocol to produce records to topics and consume them back; clients for other brokers such as AMQP, NATS or MQTT and stream processing frameworks are out of scope.
+
+- `github.com/Shopify/sarama` #290, 36,794 dependents
+- `github.com/segmentio/kafka-go` #836, 7,788 dependents
+
+## gRPC
+
+Implement gRPC clients and servers that exchange Protocol Buffers messages over HTTP/2; the Protocol Buffers encoding alone, gateway proxies and other RPC protocols are out of scope.
+
+- `github.com/containerd/ttrpc` #450, 20,171 dependents (low confidence: uncertain fit based on description)
+- `grpc.go4.org` #779, 8,885 dependents
+
+## Expression evaluation
+
+Parse a single arithmetic or boolean expression given as text and evaluate it against a set of variables; full scripting-language interpreters, template engines and regular expressions are out of scope.
+
+- `github.com/Knetic/govaluate` #372, 25,129 dependents
+- `github.com/google/cel-go` #829, 7,971 dependents
 
 ## Runtime helpers and shims
 
@@ -1545,12 +1647,6 @@ Strip disallowed tags, attributes and scripts from untrusted HTML according to a
 
 - `github.com/microcosm-cc/bluemonday` #574, 15,065 dependents
 
-## Typed object mapping
-
-Convert plain dictionaries and lists into instances of declared record classes and back again, following the field types; validation-first schema libraries, binary wire formats and pickling of arbitrary objects are out of scope.
-
-- `github.com/mitchellh/mapstructure` #57, 124,571 dependents
-
 ## Dataframes
 
 In-memory columnar tables with filter, join, group-by and aggregate operations; compatibility layers over other dataframe libraries, file-format readers alone and remote warehouse clients are out of scope.
@@ -1575,8 +1671,122 @@ Produce new PDF documents from text, tables and drawing commands or from HTML; r
 
 - `github.com/jung-kurt/gofpdf` #512, 17,508 dependents
 
+## Character encoding detection
+
+Guess the character encoding of a byte buffer of unknown text; transcoding between known encodings and encoding alias tables are out of scope.
+
+- `github.com/dimchansky/utfbom` #533, 16,889 dependents (low confidence: BOM detection only)
+
 ## Dynamic attribute objects
 
 Wrap a nested dictionary in an object whose keys are read and written as attributes or method calls; declared record classes with typed fields and immutable collections are out of scope.
 
 - `github.com/stretchr/objx` #9, 267,615 dependents (low confidence: map/slice accessor utilities; loose fit)
+
+## QR code generation
+
+Encode a text or byte payload into a QR code module matrix and render it as SVG, an image or text; QR code scanning and other barcode symbologies are out of scope.
+
+- `github.com/boombuler/barcode` #677, 11,067 dependents (low confidence: barcode incl. QR generation)
+
+## Cron expression scheduling
+
+Parse cron expressions and compute the next matching run times, optionally firing callbacks on that schedule; persistent job queues, process managers and general date arithmetic are out of scope.
+
+- `github.com/robfig/cron/v3` #785, 8,632 dependents
+
+## Dependency injection containers
+
+Register service providers in a container and resolve instances together with their transitive dependencies at run time; compile-time code generators, framework-bound module systems and plain service locators inside one framework are out of scope.
+
+- `github.com/codegangsta/inject` #928, 6,513 dependents
+
+## Placeholder and test packages
+
+Hello-world demos, registry and tooling publish tests, tutorial examples and stubs that only announce a move to another package, none of which has real functionality to measure.
+
+- `sigs.k8s.io/kustomize/api` #854, 7,288 dependents (low confidence: dummy main for releasing)
+
+## Path string manipulation
+
+Normalize, join, split and relativize file system path strings purely in memory, including separator conversion between platforms; touching the file system, glob matching and URL parsing are out of scope.
+
+- `github.com/cyphar/filepath-securejoin` #405, 21,974 dependents (low confidence: uncertain fit based on description)
+
+## Atomic file writing
+
+Write a file so that readers see either the old or the complete new content, by writing to a temporary file and renaming it into place; advisory file locking, plain file copy and temporary file creation alone are out of scope.
+
+- `github.com/google/renameio` #64, 120,047 dependents
+
+## Temporary files and directories
+
+Create uniquely named temporary files and directories and remove them when they are no longer needed; atomic replacement of existing files and in-memory file systems are out of scope.
+
+- `github.com/hashicorp/go-safetemp` #869, 7,022 dependents
+
+## Layered configuration loading
+
+Merge settings from defaults, configuration files and environment variables into one object and read typed values from it by key; parsers for a single file format, dotenv loading alone and discovery of tool rc files are out of scope.
+
+- `github.com/spf13/viper` #116, 97,868 dependents
+
+## Unicode text segmentation
+
+Find grapheme cluster, word, sentence or line-break boundaries in text according to the Unicode segmentation rules; display width measurement, word wrapping and language-specific tokenizers are out of scope.
+
+- `github.com/apparentlymart/go-textseg` #773, 9,013 dependents
+
+## Noun pluralization
+
+Turn English nouns into their plural or singular form using rules and irregular word lists; identifier case conversion, message translation and stemming for search are out of scope.
+
+- `github.com/jinzhu/inflection` #281, 38,832 dependents
+
+## Natural sort order
+
+Compare or sort strings so that embedded numbers are ordered by numeric value, as in file2 before file10; full locale-aware collation and semantic version ordering are out of scope.
+
+- `github.com/fvbommel/sortorder` #872, 6,997 dependents
+
+## Key derivation
+
+Derive key material from a secret with HKDF or PBKDF2; memory-hard password hashing such as bcrypt and Argon2, bare message digests and key exchange are out of scope.
+
+- `github.com/xdg-go/pbkdf2` #431, 21,044 dependents
+
+## Synchronization primitives
+
+In-process mutexes, read-write locks, condition variables, spin locks and thread parking that guard shared state between threads or tasks; cross-process file locks, message channels and distributed locks are out of scope.
+
+- `github.com/moby/locker` #639, 12,582 dependents
+
+## DNS messages and resolution
+
+Encode and decode DNS wire-format messages and resource records, and use them to query name servers; host name parsing, public suffix lookup and mDNS service discovery are out of scope.
+
+- `github.com/miekg/dns` #149, 78,390 dependents
+
+## SSH and SFTP clients
+
+Speak the SSH2 protocol as a client to run remote commands and transfer files over SFTP or SCP; SSH servers, deployment tools built on a client and SSH agent or key-file helpers are out of scope.
+
+- `github.com/pkg/sftp` #222, 52,308 dependents (low confidence: uncertain fit based on description)
+
+## Git repository access
+
+Read and write Git repositories from a program: walk commit history, read trees and blobs and create commits; hosting-service API clients, repository URL parsers and unified diff parsers are out of scope.
+
+- `gopkg.in/src-d/go-git.v4` #830, 7,932 dependents
+
+## SOCKS proxy clients
+
+Open TCP connections through a SOCKS4 or SOCKS5 proxy by performing the client side of the handshake; HTTP CONNECT proxies, SOCKS servers and SSH tunnels are out of scope.
+
+- `github.com/btcsuite/go-socks` #744, 9,527 dependents
+
+## Symbol demangling
+
+Turn mangled C++ or Rust linker symbol names back into readable declarations; reading object files or debug information and capturing stack traces are out of scope.
+
+- `github.com/ianlancetaylor/demangle` #129, 90,975 dependents

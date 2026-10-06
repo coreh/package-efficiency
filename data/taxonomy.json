@@ -1884,85 +1884,937 @@
       "description": "Packages that are benchmarkable in principle but have no functionally equivalent peers in the list yet; revisit as the list grows.",
       "benchmarkable": false,
       "examples": [
-        "semver",
-        "lru-cache",
-        "ws",
-        "chokidar",
         "ms",
-        "qs",
-        "dotenv",
         "ignore",
-        "iconv-lite",
-        "sharp"
+        "balanced-match",
+        "escape-string-regexp"
       ],
       "group": "not-comparable"
-    }
-  ],
-  "candidateCategories": [
-    {
-      "id": "lru-cache",
-      "members": [
-        "lru-cache",
-        "@alloc/quick-lru"
-      ],
-      "note": "Needs one more peer (quick-lru, tiny-lru, mnemonist)."
     },
     {
-      "id": "date-time",
-      "members": [
-        "date-fns",
-        "dayjs"
+      "id": "ansi-text-layout",
+      "title": "Wrapping, slicing and stripping styled terminal text",
+      "description": "Transform strings that may contain ANSI escape codes by stripping the codes, word-wrapping to a column width, or slicing and truncating by visible columns; only measuring display width, adding color styles and stripping indentation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Take 10,000 lines of 200 visible columns with ANSI color codes every few words, strip the escape codes from each line and word-wrap each line to 80 columns, each member running the operations it offers.",
+      "examples": [
+        "strip-ansi",
+        "wrap-ansi",
+        "slice-ansi",
+        "word-wrap",
+        "textwrap"
       ],
-      "note": "Format/parse/add on dates; moment and luxon are not in the list yet."
-    },
-    {
-      "id": "markdown-parsing",
-      "members": [
-        "marked",
-        "mdast-util-from-markdown"
-      ],
-      "note": "markdown-it, micromark and remark-parse are not in the list yet."
+      "group": "text"
     },
     {
       "id": "edit-distance",
-      "members": [
+      "title": "Edit distance and string similarity",
+      "description": "Score how similar two strings are with Levenshtein, Jaro-Winkler or a related metric, or pick the closest match from a list; producing the actual diff hunks and phonetic or full-text search are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compute the Levenshtein distance for 100,000 fixed pairs of strings of 5 to 200 characters.",
+      "examples": [
         "fast-levenshtein",
-        "leven"
+        "leven",
+        "strsim",
+        "rapidfuzz",
+        "github.com/agnivade/levenshtein"
       ],
-      "note": "Levenshtein distance; fastest-levenshtein would be the third."
-    },
-    {
-      "id": "text-diff",
-      "members": [
-        "diff",
-        "jest-diff"
-      ],
-      "note": "Line/word diff of two texts; diff-sequences and fast-diff are missing."
-    },
-    {
-      "id": "deep-clone",
-      "members": [
-        "clone",
-        "@ungap/structured-clone"
-      ],
-      "note": "rfdc, lodash.clonedeep and klona are missing."
+      "group": "text"
     },
     {
       "id": "brace-expansion",
-      "members": [
+      "title": "Brace expansion",
+      "description": "Expand shell-style brace patterns such as a{b,c}d and {1..10} into the full list of strings; glob matching against paths and filesystem walking are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Expand 10,000 fixed patterns that mix nested comma lists and numeric ranges, yielding about 1,000,000 strings in total.",
+      "examples": [
         "brace-expansion",
-        "braces"
+        "braces",
+        "fill-range"
       ],
-      "note": "Explicitly excluded from glob-matching; only two members."
+      "group": "text"
     },
     {
-      "id": "mime-lookup",
-      "members": [
+      "id": "mime-type-lookup",
+      "title": "MIME type lookup",
+      "description": "Map a file name or extension to its media type and a media type back to its extensions, using a built-in table; sniffing content from bytes and parsing media type header values are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Look up the media type for 100,000 file names drawn from 500 distinct extensions, then the default extension for 10,000 media types.",
+      "examples": [
         "mime-types",
-        "mime"
+        "mime",
+        "mime_guess",
+        "mini_mime",
+        "@std/media-types"
       ],
-      "note": "Extension to media type lookup; whatwg-mimetype and media-typer parse rather than look up."
+      "group": "web"
     },
+    {
+      "id": "cookie-parsing",
+      "title": "HTTP cookie parsing",
+      "description": "Parse Cookie and Set-Cookie header values into names, values and attributes and serialize them back; signing or encrypting cookie values and server session stores are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse 100,000 Cookie headers of 10 pairs each and 100,000 Set-Cookie headers with attributes, then serialize them back to strings.",
+      "examples": [
+        "cookie",
+        "tough-cookie",
+        "http-cookie"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "media-type-parsing",
+      "title": "Media type parsing",
+      "description": "Parse a media type string such as a Content-Type header value into type, subtype and parameters and format it back; extension lookup tables, content sniffing and content negotiation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse and re-serialize 100,000 media type strings, half of them with charset and boundary parameters.",
+      "examples": [
+        "content-type",
+        "media-typer",
+        "whatwg-mimetype",
+        "mime",
+        "type-is"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "query-string-parsing",
+      "title": "Query string parsing",
+      "description": "Decode URL query strings or application/x-www-form-urlencoded bodies into key-value structures and encode them back; parsing the rest of the URL and multipart form bodies are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse 100,000 query strings of 20 percent-encoded key-value pairs each and serialize the results back to strings.",
+      "examples": [
+        "qs",
+        "form_urlencoded",
+        "serde_urlencoded",
+        "github.com/google/go-querystring",
+        "github.com/ajg/form"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "percent-encoding",
+      "title": "Percent encoding",
+      "description": "Percent-encode arbitrary strings for use in a URL component and decode them back; splitting query strings into pairs, full URL parsing and Punycode are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Encode and decode 100,000 strings of 100 characters, one third of which are reserved or non-ASCII characters.",
+      "examples": [
+        "percent-encoding",
+        "urlencoding",
+        "encodeurl"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "ip-address-parsing",
+      "title": "IP address and CIDR parsing",
+      "description": "Parse IPv4 and IPv6 address and CIDR network strings into values, and test whether an address falls inside a network; DNS lookups, socket handling and geolocation databases are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse 100,000 IPv4 and IPv6 address strings and test each against 100 CIDR ranges.",
+      "examples": [
+        "ipaddr.js",
+        "ip-address",
+        "ipnet",
+        "ipnetwork",
+        "ipaddress"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "idna-punycode",
+      "title": "IDNA and Punycode conversion",
+      "description": "Convert internationalized domain names between Unicode and their ASCII Punycode form according to IDNA or UTS #46; public suffix lookup, full URL parsing and DNS resolution are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Convert 100,000 Unicode domain names to ASCII and back to Unicode.",
+      "examples": [
+        "punycode",
+        "tr46",
+        "idna",
+        "simpleidn"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "public-suffix-lookup",
+      "title": "Public suffix lookup",
+      "description": "Split a host name into subdomain, registrable domain and public suffix using the Public Suffix List; IDNA conversion, URL parsing and DNS resolution are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Split 100,000 host names covering 1,000 distinct suffixes into their registrable domain and public suffix.",
+      "examples": [
+        "public_suffix",
+        "domain_name",
+        "tldextract",
+        "tld"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "uri-template-expansion",
+      "title": "URI template expansion",
+      "description": "Expand RFC 6570 URI templates with a set of variables into concrete URIs; route pattern matching of incoming paths and general URL parsing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Expand 1,000 templates covering all four RFC 6570 levels against 100 variable sets each.",
+      "examples": [
+        "uritemplate",
+        "uri-template",
+        "@fedify/uri-template"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "source-map-generation",
+      "title": "Source map generation",
+      "description": "Build a source map by recording generated-to-original position mappings, or by tracking edits to a string, and encode it to the version 3 JSON form; decoding and tracing existing maps and converting between map container formats are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Record 1,000,000 mappings across 100 source files and serialize the resulting source map to JSON.",
+      "examples": [
+        "@jridgewell/gen-mapping",
+        "magic-string"
+      ],
+      "group": "data-formats"
+    },
+    {
+      "id": "css-selector-parsing",
+      "title": "CSS selector parsing",
+      "description": "Parse CSS selector strings into a syntax tree and serialize the tree back; matching selectors against a document, parsing whole stylesheets and parsing property values are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse and re-serialize 100,000 selectors that mix compound selectors, combinators, attribute selectors and pseudo-classes.",
+      "examples": [
+        "css-what",
+        "postcss-selector-parser"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "path-manipulation",
+      "title": "Path string manipulation",
+      "description": "Normalize, join, split and relativize file system path strings purely in memory, including separator conversion between platforms; touching the file system, glob matching and URL parsing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Normalize 100,000 path strings with mixed separators and dot segments, and compute the relative path between 100,000 pairs.",
+      "examples": [
+        "pathe",
+        "normalize-path",
+        "slash",
+        "@std/path",
+        "pathdiff"
+      ],
+      "group": "system"
+    },
+    {
+      "id": "atomic-file-writing",
+      "title": "Atomic file writing",
+      "description": "Write a file so that readers see either the old or the complete new content, by writing to a temporary file and renaming it into place; advisory file locking, plain file copy and temporary file creation alone are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Atomically replace 1,000 files of 64 KiB each, 10 times over.",
+      "examples": [
+        "write-file-atomic",
+        "atomos",
+        "github.com/google/renameio"
+      ],
+      "group": "system"
+    },
+    {
+      "id": "temporary-files",
+      "title": "Temporary files and directories",
+      "description": "Create uniquely named temporary files and directories and remove them when they are no longer needed; atomic replacement of existing files and in-memory file systems are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Create 10,000 temporary files and 1,000 temporary directories, write 1 KiB to each file and clean everything up.",
+      "examples": [
+        "tmp",
+        "tempfile",
+        "@david/temp",
+        "github.com/hashicorp/go-safetemp"
+      ],
+      "group": "system"
+    },
+    {
+      "id": "layered-configuration",
+      "title": "Layered configuration loading",
+      "description": "Merge settings from defaults, configuration files and environment variables into one object and read typed values from it by key; parsers for a single file format, dotenv loading alone and discovery of tool rc files are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Load a 1,000-key configuration from two files plus 100 environment overrides and read every key 100 times.",
+      "examples": [
+        "config",
+        "github.com/spf13/viper",
+        "mixlib-config",
+        "confection"
+      ],
+      "group": "data-formats"
+    },
+    {
+      "id": "terminal-progress-bars",
+      "title": "Terminal progress bars and spinners",
+      "description": "Render a progress bar or spinner line for a running task and redraw it as the task advances; interactive prompts, full terminal UI toolkits and plain log output are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Advance a progress bar 1,000,000 times toward a fixed total while it renders to an in-memory, non-interactive stream.",
+      "examples": [
+        "progress",
+        "ora",
+        "indicatif",
+        "tqdm",
+        "ruby-progressbar"
+      ],
+      "group": "system"
+    },
+    {
+      "id": "syntax-highlighting",
+      "title": "Syntax highlighting",
+      "description": "Tokenize source code in a given language and emit it as highlighted HTML or ANSI-colored text; full parsers that build an AST, linters and Markdown rendering are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Highlight a 1 MB source file to HTML, 10 times over.",
+      "examples": [
+        "pygments",
+        "rouge",
+        "coderay",
+        "github.com/sourcegraph/syntaxhighlight"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "sql-parsing",
+      "title": "SQL parsing",
+      "description": "Parse SQL statements into tokens or a syntax tree; executing queries, database drivers, query builders and object-relational mappers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse 10,000 fixed SELECT, INSERT, UPDATE and CREATE TABLE statements of 100 to 2,000 characters.",
+      "examples": [
+        "sqlparser",
+        "sqlglot",
+        "sqlparse",
+        "pg_query"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "graphql-execution",
+      "title": "GraphQL execution",
+      "description": "Parse GraphQL documents, validate them against a schema and execute them against in-process resolvers; HTTP clients that only send queries to a remote server and web framework integrations are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a schema of 50 types, parse, validate and execute 10,000 queries that each resolve about 100 fields from in-memory data.",
+      "examples": [
+        "graphql-core",
+        "graphql",
+        "github.com/graph-gophers/graphql-go"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "csv-parsing",
+      "title": "CSV parsing",
+      "description": "Parse delimited text with quoting and escaping into records and write records back as CSV; spreadsheet file formats, dataframes and fixed-width formats are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a 100 MB CSV file of 1,000,000 rows and 10 columns, a quarter of the fields quoted, and write the rows back out.",
+      "examples": [
+        "csv",
+        "csv-core",
+        "@std/csv",
+        "@vslinko/csv"
+      ],
+      "group": "data-formats"
+    },
+    {
+      "id": "spreadsheet-writing",
+      "title": "Spreadsheet file writing",
+      "description": "Create spreadsheet workbook files such as XLSX from rows of cell values, with formats and multiple sheets; reading existing workbooks, CSV output and dataframes are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Write a workbook of 5 sheets with 100,000 rows of 10 mixed numeric and string columns each.",
+      "examples": [
+        "xlsxwriter",
+        "openpyxl",
+        "caxlsx",
+        "@mirror/xlsx"
+      ],
+      "group": "media"
+    },
+    {
+      "id": "spreadsheet-reading",
+      "title": "Spreadsheet file reading",
+      "description": "Open existing spreadsheet workbook files such as XLSX or XLS and read their sheets and cell values; creating workbooks, CSV parsing and dataframes are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Open a 20 MB workbook of 5 sheets with 100,000 rows of 10 columns each and read every cell value.",
+      "examples": [
+        "openpyxl",
+        "xlrd",
+        "roo",
+        "spreadsheet",
+        "@mirror/xlsx"
+      ],
+      "group": "media"
+    },
+    {
+      "id": "html-to-markdown",
+      "title": "HTML to Markdown conversion",
+      "description": "Convert HTML markup into equivalent Markdown text; rendering Markdown to HTML, HTML sanitizing and readability-style article extraction are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Convert 1,000 HTML documents of 50 KB each, with headings, lists, links, tables and code blocks, to Markdown.",
+      "examples": [
+        "markdownify",
+        "reverse_markdown",
+        "markitdown"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "plist-parsing",
+      "title": "Property list parsing",
+      "description": "Read and write Apple property lists in their XML, binary or ASCII form as native values; Xcode project manipulation and general XML parsing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse and re-serialize 1,000 property lists of 10,000 nested entries each.",
+      "examples": [
+        "CFPropertyList",
+        "plist",
+        "nanaimo"
+      ],
+      "group": "data-formats"
+    },
+    {
+      "id": "json-patch",
+      "title": "JSON Patch",
+      "description": "Apply RFC 6902 JSON Patch or RFC 7386 merge patch operations to a JSON document, or compute the patch that turns one document into another; path queries that only read values and text diffs are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Apply 100,000 patches of 10 operations each to a 100 KB JSON document.",
+      "examples": [
+        "json-patch",
+        "jsonpatch",
+        "github.com/evanphx/json-patch",
+        "gomodules.xyz/jsonpatch/v2"
+      ],
+      "group": "data-formats"
+    },
+    {
+      "id": "pem-encoding",
+      "title": "PEM encoding",
+      "description": "Decode PEM text blocks into their label and binary payload and encode payloads back into PEM; parsing the ASN.1 structures inside, certificate verification and bare base64 are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Decode a 10 MB bundle of 5,000 PEM certificate and key blocks and encode the payloads back to PEM.",
+      "examples": [
+        "pem",
+        "pem-rfc7468",
+        "rustls-pemfile"
+      ],
+      "group": "security-and-compression"
+    },
+    {
+      "id": "number-parsing",
+      "title": "Number parsing",
+      "description": "Parse decimal text into integer and floating-point machine numbers; formatting numbers as text, arbitrary-precision arithmetic and locale-aware or spelled-out numbers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse 10,000,000 integer strings and 10,000,000 float strings of 1 to 20 significant digits.",
+      "examples": [
+        "lexical-parse-float",
+        "lexical-parse-integer",
+        "minimal-lexical",
+        "atoi",
+        "strnum"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "substring-search",
+      "title": "Substring search",
+      "description": "Find the occurrences of one or many literal byte or string patterns in a large buffer; regular expression engines, fuzzy matching and full-text indexing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Find every occurrence of a single byte, of one 12-byte literal and of a set of 1,000 literals in a 100 MB text corpus.",
+      "examples": [
+        "memchr",
+        "aho-corasick"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "unicode-normalization",
+      "title": "Unicode normalization",
+      "description": "Convert text to the Unicode normalization forms NFC, NFD, NFKC and NFKD; case folding, transliteration to ASCII and stringprep profiles are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Normalize a 50 MB multilingual corpus to each of NFC, NFD, NFKC and NFKD.",
+      "examples": [
+        "unicode-normalization",
+        "icu_normalizer",
+        "unf_ext",
+        "unf",
+        "unicode_utils"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "unicode-segmentation",
+      "title": "Unicode text segmentation",
+      "description": "Find grapheme cluster, word, sentence or line-break boundaries in text according to the Unicode segmentation rules; display width measurement, word wrapping and language-specific tokenizers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Iterate over all grapheme cluster and word boundaries of a 50 MB multilingual corpus.",
+      "examples": [
+        "unicode-segmentation",
+        "unicode-linebreak",
+        "github.com/apparentlymart/go-textseg",
+        "@hugoalh/string-dissect"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "utf8-validation",
+      "title": "UTF-8 validation and decoding",
+      "description": "Validate that a byte buffer is well-formed UTF-8 and decode it to code points, including incremental and lossy decoding; transcoding legacy character sets and Unicode normalization are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Validate and decode to code points a 100 MB buffer of mixed ASCII and multi-byte UTF-8 text, plus the same buffer with 1 percent invalid sequences.",
+      "examples": [
+        "simdutf8",
+        "utf-8",
+        "utf8_iter",
+        "bstr",
+        "encode_unicode"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "charset-transcoding",
+      "title": "Character set transcoding",
+      "description": "Decode bytes in a legacy character encoding such as Shift_JIS, GBK or windows-1252 to Unicode text and encode text back; guessing an unknown encoding, base64 and UTF-8 validation alone are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Decode 10 MB of text in each of Shift_JIS, GBK and windows-1252 to Unicode and encode it back.",
+      "examples": [
+        "iconv-lite",
+        "whatwg-encoding",
+        "encoding_rs",
+        "nkf"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "ascii-transliteration",
+      "title": "ASCII transliteration and slugs",
+      "description": "Replace accented and non-Latin characters with their closest ASCII equivalents, optionally producing a URL slug; Unicode normalization forms, case conversion and percent encoding are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Transliterate 100,000 titles of 80 characters in 20 scripts to ASCII.",
+      "examples": [
+        "unidecode",
+        "text-unidecode",
+        "babosa",
+        "sixarm_ruby_unaccent"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "noun-inflection",
+      "title": "Noun pluralization",
+      "description": "Turn English nouns into their plural or singular form using rules and irregular word lists; identifier case conversion, message translation and stemming for search are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Pluralize and then singularize a fixed list of 100,000 English nouns, 5 percent of them irregular.",
+      "examples": [
+        "inflect",
+        "github.com/jinzhu/inflection",
+        "@wei/pluralize"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "natural-sorting",
+      "title": "Natural sort order",
+      "description": "Compare or sort strings so that embedded numbers are ordered by numeric value, as in file2 before file10; full locale-aware collation and semantic version ordering are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Sort 1,000,000 strings that mix letters and digit runs into natural order.",
+      "examples": [
+        "natural-compare",
+        "natsort",
+        "naturally",
+        "github.com/fvbommel/sortorder"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "key-derivation",
+      "title": "Key derivation",
+      "description": "Derive key material from a secret with HKDF or PBKDF2; memory-hard password hashing such as bcrypt and Argon2, bare message digests and key exchange are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Derive 100,000 32-byte keys with HKDF-SHA-256 and 100 keys with PBKDF2-HMAC-SHA-256 at 100,000 iterations, each member running the functions it offers.",
+      "examples": [
+        "hkdf",
+        "pbkdf2",
+        "github.com/xdg-go/pbkdf2"
+      ],
+      "group": "security-and-compression"
+    },
+    {
+      "id": "message-authentication-codes",
+      "title": "Message authentication codes",
+      "description": "Compute a keyed authentication tag over a message with HMAC or a universal hash such as Poly1305, GHASH or POLYVAL; unkeyed digests, full AEAD ciphers and digital signatures are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compute tags over 1,000,000 messages of 64 bytes and over 100 messages of 1 MB with a fixed key.",
+      "examples": [
+        "hmac",
+        "poly1305",
+        "ghash",
+        "polyval"
+      ],
+      "group": "security-and-compression"
+    },
+    {
+      "id": "symmetric-ciphers",
+      "title": "Unauthenticated symmetric ciphers",
+      "description": "Encrypt and decrypt bytes with a bare block or stream cipher and its mode of operation, such as AES-CTR, AES-CBC, ChaCha20 or Salsa20; authenticated AEAD constructions, public-key cryptography and TLS are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Encrypt and decrypt a 100 MB buffer and 1,000,000 buffers of 64 bytes with a fixed key and nonce.",
+      "examples": [
+        "aes",
+        "chacha20",
+        "salsa20",
+        "ctr",
+        "cbc"
+      ],
+      "group": "security-and-compression"
+    },
+    {
+      "id": "one-time-passwords",
+      "title": "One-time passwords",
+      "description": "Generate and verify HOTP and TOTP codes from a shared secret according to RFC 4226 and RFC 6238; password hashing, WebAuthn and full authentication frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Generate 1,000,000 TOTP codes for fixed secrets and timestamps and verify each with a window of one step.",
+      "examples": [
+        "pyotp",
+        "rotp",
+        "@hectorm/otpauth"
+      ],
+      "group": "security-and-compression"
+    },
+    {
+      "id": "image-decoding",
+      "title": "Single-format image codecs",
+      "description": "Decode one raster image format such as PNG, JPEG, GIF, TIFF or WebP to a pixel buffer, and encode pixels back where supported; multi-format image toolkits with resize and crop operations and header-only size readers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Decode 100 images of 4,000 by 3,000 pixels in the member's format to RGBA pixel buffers.",
+      "examples": [
+        "png",
+        "zune-jpeg",
+        "jpeg-decoder",
+        "gif",
+        "@img/png"
+      ],
+      "group": "media"
+    },
+    {
+      "id": "linear-algebra",
+      "title": "Linear algebra and arrays",
+      "description": "Dense vector, matrix and n-dimensional array types with element-wise arithmetic, matrix multiplication and decompositions; dataframes, arbitrary-precision numbers and machine learning frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Multiply two 1,000 by 1,000 matrices of 64-bit floats and multiply 10,000,000 pairs of 4 by 4 matrices.",
+      "examples": [
+        "numpy",
+        "ndarray",
+        "nalgebra",
+        "glam",
+        "matrix"
+      ],
+      "group": "numbers-and-time"
+    },
+    {
+      "id": "graph-algorithms",
+      "title": "Graph algorithms",
+      "description": "In-memory graph structures of nodes and edges with traversal, topological sort, shortest path and connected component algorithms; graph drawing and layout, graph databases and dependency version solvers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Build a directed acyclic graph of 100,000 nodes and 500,000 edges, topologically sort it and find its strongly connected components.",
+      "examples": [
+        "petgraph",
+        "networkx",
+        "tsort"
+      ],
+      "group": "data-structures"
+    },
+    {
+      "id": "synchronization-primitives",
+      "title": "Synchronization primitives",
+      "description": "In-process mutexes, read-write locks, condition variables, spin locks and thread parking that guard shared state between threads or tasks; cross-process file locks, message channels and distributed locks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Have 8 threads each lock and unlock one shared mutex around a counter increment 1,000,000 times.",
+      "examples": [
+        "parking_lot",
+        "spin",
+        "async-lock",
+        "github.com/moby/locker",
+        "sync"
+      ],
+      "group": "concurrency"
+    },
+    {
+      "id": "slot-arenas",
+      "title": "Slabs and slot maps",
+      "description": "Containers that store values of one type in reusable slots and hand back a stable integer key or handle for each; hash tables with caller-chosen keys, bump allocators without removal and inline vectors are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Insert 1,000,000 values, remove every second one by key, insert 500,000 more and read every live value by key.",
+      "examples": [
+        "slab",
+        "slotmap",
+        "sharded-slab",
+        "id-arena"
+      ],
+      "group": "data-structures"
+    },
+    {
+      "id": "small-strings",
+      "title": "Small-string types",
+      "description": "String types that store short contents inline without a heap allocation and are cheap to clone; inline vectors of arbitrary elements, string interning tables and byte-string types without the inline optimization are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Create 10,000,000 strings of 1 to 40 bytes from slices, clone each once and compare it with its source.",
+      "examples": [
+        "compact_str",
+        "smol_str",
+        "tinystr",
+        "tendril"
+      ],
+      "group": "data-structures"
+    },
+    {
+      "id": "queues-and-linked-lists",
+      "title": "Queues and linked lists",
+      "description": "In-memory FIFO queues, deques, ring buffers and linked lists with push and pop at the ends; channels that pass values between threads, priority queues and persistent job queues are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Push 10,000,000 items to the back and pop them from the front, keeping the queue at a steady length of 1,000.",
+      "examples": [
+        "yallist",
+        "yocto-queue",
+        "dlv-list",
+        "github.com/eapache/queue"
+      ],
+      "group": "data-structures"
+    },
+    {
+      "id": "resource-pools",
+      "title": "Resource pools",
+      "description": "Hold a bounded set of reusable resources such as connections or buffers and check them out to and back in from concurrent callers; driver-specific connection pools, worker task pools and caches are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "From a pool of 10 resources, check out and return a resource 1,000,000 times across 32 concurrent callers.",
+      "examples": [
+        "connection_pool",
+        "deadpool",
+        "github.com/jackc/puddle",
+        "github.com/valyala/bytebufferpool"
+      ],
+      "group": "concurrency"
+    },
+    {
+      "id": "rate-limiting",
+      "title": "Rate limiting",
+      "description": "Decide whether an action for a given key is allowed now under a token bucket, leaky bucket or fixed-window limit; retry and backoff policies, concurrency limiters and gateway products are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Check 10,000,000 requests spread over 10,000 keys against a limit of 100 per second using an in-memory store.",
+      "examples": [
+        "governor",
+        "limits",
+        "golang.org/x/time",
+        "github.com/juju/ratelimit",
+        "express-rate-limit"
+      ],
+      "group": "concurrency"
+    },
+    {
+      "id": "dns-message-codec",
+      "title": "DNS messages and resolution",
+      "description": "Encode and decode DNS wire-format messages and resource records, and use them to query name servers; host name parsing, public suffix lookup and mDNS service discovery are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Decode and re-encode 1,000,000 DNS response messages that carry 10 mixed A, AAAA, CNAME, MX and TXT records each.",
+      "examples": [
+        "hickory-proto",
+        "dnspython",
+        "github.com/miekg/dns",
+        "hickory-resolver"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "ssh-client",
+      "title": "SSH and SFTP clients",
+      "description": "Speak the SSH2 protocol as a client to run remote commands and transfer files over SFTP or SCP; SSH servers, deployment tools built on a client and SSH agent or key-file helpers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local SSH server, run 1,000 short commands over one connection and transfer a 100 MB file there and back over SFTP.",
+      "examples": [
+        "paramiko",
+        "net-ssh",
+        "net-sftp",
+        "github.com/pkg/sftp"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "smtp-client",
+      "title": "SMTP clients",
+      "description": "Build an email message and submit it to a mail server over SMTP; IMAP and POP3 retrieval, vendor email API SDKs and SMTP servers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Send 10,000 messages of 10 KB each to a local SMTP sink over one connection.",
+      "examples": [
+        "net-smtp",
+        "mail",
+        "@upyo/smtp",
+        "@neabyte/deno-mailer"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "kafka-client",
+      "title": "Kafka clients",
+      "description": "Speak the Apache Kafka protocol to produce records to topics and consume them back; clients for other brokers such as AMQP, NATS or MQTT and stream processing frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local single-node broker, produce 1,000,000 records of 1 KB to one topic and consume them all back.",
+      "examples": [
+        "confluent-kafka",
+        "kafka-python",
+        "ruby-kafka",
+        "github.com/Shopify/sarama",
+        "github.com/segmentio/kafka-go"
+      ],
+      "group": "storage"
+    },
+    {
+      "id": "sqlite-client",
+      "title": "SQLite clients",
+      "description": "Open a SQLite database from the host language, run statements and decode result rows; object-relational mappers, query builders and drivers for database servers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "In an in-memory database, insert 1,000,000 rows of 5 columns in one transaction and select them all back.",
+      "examples": [
+        "sqlite3",
+        "@db/sqlite",
+        "aiosqlite"
+      ],
+      "group": "storage"
+    },
+    {
+      "id": "object-relational-mapping",
+      "title": "Object-relational mapping",
+      "description": "Map declared model classes or structs to SQL tables, generate the statements for create, read, update and delete, and hydrate result rows into objects; bare database drivers, SQL parsers and schema migration tools are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against an in-memory SQLite database, insert 100,000 model objects, load them back with a filtered query and update one field on each.",
+      "examples": [
+        "sqlalchemy",
+        "peewee",
+        "gorm.io/gorm",
+        "github.com/jmoiron/sqlx",
+        "sqlmodel"
+      ],
+      "group": "storage"
+    },
+    {
+      "id": "git-repository-access",
+      "title": "Git repository access",
+      "description": "Read and write Git repositories from a program: walk commit history, read trees and blobs and create commits; hosting-service API clients, repository URL parsers and unified diff parsers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "In a repository of 10,000 commits and 5,000 files, walk the full history and read every blob of the head tree.",
+      "examples": [
+        "gitpython",
+        "dulwich",
+        "git",
+        "gopkg.in/src-d/go-git.v4"
+      ],
+      "group": "system"
+    },
+    {
+      "id": "grpc-rpc",
+      "title": "gRPC",
+      "description": "Implement gRPC clients and servers that exchange Protocol Buffers messages over HTTP/2; the Protocol Buffers encoding alone, gateway proxies and other RPC protocols are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Make 100,000 unary calls with a 1 KB request and response, and stream 1,000,000 messages, between a client and server on the loopback interface.",
+      "examples": [
+        "grpcio",
+        "grpclib",
+        "tonic",
+        "grpc.go4.org"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "socks-proxy-client",
+      "title": "SOCKS proxy clients",
+      "description": "Open TCP connections through a SOCKS4 or SOCKS5 proxy by performing the client side of the handshake; HTTP CONNECT proxies, SOCKS servers and SSH tunnels are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Open 10,000 connections through a local SOCKS5 proxy to a local echo server and send 1 KB over each.",
+      "examples": [
+        "pysocks",
+        "socksio",
+        "socksify",
+        "socks-proxy-agent",
+        "github.com/btcsuite/go-socks"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "fake-data-generation",
+      "title": "Fake data generation",
+      "description": "Generate realistic-looking fake values such as names, addresses, emails and dates for tests and fixtures; bare random number generators, unique ID generators and property-based testing frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "With a fixed seed, generate 1,000,000 records of name, email, street address and date.",
+      "examples": [
+        "faker",
+        "ffaker",
+        "factory-boy",
+        "@laura/testdata-generator"
+      ],
+      "group": "numbers-and-time"
+    },
+    {
+      "id": "symbol-demangling",
+      "title": "Symbol demangling",
+      "description": "Turn mangled C++ or Rust linker symbol names back into readable declarations; reading object files or debug information and capturing stack traces are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Demangle 1,000,000 mangled symbol names taken from a large binary.",
+      "examples": [
+        "rustc-demangle",
+        "cpp_demangle",
+        "github.com/ianlancetaylor/demangle"
+      ],
+      "group": "text"
+    },
+    {
+      "id": "embedded-script-interpreters",
+      "title": "Embedded script interpreters",
+      "description": "Run programs written in a scripting language such as JavaScript, Lua or Starlark inside the host process and exchange values with them; single-expression evaluators, template engines and bindings that only launch an external runtime binary are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Run a script that computes fib(30) recursively and one that sorts a 1,000,000-element array, each 10 times.",
+      "examples": [
+        "github.com/dop251/goja",
+        "github.com/yuin/gopher-lua",
+        "go.starlark.net"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "expression-evaluation",
+      "title": "Expression evaluation",
+      "description": "Parse a single arithmetic or boolean expression given as text and evaluate it against a set of variables; full scripting-language interpreters, template engines and regular expressions are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compile 1,000 expressions of about 20 operators each and evaluate every one against 10,000 variable bindings.",
+      "examples": [
+        "github.com/Knetic/govaluate",
+        "github.com/google/cel-go",
+        "cexpr",
+        "boolean.py",
+        "cfg-expr"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "xml-building",
+      "title": "XML building",
+      "description": "Produce XML text from code through a builder interface or from nested native data structures; parsing XML, HTML template engines and DOM implementations are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Build and serialize a document of 1,000,000 elements, each with 3 attributes and a text node.",
+      "examples": [
+        "xmlbuilder",
+        "builder",
+        "gyoku",
+        "et-xmlfile"
+      ],
+      "group": "markup-and-code"
+    },
+    {
+      "id": "classname-composition",
+      "title": "Class name composition",
+      "description": "Build an HTML class attribute string from a mix of strings, arrays and condition maps; resolving conflicts between utility classes and CSS-in-JS runtimes are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compose 1,000,000 class strings from 10 arguments each, mixing strings, nested arrays and condition objects.",
+      "examples": [
+        "clsx",
+        "@nick/clsx",
+        "class-variance-authority"
+      ],
+      "group": "text"
+    }
+  ],
+  "candidateCategories": [
     {
       "id": "property-path-access",
       "members": [
@@ -1970,22 +2822,6 @@
         "pathval"
       ],
       "note": "Get/set by dotted path; lodash.get and lodash.set are missing."
-    },
-    {
-      "id": "ip-address-parsing",
-      "members": [
-        "ipaddr.js",
-        "ip-address"
-      ],
-      "note": "Parse and match IPv4/IPv6 addresses and CIDR ranges."
-    },
-    {
-      "id": "dotenv-loading",
-      "members": [
-        "dotenv",
-        "@next/env"
-      ],
-      "note": "Parse .env text; dotenv-expand is missing."
     },
     {
       "id": "config-file-discovery",
@@ -1996,57 +2832,12 @@
       "note": "Search for and load rc/config files; postcss-load-config wraps lilconfig."
     },
     {
-      "id": "classname-composition",
-      "members": [
-        "clsx",
-        "class-variance-authority"
-      ],
-      "note": "classnames is missing; tailwind-merge does a different task (conflict resolution)."
-    },
-    {
-      "id": "file-watching",
-      "members": [
-        "chokidar",
-        "watchpack"
-      ],
-      "note": "Watch a tree and report change events."
-    },
-    {
       "id": "directory-creation",
       "members": [
         "mkdirp",
         "make-dir"
       ],
       "note": "Recursive mkdir; fs-extra covers it as one of many functions."
-    },
-    {
-      "id": "retry",
-      "members": [
-        "retry",
-        "p-retry"
-      ],
-      "note": "p-retry wraps retry; async-retry is missing."
-    },
-    {
-      "id": "query-string-parsing",
-      "members": [
-        "qs"
-      ],
-      "note": "query-string and querystring are not in the list yet."
-    },
-    {
-      "id": "websocket",
-      "members": [
-        "ws"
-      ],
-      "note": "No peers yet (socket.io, uWebSockets.js)."
-    },
-    {
-      "id": "semver",
-      "members": [
-        "semver"
-      ],
-      "note": "No peers yet (compare-versions, semver-compare)."
     },
     {
       "id": "promisification",
@@ -2078,26 +2869,6 @@
       "note": "Has 3+ members but each speaks a different proxy protocol, so one benchmark needs per-protocol fixtures."
     },
     {
-      "id": "hashing",
-      "members": [
-        "@noble/hashes",
-        "imurmurhash",
-        "buffer-crc32",
-        "object-hash"
-      ],
-      "note": "Different algorithms and inputs; would need splitting into cryptographic, non-cryptographic and checksum once peers appear."
-    },
-    {
-      "id": "character-encoding",
-      "members": [
-        "iconv-lite",
-        "whatwg-encoding",
-        "base64-js",
-        "@protobufjs/base64"
-      ],
-      "note": "Could split into legacy charset decoding and base64 once each has 3 members."
-    },
-    {
       "id": "http-header-parsing",
       "members": [
         "cookie",
@@ -2111,15 +2882,6 @@
       "note": "Each parses a different header; cookie parsing (cookie, tough-cookie) is the closest pair."
     },
     {
-      "id": "css-selector-parsing",
-      "members": [
-        "css-what",
-        "postcss-selector-parser",
-        "css-select"
-      ],
-      "note": "css-select is an engine rather than a parser; two true parsers."
-    },
-    {
       "id": "terminal-prompts",
       "members": [
         "prompts",
@@ -2127,17 +2889,6 @@
         "@inquirer/confirm"
       ],
       "note": "Interactive, so probably non-benchmarkable; also ora and progress for spinners/progress bars."
-    },
-    {
-      "id": "ansi-text-layout",
-      "members": [
-        "wrap-ansi",
-        "slice-ansi",
-        "cli-truncate",
-        "strip-ansi",
-        "word-wrap"
-      ],
-      "note": "Wrap, slice, truncate and strip are different tasks; word wrapping (wrap-ansi, word-wrap) is the closest pair."
     },
     {
       "id": "module-hooks",
@@ -2159,19 +2910,6 @@
       "note": "Read and normalize package.json; overlapping but not identical tasks."
     },
     {
-      "id": "environment-detection",
-      "members": [
-        "ci-info",
-        "std-env",
-        "supports-color",
-        "is-docker",
-        "is-wsl",
-        "is-interactive",
-        "detect-libc"
-      ],
-      "note": "One-shot environment probes; likely a non-benchmarkable category rather than a benchmark."
-    },
-    {
       "id": "state-management",
       "members": [
         "zustand",
@@ -2179,23 +2917,6 @@
         "@tanstack/query-core"
       ],
       "note": "Different models (store, immutable update, query cache); redux and jotai are missing."
-    },
-    {
-      "id": "source-map-generation",
-      "members": [
-        "@jridgewell/gen-mapping",
-        "magic-string",
-        "source-map",
-        "source-map-js"
-      ],
-      "note": "Generation side of source maps; source-map and source-map-js are already placed under source-map-decoding."
-    },
-    {
-      "id": "postgres-client",
-      "members": [
-        "pg"
-      ],
-      "note": "No peers yet (postgres, mysql2 for a broader SQL-client class)."
     }
   ]
 }

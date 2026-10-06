@@ -81,7 +81,7 @@ ul { padding-left: 18px; }
 /* Runtime and ranking switches: radio inputs, so they work without JavaScript. */
 .switches { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 14px 0 12px; }
 .switch { display: flex; flex-wrap: wrap; align-items: center; margin: 0; padding: 0; border: 0; min-width: 0; }
-.switch legend { float: left; padding: 0; margin-right: 8px; font-weight: 700; }
+.switch .legend, .pager .legend { margin-right: 8px; font-weight: 700; }
 .switch input { position: absolute; opacity: 0; pointer-events: none; }
 .switch label { padding: 4px 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--soft); margin-left: -1px; background: var(--bg); }
 .switch label:hover { background: var(--band); }
@@ -89,7 +89,7 @@ ul { padding-left: 18px; }
 /* A bar that would vanish on the selection highlight takes another colour there. */
 .switch input:checked + label .scale path[style] { fill: var(--selected); }
 .switch label small { font-weight: 400; color: var(--soft); margin-left: 5px; }
-.switch input:checked + label { background: var(--mark); color: #000; border-color: #000; position: relative; }
+.switch input:checked + label { background: var(--mark); color: #000; position: relative; }
 .switch input:checked + label small { color: #000; }
 .switch input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: 1px; position: relative; }
 .panel { display: none; }
@@ -101,7 +101,7 @@ ul { padding-left: 18px; }
 .pick:has(#settings-installed:checked) .as-installed { display: inline; }
 
 /* Label cards. */
-.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 18px 16px; align-items: start; padding: 0; margin: 10px 0 14px; list-style: none; max-width: none; }
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, 236px); gap: 18px 16px; align-items: start; padding: 0; margin: 10px 0 14px; list-style: none; max-width: none; }
 .shelf svg { display: block; width: 100%; height: auto; }
 .shelf .under { margin: 4px 0 0; font-size: 0.8125rem; }
 
@@ -204,12 +204,12 @@ footer p { max-width: 110ch; }
   .search { flex-basis: 100%; }
   .top nav { display: none; }
   .top .name { margin-right: auto; }
-  .shelf { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 10px; }
-  .switch legend { float: none; width: 100%; margin-bottom: 4px; }
+  .shelf { gap: 12px 10px; }
+  .switch .legend { width: 100%; margin: 0 0 4px; }
 }
 table.legend thead th.l { text-align: left; }
 
-.language-switch { flex-basis: 100%; }
+
 .switch[hidden], .switch label[hidden] { display: none; }
 
 /* Fixed subcolumns keep checker figures and grades aligned across rows. */
@@ -306,12 +306,18 @@ details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; tex
 #q-results .search-note { padding: 5px 10px; font-size: 0.75rem; color: var(--soft); border-top: 1px solid var(--rule); }
 
 /* Pages of a long table. */
-.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: -4px 0 14px; font-size: 0.8125rem; }
-.pager button, .page-menu button, .menu button { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--rule); padding: 3px 10px; cursor: pointer; }
-.pager button:hover:not(:disabled) { background: var(--mark); color: #000; }
+/* Drawn like the switches above it: the same boxes, joined in a row. */
+.pager { display: flex; flex-wrap: wrap; align-items: center; margin: 0 0 12px; }
+.pager.above { margin: 0 0 8px; }
+.switches:has(+ .panel) { margin-bottom: 8px; }
+.pager button, .pager .status { font: inherit; font-weight: 600; color: inherit; background: var(--bg); border: 1px solid var(--soft); padding: 4px 11px; margin-left: -1px; }
+.pager button:first-child { margin-left: 0; }
+.pager button { cursor: pointer; }
+.pager button:hover:not(:disabled) { background: var(--band); }
 .pager button:disabled { color: var(--soft); cursor: default; }
-.pager span { min-width: 9em; text-align: center; font-variant-numeric: tabular-nums; }
-.pager button:last-child { margin-left: 8px; }
+.pager .status { min-width: 9.5em; text-align: center; font-weight: 400; font-variant-numeric: tabular-nums; }
+.pager button.all { margin-left: 12px; }
+.page-menu button, .menu button { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--rule); padding: 3px 10px; cursor: pointer; }
 .side a.more { color: var(--soft); }
 
 /* Menus: a <details> whose list drops below its summary. */
@@ -328,11 +334,12 @@ details.menu > ul .ico { width: 16px; height: 16px; flex: none; }
 
 /* Copy page, and the other forms a page comes in. */
 .page-menu { float: right; display: flex; margin: 0 0 8px 16px; }
-.page-menu summary, .page-menu .copy-page { display: flex; align-items: center; gap: 7px; padding: 4px 10px; border: 1px solid var(--rule); background: var(--bg); font-size: 0.8125rem; }
+.page-menu summary, .page-menu .copy-page { display: flex; align-items: center; gap: 7px; padding: 4px 11px; border: 1px solid var(--soft); background: var(--bg); font-weight: 600; }
 .page-menu summary::after { content: ''; border: 4px solid transparent; border-top-color: currentColor; border-bottom-width: 0; }
-.page-menu summary:hover, .page-menu .copy-page:hover { background: var(--mark); color: #000; }
+.page-menu summary:hover, .page-menu .copy-page:hover { background: var(--band); }
+.page-menu details[open] > summary { background: var(--mark); color: #000; }
 .page-menu.split .menu-title, .page-menu.split summary .ico { display: none; }
-.page-menu.split summary { border-left: 0; height: 100%; }
+.page-menu.split summary { margin-left: -1px; height: 100%; }
 .page-menu .ico { width: 14px; height: 14px; margin: 0; }
 
 /* The label menu: a button at the label's corner, shown on hover or focus. */
@@ -346,7 +353,7 @@ details.label-menu > ul { min-width: 9rem; }
 @media (hover: none) { .label-menu > summary { opacity: 1; } }
 .js .svg-link { display: none; }
 
-.toast { position: fixed; z-index: 30; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 8px 14px; background: var(--ink); color: var(--bg); font-weight: 600; box-shadow: 0 6px 18px rgb(0 0 0 / 0.25); }
+.toast { position: fixed; z-index: 40; max-width: min(24rem, calc(100vw - 16px)); padding: 8px 14px; background: var(--ink); color: var(--bg); font-weight: 600; box-shadow: 0 6px 18px rgb(0 0 0 / 0.25); }
 
 /* Facts about a listed package. */
 table.facts th { text-align: left; font-weight: 700; padding-right: 16px; white-space: nowrap; vertical-align: top; }
@@ -361,3 +368,79 @@ table.facts td { white-space: normal; }
 h2 .count { font-weight: 400; color: var(--soft); margin-left: 4px; }
 .side li.open > a { font-weight: 800; }
 h3 .count { font-weight: 400; color: var(--soft); margin-left: 4px; }
+
+/* Side menu, third level: a category's tasks and packages sit inside a ruled
+   inset, so they read as belonging to the category above them. */
+.side ul ul ul { margin: 2px 0 6px 30px; border-left: 1px solid var(--rule); }
+.side ul ul ul a { padding-left: 12px; }
+.side ul ul h3 { margin: 6px 0 0 30px; padding: 4px 0 2px 12px; border-left: 1px solid var(--rule); }
+.side ul ul h3 + ul { margin-top: 0; }
+
+.switches.filters { margin: 10px 0 8px; }
+
+/* Switches with a pager: the pager holds the top right, the switches wrap
+   beside it. On a narrow screen the pager goes under them, next to the table. */
+.switches.has-pager { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 8px 28px; }
+.switch-groups { display: flex; flex-wrap: wrap; gap: 8px 28px; min-width: 0; }
+.switches.has-pager > .pager { grid-column: 2; grid-row: 1; margin: 0; flex-wrap: nowrap; white-space: nowrap; }
+.pager[hidden] { display: none; }
+@media (max-width: 760px) {
+  .switches.has-pager { grid-template-columns: 1fr; }
+  .switches.has-pager > .pager { grid-column: 1; grid-row: 2; justify-self: start; }
+}
+
+/* Labels have one size. Only on a narrow screen, where two of that size do
+   not fit side by side, do they shrink to share the width. */
+@media (max-width: 540px) {
+  .shelf { grid-template-columns: repeat(2, minmax(0, 236px)); }
+}
+/* The row of assistants at the foot of the page menu: a mark with its name
+   in small print underneath. */
+details.menu > ul li.assistants { display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--rule); }
+details.menu > ul li.assistants a { flex-direction: column; gap: 3px; width: auto; flex: 1 1 0; padding: 6px 2px 4px; }
+details.menu > ul li.assistants .ico { width: 18px; height: 18px; margin: 0; }
+details.menu > ul li.assistants small { font-size: 0.625rem; line-height: 1; white-space: nowrap; }
+
+/* First and last place in a ranking of runtimes. */
+.shelf .over { height: 20px; margin: 0 0 5px; }
+.shelf li:has(> .over) .label-menu { top: 34px; }
+.place { display: inline-flex; align-items: center; gap: 4px; margin: 0; padding: 0 6px 0 3px; border: 1px solid var(--soft); font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; line-height: 18px; }
+.shelf svg.place-mark { display: block; flex: none; width: auto; height: 16px; }
+.place { white-space: nowrap; }
+.toast a { color: inherit; }
+.toast[hidden] { display: none; }
+details.menu > ul { min-width: 18.5rem; }
+details.label-menu > ul { min-width: 9rem; }
+.place.worst, .place.second-worst { color: var(--soft); }
+svg.medal { display: inline-block; width: auto; height: 14px; vertical-align: -2px; }
+.row-marks { display: inline-flex; gap: 6px; vertical-align: -2px; }
+td:first-child .row-marks { margin-left: 8px; }
+.tally { display: inline-flex; align-items: center; gap: 1px; }
+.tally small { font-size: 0.6875rem; font-weight: 700; color: var(--soft); }
+.tally-slot { display: inline-block; min-width: 28px; }
+td.medals .row-marks { gap: 4px; }
+td.medals .tally small { font-variant-numeric: tabular-nums; }
+td.medals { white-space: nowrap; }
+.row-marks svg.medal { vertical-align: 0; }
+/* The faces are line drawings in the muted text colour. */
+svg.medal, .place-mark { color: var(--soft); }
+/* Tags on the labels at the far end of a row sit at the right, so the two
+   ends of a ranking mirror each other. Whichever labels are there get it,
+   so it follows the "Best first / Worst first" switch. */
+.shelf li:last-child:not(:first-child) .over, .shelf li:nth-last-child(2):nth-child(n+3) .over { text-align: right; }
+svg.medal.empty { color: var(--ink); opacity: 0.09; }
+tr.unmeasured td { color: var(--soft); }
+tr.unmeasured td a { color: var(--ink); }
+/* Table headings stay in view. A table scrolls sideways inside its box, and a
+   heading can only stick to the box it scrolls in, so a table taller than the
+   window scrolls inside that box too; shorter tables are unaffected. */
+.scroll:has(> table.sortable) { max-height: calc(100vh - 64px); overflow: auto; }
+table.sortable thead th { position: sticky; top: 0; z-index: 2; }
+/* In the table of every package, a very long name (Go module paths run to
+   sixty characters) is cut short, so one row does not widen the name column
+   for all the others. */
+.pick[data-catalog] td:first-child a { display: inline-block; max-width: 34ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.pick[data-catalog] td:first-child .ver { display: inline-block; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+/* A package without results has one category: keep it on one line, so its
+   row is no taller than the others. */
+tr.unmeasured td.categories { white-space: nowrap; }

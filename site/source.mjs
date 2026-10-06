@@ -33,6 +33,9 @@ function load(file, base) {
     path: file,
     name,
     lines: text.split('\n').length,
+    // The plain text and its language, for the Markdown version of a page.
+    text,
+    language: language ?? '',
     html: language ? hljs.highlight(text, { language }).value : escape(text),
   }
 }

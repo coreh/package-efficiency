@@ -16,8 +16,16 @@ import {
   searchIndex,
   taskPage,
   taskSourcePage,
+  eventMedals,
+  runtimeMedals,
+  allKnownPackages,
+  runtimeScores,
+  statusOf,
+  categoryHref,
+  catalogUrl,
   catalogPackagePage,
   listedCategoryPage,
+  groupPage,
   adapterSourcePage,
   tasksPage,
   urls,
@@ -25,6 +33,7 @@ import {
 } from '../site/pages.mjs'
 import { adapterIdOf } from '../site/source.mjs'
 import { iconFiles } from '../site/icons.mjs'
+import * as exportsOf from '../site/exports.mjs'
 import { llmsText, packageMarkdown, resultRows, taskMarkdown, toCsv } from '../site/exports.mjs'
 import { ecosystem, ecosystemIds } from './lib/ecosystems.mjs'
 import { fromRoot, readJson } from './lib/util.mjs'
@@ -123,17 +132,45 @@ for (const id of ecosystemIds) {
     return item
   })
 }
-for (const members of catalog.byCategory.values()) members.sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name))
+// Registries count use differently (per month, in total, by dependents), so
+// across them a package is compared by its share of its own registry's
+// listed use, and a category by the average of its share in each registry.
+for (const items of Object.values(catalog.byEcosystem)) {
+  const total = items.reduce((sum, item) => sum + item.popularity.value, 0) || 1
+  for (const item of items) {
+    item.share = item.popularity.value / total
+    if (item.measured) item.measured.listed = item
+  }
+}
+catalog.categoryShare = new Map([...catalog.byCategory].map(([id, members]) => [id, members.reduce((sum, item) => sum + item.share, 0) / Object.keys(catalog.byEcosystem).length]))
+catalog.updated = await readJson(fromRoot('data/popularity.json'), {})
+for (const members of catalog.byCategory.values()) members.sort((a, b) => b.share - a.share || a.name.localeCompare(b.name))
 model.catalog = catalog
+
+// A task's medals are worked out once and shared by every export.
+const medalCache = new Map()
+const medalsOf = (data) => medalCache.get(data) ?? medalCache.set(data, eventMedals(data)).get(data)
+// Everything the Markdown, CSV and JSON versions of the pages need.
+const ctx = { ...exported, model, ecosystems: ECOSYSTEMS, runtimeScores, statusOf, categoryHref, catalogUrl, allKnownPackages, eventMedals: medalsOf, runtimeMedals }
+// Write a page's other forms beside it: index.md, and its rows as
+// results.csv and results.json when it lists something.
+async function emit(path, { markdown, rows }) {
+  await write(dist(path, 'index.md'), markdown)
+  if (!rows) return
+  await write(dist(path, 'results.csv'), toCsv(rows))
+  await write(dist(path, 'results.json'), JSON.stringify(rows))
+}
 
 let labels = 0
 for (const data of tasks) {
   await page(urls.task(data.task.id), taskPage(data, model))
   await page(urls.source(data.task.id), taskSourcePage(data, model))
-  await write(dist(urls.task(data.task.id), 'index.md'), taskMarkdown(data, exported))
-  await write(dist(urls.task(data.task.id), 'results.csv'), toCsv(resultRows(data)))
+  await write(dist(urls.task(data.task.id), 'index.md'), taskMarkdown(data, ctx))
+  await write(dist(urls.task(data.task.id), 'results.csv'), toCsv(resultRows(data, ctx)))
+  await emit(urls.source(data.task.id), exportsOf.taskSourceExport(ctx, data))
   for (const adapterId of new Set(data.runtimes.flatMap((r) => [...r.entries, ...r.history]).map(adapterIdOf))) {
     await page(urls.source(data.task.id, adapterId), adapterSourcePage(data, adapterId, model))
+    await emit(urls.source(data.task.id, adapterId), exportsOf.adapterSourceExport(ctx, data, adapterId))
   }
   for (const runtime of data.runtimes) {
     for (const entry of runtime.entries) {
@@ -154,17 +191,27 @@ for (const data of tasks) {
     }
   }
 }
-for (const category of model.categories) await page(urls.category(category.id), categoryPage(category, model))
+for (const category of model.categories) {
+  await page(urls.category(category.id), categoryPage(category, model))
+  await emit(urls.category(category.id), exportsOf.categoryExport(ctx, category))
+}
 for (const pkg of model.packages) {
   // The bare package URL is the latest version; every version also has its own.
   await page(urls.package(pkg), packagePage(pkg, model))
-  const own = [...new Set(pkg.appearances.map((a) => a.data))].flatMap((data) => resultRows(data).filter((row) => row.ecosystem === pkg.ecosystem && row.package === pkg.name))
-  await write(dist(urls.package(pkg), 'index.md'), packageMarkdown(pkg, ECOSYSTEMS[pkg.ecosystem].title, exported))
+  const own = [...new Set(pkg.appearances.map((a) => a.data))].flatMap((data) => resultRows(data, ctx).filter((row) => row.ecosystem === pkg.ecosystem && row.package === pkg.name))
+  await write(dist(urls.package(pkg), 'index.md'), packageMarkdown(pkg, ECOSYSTEMS[pkg.ecosystem].title, ctx))
   await write(dist(urls.package(pkg), 'results.csv'), toCsv(own))
   await write(dist(urls.package(pkg), 'results.json'), JSON.stringify(own, null, 2))
   for (const version of versionsOf(pkg)) await page(urls.package(pkg, version), packagePage(pkg, model, version))
 }
-for (const id of ecosystemOrder) await page(urls.ecosystem(id), ecosystemPage(id, model))
+for (const id of ecosystemOrder) {
+  await page(urls.ecosystem(id), ecosystemPage(id, model))
+  await emit(urls.ecosystem(id), exportsOf.ecosystemExport(ctx, id))
+}
+for (const group of groups) {
+  await page(urls.group(group.id), groupPage(group, model))
+  await emit(urls.group(group.id), exportsOf.categoriesExport(ctx, group))
+}
 // Listed packages and categories without results get a page of their own.
 const taken = new Set(['source', 'data', 'labels', 'runtimes', 'packages', 'tasks', 'categories', 'credits', ...ecosystemOrder, ...model.categories.map((c) => c.id)])
 let listedPages = 0
@@ -172,26 +219,44 @@ for (const category of taxonomy) {
   if (model.categories.some((c) => c.taxonomy === category.id)) continue
   if (taken.has(category.id)) throw new Error(`category id "${category.id}" collides with another page`)
   await page(`/${category.id}/`, listedCategoryPage(category, model))
+  await emit(`/${category.id}/`, exportsOf.listedCategoryExport(ctx, category))
 }
 for (const items of Object.values(catalog.byEcosystem)) {
   for (const item of items) {
     if (item.measured) continue
     await page(`/${item.ecosystem}/${item.name}/`, catalogPackagePage(item, model))
+    await emit(`/${item.ecosystem}/${item.name}/`, exportsOf.catalogPackageExport(ctx, item))
     listedPages++
   }
 }
 await page('/tasks/', tasksPage(model))
+await emit('/tasks/', exportsOf.tasksExport(ctx))
 await page('/categories/', categoriesPage(model))
+await emit('/categories/', exportsOf.categoriesExport(ctx))
 await page('/packages/', packagesPage(model))
+await emit('/packages/', exportsOf.packagesExport(ctx))
 await page('/runtimes/', runtimesPage(model))
-for (const runtime of model.runtimes) await page(urls.runtime(runtime.id), runtimePage(runtime, model))
+await emit('/runtimes/', exportsOf.runtimesExport(ctx))
+for (const runtime of model.runtimes) {
+  await page(urls.runtime(runtime.id), runtimePage(runtime, model))
+  await emit(urls.runtime(runtime.id), exportsOf.runtimeExport(ctx, runtime))
+}
+await emit('/credits/', exportsOf.creditsExport(ctx))
+await emit('/', exportsOf.homeExport(ctx))
 await page('/credits/', creditsPage(model))
 await page('/', homePage(model))
 await write(dist('search.json'), JSON.stringify(searchIndex(model)))
-const allRows = tasks.flatMap(resultRows)
+const allRows = tasks.flatMap((data) => resultRows(data, ctx))
 await write(dist('data/results.csv'), toCsv(allRows))
 await write(dist('data/results.json'), JSON.stringify(allRows))
-await write(dist('llms.txt'), llmsText(model, ECOSYSTEMS, exported))
+await write(dist('llms.txt'), llmsText(model, ECOSYSTEMS, ctx))
+// The packages without results, compactly, for the package table to add to
+// its rows in the browser: [registry, name, version, use, share, category,
+// category page, rank in its registry, status].
+await write(dist('data/catalog.json'), JSON.stringify({
+  registries: Object.fromEntries(Object.entries(catalog.byEcosystem).map(([id, items]) => [id, { title: ECOSYSTEMS[id].title, measure: items[0]?.popularity.label ?? '' }])),
+  packages: Object.values(catalog.byEcosystem).flat().filter((item) => !item.measured).sort((a, b) => b.share - a.share).map((item) => [item.ecosystem, item.name, item.version ?? '', item.popularity.value, Number(item.share.toPrecision(4)), item.category?.title ?? '', item.category ? categoryHref(item.category.id, model) : '', item.rank, statusOf(item)]),
+}))
 for (const [id, svg] of Object.entries(iconFiles())) await write(dist('icons', `${id}.svg`), svg)
 await copyFile(fromRoot('site/styles.css'), dist('styles.css'))
 await copyFile(fromRoot('site/app.js'), dist('app.js'))

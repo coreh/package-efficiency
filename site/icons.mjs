@@ -4,7 +4,7 @@
 //   page text: one-colour marks from simple-icons
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { siBun, siDeno, siNodedotjs, siRust, siJavascript, siTypescript, siPython, siPypy, siRuby, siGo, siJsr, siRubygems } from 'simple-icons'
+import { siBun, siDeno, siNodedotjs, siRust, siJavascript, siTypescript, siPython, siPypy, siRuby, siGo, siJsr, siRubygems, siPerplexity, siDeepseek, siKimi } from 'simple-icons'
 
 const ICONS = { javascript: siJavascript, python: siPython, node: siNodedotjs, bun: siBun, deno: siDeno, rust: siRust, typescript: siTypescript, cpython: siPython, pypy: siPypy, ruby: siRuby, 'ruby-yjit': siRuby, go: siGo }
 
@@ -61,11 +61,8 @@ const markFile = (name) => {
   const [, width, height] = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(source)
   return { width: Number(width), height: Number(height), body: source.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '') }
 }
-// Bun's mark has a solid drop shadow as its first shape; it is left out.
-const bunArt = { ...logos.icons.bun, body: logos.icons.bun.body.replace(/^<path(?![^>]*fill=)[^>]*\/>/, '') }
 const LINE_ART = {
   'eco-gomod': { art: markFile('gopher'), mode: 'lines', weight: 0.03 },
-  bun: { art: bunArt, mode: 'lines', weight: 0.012 },
   // crates.io: the crates of the Cargo logo as outlines, standing on its pallet.
   'eco-cargo': { art: markFile('cargo'), mode: 'pick', weight: 0.034, outline: ['#e5ac3d', '#e3b04e'], solid: ['#977753', '#7a552c', '#886947', '#9a7246', '#694a27', '#715a40', '#6d471e', '#7a5f41'] },
 }
@@ -132,7 +129,7 @@ const npmIcon = () => `<svg class="ico"${scaled('eco-npm')} viewBox="1 -4.5 16 1
 // The large marks are drawn from a file of their own, shared by every page,
 // instead of being repeated inside each one: the page carries a small box in
 // the text colour and the file cuts the mark out of it.
-const FILE_ICONS = ['ruby-yjit', 'eco-pypi', 'eco-gomod', 'eco-cargo', 'rust', 'pypy', 'bun']
+const FILE_ICONS = ['eco-pypi', 'eco-gomod', 'eco-cargo', 'rust', 'pypy']
 export const iconFiles = () =>
   Object.fromEntries(FILE_ICONS.map((id) => [id, inlineSvg(id).replace('<svg class="ico"', '<svg xmlns="http://www.w3.org/2000/svg"').replace(/ style="transform:scale\([\d.]+\)"/, '').replaceAll('currentColor', '#000')]))
 
@@ -144,13 +141,24 @@ export function inlineIcon(id) {
 }
 
 function inlineSvg(id) {
-  if (id === 'ruby-yjit') {
-    const mask = `yjit-wordmark-${++iconSequence}`
-    return `<svg class="ico" viewBox="0 0 416 416" overflow="hidden" aria-hidden="true"><defs><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="0" width="1535" height="416" style="mask-type:alpha">${yjitMark}</mask></defs><rect width="1535" height="416" fill="currentColor" mask="url(#${mask})"/></svg>`
-  }
+  // YJIT publishes its logo only as a bitmap (kept for the labels, where the
+  // wordmark is shown). Beside text the diamond is redrawn here as lines, so
+  // it stays sharp at any size.
+  if (id === 'ruby-yjit') return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.500 4h9l4.500 5.500L12 21 3 9.500zM3 9.500h18M7.500 4l2 5.500L12 4l2.500 5.500 2-5.500M9.500 9.500L12 21l2.500-11.500" fill="none" stroke="currentColor" stroke-width="1.500" stroke-linejoin="round" stroke-linecap="round"/></svg>`
   if (LINE_ART[id]) return lineArt(id)
   if (id === 'eco-npm') return npmIcon()
   if (id === 'eco-pypi') return pypiIcon()
   const mark = ICONS[id]
   return mark ? `<svg class="ico"${scaled(id)} viewBox="0 0 24 24" aria-hidden="true"><path d="${mark.path}" fill="currentColor"/></svg>` : ''
+}
+
+// Assistants a page can be opened in, one colour like the other inline marks.
+// Z.ai has no mark in either icon set, so it gets a plain letter in a box.
+const ASSISTANT_LOGOS = { chatgpt: 'openai-icon', claude: 'claude-icon', grok: 'grok-icon' }
+const ASSISTANT_MARKS = { perplexity: siPerplexity, deepseek: siDeepseek, kimi: siKimi, zai: { path: 'M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm3.500 4.500v2.600h5.400L7 15.600v1.900h10v-2.600h-5.800L17 8.400V6.500z' } }
+export function assistantIcon(id) {
+  if (ASSISTANT_MARKS[id]) return `<svg class="ico" viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd" aria-hidden="true"><path d="${ASSISTANT_MARKS[id].path}"/></svg>`
+  const mark = logos.icons[ASSISTANT_LOGOS[id]]
+  const body = mark.body.replace(/\sfill="[^"]*"/g, '')
+  return `<svg class="ico" viewBox="0 0 ${mark.width ?? logos.width} ${mark.height ?? logos.height}" fill="currentColor" aria-hidden="true">${body}</svg>`
 }

@@ -1,25 +1,25 @@
 # Package categories: RubyGems
 
-1000 of 1000 packages categorized into 82 categories.
+1000 of 1000 packages categorized into 123 categories.
 
 | Category | Packages | Benchmarkable | Candidate benchmark |
 | --- | ---: | --- | --- |
 | Service SDKs and telemetry (`service-sdks`) | 280 | no |  |
-| Other (no peers yet) (`other`) | 159 | no |  |
-| Framework and tool extensions (`framework-extensions`) | 146 | no |  |
+| Framework and tool extensions (`framework-extensions`) | 148 | no |  |
 | Build, lint and test tooling (`build-tooling`) | 92 | no |  |
-| Library internals (`library-internals`) | 21 | no |  |
+| Other (no peers yet) (`other`) | 88 | no |  |
+| Library internals (`library-internals`) | 23 | no |  |
+| Language-level abstractions (`language-ergonomics`) | 18 | no |  |
 | System and foreign bindings (`system-bindings`) | 18 | no |  |
-| Language-level abstractions (`language-ergonomics`) | 17 | no |  |
 | Frameworks and broad libraries (`frameworks`) | 14 | no |  |
 | HTTP clients (`http-client`) | 13 | yes | Issue 10,000 GET requests for a small JSON body to a local HTTP server and parse each response. |
 | CLI argument parsing (`cli-argument-parsing`) | 10 | yes | Declare the same set of flags, typed options and positionals, then parse a fixed set of argv arrays into option objects. |
 | Child process execution (`process-execution`) | 9 | yes | Spawn the same trivial command 200 times and collect its stdout and exit code. |
 | Environment detection (`environment-detection`) | 9 | no |  |
+| Terminal string styling (`terminal-styling`) | 8 | yes | Apply a fixed mix of single and nested color/bold/underline styles to 100,000 short strings and concatenate the output. |
 | Static data and patterns (`static-data`) | 8 | no |  |
 | Template rendering (`template-rendering`) | 8 | yes | Compile a template that loops over 1,000 records with a conditional and escaped interpolation, then render it 1,000 times. |
 | Applications and daemons (`applications`) | 8 | no |  |
-| Terminal string styling (`terminal-styling`) | 7 | yes | Apply a fixed mix of single and nested color/bold/underline styles to 100,000 short strings and concatenate the output. |
 | JSON parsing (`json-parsing`) | 7 | yes | Parse the same large standard JSON document string into a JavaScript value. |
 | Tooling internals (AST and code utilities) (`tooling-internals`) | 6 | no |  |
 | Binary serialization (`binary-serialization`) | 6 | yes | Encode and decode 100,000 records with nested integers, strings and arrays. |
@@ -28,12 +28,12 @@
 | Schema validation (`schema-validation`) | 5 | yes | Define one equivalent nested object schema and validate a fixed batch of valid and invalid JSON documents against it. |
 | HTML and XML parsing (`markup-parsing`) | 5 | yes | Parse one large well-formed XHTML document, valid as both HTML and XML, and count the elements seen. |
 | Parser combinators and generators (`parser-combinators`) | 5 | yes | Implement the same JSON grammar with each library and parse a 10 MB JSON document. |
+| Image processing (`image-processing`) | 5 | yes | Decode a fixed set of JPEG and PNG photos, resize each to a thumbnail and re-encode it. |
 | HTTP application servers (`http-application-servers`) | 5 | yes | Serve a fixed 1 KB response from a trivial application callback to 100,000 keep-alive requests from a local load generator. |
 | Declared object serializers (`object-json-serialization`) | 5 | yes | Declare a serializer for a record with ten attributes and one nested collection, then serialize a list of 10,000 such records to JSON. |
 | Runtime helpers and shims (`runtime-shims`) | 4 | no |  |
 | Async concurrency control (`async-concurrency`) | 4 | yes | Run 100,000 trivial async tasks with a concurrency limit of 10 and wait for all of them to settle. |
 | HTML sanitizing (`html-sanitizing`) | 4 | yes | Sanitize a fixed set of 1,000 HTML fragments containing scripts, event handlers and unknown tags with a default allow-list. |
-| Image processing (`image-processing`) | 4 | yes | Decode a fixed set of JPEG and PNG photos, resize each to a thumbnail and re-encode it. |
 | PDF generation (`pdf-generation`) | 4 | yes | Generate a 100-page PDF of paragraphs and a table from fixed input data. |
 | WebSocket messaging (`websocket-messaging`) | 4 | yes | Echo 100,000 text and binary messages over a loopback connection, or through the codec in memory. |
 | HTTP message parsing (`http-message-parsing`) | 4 | yes | Parse a fixed buffer of 100,000 concatenated HTTP/1.1 requests with typical browser headers, collecting method, path and headers. |
@@ -43,6 +43,7 @@
 | Generated API and schema types (`generated-api-types`) | 4 | no |  |
 | Unique ID generation (`id-generation`) | 3 | yes | Generate one million random unique IDs using the package's default secure generator. |
 | Platform-specific binaries (`platform-binaries`) | 3 | no |  |
+| HTML entity escaping (`html-escaping`) | 3 | yes | Escape the five HTML special characters in 100,000 short strings of mixed text and markup. |
 | URL and URI parsing (`url-parsing`) | 3 | yes | Parse a fixed list of 100,000 absolute URLs into components and serialize them back. |
 | JWT signing and verification (`jwt-signing`) | 3 | yes | Sign a fixed claims payload with HS256 and verify the resulting compact token, 10,000 times. |
 | Markdown rendering (`markdown-parsing`) | 3 | yes | Render a fixed corpus of Markdown documents totalling several megabytes to HTML. |
@@ -52,9 +53,14 @@
 | Redis clients (`redis-client`) | 3 | yes | Against a local Redis server, run 100,000 SET and GET commands, both one at a time and in pipelines of 100. |
 | Ruby parsing (`ruby-parsing`) | 3 | yes | Parse a fixed corpus of large Ruby source files into a syntax tree. |
 | User-agent parsing (`user-agent-parsing`) | 3 | yes | Parse a fixed list of 10,000 real-world User-Agent strings and read the browser name, version and platform of each. |
+| Wrapping, slicing and stripping styled terminal text (`ansi-text-layout`) | 3 | yes | Take 10,000 lines of 200 visible columns with ANSI color codes every few words, strip the escape codes from each line and word-wrap each line to 80 columns, each member running the operations it offers. |
+| Edit distance and string similarity (`edit-distance`) | 3 | yes | Compute the Levenshtein distance for 100,000 fixed pairs of strings of 5 to 200 characters. |
+| Property list parsing (`plist-parsing`) | 3 | yes | Parse and re-serialize 1,000 property lists of 10,000 nested entries each. |
+| Unicode normalization (`unicode-normalization`) | 3 | yes | Normalize a 50 MB multilingual corpus to each of NFC, NFD, NFKC and NFKD. |
+| SSH and SFTP clients (`ssh-client`) | 3 | yes | Against a local SSH server, run 1,000 short commands over one connection and transfer a 100 MB file there and back over SFTP. |
+| XML building (`xml-building`) | 3 | yes | Build and serialize a document of 1,000,000 elements, each with 3 attributes and a text node. |
 | Config format parsing (`config-format-parsing`) | 2 | yes | Parse the same large nested configuration document, expressed in the subset every member accepts, into a plain object. |
 | CSS stylesheet parsing (`css-parsing`) | 2 | yes | Parse one large real-world stylesheet (for example a CSS framework build) into the package's AST. |
-| HTML entity escaping (`html-escaping`) | 2 | yes | Escape the five HTML special characters in 100,000 short strings of mixed text and markup. |
 | Value inspection and formatting (`value-inspection`) | 2 | yes | Format a fixed set of nested objects, arrays, Maps, Sets and primitives into strings. |
 | HTTP server routing (`http-server-routing`) | 2 | yes | Register 100 parameterized routes with two middleware and dispatch a fixed mix of requests to handlers that return JSON. |
 | Hash maps (`hash-maps`) | 2 | yes | Insert 1,000,000 integer and string keys, look each up, iterate, then remove half. |
@@ -66,6 +72,16 @@
 | File type detection (`file-type-detection`) | 2 | yes | Identify the type of each of 10,000 buffers holding the first bytes of files in 50 common formats. |
 | Password hashing (`password-hashing`) | 2 | yes | Hash and verify 100 passwords at fixed, equivalent cost parameters. |
 | Sorted maps and prefix trees (`sorted-maps`) | 2 | yes | Insert 1,000,000 string keys, look each up, then run a fixed set of range and prefix scans in key order. |
+| QR code generation (`qr-code-generation`) | 2 | yes | Encode a fixed set of URLs and text payloads at a given error-correction level and produce the module matrix or SVG for each. |
+| MIME type lookup (`mime-type-lookup`) | 2 | yes | Look up the media type for 100,000 file names drawn from 500 distinct extensions, then the default extension for 10,000 media types. |
+| Public suffix lookup (`public-suffix-lookup`) | 2 | yes | Split 100,000 host names covering 1,000 distinct suffixes into their registrable domain and public suffix. |
+| Layered configuration loading (`layered-configuration`) | 2 | yes | Load a 1,000-key configuration from two files plus 100 environment overrides and read every key 100 times. |
+| Terminal progress bars and spinners (`terminal-progress-bars`) | 2 | yes | Advance a progress bar 1,000,000 times toward a fixed total while it renders to an in-memory, non-interactive stream. |
+| Syntax highlighting (`syntax-highlighting`) | 2 | yes | Highlight a 1 MB source file to HTML, 10 times over. |
+| Spreadsheet file reading (`spreadsheet-reading`) | 2 | yes | Open a 20 MB workbook of 5 sheets with 100,000 rows of 10 columns each and read every cell value. |
+| ASCII transliteration and slugs (`ascii-transliteration`) | 2 | yes | Transliterate 100,000 titles of 80 characters in 20 scripts to ASCII. |
+| SMTP clients (`smtp-client`) | 2 | yes | Send 10,000 messages of 10 KB each to a local SMTP sink over one connection. |
+| Fake data generation (`fake-data-generation`) | 2 | yes | With a fixed seed, generate 1,000,000 records of name, email, street address and date. |
 | File existence lookup (`file-lookup`) | 1 | yes | From a deep directory in a fixture tree, locate the nearest existing marker file among candidates in each ancestor directory. |
 | Object merging (`object-merging`) | 1 | yes | Merge a fixed sequence of nested plain option objects into one result object, 100,000 times. |
 | Event emitters (`event-emitter`) | 1 | yes | Register 10 listeners on each of several event names and emit one million events with two arguments. |
@@ -86,6 +102,31 @@
 | Semantic version comparison (`semver-comparison`) | 1 | yes | Parse a fixed list of 10,000 version strings, sort them, and test each against a fixed set of range constraints. |
 | Metrics instrumentation (`metrics-instrumentation`) | 1 | yes | Register 100 labelled counters, gauges and histograms, apply 10,000,000 updates from several threads, then render one text snapshot of the registry. |
 | MongoDB clients (`mongodb-client`) | 1 | yes | Against a local server, insert 10,000 documents into a collection and read them back with a query that returns ten fields each. |
+| ZIP archiving (`zip-archiving`) | 1 | yes | Pack a fixed set of in-memory files into a deflate-compressed ZIP archive, then list and extract every entry from it. |
+| Cron expression scheduling (`cron-scheduling`) | 1 | yes | Parse a fixed set of cron expressions and compute the next 1,000 occurrence times of each from a fixed start date. |
+| Dependency injection containers (`dependency-injection`) | 1 | yes | Register a fixed graph of a few hundred interdependent services with singleton and transient lifetimes, then resolve the root services repeatedly. |
+| HTTP cookie parsing (`cookie-parsing`) | 1 | yes | Parse 100,000 Cookie headers of 10 pairs each and 100,000 Set-Cookie headers with attributes, then serialize them back to strings. |
+| IP address and CIDR parsing (`ip-address-parsing`) | 1 | yes | Parse 100,000 IPv4 and IPv6 address strings and test each against 100 CIDR ranges. |
+| IDNA and Punycode conversion (`idna-punycode`) | 1 | yes | Convert 100,000 Unicode domain names to ASCII and back to Unicode. |
+| Atomic file writing (`atomic-file-writing`) | 1 | yes | Atomically replace 1,000 files of 64 KiB each, 10 times over. |
+| SQL parsing (`sql-parsing`) | 1 | yes | Parse 10,000 fixed SELECT, INSERT, UPDATE and CREATE TABLE statements of 100 to 2,000 characters. |
+| GraphQL execution (`graphql-execution`) | 1 | yes | Against a schema of 50 types, parse, validate and execute 10,000 queries that each resolve about 100 fields from in-memory data. |
+| CSV parsing (`csv-parsing`) | 1 | yes | Parse a 100 MB CSV file of 1,000,000 rows and 10 columns, a quarter of the fields quoted, and write the rows back out. |
+| Spreadsheet file writing (`spreadsheet-writing`) | 1 | yes | Write a workbook of 5 sheets with 100,000 rows of 10 mixed numeric and string columns each. |
+| HTML to Markdown conversion (`html-to-markdown`) | 1 | yes | Convert 1,000 HTML documents of 50 KB each, with headings, lists, links, tables and code blocks, to Markdown. |
+| JSON Patch (`json-patch`) | 1 | yes | Apply 100,000 patches of 10 operations each to a 100 KB JSON document. |
+| Character set transcoding (`charset-transcoding`) | 1 | yes | Decode 10 MB of text in each of Shift_JIS, GBK and windows-1252 to Unicode and encode it back. |
+| Natural sort order (`natural-sorting`) | 1 | yes | Sort 1,000,000 strings that mix letters and digit runs into natural order. |
+| Unauthenticated symmetric ciphers (`symmetric-ciphers`) | 1 | yes | Encrypt and decrypt a 100 MB buffer and 1,000,000 buffers of 64 bytes with a fixed key and nonce. |
+| One-time passwords (`one-time-passwords`) | 1 | yes | Generate 1,000,000 TOTP codes for fixed secrets and timestamps and verify each with a window of one step. |
+| Linear algebra and arrays (`linear-algebra`) | 1 | yes | Multiply two 1,000 by 1,000 matrices of 64-bit floats and multiply 10,000,000 pairs of 4 by 4 matrices. |
+| Graph algorithms (`graph-algorithms`) | 1 | yes | Build a directed acyclic graph of 100,000 nodes and 500,000 edges, topologically sort it and find its strongly connected components. |
+| Synchronization primitives (`synchronization-primitives`) | 1 | yes | Have 8 threads each lock and unlock one shared mutex around a counter increment 1,000,000 times. |
+| Resource pools (`resource-pools`) | 1 | yes | From a pool of 10 resources, check out and return a resource 1,000,000 times across 32 concurrent callers. |
+| Kafka clients (`kafka-client`) | 1 | yes | Against a local single-node broker, produce 1,000,000 records of 1 KB to one topic and consume them all back. |
+| SQLite clients (`sqlite-client`) | 1 | yes | In an in-memory database, insert 1,000,000 rows of 5 columns in one transaction and select them all back. |
+| Git repository access (`git-repository-access`) | 1 | yes | In a repository of 10,000 commits and 5,000 files, walk the full history and read every blob of the head tree. |
+| SOCKS proxy clients (`socks-proxy-client`) | 1 | yes | Open 10,000 connections through a local SOCKS5 proxy to a local echo server and send 1 KB over each. |
 
 ## Service SDKs and telemetry
 
@@ -235,8 +276,8 @@ Client SDKs, credential providers, middleware and instrumentation tied to one ve
 - `aws-sdk-marketplacecommerceanalytics` #665, 88M in total
 - `aws-sdk-wafregional` #666, 88M in total
 - `aws-sdk-inspector` #667, 88M in total
-- `aws-sdk-support` #668, 88M in total
-- `aws-sdk-eks` #670, 88M in total
+- `aws-sdk-eks` #668, 88M in total
+- `aws-sdk-support` #669, 88M in total
 - `aws-sdk-workdocs` #671, 87M in total
 - `aws-sdk-mturk` #672, 87M in total
 - `aws-sdk-clouddirectory` #673, 87M in total
@@ -365,176 +406,12 @@ Client SDKs, credential providers, middleware and instrumentation tied to one ve
 - `aws-sdk-codegurureviewer` #981, 53M in total
 - `aws-sdk-augmentedairuntime` #983, 53M in total
 - `aws-sdk-connectparticipant` #986, 53M in total
-- `aws-sdk-iotsecuretunneling` #989, 53M in total
+- `aws-sdk-iotsecuretunneling` #988, 53M in total
 - `aws-sdk-migrationhubconfig` #990, 53M in total
 - `aws-sdk-ebs` #991, 53M in total
 - `aws-sdk-codeguruprofiler` #992, 53M in total
 - `aws-sdk-schemas` #993, 53M in total
 - `aws-sdk-kinesisvideosignalingchannels` #999, 52M in total
-
-## Other (no peers yet)
-
-Packages that are benchmarkable in principle but have no functionally equivalent peers in the list yet; revisit as the list grows.
-
-- `tzinfo` #13, 1.3B in total (low confidence: time zone database and conversion; date-time excludes tz data packages)
-- `public_suffix` #18, 1.2B in total (low confidence: domain name / public suffix parsing; no peer category)
-- `builder` #31, 938M in total (low confidence: XML/markup builder objects; no builder category)
-- `mime-types` #32, 934M in total (low confidence: extension to MIME type lookup; no category)
-- `mini_mime` #35, 893M in total (low confidence: extension to MIME type lookup; no category)
-- `rubyzip` #47, 795M in total (low confidence: zip archive reading/writing; no zip category)
-- `mail` #51, 772M in total (low confidence: email message handling; no category)
-- `ruby-progressbar` #54, 755M in total (low confidence: text progress bar; no category)
-- `connection_pool` #59, 739M in total (low confidence: generic resource pool; no category)
-- `zeitwerk` #63, 710M in total (low confidence: constant autoloader; no category)
-- `http-cookie` #65, 692M in total (low confidence: HTTP cookie jar handling; no category)
-- `domain_name` #67, 680M in total (low confidence: domain name parsing via public suffix list; no category)
-- `regexp_parser` #68, 676M in total (low confidence: regex syntax parser only, excluded from regex-matching)
-- `coderay` #71, 644M in total (low confidence: syntax highlighting; no category)
-- `netrc` #86, 563M in total (low confidence: netrc file read/update; no category)
-- `unf_ext` #90, 540M in total (low confidence: Unicode normalization; no category)
-- `unf` #97, 510M in total (low confidence: Unicode normalization wrapper; no category)
-- `docile` #99, 505M in total (low confidence: DSL block evaluation helper; no category)
-- `hashdiff` #117, 431M in total (low confidence: no fit: hash diffing)
-- `execjs` #123, 417M in total (low confidence: JS runtime bridge)
-- `net-ssh` #132, 390M in total (low confidence: SSH protocol client)
-- `net-imap` #134, 386M in total (low confidence: IMAP protocol client)
-- `faker` #153, 346M in total (low confidence: fake data generation)
-- `highline` #154, 344M in total (low confidence: interactive CLI prompts)
-- `xpath` #155, 344M in total (low confidence: XPath expression builder)
-- `eventmachine` #161, 334M in total (low confidence: event loop networking)
-- `net-smtp` #163, 332M in total (low confidence: SMTP protocol client)
-- `rouge` #166, 330M in total (low confidence: syntax highlighter)
-- `warden` #175, 309M in total (low confidence: authentication)
-- `mustermann` #184, 297M in total (low confidence: route/string pattern matching)
-- `formatador` #194, 285M in total (low confidence: stdout formatting)
-- `oauth2` #196, 279M in total (low confidence: OAuth2 client)
-- `drb` #198, 279M in total (low confidence: distributed objects RPC)
-- `CFPropertyList` #206, 272M in total (low confidence: plist reader/writer; no plist category)
-- `reline` #209, 262M in total (low confidence: readline implementation; no peers)
-- `net-ntp` #218, 249M in total
-- `net-pop` #220, 248M in total
-- `tty-cursor` #236, 234M in total (low confidence: terminal cursor movement escape codes; not styling)
-- `net-scp` #237, 233M in total
-- `xcodeproj` #242, 227M in total (low confidence: Xcode project file manipulation; no category)
-- `plist` #252, 216M in total (low confidence: plist reader/writer; no plist category)
-- `fastimage` #255, 214M in total (low confidence: image size/type sniffing over network; header-only readers excluded from image-processing)
-- `redis-namespace` #256, 213M in total (low confidence: Redis key namespacing wrapper; excluded from redis-client)
-- `chunky_png` #261, 210M in total (low confidence: pure Ruby PNG codec; single-format codec)
-- `ice_nine` #263, 210M in total (low confidence: deep freeze objects; no category)
-- `git` #264, 210M in total (low confidence: wrapper around git CLI; no category)
-- `csv` #275, 206M in total
-- `graphql` #276, 205M in total
-- `timers` #278, 203M in total (low confidence: one-shot and periodic timers; no category)
-- `binding_of_caller` #280, 201M in total (low confidence: call stack binding introspection; no category)
-- `stringio` #282, 200M in total (low confidence: in-memory IO over a String; no category)
-- `sqlite3` #285, 197M in total
-- `ipaddress` #297, 185M in total (low confidence: IP address parsing; no category)
-- `state_machines` #299, 184M in total (low confidence: state machine DSL; no category)
-- `net-sftp` #300, 184M in total
-- `matrix` #307, 181M in total (low confidence: Matrix/Vector math, no peer)
-- `nanaimo` #308, 180M in total (low confidence: ASCII plist (de)serialization, no peer)
-- `babosa` #315, 175M in total (low confidence: slug generation, no peer)
-- `oauth` #317, 171M in total (low confidence: OAuth 1.0 client, no peer)
-- `celluloid` #326, 168M in total (low confidence: actor concurrency, no peer)
-- `ttfunk` #328, 166M in total (low confidence: TrueType font metrics parser, no peer)
-- `tty-spinner` #329, 166M in total (low confidence: terminal spinner, no peer)
-- `bindex` #331, 165M in total (low confidence: exception binding capture, no peer)
-- `atomos` #335, 163M in total (low confidence: atomic file write, no peer)
-- `gh_inspector` #338, 159M in total (low confidence: GitHub issue search helper)
-- `rufus-scheduler` #367, 143M in total (low confidence: job scheduler, no peer)
-- `notiffany` #369, 143M in total (low confidence: notification wrapper, no peer)
-- `unicode_utils` #375, 141M in total (low confidence: unicode string utilities, no peer)
-- `rotp` #376, 141M in total (low confidence: HOTP/TOTP, no peer)
-- `jaro_winkler` #382, 139M in total (low confidence: Jaro-Winkler string distance, no peer)
-- `ruby-saml` #386, 138M in total (low confidence: SAML toolkit, no peer)
-- `dry-container` #387, 138M in total (low confidence: DI container, no peer)
-- `naturally` #390, 137M in total (low confidence: natural sorting, no peer)
-- `money` #402, 135M in total (low confidence: Money/currency arithmetic has no peer)
-- `celluloid-io` #408, 133M in total (low confidence: actor-based evented IO, no peer)
-- `rqrcode` #415, 131M in total (low confidence: QR code encoding has no peer)
-- `dalli` #416, 131M in total (low confidence: memcached client, no peer)
-- `gyoku` #421, 129M in total (low confidence: Hash to XML builder, excluded from markup-parsing)
-- `premailer` #426, 128M in total (low confidence: HTML email CSS inliner, no peer)
-- `ruby-rc4` #430, 127M in total (low confidence: RC4 stream cipher, not AEAD)
-- `word_wrap` #433, 126M in total (low confidence: word wrapping, no peer)
-- `prettyprint` #438, 125M in total (low confidence: pretty printing layout algorithm)
-- `celluloid-supervision` #446, 123M in total (low confidence: actor supervision, no peer)
-- `cork` #465, 118M in total (low confidence: CLI UI helper)
-- `nkf` #470, 117M in total (low confidence: Kanji charset filter, transcoding has no peer)
-- `roo` #471, 116M in total (low confidence: spreadsheet reading, no peer)
-- `molinillo` #473, 116M in total (low confidence: dependency resolution, no peer)
-- `Ascii85` #479, 115M in total (low confidence: Ascii85 encoding, excluded from base64)
-- `cocoapods-downloader` #490, 112M in total (low confidence: downloader for CocoaPods)
-- `geocoder` #494, 111M in total (low confidence: geocoding, no peer)
-- `strscan` #501, 110M in total (low confidence: string scanner; no equivalent peer)
-- `ruby-macho` #503, 110M in total (low confidence: Mach-O file manipulation)
-- `memory_profiler` #504, 109M in total
-- `aasm` #509, 107M in total
-- `powerpack` #510, 107M in total (low confidence: core class extensions)
-- `fuzzy_match` #511, 106M in total
-- `wasabi` #513, 105M in total (low confidence: WSDL parser)
-- `little-plugger` #514, 105M in total (low confidence: gem plugin loading)
-- `reverse_markdown` #520, 105M in total
-- `akami` #526, 104M in total (low confidence: WS-Security header building)
-- `ssrf_filter` #529, 103M in total
-- `savon` #530, 102M in total (low confidence: SOAP client)
-- `polyglot` #531, 102M in total (low confidence: require loader registration)
-- `afm` #532, 102M in total (low confidence: Adobe font metrics reader)
-- `sshkit` #543, 100M in total (low confidence: remote command execution over SSH)
-- `escape` #547, 99M in total (low confidence: description empty; Ruby escaping library)
-- `fourflusher` #559, 97M in total (low confidence: Xcode simulator interaction)
-- `flipper` #566, 96M in total
-- `graphql-client` #571, 95M in total (low confidence: GraphQL query client)
-- `require_all` #581, 94M in total
-- `rubyntlm` #594, 93M in total (low confidence: NTLM message creation/parsing)
-- `ruby-prof` #596, 93M in total
-- `sixarm_ruby_unaccent` #598, 93M in total (low confidence: strip accents from strings)
-- `tty-reader` #604, 92M in total (low confidence: Keyboard input reader/line editor; no peer category (terminal-prompts is only a candidate))
-- `tty-prompt` #605, 92M in total (low confidence: Interactive terminal prompts; candidate terminal-prompts category, no peers yet)
-- `cgi` #648, 89M in total (low confidence: CGI protocol support and escaping helpers; no peers)
-- `net-ldap` #658, 88M in total
-- `rqrcode_core` #681, 87M in total
-- `rbs` #684, 87M in total (low confidence: Ruby type signature language and parser; no matching category)
-- `ruby-ole` #686, 87M in total
-- `ruby-kafka` #694, 86M in total
-- `spreadsheet` #718, 83M in total
-- `whenever` #721, 82M in total
-- `icalendar` #725, 81M in total
-- `numerizer` #726, 81M in total
-- `phonelib` #732, 81M in total
-- `socksify` #740, 80M in total
-- `bunny` #748, 78M in total
-- `ruby_dep` #754, 78M in total (low confidence: gemspec Ruby version constraint helper)
-- `simpleidn` #780, 75M in total
-- `swd` #781, 74M in total (low confidence: Simple Web Discovery client)
-- `monetize` #782, 74M in total
-- `webfinger` #783, 74M in total (low confidence: WebFinger client)
-- `ffaker` #785, 74M in total
-- `tsort` #788, 73M in total
-- `strings-ansi` #795, 73M in total
-- `arr-pm` #798, 73M in total
-- `rbtrace` #800, 72M in total (low confidence: runtime method call tracing tool)
-- `ruby-graphviz` #802, 72M in total (low confidence: graph layout/rendering via Graphviz; excluded from chart-rendering)
-- `mixlib-config` #810, 71M in total (low confidence: class-based config DSL, no peers)
-- `strings` #821, 71M in total (low confidence: text align/truncate/wrap utilities, no peers)
-- `pg_query` #822, 70M in total (low confidence: SQL parser, no peers)
-- `sigdump` #828, 69M in total (low confidence: no peers; misc runtime utility)
-- `warning` #832, 69M in total (low confidence: no peers; misc runtime utility)
-- `sync` #833, 68M in total (low confidence: no peers; misc runtime utility)
-- `gherkin` #842, 67M in total (low confidence: fixed-format Gherkin parser, no peers)
-- `text` #847, 66M in total (low confidence: text algorithms (Levenshtein, Soundex, stemming), no peers)
-- `hitimes` #867, 63M in total (low confidence: no peers; misc runtime utility)
-- `net-ssh-gateway` #912, 59M in total (low confidence: SSH tunnel gateway, no peers)
-- `config` #915, 58M in total (low confidence: layered settings manager, no peers)
-- `licensee` #920, 58M in total (low confidence: license detection, no peers)
-- `rinku` #923, 58M in total (low confidence: autolinking text, no peers)
-- `asciidoctor` #936, 56M in total (low confidence: AsciiDoc converter, not CommonMark)
-- `ref` #939, 56M in total (low confidence: weak/soft references, no peers)
-- `mock_redis` #944, 56M in total (low confidence: in-memory Redis fake, excluded from redis-client)
-- `arbre` #956, 55M in total (low confidence: code-driven HTML builder, excluded from template-rendering)
-- `rb-readline` #963, 54M in total (low confidence: pure Ruby readline, no peers)
-- `caxlsx` #975, 54M in total (low confidence: xlsx generation, no peers)
-- `html-pipeline` #979, 54M in total (low confidence: HTML filter pipeline, no clear peers)
 
 ## Framework and tool extensions
 
@@ -561,6 +438,7 @@ Plugins, engines, adapters, middleware and asset bundles that only work inside o
 - `rubocop-performance` #162, 333M in total
 - `faraday-rack` #164, 331M in total
 - `rubocop-rails` #172, 312M in total
+- `warden` #175, 309M in total
 - `rubocop-rspec` #182, 299M in total
 - `devise` #183, 298M in total (low confidence: authentication framework)
 - `factory_bot_rails` #185, 297M in total
@@ -579,7 +457,7 @@ Plugins, engines, adapters, middleware and asset bundles that only work inside o
 - `web-console` #293, 187M in total
 - `bullet` #294, 186M in total
 - `uniform_notifier` #298, 185M in total
-- `fog-xml` #302, 183M in total (low confidence: shared XML helpers of fog providers)
+- `fog-xml` #301, 183M in total (low confidence: shared XML helpers of fog providers)
 - `rack-proxy` #306, 181M in total
 - `sassc-rails` #312, 177M in total
 - `kramdown-parser-gfm` #314, 175M in total
@@ -596,6 +474,7 @@ Plugins, engines, adapters, middleware and asset bundles that only work inside o
 - `redis-store` #393, 137M in total
 - `spring-commands-rspec` #395, 136M in total
 - `guard-compat` #398, 136M in total
+- `celluloid-io` #408, 133M in total (low confidence: Celluloid add-on)
 - `redis-rack` #424, 129M in total
 - `redis-actionpack` #429, 127M in total
 - `raindrops` #436, 125M in total (low confidence: Rack server stats toolkit)
@@ -630,7 +509,7 @@ Plugins, engines, adapters, middleware and asset bundles that only work inside o
 - `fog-local` #644, 89M in total (low confidence: Fog storage provider adapter)
 - `validate_url` #655, 88M in total
 - `turbo-rails` #662, 88M in total
-- `rack-mini-profiler` #669, 88M in total
+- `rack-mini-profiler` #670, 88M in total
 - `spring-watcher-listen` #685, 87M in total
 - `redis-rails` #688, 87M in total
 - `strong_migrations` #707, 85M in total
@@ -682,7 +561,7 @@ Plugins, engines, adapters, middleware and asset bundles that only work inside o
 - `capistrano-bundler` #971, 54M in total
 - `fluent-plugin-ignore-filter` #972, 54M in total
 - `fluent-plugin-prometheus` #978, 54M in total
-- `rswag-ui` #988, 53M in total
+- `rswag-ui` #989, 53M in total
 - `omniauth-github` #995, 52M in total
 - `pg_search` #997, 52M in total
 - `better_html` #998, 52M in total
@@ -718,7 +597,7 @@ Compilers, bundlers, transformers, linters, test runners and their plugins and c
 - `factory_bot` #148, 358M in total
 - `rdoc` #150, 354M in total
 - `uglifier` #187, 296M in total
-- `pry-byebug` #190, 289M in total
+- `pry-byebug` #191, 289M in total
 - `shoulda-matchers` #200, 276M in total
 - `rspec_junit_formatter` #201, 275M in total
 - `simplecov_json_formatter` #202, 275M in total
@@ -737,7 +616,7 @@ Compilers, bundlers, transformers, linters, test runners and their plugins and c
 - `parallel_tests` #323, 169M in total
 - `vcr` #327, 167M in total
 - `autoprefixer-rails` #330, 165M in total (low confidence: CSS vendor prefixer wrapper)
-- `stackprof` #339, 159M in total (low confidence: sampling profiler)
+- `stackprof` #340, 159M in total (low confidence: sampling profiler)
 - `guard` #343, 156M in total
 - `bundler-audit` #356, 147M in total
 - `xcpretty` #357, 147M in total
@@ -784,6 +663,99 @@ Compilers, bundlers, transformers, linters, test runners and their plugins and c
 - `shoulda-context` #987, 53M in total
 - `standard` #1000, 52M in total
 
+## Other (no peers yet)
+
+Packages that are benchmarkable in principle but have no functionally equivalent peers in the list yet; revisit as the list grows.
+
+- `tzinfo` #13, 1.3B in total (low confidence: time zone database package, excluded from date-time)
+- `zeitwerk` #63, 710M in total
+- `regexp_parser` #68, 676M in total
+- `netrc` #86, 563M in total
+- `execjs` #123, 417M in total
+- `net-imap` #134, 386M in total
+- `highline` #154, 344M in total
+- `xpath` #155, 344M in total
+- `eventmachine` #161, 334M in total
+- `mustermann` #184, 297M in total
+- `oauth2` #196, 279M in total
+- `drb` #198, 279M in total
+- `reline` #209, 262M in total
+- `net-ntp` #218, 249M in total
+- `net-pop` #220, 248M in total
+- `tty-cursor` #236, 234M in total
+- `xcodeproj` #242, 227M in total
+- `fastimage` #255, 214M in total
+- `redis-namespace` #256, 213M in total
+- `ice_nine` #263, 210M in total
+- `timers` #278, 203M in total
+- `binding_of_caller` #280, 201M in total
+- `stringio` #282, 200M in total
+- `state_machines` #299, 184M in total
+- `oauth` #317, 171M in total
+- `celluloid` #326, 168M in total
+- `bindex` #331, 165M in total
+- `gh_inspector` #338, 159M in total
+- `notiffany` #369, 143M in total
+- `ruby-saml` #386, 138M in total
+- `money` #402, 135M in total
+- `dalli` #416, 131M in total
+- `premailer` #426, 128M in total
+- `prettyprint` #438, 125M in total
+- `cork` #466, 118M in total
+- `molinillo` #473, 116M in total
+- `Ascii85` #479, 115M in total
+- `cocoapods-downloader` #490, 112M in total
+- `geocoder` #494, 111M in total
+- `strscan` #501, 110M in total
+- `ruby-macho` #503, 110M in total
+- `memory_profiler` #504, 109M in total
+- `aasm` #509, 107M in total
+- `powerpack` #510, 107M in total
+- `wasabi` #513, 105M in total
+- `little-plugger` #514, 105M in total
+- `akami` #526, 104M in total
+- `ssrf_filter` #529, 103M in total
+- `savon` #530, 102M in total
+- `polyglot` #531, 102M in total
+- `afm` #532, 102M in total
+- `sshkit` #543, 100M in total
+- `fourflusher` #559, 97M in total
+- `flipper` #566, 96M in total
+- `graphql-client` #571, 95M in total
+- `require_all` #581, 94M in total
+- `rubyntlm` #594, 93M in total (low confidence: NTLM message creator/parser; no peer category)
+- `ruby-prof` #596, 93M in total
+- `tty-reader` #604, 92M in total
+- `tty-prompt` #605, 92M in total
+- `cgi` #648, 89M in total (low confidence: CGI protocol support with assorted helpers; no clear single task)
+- `net-ldap` #658, 88M in total
+- `rbs` #684, 87M in total
+- `ruby-ole` #686, 87M in total
+- `whenever` #721, 82M in total (low confidence: generates crontab entries from Ruby DSL; does not compute run times)
+- `icalendar` #725, 81M in total
+- `numerizer` #726, 81M in total
+- `phonelib` #732, 81M in total
+- `bunny` #748, 78M in total
+- `ruby_dep` #754, 78M in total (low confidence: Ruby version constraint helper for gemspecs)
+- `swd` #781, 74M in total
+- `monetize` #782, 74M in total
+- `webfinger` #783, 74M in total
+- `arr-pm` #798, 73M in total
+- `rbtrace` #800, 72M in total
+- `ruby-graphviz` #802, 72M in total
+- `sigdump` #828, 69M in total
+- `warning` #832, 69M in total
+- `gherkin` #842, 67M in total
+- `hitimes` #867, 63M in total
+- `net-ssh-gateway` #912, 59M in total (low confidence: SSH tunneling helper on top of net-ssh; not command/SFTP client)
+- `licensee` #920, 58M in total
+- `rinku` #923, 58M in total
+- `asciidoctor` #936, 56M in total
+- `ref` #939, 56M in total
+- `mock_redis` #944, 56M in total
+- `rb-readline` #963, 54M in total
+- `html-pipeline` #979, 54M in total
+
 ## Library internals
 
 Sub-packages that exist only as implementation pieces of one parent library outside the compiler and linter world and have no standalone task of their own.
@@ -793,13 +765,15 @@ Sub-packages that exist only as implementation pieces of one parent library outs
 - `request_store` #149, 356M in total (low confidence)
 - `arel` #165, 331M in total (low confidence: SQL AST builder)
 - `net-protocol` #177, 305M in total
-- `orm_adapter` #191, 289M in total
+- `orm_adapter` #190, 289M in total
 - `temple` #214, 255M in total (low confidence: template compilation framework underlying slim/haml; not a renderer itself)
 - `kaminari-core` #228, 242M in total
 - `dry-logic` #246, 221M in total (low confidence: predicate rule composition used by dry-validation)
 - `http-form_data` #272, 207M in total (low confidence: form-data body builders for the http gem)
 - `fog-json` #292, 187M in total
+- `ttfunk` #328, 166M in total (low confidence: Font parser internal to Prawn)
 - `cocoapods-core` #391, 137M in total
+- `celluloid-supervision` #446, 123M in total (low confidence: Piece of Celluloid)
 - `celluloid-essentials` #449, 123M in total
 - `debase-ruby_core_source` #450, 123M in total (low confidence: ruby core source files for C extensions)
 - `celluloid-fsm` #451, 123M in total
@@ -809,6 +783,29 @@ Sub-packages that exist only as implementation pieces of one parent library outs
 - `chef-utils` #928, 57M in total (low confidence: Chef internal utils)
 - `chef-config` #933, 56M in total (low confidence: Chef internal config)
 - `babel-source` #947, 55M in total
+
+## Language-level abstractions
+
+Trait definitions, declarative macros, error types, lazy statics, marker and wrapper types that shape code at compile time and have no standalone runtime task.
+
+- `docile` #99, 505M in total (low confidence: DSL block helper, no runtime task)
+- `timeout` #141, 368M in total (low confidence)
+- `memoist` #167, 322M in total
+- `trailblazer-option` #211, 260M in total
+- `dry-core` #223, 246M in total (low confidence: support modules for dry-rb)
+- `mutex_m` #262, 210M in total
+- `dry-configurable` #287, 194M in total
+- `sorbet-runtime` #347, 154M in total (low confidence: runtime type checking)
+- `version_gem` #359, 145M in total (low confidence: version constant helper)
+- `descendants_tracker` #360, 145M in total
+- `nenv` #368, 143M in total (low confidence: ENV wrapper)
+- `dry-initializer` #388, 137M in total (low confidence: initializer DSL)
+- `equalizer` #411, 132M in total
+- `axiom-types` #420, 130M in total (low confidence: type constraints definitions)
+- `attr_required` #709, 84M in total (low confidence: attribute declaration mixin; unclear)
+- `dry-equalizer` #750, 78M in total
+- `with_env` #861, 64M in total (low confidence: tiny helper module)
+- `memoizable` #895, 60M in total (low confidence: tiny helper module)
 
 ## System and foreign bindings
 
@@ -832,28 +829,6 @@ Bindings to operating system APIs, C libraries and other language runtimes, whos
 - `gpgme` #919, 58M in total
 - `libyajl2` #954, 55M in total
 - `wmi-lite` #968, 54M in total
-
-## Language-level abstractions
-
-Trait definitions, declarative macros, error types, lazy statics, marker and wrapper types that shape code at compile time and have no standalone runtime task.
-
-- `timeout` #141, 368M in total (low confidence)
-- `memoist` #167, 322M in total
-- `trailblazer-option` #211, 260M in total
-- `dry-core` #223, 246M in total (low confidence: support modules for dry-rb)
-- `mutex_m` #262, 210M in total
-- `dry-configurable` #287, 194M in total
-- `sorbet-runtime` #347, 154M in total (low confidence: runtime type checking)
-- `version_gem` #359, 145M in total (low confidence: version constant helper)
-- `descendants_tracker` #360, 145M in total
-- `nenv` #368, 143M in total (low confidence: ENV wrapper)
-- `dry-initializer` #388, 137M in total (low confidence: initializer DSL)
-- `equalizer` #411, 132M in total
-- `axiom-types` #420, 130M in total (low confidence: type constraints definitions)
-- `attr_required` #709, 84M in total (low confidence: attribute declaration mixin; unclear)
-- `dry-equalizer` #750, 78M in total
-- `with_env` #861, 64M in total (low confidence: tiny helper module)
-- `memoizable` #895, 60M in total (low confidence: tiny helper module)
 
 ## Frameworks and broad libraries
 
@@ -929,11 +904,24 @@ One-shot probes of the host such as CPU count and features, terminal state, user
 - `google-cloud-env` #156, 342M in total
 - `tty-screen` #225, 244M in total
 - `get_process_mem` #445, 123M in total
-- `tty-color` #466, 118M in total
+- `tty-color` #465, 118M in total
 - `macaddr` #766, 76M in total
-- `ohai` #771, 75M in total
+- `ohai` #772, 75M in total
 - `sys-filesystem` #854, 65M in total
 - `sys-uname` #958, 55M in total
+
+## Terminal string styling
+
+Wrap strings in ANSI color and style escape codes; stripping, measuring or wrapping already-styled text and color-support detection are out of scope.
+
+- `rainbow` #53, 760M in total
+- `formatador` #194, 285M in total (low confidence: STDOUT text formatting with color tags; unsure it is plain ANSI styling)
+- `colored2` #219, 248M in total
+- `colorize` #324, 169M in total
+- `colored` #339, 159M in total
+- `pastel` #469, 117M in total
+- `ansi` #485, 113M in total
+- `term-ansicolor` #564, 96M in total
 
 ## Static data and patterns
 
@@ -973,18 +961,6 @@ Complete servers, daemons, command-line programs and websites that happen to be 
 - `fluentd` #856, 65M in total
 - `license_finder` #922, 58M in total
 - `einhorn` #929, 57M in total
-
-## Terminal string styling
-
-Wrap strings in ANSI color and style escape codes; stripping, measuring or wrapping already-styled text and color-support detection are out of scope.
-
-- `rainbow` #53, 760M in total
-- `colored2` #219, 248M in total
-- `colorize` #324, 169M in total
-- `colored` #340, 159M in total
-- `pastel` #469, 117M in total
-- `ansi` #485, 113M in total
-- `term-ansicolor` #564, 96M in total
 
 ## JSON parsing
 
@@ -1072,6 +1048,16 @@ Libraries for writing a parser for an arbitrary grammar from combinators or a gr
 - `parslet` #708, 84M in total
 - `citrus` #779, 75M in total
 
+## Image processing
+
+Decode raster images, apply pixel operations such as resize and crop, and encode the result; single-format codecs, header-only size readers and OCR are out of scope.
+
+- `mini_magick` #135, 385M in total
+- `chunky_png` #261, 210M in total (low confidence: PNG-only codec with some pixel ops; borderline single-format codec)
+- `ruby-vips` #404, 135M in total
+- `image_processing` #419, 130M in total
+- `rmagick` #930, 57M in total
+
 ## HTTP application servers
 
 Listen on a socket, parse HTTP requests and hand them to an application callback through the language's standard server interface (Rack, WSGI/ASGI and the like); routers, middleware, reverse proxies and process supervisors are out of scope.
@@ -1118,15 +1104,6 @@ Strip disallowed tags, attributes and scripts from untrusted HTML according to a
 - `rails-html-sanitizer` #60, 715M in total
 - `sanitize` #384, 139M in total
 - `rails-deprecated_sanitizer` #535, 101M in total
-
-## Image processing
-
-Decode raster images, apply pixel operations such as resize and crop, and encode the result; single-format codecs, header-only size readers and OCR are out of scope.
-
-- `mini_magick` #135, 385M in total
-- `ruby-vips` #404, 135M in total
-- `image_processing` #419, 130M in total
-- `rmagick` #930, 57M in total
 
 ## PDF generation
 
@@ -1204,8 +1181,16 @@ Generate random, collision-resistant string identifiers; hashing of content and 
 Packages that only carry a prebuilt native executable or addon for one OS and CPU architecture.
 
 - `libv8` #727, 81M in total
-- `sorbet-static` #772, 75M in total
+- `sorbet-static` #771, 75M in total
 - `wkhtmltopdf-binary` #801, 72M in total
+
+## HTML entity escaping
+
+Escape and unescape HTML special characters and entities in strings; CSS, RegExp and JavaScript string escaping are out of scope.
+
+- `htmlentities` #224, 245M in total
+- `escape` #547, 99M in total (low confidence: description is empty ellipsis; guessing string escaping)
+- `escape_utils` #871, 63M in total
 
 ## URL and URI parsing
 
@@ -1279,6 +1264,54 @@ Parse an HTTP User-Agent header string into browser, version, operating system a
 - `useragent` #366, 143M in total
 - `device_detector` #866, 64M in total
 
+## Wrapping, slicing and stripping styled terminal text
+
+Transform strings that may contain ANSI escape codes by stripping the codes, word-wrapping to a column width, or slicing and truncating by visible columns; only measuring display width, adding color styles and stripping indentation are out of scope.
+
+- `word_wrap` #433, 126M in total
+- `strings-ansi` #795, 73M in total
+- `strings` #821, 71M in total
+
+## Edit distance and string similarity
+
+Score how similar two strings are with Levenshtein, Jaro-Winkler or a related metric, or pick the closest match from a list; producing the actual diff hunks and phonetic or full-text search are out of scope.
+
+- `jaro_winkler` #382, 139M in total
+- `fuzzy_match` #511, 106M in total
+- `text` #847, 66M in total (low confidence: mixed text algorithms; Levenshtein is the benchmarkable part)
+
+## Property list parsing
+
+Read and write Apple property lists in their XML, binary or ASCII form as native values; Xcode project manipulation and general XML parsing are out of scope.
+
+- `CFPropertyList` #206, 272M in total
+- `plist` #252, 216M in total
+- `nanaimo` #308, 180M in total
+
+## Unicode normalization
+
+Convert text to the Unicode normalization forms NFC, NFD, NFKC and NFKD; case folding, transliteration to ASCII and stringprep profiles are out of scope.
+
+- `unf_ext` #90, 540M in total
+- `unf` #97, 510M in total
+- `unicode_utils` #375, 141M in total
+
+## SSH and SFTP clients
+
+Speak the SSH2 protocol as a client to run remote commands and transfer files over SFTP or SCP; SSH servers, deployment tools built on a client and SSH agent or key-file helpers are out of scope.
+
+- `net-ssh` #132, 390M in total
+- `net-scp` #237, 233M in total
+- `net-sftp` #300, 184M in total
+
+## XML building
+
+Produce XML text from code through a builder interface or from nested native data structures; parsing XML, HTML template engines and DOM implementations are out of scope.
+
+- `builder` #31, 938M in total
+- `gyoku` #421, 129M in total
+- `arbre` #956, 55M in total (low confidence: HTML builder DSL; closest to code-driven markup building)
+
 ## Config format parsing
 
 Parse human-friendly, JSON-superset configuration text (YAML, JSON5, JSON with comments) into JavaScript values; binary formats, CSV and markup languages are out of scope.
@@ -1291,14 +1324,7 @@ Parse human-friendly, JSON-superset configuration text (YAML, JSON5, JSON with c
 Parse a whole CSS stylesheet into an AST or object model; selector-only or value-only parsers, tokenizers and plugin-driven transformers are out of scope.
 
 - `crass` #76, 624M in total
-- `css_parser` #301, 183M in total
-
-## HTML entity escaping
-
-Escape and unescape HTML special characters and entities in strings; CSS, RegExp and JavaScript string escaping are out of scope.
-
-- `htmlentities` #224, 245M in total
-- `escape_utils` #871, 63M in total
+- `css_parser` #302, 183M in total
 
 ## Value inspection and formatting
 
@@ -1376,6 +1402,76 @@ Mutable in-memory key-value containers that keep keys in sorted order, such as B
 
 - `rbtree` #803, 72M in total
 - `sorted_set` #868, 63M in total (low confidence: sorted Set variant, not key-value)
+
+## QR code generation
+
+Encode a text or byte payload into a QR code module matrix and render it as SVG, an image or text; QR code scanning and other barcode symbologies are out of scope.
+
+- `rqrcode` #415, 131M in total
+- `rqrcode_core` #681, 87M in total
+
+## MIME type lookup
+
+Map a file name or extension to its media type and a media type back to its extensions, using a built-in table; sniffing content from bytes and parsing media type header values are out of scope.
+
+- `mime-types` #32, 934M in total
+- `mini_mime` #35, 893M in total
+
+## Public suffix lookup
+
+Split a host name into subdomain, registrable domain and public suffix using the Public Suffix List; IDNA conversion, URL parsing and DNS resolution are out of scope.
+
+- `public_suffix` #18, 1.2B in total
+- `domain_name` #67, 680M in total
+
+## Layered configuration loading
+
+Merge settings from defaults, configuration files and environment variables into one object and read typed values from it by key; parsers for a single file format, dotenv loading alone and discovery of tool rc files are out of scope.
+
+- `mixlib-config` #810, 71M in total
+- `config` #915, 58M in total
+
+## Terminal progress bars and spinners
+
+Render a progress bar or spinner line for a running task and redraw it as the task advances; interactive prompts, full terminal UI toolkits and plain log output are out of scope.
+
+- `ruby-progressbar` #54, 755M in total
+- `tty-spinner` #329, 166M in total
+
+## Syntax highlighting
+
+Tokenize source code in a given language and emit it as highlighted HTML or ANSI-colored text; full parsers that build an AST, linters and Markdown rendering are out of scope.
+
+- `coderay` #71, 644M in total
+- `rouge` #166, 330M in total
+
+## Spreadsheet file reading
+
+Open existing spreadsheet workbook files such as XLSX or XLS and read their sheets and cell values; creating workbooks, CSV parsing and dataframes are out of scope.
+
+- `roo` #471, 116M in total
+- `spreadsheet` #718, 83M in total
+
+## ASCII transliteration and slugs
+
+Replace accented and non-Latin characters with their closest ASCII equivalents, optionally producing a URL slug; Unicode normalization forms, case conversion and percent encoding are out of scope.
+
+- `babosa` #315, 175M in total
+- `sixarm_ruby_unaccent` #598, 93M in total
+
+## SMTP clients
+
+Build an email message and submit it to a mail server over SMTP; IMAP and POP3 retrieval, vendor email API SDKs and SMTP servers are out of scope.
+
+- `mail` #51, 772M in total
+- `net-smtp` #163, 332M in total
+
+## Fake data generation
+
+Generate realistic-looking fake values such as names, addresses, emails and dates for tests and fixtures; bare random number generators, unique ID generators and property-based testing frameworks are out of scope.
+
+- `faker` #153, 346M in total
+- `ffaker` #785, 74M in total
 
 ## File existence lookup
 
@@ -1496,3 +1592,153 @@ In-process registries of counters, gauges, timers and histograms that applicatio
 Speak the MongoDB wire protocol to run commands and encode and decode BSON documents; object-document mappers and drivers for other databases are out of scope.
 
 - `mongo` #517, 105M in total
+
+## ZIP archiving
+
+Create ZIP archives from in-memory entries and read entries back out of them; tar archives, bare deflate or gzip codecs and other container formats are out of scope.
+
+- `rubyzip` #47, 795M in total
+
+## Cron expression scheduling
+
+Parse cron expressions and compute the next matching run times, optionally firing callbacks on that schedule; persistent job queues, process managers and general date arithmetic are out of scope.
+
+- `rufus-scheduler` #367, 143M in total (low confidence: Job scheduler with cron/at/every; benchmark would need next-time computation via fugit)
+
+## Dependency injection containers
+
+Register service providers in a container and resolve instances together with their transitive dependencies at run time; compile-time code generators, framework-bound module systems and plain service locators inside one framework are out of scope.
+
+- `dry-container` #387, 138M in total (low confidence: Simple item registry; no transitive dependency resolution)
+
+## HTTP cookie parsing
+
+Parse Cookie and Set-Cookie header values into names, values and attributes and serialize them back; signing or encrypting cookie values and server session stores are out of scope.
+
+- `http-cookie` #65, 692M in total
+
+## IP address and CIDR parsing
+
+Parse IPv4 and IPv6 address and CIDR network strings into values, and test whether an address falls inside a network; DNS lookups, socket handling and geolocation databases are out of scope.
+
+- `ipaddress` #297, 185M in total
+
+## IDNA and Punycode conversion
+
+Convert internationalized domain names between Unicode and their ASCII Punycode form according to IDNA or UTS #46; public suffix lookup, full URL parsing and DNS resolution are out of scope.
+
+- `simpleidn` #780, 75M in total
+
+## Atomic file writing
+
+Write a file so that readers see either the old or the complete new content, by writing to a temporary file and renaming it into place; advisory file locking, plain file copy and temporary file creation alone are out of scope.
+
+- `atomos` #335, 163M in total
+
+## SQL parsing
+
+Parse SQL statements into tokens or a syntax tree; executing queries, database drivers, query builders and object-relational mappers are out of scope.
+
+- `pg_query` #822, 70M in total
+
+## GraphQL execution
+
+Parse GraphQL documents, validate them against a schema and execute them against in-process resolvers; HTTP clients that only send queries to a remote server and web framework integrations are out of scope.
+
+- `graphql` #276, 205M in total
+
+## CSV parsing
+
+Parse delimited text with quoting and escaping into records and write records back as CSV; spreadsheet file formats, dataframes and fixed-width formats are out of scope.
+
+- `csv` #275, 206M in total
+
+## Spreadsheet file writing
+
+Create spreadsheet workbook files such as XLSX from rows of cell values, with formats and multiple sheets; reading existing workbooks, CSV output and dataframes are out of scope.
+
+- `caxlsx` #975, 54M in total
+
+## HTML to Markdown conversion
+
+Convert HTML markup into equivalent Markdown text; rendering Markdown to HTML, HTML sanitizing and readability-style article extraction are out of scope.
+
+- `reverse_markdown` #520, 105M in total
+
+## JSON Patch
+
+Apply RFC 6902 JSON Patch or RFC 7386 merge patch operations to a JSON document, or compute the patch that turns one document into another; path queries that only read values and text diffs are out of scope.
+
+- `hashdiff` #117, 431M in total (low confidence: closest is structured diff of hashes; not a true JSON Patch)
+
+## Character set transcoding
+
+Decode bytes in a legacy character encoding such as Shift_JIS, GBK or windows-1252 to Unicode text and encode text back; guessing an unknown encoding, base64 and UTF-8 validation alone are out of scope.
+
+- `nkf` #470, 117M in total
+
+## Natural sort order
+
+Compare or sort strings so that embedded numbers are ordered by numeric value, as in file2 before file10; full locale-aware collation and semantic version ordering are out of scope.
+
+- `naturally` #390, 137M in total
+
+## Unauthenticated symmetric ciphers
+
+Encrypt and decrypt bytes with a bare block or stream cipher and its mode of operation, such as AES-CTR, AES-CBC, ChaCha20 or Salsa20; authenticated AEAD constructions, public-key cryptography and TLS are out of scope.
+
+- `ruby-rc4` #430, 127M in total
+
+## One-time passwords
+
+Generate and verify HOTP and TOTP codes from a shared secret according to RFC 4226 and RFC 6238; password hashing, WebAuthn and full authentication frameworks are out of scope.
+
+- `rotp` #376, 141M in total
+
+## Linear algebra and arrays
+
+Dense vector, matrix and n-dimensional array types with element-wise arithmetic, matrix multiplication and decompositions; dataframes, arbitrary-precision numbers and machine learning frameworks are out of scope.
+
+- `matrix` #307, 181M in total
+
+## Graph algorithms
+
+In-memory graph structures of nodes and edges with traversal, topological sort, shortest path and connected component algorithms; graph drawing and layout, graph databases and dependency version solvers are out of scope.
+
+- `tsort` #788, 73M in total
+
+## Synchronization primitives
+
+In-process mutexes, read-write locks, condition variables, spin locks and thread parking that guard shared state between threads or tasks; cross-process file locks, message channels and distributed locks are out of scope.
+
+- `sync` #833, 68M in total
+
+## Resource pools
+
+Hold a bounded set of reusable resources such as connections or buffers and check them out to and back in from concurrent callers; driver-specific connection pools, worker task pools and caches are out of scope.
+
+- `connection_pool` #59, 739M in total
+
+## Kafka clients
+
+Speak the Apache Kafka protocol to produce records to topics and consume them back; clients for other brokers such as AMQP, NATS or MQTT and stream processing frameworks are out of scope.
+
+- `ruby-kafka` #694, 86M in total
+
+## SQLite clients
+
+Open a SQLite database from the host language, run statements and decode result rows; object-relational mappers, query builders and drivers for database servers are out of scope.
+
+- `sqlite3` #285, 197M in total
+
+## Git repository access
+
+Read and write Git repositories from a program: walk commit history, read trees and blobs and create commits; hosting-service API clients, repository URL parsers and unified diff parsers are out of scope.
+
+- `git` #264, 210M in total
+
+## SOCKS proxy clients
+
+Open TCP connections through a SOCKS4 or SOCKS5 proxy by performing the client side of the handshake; HTTP CONNECT proxies, SOCKS servers and SSH tunnels are out of scope.
+
+- `socksify` #740, 80M in total

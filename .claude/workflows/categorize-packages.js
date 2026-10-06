@@ -22,8 +22,10 @@ const pending = runs.reduce((sum, run) => sum + run.pending, 0)
 
 phase('Taxonomy')
 // One ecosystem at a time: each run extends what the previous one wrote.
+// `skipTaxonomy: true` leaves the taxonomy as it is and only sorts the pending
+// packages into it: for re-checking "other" after categories were added.
 const taxonomies = []
-for (const run of runs) {
+for (const run of args?.skipTaxonomy ? [] : runs) {
 const taxonomy = await agent(
   `You are maintaining the category taxonomy for a project that gives software
 packages an efficiency label (memory and CPU footprint), like the EU energy

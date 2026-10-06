@@ -4,9 +4,8 @@
     "confidence": "high"
   },
   "@alloc/quick-lru": {
-    "category": "other",
-    "confidence": "high",
-    "note": "lru-cache candidate"
+    "category": "lru-cache",
+    "confidence": "high"
   },
   "@asamuzakjp/css-color": {
     "category": "css-color-parsing",
@@ -213,8 +212,8 @@
   },
   "@csstools/css-calc": {
     "category": "other",
-    "confidence": "low",
-    "note": "CSS calc solver; no peers"
+    "confidence": "high",
+    "note": "CSS calc evaluator; no peer"
   },
   "@csstools/css-color-parser": {
     "category": "css-color-parsing",
@@ -225,9 +224,8 @@
     "confidence": "high"
   },
   "@csstools/css-tokenizer": {
-    "category": "other",
-    "confidence": "low",
-    "note": "CSS tokenizer only; excluded from css-parsing"
+    "category": "tooling-internals",
+    "confidence": "high"
   },
   "@emnapi/core": {
     "category": "runtime-shims",
@@ -324,21 +322,19 @@
   "@humanfs/node": {
     "category": "other",
     "confidence": "low",
-    "note": "Filesystem abstraction bindings; no peers"
+    "note": "filesystem abstraction bindings; no peer"
   },
   "@humanfs/types": {
     "category": "type-definitions",
     "confidence": "high"
   },
   "@humanwhocodes/module-importer": {
-    "category": "other",
-    "confidence": "high",
-    "note": "no peers"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "@humanwhocodes/retry": {
-    "category": "other",
-    "confidence": "high",
-    "note": "retry candidate"
+    "category": "retry-policies",
+    "confidence": "high"
   },
   "@img/sharp-libvips-linux-x64": {
     "category": "platform-binaries",
@@ -354,13 +350,13 @@
   },
   "@inquirer/confirm": {
     "category": "other",
-    "confidence": "low",
-    "note": "CLI prompt; candidate cli-prompts"
+    "confidence": "high",
+    "note": "interactive prompt; terminal-prompts candidate"
   },
   "@inquirer/core": {
     "category": "other",
     "confidence": "high",
-    "note": "terminal-prompts candidate"
+    "note": "interactive prompt core; terminal-prompts candidate"
   },
   "@inquirer/figures": {
     "category": "static-data",
@@ -372,9 +368,9 @@
     "confidence": "high"
   },
   "@isaacs/cliui": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Terminal column layout; no peers"
+    "category": "text-table-rendering",
+    "confidence": "low",
+    "note": "multi-column CLI layout"
   },
   "@istanbuljs/schema": {
     "category": "static-data",
@@ -416,14 +412,13 @@
     "confidence": "high"
   },
   "@jridgewell/gen-mapping": {
-    "category": "other",
-    "confidence": "low",
-    "note": "source map generation"
+    "category": "source-map-generation",
+    "confidence": "high"
   },
   "@jridgewell/remapping": {
-    "category": "other",
+    "category": "source-map-decoding",
     "confidence": "low",
-    "note": "sourcemap remapping; source-map-generation-adjacent"
+    "note": "merges sourcemaps; decodes and traces mappings, partly out of scope"
   },
   "@jridgewell/resolve-uri": {
     "category": "url-parsing",
@@ -451,14 +446,12 @@
     "note": "wasm runtime for napi-rs"
   },
   "@next/env": {
-    "category": "other",
-    "confidence": "high",
-    "note": "dotenv-loading candidate"
+    "category": "dotenv-loading",
+    "confidence": "high"
   },
   "@noble/hashes": {
-    "category": "other",
-    "confidence": "high",
-    "note": "hashing; candidate category hashing"
+    "category": "cryptographic-hashing",
+    "confidence": "high"
   },
   "@nodelib/fs.scandir": {
     "category": "library-internals",
@@ -542,9 +535,9 @@
     "confidence": "high"
   },
   "@protobufjs/base64": {
-    "category": "other",
-    "confidence": "high",
-    "note": "base64, candidate character-encoding"
+    "category": "library-internals",
+    "confidence": "low",
+    "note": "protobufjs sub-package"
   },
   "@protobufjs/codegen": {
     "category": "library-internals",
@@ -747,8 +740,8 @@
   },
   "@sindresorhus/is": {
     "category": "other",
-    "confidence": "low",
-    "note": "type checking; candidate type-checking"
+    "confidence": "high",
+    "note": "runtime type checks; no peer"
   },
   "@sinonjs/commons": {
     "category": "library-internals",
@@ -824,8 +817,8 @@
   },
   "@tanstack/query-core": {
     "category": "other",
-    "confidence": "high",
-    "note": "state-management candidate"
+    "confidence": "low",
+    "note": "query cache/state management; candidate state-management"
   },
   "@tanstack/react-query": {
     "category": "ui-components",
@@ -1051,9 +1044,8 @@
     "confidence": "high"
   },
   "@ungap/structured-clone": {
-    "category": "other",
-    "confidence": "high",
-    "note": "deep clone; candidate deep-clone"
+    "category": "deep-cloning",
+    "confidence": "high"
   },
   "@vitejs/plugin-react": {
     "category": "build-tooling",
@@ -1090,7 +1082,7 @@
   "abbrev": {
     "category": "other",
     "confidence": "high",
-    "note": "abbreviation generator; no peers"
+    "note": "abbreviation table generator; no peer"
   },
   "abort-controller": {
     "category": "runtime-shims",
@@ -1099,16 +1091,16 @@
   "accepts": {
     "category": "other",
     "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "note": "HTTP content negotiation"
   },
   "acorn": {
     "category": "javascript-parsing",
     "confidence": "high"
   },
   "acorn-jsx": {
-    "category": "other",
+    "category": "javascript-parsing",
     "confidence": "low",
-    "note": "Acorn plugin for JSX; JSX excluded from javascript-parsing benchmark"
+    "note": "acorn plugin, parses JSX superset; not standalone"
   },
   "acorn-walk": {
     "category": "tooling-internals",
@@ -1117,7 +1109,7 @@
   "agent-base": {
     "category": "other",
     "confidence": "low",
-    "note": "http.Agent helper"
+    "note": "http.Agent base class for proxy agents"
   },
   "ajv": {
     "category": "schema-validation",
@@ -1140,7 +1132,7 @@
   "ansi-escapes": {
     "category": "other",
     "confidence": "high",
-    "note": "terminal control escape codes"
+    "note": "terminal cursor control codes"
   },
   "ansi-regex": {
     "category": "static-data",
@@ -1181,7 +1173,7 @@
   "array-flatten": {
     "category": "other",
     "confidence": "high",
-    "note": "array flatten, no peers"
+    "note": "array helper; no peer"
   },
   "array-includes": {
     "category": "runtime-shims",
@@ -1190,7 +1182,7 @@
   "array-union": {
     "category": "other",
     "confidence": "high",
-    "note": "array union utility"
+    "note": "array helper; no peer"
   },
   "array.prototype.findlastindex": {
     "category": "runtime-shims",
@@ -1277,13 +1269,12 @@
   },
   "balanced-match": {
     "category": "other",
-    "confidence": "low",
-    "note": "balanced delimiter matching"
+    "confidence": "high",
+    "note": "balanced delimiter matching, no peers"
   },
   "base64-js": {
-    "category": "other",
-    "confidence": "high",
-    "note": "base64 encode/decode"
+    "category": "base64-encoding",
+    "confidence": "high"
   },
   "baseline-browser-mapping": {
     "category": "static-data",
@@ -1309,31 +1300,28 @@
   "body-parser": {
     "category": "other",
     "confidence": "high",
-    "note": "Request body reading (candidate http-body-reading)"
+    "note": "body parsing middleware"
   },
   "boolbase": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "bowser": {
-    "category": "other",
-    "confidence": "high",
-    "note": "user agent detection, no peers"
+    "category": "user-agent-parsing",
+    "confidence": "high"
   },
   "brace-expansion": {
-    "category": "other",
-    "confidence": "low",
-    "note": "brace-only expansion"
+    "category": "brace-expansion",
+    "confidence": "high"
   },
   "braces": {
-    "category": "other",
-    "confidence": "high",
-    "note": "brace expansion"
+    "category": "brace-expansion",
+    "confidence": "high"
   },
   "browserslist": {
     "category": "other",
-    "confidence": "low",
-    "note": "browser query resolution"
+    "confidence": "high",
+    "note": "browser target queries"
   },
   "buffer": {
     "category": "runtime-shims",
@@ -1341,23 +1329,20 @@
     "note": "Buffer polyfill, larger than a shim"
   },
   "buffer-crc32": {
-    "category": "other",
-    "confidence": "high",
-    "note": "hashing candidate (CRC32)"
+    "category": "checksums",
+    "confidence": "high"
   },
   "buffer-from": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "bundle-name": {
-    "category": "other",
-    "confidence": "high",
-    "note": "macOS bundle id lookup"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "bytes": {
-    "category": "other",
-    "confidence": "high",
-    "note": "No peers yet"
+    "category": "human-size-formatting",
+    "confidence": "high"
   },
   "call-bind": {
     "category": "runtime-shims",
@@ -1374,12 +1359,11 @@
   "callsites": {
     "category": "other",
     "confidence": "high",
-    "note": "V8 callsite extraction"
+    "note": "V8 stack callsites"
   },
   "camelcase": {
-    "category": "other",
-    "confidence": "low",
-    "note": "string case conversion"
+    "category": "case-conversion",
+    "confidence": "high"
   },
   "caniuse-lite": {
     "category": "static-data",
@@ -1387,8 +1371,8 @@
   },
   "ccount": {
     "category": "other",
-    "confidence": "low",
-    "note": "substring counting"
+    "confidence": "high",
+    "note": "substring count; no peer"
   },
   "chai": {
     "category": "build-tooling",
@@ -1407,29 +1391,26 @@
     "confidence": "high"
   },
   "chardet": {
-    "category": "other",
-    "confidence": "high",
-    "note": "character encoding detection"
+    "category": "charset-detection",
+    "confidence": "high"
   },
   "check-error": {
-    "category": "other",
+    "category": "library-internals",
     "confidence": "low",
-    "note": "error comparison utilities"
+    "note": "chai util"
   },
   "chokidar": {
-    "category": "other",
-    "confidence": "low",
-    "note": "file watching"
+    "category": "file-watching",
+    "confidence": "high"
   },
   "chownr": {
     "category": "other",
     "confidence": "high",
-    "note": "recursive chown, no peers"
+    "note": "recursive chown; no peer"
   },
   "ci-info": {
-    "category": "other",
-    "confidence": "high",
-    "note": "No peers yet"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "cjs-module-lexer": {
     "category": "tooling-internals",
@@ -1437,14 +1418,13 @@
     "note": "Lexer for CJS exports"
   },
   "class-variance-authority": {
-    "category": "other",
-    "confidence": "high",
-    "note": "no matching category"
+    "category": "classname-composition",
+    "confidence": "high"
   },
   "cli-cursor": {
     "category": "other",
     "confidence": "high",
-    "note": "terminal cursor control; no peers"
+    "note": "cursor toggle"
   },
   "cli-spinners": {
     "category": "static-data",
@@ -1456,29 +1436,25 @@
     "note": "width-aware truncation"
   },
   "cli-width": {
-    "category": "other",
-    "confidence": "high",
-    "note": "terminal width lookup; no peers"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "client-only": {
-    "category": "other",
-    "confidence": "low",
-    "note": "marker package"
+    "category": "runtime-shims",
+    "confidence": "high"
   },
   "cliui": {
-    "category": "other",
+    "category": "text-table-rendering",
     "confidence": "low",
-    "note": "terminal column layout"
+    "note": "multi-column terminal layout; closest to text tables"
   },
   "clone": {
-    "category": "other",
-    "confidence": "high",
-    "note": "deep-clone candidate"
+    "category": "deep-cloning",
+    "confidence": "high"
   },
   "clsx": {
-    "category": "other",
-    "confidence": "high",
-    "note": "classname-composition candidate"
+    "category": "classname-composition",
+    "confidence": "high"
   },
   "color-convert": {
     "category": "css-color-parsing",
@@ -1503,7 +1479,7 @@
   "comma-separated-tokens": {
     "category": "other",
     "confidence": "high",
-    "note": "token list parse/stringify, no peers"
+    "note": "token list parse/stringify; no peer"
   },
   "commander": {
     "category": "cli-argument-parsing",
@@ -1518,34 +1494,32 @@
     "confidence": "high"
   },
   "consola": {
-    "category": "other",
-    "confidence": "high",
-    "note": "console logger wrapper, excluded from debug-logging"
+    "category": "structured-logging",
+    "confidence": "low",
+    "note": "console logger wrapper"
   },
   "content-disposition": {
     "category": "other",
     "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "note": "Content-Disposition header parsing"
   },
   "content-type": {
-    "category": "other",
-    "confidence": "low",
-    "note": "HTTP header parse/format"
+    "category": "media-type-parsing",
+    "confidence": "high"
   },
   "convert-source-map": {
     "category": "other",
     "confidence": "low",
-    "note": "source map format conversion"
+    "note": "source map container conversion, explicitly out of scope elsewhere"
   },
   "cookie": {
-    "category": "other",
-    "confidence": "low",
-    "note": "cookie parse/serialize"
+    "category": "cookie-parsing",
+    "confidence": "high"
   },
   "cookie-signature": {
     "category": "other",
-    "confidence": "high",
-    "note": "No peers yet"
+    "confidence": "low",
+    "note": "HMAC cookie signing"
   },
   "core-js": {
     "category": "frameworks",
@@ -1560,32 +1534,29 @@
     "confidence": "high"
   },
   "cors": {
-    "category": "other",
-    "confidence": "low",
-    "note": "CORS middleware, single purpose"
+    "category": "framework-extensions",
+    "confidence": "high"
   },
   "cosmiconfig": {
     "category": "other",
     "confidence": "high",
-    "note": "Config file discovery (candidate config-file-discovery)"
+    "note": "rc/config file discovery"
   },
   "cross-spawn": {
     "category": "process-execution",
     "confidence": "high"
   },
   "css-select": {
-    "category": "other",
-    "confidence": "high",
-    "note": "CSS selector engine over DOM trees"
+    "category": "css-selector-matching",
+    "confidence": "high"
   },
   "css-tree": {
     "category": "css-parsing",
     "confidence": "high"
   },
   "css-what": {
-    "category": "other",
-    "confidence": "high",
-    "note": "css-selector-parsing candidate"
+    "category": "css-selector-parsing",
+    "confidence": "high"
   },
   "css.escape": {
     "category": "runtime-shims",
@@ -1594,7 +1565,7 @@
   "cssesc": {
     "category": "other",
     "confidence": "high",
-    "note": "CSS escaping, excluded from html-escaping"
+    "note": "CSS string/identifier escaping; excluded from html-escaping"
   },
   "cssstyle": {
     "category": "frameworks",
@@ -1608,7 +1579,7 @@
   "d3-array": {
     "category": "other",
     "confidence": "high",
-    "note": "array statistics/search; no peers"
+    "note": "array statistics/search helpers; no peer"
   },
   "d3-color": {
     "category": "css-color-parsing",
@@ -1617,57 +1588,56 @@
   "d3-ease": {
     "category": "other",
     "confidence": "high",
-    "note": "easing functions; d3 numeric helper, no peers"
+    "note": "easing functions; no peer"
   },
   "d3-format": {
-    "category": "other",
-    "confidence": "high",
-    "note": "number formatting; no peers"
+    "category": "human-size-formatting",
+    "confidence": "low",
+    "note": "number formatting with SI suffixes; loose fit"
   },
   "d3-interpolate": {
     "category": "other",
     "confidence": "high",
-    "note": "value interpolation; no peers"
+    "note": "value interpolation; no peer"
   },
   "d3-path": {
     "category": "other",
     "confidence": "high",
-    "note": "canvas path to SVG serializer; no peers"
+    "note": "canvas path serializer to SVG; no peer"
   },
   "d3-scale": {
     "category": "other",
     "confidence": "high",
-    "note": "d3 scales; no peers"
+    "note": "data-to-visual scales; no peer"
   },
   "d3-shape": {
     "category": "other",
     "confidence": "low",
-    "note": "SVG path/shape generator, no peers"
+    "note": "path generators for SVG/canvas; no peer"
   },
   "d3-time": {
-    "category": "other",
-    "confidence": "high",
-    "note": "date/time intervals; date-time candidate"
+    "category": "date-time",
+    "confidence": "high"
   },
   "d3-time-format": {
-    "category": "other",
-    "confidence": "high",
-    "note": "date-time candidate"
+    "category": "date-time",
+    "confidence": "low",
+    "note": "strftime/strptime formatter and parser"
   },
   "d3-timer": {
     "category": "other",
     "confidence": "high",
-    "note": "d3 timer; no peers"
+    "note": "animation timer queue; no peer"
   },
   "data-uri-to-buffer": {
     "category": "other",
     "confidence": "high",
-    "note": "Data URL decoding; with data-urls forms data-url-parsing candidate"
+    "note": "decodes data: URI; pairs with data-urls (data-uri-decoding)"
   },
   "data-urls": {
     "category": "other",
     "confidence": "high",
-    "note": "Data URL parsing; data-url-parsing candidate"
+    "note": "parses data: URLs; excluded from url-parsing"
   },
   "data-view-buffer": {
     "category": "runtime-shims",
@@ -1682,23 +1652,20 @@
     "confidence": "high"
   },
   "date-fns": {
-    "category": "other",
-    "confidence": "high",
-    "note": "date-time candidate"
+    "category": "date-time",
+    "confidence": "high"
   },
   "dayjs": {
-    "category": "other",
-    "confidence": "high",
-    "note": "no matching category"
+    "category": "date-time",
+    "confidence": "high"
   },
   "debug": {
     "category": "debug-logging",
     "confidence": "high"
   },
   "decamelize": {
-    "category": "other",
-    "confidence": "high",
-    "note": "string case conversion; no peers"
+    "category": "case-conversion",
+    "confidence": "high"
   },
   "decimal.js": {
     "category": "arbitrary-precision-math",
@@ -1725,14 +1692,12 @@
     "confidence": "high"
   },
   "default-browser": {
-    "category": "other",
-    "confidence": "high",
-    "note": "default browser lookup"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "default-browser-id": {
-    "category": "other",
-    "confidence": "high",
-    "note": "macOS default browser id"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "defaults": {
     "category": "object-merging",
@@ -1752,9 +1717,9 @@
     "confidence": "high"
   },
   "delayed-stream": {
-    "category": "other",
+    "category": "library-internals",
     "confidence": "low",
-    "note": "stream buffering; no peers"
+    "note": "helper for combined-stream"
   },
   "depd": {
     "category": "other",
@@ -1770,23 +1735,21 @@
     "confidence": "high"
   },
   "detect-libc": {
-    "category": "other",
-    "confidence": "low",
-    "note": "libc detection"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "detect-node-es": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "diff": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Text diff (candidate text-diff)"
+    "category": "text-diff",
+    "confidence": "high"
   },
   "dir-glob": {
     "category": "other",
-    "confidence": "low",
-    "note": "dirs to glob strings; no peers"
+    "confidence": "high",
+    "note": "converts directories to glob strings; no peer"
   },
   "doctrine": {
     "category": "tooling-internals",
@@ -1796,7 +1759,7 @@
   "dom-accessibility-api": {
     "category": "other",
     "confidence": "high",
-    "note": "accessible name computation; no peers"
+    "note": "accname computation"
   },
   "dom-helpers": {
     "category": "ui-components",
@@ -1815,9 +1778,8 @@
     "confidence": "high"
   },
   "dompurify": {
-    "category": "other",
-    "confidence": "high",
-    "note": "HTML sanitizer; no peers"
+    "category": "html-sanitizing",
+    "confidence": "high"
   },
   "domutils": {
     "category": "library-internals",
@@ -1826,12 +1788,11 @@
   "dot-prop": {
     "category": "other",
     "confidence": "high",
-    "note": "candidate property-path-access"
+    "note": "get/set by dotted path; property-path-access candidate"
   },
   "dotenv": {
-    "category": "other",
-    "confidence": "high",
-    "note": "dotenv file loading"
+    "category": "dotenv-loading",
+    "confidence": "high"
   },
   "dunder-proto": {
     "category": "runtime-shims",
@@ -1844,12 +1805,12 @@
   "ecdsa-sig-formatter": {
     "category": "other",
     "confidence": "low",
-    "note": "ECDSA DER/JOSE signature conversion; jwt helper"
+    "note": "ECDSA signature DER/JOSE conversion; no peer"
   },
   "ee-first": {
     "category": "other",
-    "confidence": "high",
-    "note": "event helper; no peers"
+    "confidence": "low",
+    "note": "tiny event helper, no peers"
   },
   "electron-to-chromium": {
     "category": "static-data",
@@ -1860,14 +1821,12 @@
     "confidence": "high"
   },
   "encodeurl": {
-    "category": "other",
-    "confidence": "high",
-    "note": "No peers yet"
+    "category": "percent-encoding",
+    "confidence": "high"
   },
   "end-of-stream": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Stream completion helper; no peers"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "enhanced-resolve": {
     "category": "module-resolution",
@@ -1879,14 +1838,13 @@
     "confidence": "high"
   },
   "env-paths": {
-    "category": "other",
-    "confidence": "high",
-    "note": "platform dir paths, no peers"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "error-ex": {
     "category": "other",
-    "confidence": "low",
-    "note": "Error subclass helper, no peers"
+    "confidence": "high",
+    "note": "error subclassing helper; no peer"
   },
   "es-abstract": {
     "category": "runtime-shims",
@@ -1938,8 +1896,8 @@
   },
   "escape-string-regexp": {
     "category": "other",
-    "confidence": "low",
-    "note": "regexp escaping"
+    "confidence": "high",
+    "note": "regex escaping, no peers"
   },
   "escodegen": {
     "category": "tooling-internals",
@@ -2010,7 +1968,7 @@
   "etag": {
     "category": "other",
     "confidence": "high",
-    "note": "etag generation; http-header candidate"
+    "note": "ETag generation"
   },
   "event-target-shim": {
     "category": "runtime-shims",
@@ -2032,7 +1990,7 @@
   "eventsource-parser": {
     "category": "other",
     "confidence": "high",
-    "note": "SSE parser; no peers"
+    "note": "SSE parser; no peer"
   },
   "execa": {
     "category": "process-execution",
@@ -2052,9 +2010,8 @@
     "confidence": "high"
   },
   "express-rate-limit": {
-    "category": "other",
-    "confidence": "high",
-    "note": "express middleware, single-purpose"
+    "category": "rate-limiting",
+    "confidence": "high"
   },
   "extend": {
     "category": "object-merging",
@@ -2081,9 +2038,8 @@
     "confidence": "high"
   },
   "fast-levenshtein": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Levenshtein distance (candidate edit-distance)"
+    "category": "edit-distance",
+    "confidence": "high"
   },
   "fast-uri": {
     "category": "url-parsing",
@@ -2119,19 +2075,17 @@
     "note": "file metadata change cache"
   },
   "file-type": {
-    "category": "other",
-    "confidence": "high",
-    "note": "file type sniffing, no peers"
+    "category": "file-type-detection",
+    "confidence": "high"
   },
   "fill-range": {
-    "category": "other",
-    "confidence": "high",
-    "note": "range filling / brace range expansion"
+    "category": "brace-expansion",
+    "confidence": "high"
   },
   "finalhandler": {
     "category": "other",
-    "confidence": "low",
-    "note": "HTTP final responder middleware"
+    "confidence": "high",
+    "note": "HTTP final responder"
   },
   "find-up": {
     "category": "file-lookup",
@@ -2140,7 +2094,7 @@
   "flat-cache": {
     "category": "other",
     "confidence": "high",
-    "note": "No peers yet"
+    "note": "file-backed key-value cache"
   },
   "flatted": {
     "category": "json-parsing",
@@ -2161,7 +2115,7 @@
   "form-data": {
     "category": "other",
     "confidence": "high",
-    "note": "multipart form-data encoding"
+    "note": "multipart form stream builder"
   },
   "formdata-polyfill": {
     "category": "runtime-shims",
@@ -2170,7 +2124,7 @@
   "forwarded": {
     "category": "other",
     "confidence": "high",
-    "note": "X-Forwarded-For header parsing (http-header-parsing candidate)"
+    "note": "parses X-Forwarded-For header; header parsing candidate"
   },
   "fraction.js": {
     "category": "arbitrary-precision-math",
@@ -2179,12 +2133,12 @@
   "fresh": {
     "category": "other",
     "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "note": "HTTP freshness check"
   },
   "fs-extra": {
-    "category": "other",
+    "category": "recursive-file-copy",
     "confidence": "low",
-    "note": "fs helpers"
+    "note": "broad fs utility; only its copy function fits"
   },
   "fs.realpath": {
     "category": "runtime-shims",
@@ -2216,13 +2170,13 @@
   },
   "gensync": {
     "category": "other",
-    "confidence": "low",
-    "note": "Generator-based sync/async helper; no peers"
+    "confidence": "high",
+    "note": "sync/async generator bridging"
   },
   "get-caller-file": {
     "category": "other",
     "confidence": "high",
-    "note": "Caller module detection (candidate caller-detection)"
+    "note": "caller file lookup"
   },
   "get-east-asian-width": {
     "category": "terminal-string-width",
@@ -2244,16 +2198,16 @@
   "get-stream": {
     "category": "other",
     "confidence": "low",
-    "note": "stream consumption"
+    "note": "stream collection helper"
   },
   "get-symbol-description": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "get-tsconfig": {
-    "category": "other",
+    "category": "build-tooling",
     "confidence": "low",
-    "note": "tsconfig finder/parser; no peers"
+    "note": "finds and parses tsconfig.json; dev-time tooling"
   },
   "glob": {
     "category": "file-globbing",
@@ -2262,7 +2216,7 @@
   "glob-parent": {
     "category": "other",
     "confidence": "low",
-    "note": "glob base extraction"
+    "note": "glob string parent extraction, not matching"
   },
   "globals": {
     "category": "static-data",
@@ -2290,8 +2244,8 @@
   },
   "graceful-fs": {
     "category": "other",
-    "confidence": "low",
-    "note": "fs wrapper with retries"
+    "confidence": "high",
+    "note": "fs wrapper"
   },
   "has-bigints": {
     "category": "runtime-shims",
@@ -2337,12 +2291,12 @@
   "hosted-git-info": {
     "category": "other",
     "confidence": "high",
-    "note": "Git host URL parsing; no peers"
+    "note": "parses git host repo URLs; no peer"
   },
   "html-encoding-sniffer": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Encoding sniffing; no peers"
+    "category": "charset-detection",
+    "confidence": "low",
+    "note": "sniffs encoding per spec, not heuristic guessing"
   },
   "html-escaper": {
     "category": "html-escaping",
@@ -2355,66 +2309,63 @@
   "http-errors": {
     "category": "other",
     "confidence": "high",
-    "note": "HTTP error object creation"
+    "note": "HTTP error object factory"
   },
   "http-proxy-agent": {
     "category": "other",
     "confidence": "high",
-    "note": "Proxy agent (candidate proxy-agents)"
+    "note": "HTTP proxy agent"
   },
   "https-proxy-agent": {
     "category": "other",
-    "confidence": "low",
-    "note": "proxy http.Agent"
+    "confidence": "high",
+    "note": "HTTP CONNECT proxy agent"
   },
   "human-signals": {
     "category": "static-data",
     "confidence": "high"
   },
   "iconv-lite": {
-    "category": "other",
-    "confidence": "low",
-    "note": "character encoding conversion"
+    "category": "charset-transcoding",
+    "confidence": "high"
   },
   "ieee754": {
     "category": "other",
     "confidence": "high",
-    "note": "IEEE754 buffer read/write; no peers"
+    "note": "IEEE754 buffer read/write"
   },
   "ignore": {
     "category": "other",
-    "confidence": "low",
-    "note": "gitignore rule filtering"
+    "confidence": "high",
+    "note": "gitignore rule filter, no peers"
   },
   "immer": {
-    "category": "other",
-    "confidence": "high",
-    "note": "no matching category"
+    "category": "immutable-collections",
+    "confidence": "low",
+    "note": "copy-on-write drafts rather than persistent collections"
   },
   "import-fresh": {
     "category": "other",
-    "confidence": "low",
-    "note": "module cache-bypassing import"
+    "confidence": "high",
+    "note": "uncached require"
   },
   "import-in-the-middle": {
-    "category": "other",
-    "confidence": "high",
-    "note": "module-hooks candidate"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "imurmurhash": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Hashing (candidate hashing)"
+    "category": "non-cryptographic-hashing",
+    "confidence": "high"
   },
   "indent-string": {
     "category": "other",
     "confidence": "high",
-    "note": "Adds indentation; excluded from indentation-stripping, no peers"
+    "note": "adds indentation; indentation-stripping excludes it"
   },
   "inflight": {
     "category": "other",
-    "confidence": "low",
-    "note": "dedupe in-flight async calls"
+    "confidence": "high",
+    "note": "dedupes in-flight async calls; no peer"
   },
   "inherits": {
     "category": "runtime-shims",
@@ -2429,19 +2380,17 @@
     "confidence": "high"
   },
   "internmap": {
-    "category": "other",
+    "category": "hash-maps",
     "confidence": "low",
-    "note": "Map with key interning"
+    "note": "Map/Set with key interning"
   },
   "ip-address": {
-    "category": "other",
-    "confidence": "high",
-    "note": "IP address parsing; candidate ip-address-parsing"
+    "category": "ip-address-parsing",
+    "confidence": "high"
   },
   "ipaddr.js": {
-    "category": "other",
-    "confidence": "high",
-    "note": "IP address parsing (candidate ip-address-parsing)"
+    "category": "ip-address-parsing",
+    "confidence": "high"
   },
   "is-array-buffer": {
     "category": "runtime-shims",
@@ -2461,8 +2410,8 @@
   },
   "is-binary-path": {
     "category": "other",
-    "confidence": "low",
-    "note": "binary path predicate based on extension list"
+    "confidence": "high",
+    "note": "extension check against binary list; no peer"
   },
   "is-boolean-object": {
     "category": "runtime-shims",
@@ -2494,14 +2443,12 @@
     "confidence": "high"
   },
   "is-docker": {
-    "category": "other",
-    "confidence": "high",
-    "note": "environment-detection probe"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "is-extglob": {
-    "category": "other",
-    "confidence": "high",
-    "note": "glob-detection predicate"
+    "category": "runtime-shims",
+    "confidence": "high"
   },
   "is-finalizationregistry": {
     "category": "runtime-shims",
@@ -2516,19 +2463,17 @@
     "confidence": "high"
   },
   "is-glob": {
-    "category": "other",
-    "confidence": "high",
-    "note": "glob-detection predicate"
+    "category": "runtime-shims",
+    "confidence": "low",
+    "note": "one-line-ish predicate; could be glob-matching helper"
   },
   "is-inside-container": {
-    "category": "other",
-    "confidence": "high",
-    "note": "environment probe, candidate environment-detection"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "is-interactive": {
-    "category": "other",
-    "confidence": "low",
-    "note": "tty interactivity probe; environment-detection candidate"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "is-map": {
     "category": "runtime-shims",
@@ -2539,9 +2484,8 @@
     "confidence": "high"
   },
   "is-number": {
-    "category": "other",
-    "confidence": "high",
-    "note": "number predicate"
+    "category": "runtime-shims",
+    "confidence": "high"
   },
   "is-number-object": {
     "category": "runtime-shims",
@@ -2552,9 +2496,9 @@
     "confidence": "high"
   },
   "is-path-inside": {
-    "category": "other",
-    "confidence": "high",
-    "note": "path containment check; no peers"
+    "category": "runtime-shims",
+    "confidence": "low",
+    "note": "one-line path predicate"
   },
   "is-plain-obj": {
     "category": "runtime-shims",
@@ -2601,9 +2545,8 @@
     "confidence": "high"
   },
   "is-unicode-supported": {
-    "category": "other",
-    "confidence": "low",
-    "note": "One-shot terminal capability probe (environment-detection candidate)"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "is-weakmap": {
     "category": "runtime-shims",
@@ -2618,9 +2561,8 @@
     "confidence": "high"
   },
   "is-wsl": {
-    "category": "other",
-    "confidence": "high",
-    "note": "environment-detection probe"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "isarray": {
     "category": "runtime-shims",
@@ -2629,7 +2571,7 @@
   "isexe": {
     "category": "other",
     "confidence": "low",
-    "note": "executable check"
+    "note": "executable permission check, not candidate lookup"
   },
   "isobject": {
     "category": "runtime-shims",
@@ -2662,18 +2604,17 @@
     "confidence": "high"
   },
   "jest-diff": {
-    "category": "other",
-    "confidence": "high",
-    "note": "text-diff candidate"
+    "category": "text-diff",
+    "confidence": "high"
   },
   "jest-environment-node": {
     "category": "build-tooling",
     "confidence": "high"
   },
   "jest-get-type": {
-    "category": "other",
+    "category": "runtime-shims",
     "confidence": "low",
-    "note": "runtime type check; candidate type-checking"
+    "note": "type predicate"
   },
   "jest-haste-map": {
     "category": "build-tooling",
@@ -2708,9 +2649,9 @@
     "note": "jest config validation"
   },
   "jest-worker": {
-    "category": "other",
+    "category": "async-concurrency",
     "confidence": "low",
-    "note": "parallel worker process pool; no peers"
+    "note": "runs tasks in worker processes; loose fit"
   },
   "jiti": {
     "category": "build-tooling",
@@ -2735,7 +2676,7 @@
   "jsesc": {
     "category": "other",
     "confidence": "high",
-    "note": "JS string escaping/stringify"
+    "note": "JS string escaping"
   },
   "json-bigint": {
     "category": "json-parsing",
@@ -2779,7 +2720,7 @@
   "jsonfile": {
     "category": "other",
     "confidence": "high",
-    "note": "No peers yet"
+    "note": "JSON file read/write"
   },
   "jsonwebtoken": {
     "category": "jwt-signing",
@@ -2801,7 +2742,7 @@
   "keyv": {
     "category": "other",
     "confidence": "high",
-    "note": "key-value store with adapters"
+    "note": "key-value storage adapter"
   },
   "kind-of": {
     "category": "runtime-shims",
@@ -2812,19 +2753,18 @@
     "confidence": "high"
   },
   "leven": {
-    "category": "other",
-    "confidence": "high",
-    "note": "edit-distance candidate"
+    "category": "edit-distance",
+    "confidence": "high"
   },
   "levn": {
     "category": "other",
-    "confidence": "low",
+    "confidence": "high",
     "note": "value notation parser"
   },
   "lie": {
     "category": "other",
-    "confidence": "low",
-    "note": "promise implementation; candidate promise-implementations"
+    "confidence": "high",
+    "note": "promise implementation; no peer"
   },
   "lightningcss": {
     "category": "css-parsing",
@@ -2846,12 +2786,11 @@
   "lines-and-columns": {
     "category": "other",
     "confidence": "high",
-    "note": "line/column offset mapping; no peers"
+    "note": "offset to line/column mapping"
   },
   "loader-utils": {
-    "category": "other",
-    "confidence": "low",
-    "note": "webpack-specific loader helpers, no peers"
+    "category": "build-tooling",
+    "confidence": "high"
   },
   "locate-path": {
     "category": "file-lookup",
@@ -2889,8 +2828,8 @@
   },
   "long": {
     "category": "other",
-    "confidence": "low",
-    "note": "64-bit integer class, excluded from arbitrary-precision"
+    "confidence": "high",
+    "note": "64-bit integer wrapper; excluded from arbitrary-precision-math"
   },
   "loose-envify": {
     "category": "build-tooling",
@@ -2901,42 +2840,37 @@
     "confidence": "high"
   },
   "lru-cache": {
-    "category": "other",
-    "confidence": "low",
-    "note": "cache data structure"
+    "category": "lru-cache",
+    "confidence": "high"
   },
   "lucide-react": {
     "category": "ui-components",
     "confidence": "high"
   },
   "lz-string": {
-    "category": "other",
-    "confidence": "high",
-    "note": "string LZ compression; excluded from deflate-compression"
+    "category": "block-compression",
+    "confidence": "high"
   },
   "magic-string": {
-    "category": "other",
-    "confidence": "low",
-    "note": "string editing with sourcemaps"
+    "category": "source-map-generation",
+    "confidence": "high"
   },
   "make-dir": {
     "category": "other",
     "confidence": "high",
-    "note": "Recursive mkdir (candidate directory-creation)"
+    "note": "recursive mkdir"
   },
   "marked": {
-    "category": "other",
-    "confidence": "high",
-    "note": "markdown-parsing candidate"
+    "category": "markdown-parsing",
+    "confidence": "high"
   },
   "math-intrinsics": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "mdast-util-from-markdown": {
-    "category": "other",
-    "confidence": "high",
-    "note": "candidate markdown-parsing"
+    "category": "markdown-parsing",
+    "confidence": "high"
   },
   "mdast-util-to-string": {
     "category": "library-internals",
@@ -2947,9 +2881,8 @@
     "confidence": "high"
   },
   "media-typer": {
-    "category": "other",
-    "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "category": "media-type-parsing",
+    "confidence": "high"
   },
   "merge-descriptors": {
     "category": "object-merging",
@@ -3032,27 +2965,24 @@
     "confidence": "high"
   },
   "mime": {
-    "category": "other",
-    "confidence": "low",
-    "note": "mime type mapping; could be static-data"
+    "category": "mime-type-lookup",
+    "confidence": "high"
   },
   "mime-db": {
     "category": "static-data",
     "confidence": "high"
   },
   "mime-types": {
-    "category": "other",
-    "confidence": "low",
-    "note": "mime lookup"
+    "category": "mime-type-lookup",
+    "confidence": "high"
   },
   "mimic-fn": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "mimic-response": {
-    "category": "other",
-    "confidence": "low",
-    "note": "copies HTTP response properties onto stream; no peers"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "min-indent": {
     "category": "indentation-stripping",
@@ -3078,17 +3008,17 @@
   "mkdirp": {
     "category": "other",
     "confidence": "high",
-    "note": "directory-creation candidate"
+    "note": "recursive mkdir"
   },
   "ms": {
     "category": "other",
-    "confidence": "low",
-    "note": "duration string conversion"
+    "confidence": "high",
+    "note": "tiny duration string conversion, no peers"
   },
   "mute-stream": {
-    "category": "other",
+    "category": "stream-implementations",
     "confidence": "low",
-    "note": "mutable passthrough-like stream wrapper; not clearly a stream implementation"
+    "note": "mutable passthrough stream"
   },
   "nanoid": {
     "category": "id-generation",
@@ -3100,13 +3030,12 @@
     "note": "postinstall helper for native bindings"
   },
   "natural-compare": {
-    "category": "other",
-    "confidence": "high",
-    "note": "No peers yet"
+    "category": "natural-sorting",
+    "confidence": "high"
   },
   "negotiator": {
     "category": "other",
-    "confidence": "low",
+    "confidence": "high",
     "note": "HTTP content negotiation"
   },
   "neo-async": {
@@ -3118,9 +3047,8 @@
     "confidence": "high"
   },
   "node-addon-api": {
-    "category": "other",
-    "confidence": "low",
-    "note": "native addon C++ API headers, no peers"
+    "category": "system-bindings",
+    "confidence": "high"
   },
   "node-domexception": {
     "category": "runtime-shims",
@@ -3133,7 +3061,7 @@
   "node-int64": {
     "category": "other",
     "confidence": "high",
-    "note": "64-bit int wrapper, excluded from arbitrary-precision"
+    "note": "64-bit integer wrapper; excluded from arbitrary-precision-math"
   },
   "node-releases": {
     "category": "static-data",
@@ -3146,22 +3074,21 @@
   "normalize-package-data": {
     "category": "other",
     "confidence": "high",
-    "note": "package-json-reading candidate"
+    "note": "package.json normalization; package-json-reading candidate"
   },
   "normalize-path": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Path string utilities (candidate path-normalization)"
+    "category": "path-manipulation",
+    "confidence": "high"
   },
   "npm-run-path": {
     "category": "other",
     "confidence": "high",
-    "note": "PATH computation from local bins"
+    "note": "PATH construction"
   },
   "nth-check": {
     "category": "other",
     "confidence": "low",
-    "note": "CSS nth-child compiler; no peers"
+    "note": "compiles nth-child expressions; no fit"
   },
   "object-assign": {
     "category": "runtime-shims",
@@ -3169,8 +3096,8 @@
   },
   "object-hash": {
     "category": "other",
-    "confidence": "high",
-    "note": "hashing candidate"
+    "confidence": "low",
+    "note": "hashes JS objects; not plain digest of bytes"
   },
   "object-inspect": {
     "category": "value-inspection",
@@ -3203,31 +3130,30 @@
   "on-finished": {
     "category": "other",
     "confidence": "high",
-    "note": "No peers yet"
+    "note": "request completion callback"
   },
   "once": {
     "category": "other",
     "confidence": "high",
-    "note": "call-once wrapper"
+    "note": "call-once guard"
   },
   "onetime": {
     "category": "other",
     "confidence": "high",
-    "note": "call-once wrapper"
+    "note": "call-once guard"
   },
   "open": {
     "category": "other",
     "confidence": "high",
-    "note": "No peers yet"
+    "note": "launch external apps"
   },
   "optionator": {
     "category": "cli-argument-parsing",
     "confidence": "high"
   },
   "ora": {
-    "category": "other",
-    "confidence": "high",
-    "note": "terminal spinner; candidate with terminal-prompts"
+    "category": "terminal-progress-bars",
+    "confidence": "high"
   },
   "own-keys": {
     "category": "runtime-shims",
@@ -3251,18 +3177,16 @@
     "confidence": "high"
   },
   "p-retry": {
-    "category": "other",
-    "confidence": "low",
-    "note": "retry policy; out of async-concurrency scope"
+    "category": "retry-policies",
+    "confidence": "high"
   },
   "p-try": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "package-json-from-dist": {
-    "category": "other",
-    "confidence": "low",
-    "note": "package.json loader, candidate package-json-reading"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "pako": {
     "category": "deflate-compression",
@@ -3271,7 +3195,7 @@
   "parent-module": {
     "category": "other",
     "confidence": "high",
-    "note": "Caller module detection (candidate caller-detection)"
+    "note": "caller module lookup"
   },
   "parse-json": {
     "category": "json-parsing",
@@ -3316,19 +3240,17 @@
     "note": "Path type check via stat; closest to path-exists"
   },
   "pathe": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Path string utilities (candidate path-normalization)"
+    "category": "path-manipulation",
+    "confidence": "high"
   },
   "pathval": {
     "category": "other",
-    "confidence": "low",
-    "note": "object path getter; candidate object-path-access"
+    "confidence": "high",
+    "note": "get value by string path; property-path-access candidate"
   },
   "pg": {
-    "category": "other",
-    "confidence": "high",
-    "note": "postgres client, candidate postgres-client"
+    "category": "postgres-client",
+    "confidence": "high"
   },
   "pg-connection-string": {
     "category": "library-internals",
@@ -3354,12 +3276,11 @@
   "pify": {
     "category": "other",
     "confidence": "high",
-    "note": "promisification candidate"
+    "note": "promisification wrapper; candidate category"
   },
   "pirates": {
-    "category": "other",
-    "confidence": "high",
-    "note": "module-hooks candidate"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "pkg-dir": {
     "category": "file-lookup",
@@ -3368,7 +3289,7 @@
   "pkg-types": {
     "category": "other",
     "confidence": "high",
-    "note": "package.json/tsconfig utilities"
+    "note": "package.json/tsconfig types and utils; package-json-reading candidate"
   },
   "playwright": {
     "category": "build-tooling",
@@ -3380,9 +3301,9 @@
     "confidence": "high"
   },
   "pngjs": {
-    "category": "other",
-    "confidence": "high",
-    "note": "PNG encode/decode"
+    "category": "image-processing",
+    "confidence": "low",
+    "note": "single-format PNG codec; image-processing excludes single-format codecs"
   },
   "pnpm": {
     "category": "build-tooling",
@@ -3403,24 +3324,21 @@
     "note": "loads postcss config files"
   },
   "postcss-selector-parser": {
-    "category": "other",
-    "confidence": "high",
-    "note": "css-selector-parsing candidate"
+    "category": "css-selector-parsing",
+    "confidence": "high"
   },
   "postcss-value-parser": {
     "category": "other",
-    "confidence": "low",
-    "note": "CSS value parser only; value-only parsers out of css-parsing"
+    "confidence": "high",
+    "note": "CSS value-only parser; css-parsing excludes it"
   },
   "postgres-bytea": {
-    "category": "other",
-    "confidence": "high",
-    "note": "postgres bytea parser"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "postgres-date": {
-    "category": "other",
-    "confidence": "low",
-    "note": "postgres date parser"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "prelude-ls": {
     "category": "frameworks",
@@ -3437,22 +3355,21 @@
   },
   "proc-log": {
     "category": "other",
-    "confidence": "high",
-    "note": "process log events"
+    "confidence": "low",
+    "note": "emits log events on process; no fit"
   },
   "process-nextick-args": {
     "category": "runtime-shims",
     "confidence": "high"
   },
   "progress": {
-    "category": "other",
-    "confidence": "high",
-    "note": "candidate terminal-prompts (progress bars)"
+    "category": "terminal-progress-bars",
+    "confidence": "high"
   },
   "prompts": {
     "category": "other",
     "confidence": "high",
-    "note": "interactive CLI prompts"
+    "note": "interactive prompts; terminal-prompts candidate"
   },
   "prop-types": {
     "category": "schema-validation",
@@ -3465,39 +3382,35 @@
     "note": "tables of HTML property info"
   },
   "protobufjs": {
-    "category": "other",
-    "confidence": "high",
-    "note": "protobuf serialization, no peers"
+    "category": "binary-serialization",
+    "confidence": "high"
   },
   "proxy-addr": {
     "category": "other",
     "confidence": "low",
-    "note": "IP/proxy address determination; no peers"
+    "note": "resolves client address from X-Forwarded-For with trust list; no peer"
   },
   "proxy-from-env": {
     "category": "other",
     "confidence": "high",
-    "note": "proxy URL lookup from env; no peers"
+    "note": "proxy env lookup"
   },
   "pump": {
-    "category": "other",
+    "category": "library-internals",
     "confidence": "low",
-    "note": "stream pipe/cleanup helper, out of scope for other stream categories"
+    "note": "stream piping helper"
   },
   "punycode": {
-    "category": "other",
-    "confidence": "low",
-    "note": "punycode conversion"
+    "category": "idna-punycode",
+    "confidence": "high"
   },
   "pure-rand": {
-    "category": "other",
-    "confidence": "high",
-    "note": "seeded PRNG; no peers"
+    "category": "random-number-generation",
+    "confidence": "high"
   },
   "qs": {
-    "category": "other",
-    "confidence": "low",
-    "note": "query string parse/stringify"
+    "category": "query-string-parsing",
+    "confidence": "high"
   },
   "queue-microtask": {
     "category": "runtime-shims",
@@ -3506,12 +3419,12 @@
   "range-parser": {
     "category": "other",
     "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "note": "Range header parsing"
   },
   "raw-body": {
     "category": "other",
     "confidence": "high",
-    "note": "Request body reading (candidate http-body-reading)"
+    "note": "request body reading"
   },
   "react": {
     "category": "frameworks",
@@ -3558,8 +3471,8 @@
   },
   "read-pkg": {
     "category": "other",
-    "confidence": "low",
-    "note": "read package.json"
+    "confidence": "high",
+    "note": "reads package.json; package-json-reading candidate"
   },
   "readable-stream": {
     "category": "stream-implementations",
@@ -3590,24 +3503,24 @@
     "confidence": "high"
   },
   "regjsparser": {
-    "category": "other",
-    "confidence": "high",
-    "note": "regexp parser, no peers"
+    "category": "tooling-internals",
+    "confidence": "low",
+    "note": "regex syntax parser"
   },
   "require-directory": {
     "category": "other",
     "confidence": "high",
-    "note": "require directory tree"
+    "note": "require all files in dir"
   },
   "require-from-string": {
     "category": "other",
     "confidence": "high",
-    "note": "No peers yet"
+    "note": "require code from string"
   },
   "require-in-the-middle": {
     "category": "other",
     "confidence": "high",
-    "note": "candidate module-hooks"
+    "note": "require hook; module-hooks candidate"
   },
   "resolve": {
     "category": "module-resolution",
@@ -3624,22 +3537,21 @@
   "restore-cursor": {
     "category": "other",
     "confidence": "high",
-    "note": "terminal cursor restore; no peers"
+    "note": "cursor restore on exit"
   },
   "retry": {
-    "category": "other",
-    "confidence": "high",
-    "note": "retry candidate"
+    "category": "retry-policies",
+    "confidence": "high"
   },
   "reusify": {
-    "category": "other",
+    "category": "library-internals",
     "confidence": "low",
-    "note": "object pooling; no peers"
+    "note": "object pool helper"
   },
   "rimraf": {
     "category": "other",
     "confidence": "high",
-    "note": "recursive delete (rm -rf)"
+    "note": "recursive delete"
   },
   "rolldown": {
     "category": "build-tooling",
@@ -3654,9 +3566,9 @@
     "confidence": "high"
   },
   "run-applescript": {
-    "category": "other",
-    "confidence": "high",
-    "note": "runs osascript, macOS only"
+    "category": "process-execution",
+    "confidence": "low",
+    "note": "runs osascript and returns output"
   },
   "run-parallel": {
     "category": "async-concurrency",
@@ -3710,19 +3622,18 @@
     "note": "webpack options validation wrapper around ajv"
   },
   "semver": {
-    "category": "other",
-    "confidence": "low",
-    "note": "version parsing/comparison"
+    "category": "semver-comparison",
+    "confidence": "high"
   },
   "send": {
     "category": "other",
     "confidence": "high",
-    "note": "Static file serving middleware (candidate static-file-serving)"
+    "note": "static file serving"
   },
   "serve-static": {
     "category": "other",
     "confidence": "high",
-    "note": "Static file serving middleware (candidate static-file-serving)"
+    "note": "static file middleware"
   },
   "set-function-length": {
     "category": "runtime-shims",
@@ -3745,23 +3656,21 @@
     "confidence": "high"
   },
   "sharp": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Image processing; no peers"
+    "category": "image-processing",
+    "confidence": "high"
   },
   "shebang-command": {
     "category": "other",
-    "confidence": "low",
-    "note": "shebang parsing"
+    "confidence": "high",
+    "note": "shebang parsing, trivial"
   },
   "shebang-regex": {
     "category": "static-data",
     "confidence": "high"
   },
   "shell-quote": {
-    "category": "other",
-    "confidence": "high",
-    "note": "shell command quoting/parsing; no peers"
+    "category": "shell-word-splitting",
+    "confidence": "high"
   },
   "side-channel": {
     "category": "library-internals",
@@ -3781,13 +3690,13 @@
   },
   "siginfo": {
     "category": "other",
-    "confidence": "high",
-    "note": "SIGINFO printing; no peers"
+    "confidence": "low",
+    "note": "prints messages on SIGINFO; no peer"
   },
   "signal-exit": {
     "category": "other",
-    "confidence": "low",
-    "note": "process exit hooks"
+    "confidence": "high",
+    "note": "process exit hook, no peers"
   },
   "sisteransi": {
     "category": "terminal-styling",
@@ -3795,24 +3704,21 @@
     "note": "emits cursor/erase ANSI codes, not colors"
   },
   "slash": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Path string utilities (candidate path-normalization)"
+    "category": "path-manipulation",
+    "confidence": "high"
   },
   "slice-ansi": {
-    "category": "other",
-    "confidence": "high",
-    "note": "ANSI-aware slicing; ansi-text-layout candidate"
+    "category": "ansi-text-layout",
+    "confidence": "high"
   },
   "smart-buffer": {
     "category": "other",
     "confidence": "high",
-    "note": "buffer cursor wrapper, no peers"
+    "note": "Buffer wrapper with cursor; no peer"
   },
   "socks-proxy-agent": {
-    "category": "other",
-    "confidence": "high",
-    "note": "candidate proxy-agents"
+    "category": "socks-proxy-client",
+    "confidence": "high"
   },
   "source-map": {
     "category": "source-map-decoding",
@@ -3825,27 +3731,27 @@
   "source-map-support": {
     "category": "other",
     "confidence": "high",
-    "note": "No peers yet"
+    "note": "stack trace source mapping"
   },
   "space-separated-tokens": {
     "category": "other",
     "confidence": "high",
-    "note": "token list parse/stringify, no peers"
+    "note": "token list parse/stringify; no peer"
   },
   "split2": {
-    "category": "other",
-    "confidence": "high",
-    "note": "line splitting stream transform; no peers"
+    "category": "stream-implementations",
+    "confidence": "low",
+    "note": "line-splitting Transform stream"
   },
   "sprintf-js": {
     "category": "other",
     "confidence": "high",
-    "note": "String formatting; no peers"
+    "note": "sprintf formatting; no peer"
   },
   "stack-utils": {
     "category": "other",
-    "confidence": "low",
-    "note": "stack trace cleaning"
+    "confidence": "high",
+    "note": "stack trace cleaning; no peer"
   },
   "statuses": {
     "category": "static-data",
@@ -3853,9 +3759,8 @@
     "note": "HTTP status code table"
   },
   "std-env": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Environment detection candidate"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "stop-iteration-iterator": {
     "category": "runtime-shims",
@@ -3890,19 +3795,18 @@
     "confidence": "high"
   },
   "strip-ansi": {
-    "category": "other",
-    "confidence": "low",
-    "note": "ANSI stripping"
+    "category": "ansi-text-layout",
+    "confidence": "high"
   },
   "strip-bom": {
     "category": "other",
     "confidence": "high",
-    "note": "strip BOM string util"
+    "note": "BOM stripping"
   },
   "strip-final-newline": {
     "category": "other",
     "confidence": "high",
-    "note": "string trimming; no peers"
+    "note": "trailing newline strip"
   },
   "strip-indent": {
     "category": "indentation-stripping",
@@ -3913,14 +3817,12 @@
     "confidence": "high"
   },
   "strnum": {
-    "category": "other",
-    "confidence": "high",
-    "note": "string to number parsing; no peers"
+    "category": "number-parsing",
+    "confidence": "high"
   },
   "supports-color": {
-    "category": "other",
-    "confidence": "low",
-    "note": "color support detection"
+    "category": "environment-detection",
+    "confidence": "high"
   },
   "supports-preserve-symlinks-flag": {
     "category": "runtime-shims",
@@ -3929,17 +3831,17 @@
   "symbol-tree": {
     "category": "other",
     "confidence": "low",
-    "note": "tree/linked-list structure"
+    "note": "tree/linked-list for DOM nodes; no clear peer"
   },
   "synckit": {
     "category": "other",
-    "confidence": "low",
-    "note": "sync wrapper over worker threads"
+    "confidence": "high",
+    "note": "sync wrapper over worker_threads; no peer"
   },
   "tailwind-merge": {
     "category": "other",
     "confidence": "high",
-    "note": "tailwind class conflict merging; no peers"
+    "note": "utility class conflict resolution; excluded from classname-composition"
   },
   "tailwindcss": {
     "category": "build-tooling",
@@ -3948,7 +3850,7 @@
   "tapable": {
     "category": "other",
     "confidence": "low",
-    "note": "Plugin hook system; excluded from event-emitter"
+    "note": "plugin hook system"
   },
   "tar": {
     "category": "tar-archiving",
@@ -3973,8 +3875,8 @@
   },
   "thenify": {
     "category": "other",
-    "confidence": "low",
-    "note": "promisify; candidate promisification"
+    "confidence": "high",
+    "note": "promisification wrapper; candidate category"
   },
   "tiny-invariant": {
     "category": "runtime-shims",
@@ -4008,9 +3910,8 @@
     "confidence": "high"
   },
   "tmp": {
-    "category": "other",
-    "confidence": "high",
-    "note": "temp file creation"
+    "category": "temporary-files",
+    "confidence": "high"
   },
   "to-regex-range": {
     "category": "other",
@@ -4018,24 +3919,22 @@
     "note": "numeric range to regex"
   },
   "toidentifier": {
-    "category": "other",
-    "confidence": "high",
-    "note": "string to identifier; no peers"
+    "category": "case-conversion",
+    "confidence": "low",
+    "note": "words to camelCase identifier"
   },
   "tough-cookie": {
-    "category": "other",
-    "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "category": "cookie-parsing",
+    "confidence": "high"
   },
   "tr46": {
-    "category": "other",
-    "confidence": "low",
-    "note": "IDNA processing"
+    "category": "idna-punycode",
+    "confidence": "high"
   },
   "trough": {
     "category": "other",
-    "confidence": "low",
-    "note": "middleware pipeline runner"
+    "confidence": "high",
+    "note": "middleware pipeline; no peer"
   },
   "ts-api-utils": {
     "category": "tooling-internals",
@@ -4068,9 +3967,8 @@
     "confidence": "high"
   },
   "type-is": {
-    "category": "other",
-    "confidence": "high",
-    "note": "HTTP content-type checking"
+    "category": "media-type-parsing",
+    "confidence": "high"
   },
   "typed-array-buffer": {
     "category": "runtime-shims",
@@ -4111,7 +4009,7 @@
   "unified": {
     "category": "other",
     "confidence": "low",
-    "note": "unified syntax tree processor, no peers"
+    "note": "syntax-tree processing pipeline; no clear fit"
   },
   "unist-util-is": {
     "category": "library-internals",
@@ -4137,9 +4035,8 @@
     "note": "promise/callback adapter"
   },
   "unpipe": {
-    "category": "other",
-    "confidence": "high",
-    "note": "stream unpipe; no peers"
+    "category": "library-internals",
+    "confidence": "high"
   },
   "unplugin": {
     "category": "build-tooling",
@@ -4184,7 +4081,7 @@
   "vary": {
     "category": "other",
     "confidence": "high",
-    "note": "HTTP Vary header; http-header-parsing candidate"
+    "note": "Vary header manipulation"
   },
   "vfile": {
     "category": "library-internals",
@@ -4209,12 +4106,11 @@
   "w3c-xmlserializer": {
     "category": "other",
     "confidence": "low",
-    "note": "XML serializer, serializers out of scope for markup-parsing"
+    "note": "serializes DOM nodes to XML; not a builder"
   },
   "watchpack": {
-    "category": "other",
-    "confidence": "high",
-    "note": "candidate file-watching"
+    "category": "file-watching",
+    "confidence": "high"
   },
   "web-streams-polyfill": {
     "category": "runtime-shims",
@@ -4233,14 +4129,12 @@
     "confidence": "high"
   },
   "whatwg-encoding": {
-    "category": "other",
-    "confidence": "high",
-    "note": "WHATWG charset decoding; character-encoding candidate"
+    "category": "charset-transcoding",
+    "confidence": "high"
   },
   "whatwg-mimetype": {
-    "category": "other",
-    "confidence": "high",
-    "note": "HTTP header parsing (candidate http-header-parsing)"
+    "category": "media-type-parsing",
+    "confidence": "high"
   },
   "whatwg-url": {
     "category": "url-parsing",
@@ -4269,38 +4163,34 @@
   },
   "why-is-node-running": {
     "category": "other",
-    "confidence": "low",
-    "note": "debug helper for active handles, no peers"
+    "confidence": "high",
+    "note": "debug diagnostic; no peer"
   },
   "word-wrap": {
-    "category": "other",
-    "confidence": "high",
-    "note": "No peers yet"
+    "category": "ansi-text-layout",
+    "confidence": "high"
   },
   "wrap-ansi": {
-    "category": "other",
-    "confidence": "low",
-    "note": "ANSI-aware wrapping"
+    "category": "ansi-text-layout",
+    "confidence": "high"
   },
   "wrappy": {
     "category": "other",
-    "confidence": "low",
-    "note": "Callback wrapping utility; no peers"
+    "confidence": "high",
+    "note": "callback wrapping"
   },
   "write-file-atomic": {
-    "category": "other",
-    "confidence": "high",
-    "note": "Atomic file writes; no peers"
+    "category": "atomic-file-writing",
+    "confidence": "high"
   },
   "ws": {
-    "category": "other",
-    "confidence": "low",
-    "note": "websocket client/server"
+    "category": "websocket-messaging",
+    "confidence": "high"
   },
   "wsl-utils": {
-    "category": "other",
-    "confidence": "high",
-    "note": "no matching category"
+    "category": "environment-detection",
+    "confidence": "low",
+    "note": "WSL probes"
   },
   "xml-name-validator": {
     "category": "library-internals",
@@ -4308,9 +4198,8 @@
     "note": "jsdom XML name validator"
   },
   "xmlbuilder": {
-    "category": "other",
-    "confidence": "high",
-    "note": "XML serializer/builder"
+    "category": "xml-building",
+    "confidence": "high"
   },
   "xmlchars": {
     "category": "static-data",
@@ -4327,9 +4216,8 @@
     "note": "yargs i18n helper"
   },
   "yallist": {
-    "category": "other",
-    "confidence": "low",
-    "note": "linked list data structure"
+    "category": "queues-and-linked-lists",
+    "confidence": "high"
   },
   "yaml": {
     "category": "config-format-parsing",
@@ -4344,18 +4232,17 @@
     "confidence": "high"
   },
   "yocto-queue": {
-    "category": "other",
-    "confidence": "low",
-    "note": "queue data structure"
+    "category": "queues-and-linked-lists",
+    "confidence": "high"
   },
   "zod": {
     "category": "schema-validation",
     "confidence": "high"
   },
   "zustand": {
-    "category": "other",
+    "category": "reactive-signals",
     "confidence": "low",
-    "note": "state management store; candidate state-management"
+    "note": "React state store"
   },
   "zwitch": {
     "category": "library-internals",
