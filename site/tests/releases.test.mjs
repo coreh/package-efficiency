@@ -31,7 +31,7 @@ test('rendered package lists and version pages preserve both active lines and th
  const old={...main,version:'2.5.0',id:'npm/express@2.5.0'}
  const beta={...main,version:'4.0.0-beta.1',activeRelease:false}
  const pkg={ecosystem:'npm',name:'express',title:'express',version:'3.0.0',appearances:[main,old].map(entry=>({data,runtime,entry})),history:[{data,runtime,entry:beta}]}
- const model={index:{edition:'test',planned:[],compilers:data.compilers},tasks:[data],packages:[pkg],runtimes:[runtime],categories:[{id:data.task.category,title:'HTTP servers',tasks:[data]}],packageOf:()=>pkg}
+ const model={index:{edition:'test',planned:[],compilers:data.compilers},repository:{url:'https://example.test/repo',branch:'main'},catalog:{groups:[],categories:[],byEcosystem:{},byCategory:new Map()},tasks:[data],packages:[pkg],runtimes:[runtime],categories:[{id:data.task.category,title:'HTTP servers',tasks:[data]}],packageOf:()=>pkg}
  const list=packagesPage(model)
  assert.match(list,/href="\/npm\/express\/2\.5\.0\/"/)
  assert.match(list,/<span class="ver">3\.0\.0<\/span>/)

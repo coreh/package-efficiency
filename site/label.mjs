@@ -84,6 +84,21 @@ function scale(rankingId, pointerClass) {
   return rows.join('')
 }
 
+// The site's mark, small, at the end of the figures row: five class arrows in
+// the CPU colours.
+const MARK_COLORS = [0, 1, 3, 5, 6].map((i) => RANKINGS.cpu.colors[i])
+function siteMark(x, y, width = 22, height = 20) {
+  const row = height / 5
+  return MARK_COLORS.map((color, i) => {
+    const length = width * (0.45 + 0.1 * i)
+    return `<path d="M${x} ${(y + i * row).toFixed(2)}h${length.toFixed(2)}l${(row * 0.4).toFixed(2)} ${(row * 0.4).toFixed(2)}-${(row * 0.4).toFixed(2)} ${(row * 0.4).toFixed(2)}H${x}z" fill="${color}"/>`
+  }).join('')
+}
+
+// A label opened as a file of its own has no page around it to load the
+// typeface, so it asks for it itself.
+const FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;display=swap');"
+
 // One of up to three secondary figures along the bottom of the label.
 function figure(index, { caption, text, rankingId, grade }) {
   const x = 16 + index * 98
@@ -96,17 +111,17 @@ function figure(index, { caption, text, rankingId, grade }) {
 }
 
 const STYLE = `
-.l-name{font:800 25px Archivo,'Helvetica Neue',Arial,sans-serif;font-stretch:80%}
-.l-meta{font:500 13px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-letter{font:800 19px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-pointer{font:800 26px Archivo,'Helvetica Neue',Arial,sans-serif;fill:#fff}
-.l-big{font:800 50px Archivo,'Helvetica Neue',Arial,sans-serif;font-stretch:80%}
-.l-unit{font:500 14px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-chip{font:800 14px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-figure{font:700 13.5px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-caption{font:500 12px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-note{font:500 11.5px Archivo,'Helvetica Neue',Arial,sans-serif}
-.l-flag{font:700 12.5px Archivo,'Helvetica Neue',Arial,sans-serif;fill:#fff}
+.l-name{font:800 25px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;font-stretch:80%}
+.l-meta{font:500 13px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-letter{font:800 19px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-pointer{font:800 26px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;fill:#fff}
+.l-big{font:800 50px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;font-stretch:80%}
+.l-unit{font:500 14px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-chip{font:800 14px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-figure{font:700 13.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-caption{font:500 12px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-note{font:500 11.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
+.l-flag{font:700 12.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;fill:#fff}
 `.replace(/\n/g, '')
 
 // `data` is a task's normalized data; `rankingId` picks which metric the
@@ -153,7 +168,7 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   const summary = `${entry.title}: class ${grade.class} for ${RANKINGS[rankingId].title}, ${formatNumber(grade.value)} ${metric.headline}. ${context}.`
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${height}" role="img" aria-label="${esc(summary)}"${standalone ? ` width="${WIDTH}" height="${height}"` : ''}>
-<style>${STYLE}</style>
+<style>${standalone ? FONT_IMPORT : ''}${STYLE}</style>
 <rect x="1" y="1" width="${WIDTH - 2}" height="${height - 2}" rx="7" fill="#fff"/>
 ${titleLines.map((line, i) => `<text x="16" y="${38 + i * 28}" class="l-name">${esc(line)}</text>`).join('')}
 ${mark}
@@ -167,6 +182,7 @@ ${rule(scaleEnd)}
 ${rankingId === 'types' ? `<text x="${WIDTH / 2}" y="420" class="l-unit" text-anchor="middle">${esc(entry.typeCaption ?? (entry.ecosystem === 'cargo' ? 'cargo check cost' : 'type-check cost'))}</text>` : `<text x="${WIDTH / 2}" y="420" class="l-unit" text-anchor="middle">${esc(metric.headline)}</text>`}
 ${rule(436)}
 ${figures.slice(0, 3).map((f, i) => figure(i, f)).join('')}
+${siteMark(WIDTH - 16 - 22, 461)}
 ${notes.length ? rule(FIGURES_END) + notes.map((line, i) => `<text x="16" y="${FIGURES_END + 20 + i * NOTE_LINE}" class="l-note">${esc(line)}</text>`).join('') : ''}
 ${flagged ? `<path d="M1 ${notesEnd}h${WIDTH - 2}v18a7 7 0 0 1-7 7H8a7 7 0 0 1-7-7z" fill="#000"/><text x="16" y="${notesEnd + 17}" class="l-flag">Memory grows with use</text>` : ''}
 </g>

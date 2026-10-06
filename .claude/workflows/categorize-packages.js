@@ -43,6 +43,7 @@ empty, so judge those by name). Read data/taxonomy.json if it exists.
 Write data/taxonomy.json as:
 { "categories": [ {
     "id": "kebab-case-id",
+    "group": "id of one of the groups listed in the file's top-level \"groups\"",
     "title": "Short title",
     "description": "One sentence: what members do, and what is out of scope.",
     "benchmarkable": true,
@@ -55,6 +56,10 @@ Rules:
   order, with its id and meaning unchanged, and keep any other top-level key
   of the file exactly as it is. Only add categories that this package list
   needs and the taxonomy lacks.
+- Every category names its group: one of the ids in the top-level "groups"
+  list (sections such as "Web and networking"). Categories that are not
+  benchmarkable go in "not-comparable". Add a group only when a new category
+  fits none of them.
 - A package belongs in an existing category whenever it could run that
   category's task, whatever language it is written in. Do not add a
   per-language copy of an existing category.

@@ -129,8 +129,21 @@ function pypiIcon() {
 // npm: the three letters of its wordmark, without the box around them.
 const npmIcon = () => `<svg class="ico"${scaled('eco-npm')} viewBox="1 -4.5 16 16" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M1 1h4v4H4V2H3v3H1zM6 1h4v4H8v1H6zM8 2v2h1V2zM11 1h6v4h-1V2h-1v3h-1V2h-1v3h-2z"/></svg>`
 
+// The large marks are drawn from a file of their own, shared by every page,
+// instead of being repeated inside each one: the page carries a small box in
+// the text colour and the file cuts the mark out of it.
+const FILE_ICONS = ['ruby-yjit', 'eco-pypi', 'eco-gomod', 'eco-cargo', 'rust', 'pypy', 'bun']
+export const iconFiles = () =>
+  Object.fromEntries(FILE_ICONS.map((id) => [id, inlineSvg(id).replace('<svg class="ico"', '<svg xmlns="http://www.w3.org/2000/svg"').replace(/ style="transform:scale\([\d.]+\)"/, '').replaceAll('currentColor', '#000')]))
+
 // For page text: one colour, following the text around it.
 export function inlineIcon(id) {
+  if (!FILE_ICONS.includes(id)) return inlineSvg(id)
+  const scale = OPTICAL[id] ? `;transform:scale(${OPTICAL[id]})` : ''
+  return `<span class="ico ico-file" style="--src:url(/icons/${id}.svg)${scale}" aria-hidden="true"></span>`
+}
+
+function inlineSvg(id) {
   if (id === 'ruby-yjit') {
     const mask = `yjit-wordmark-${++iconSequence}`
     return `<svg class="ico" viewBox="0 0 416 416" overflow="hidden" aria-hidden="true"><defs><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="0" width="1535" height="416" style="mask-type:alpha">${yjitMark}</mask></defs><rect width="1535" height="416" fill="currentColor" mask="url(#${mask})"/></svg>`

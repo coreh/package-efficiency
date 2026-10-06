@@ -75,23 +75,41 @@ const sortableTypes = (text) => `<th scope="col" data-col="${text}" data-fields=
 const FONTS =
   '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
   '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;display=swap">'
-const ICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 3h9l5 5-5 5H1z' fill='%2300a651'/%3E%3C/svg%3E"
+// The site's mark: five class arrows in the CPU colours. Three in the tab icon,
+// where five would blur.
+const LOGO = () => scaleIcon('cpu', { attrs: 'class="logo"', bars: 5 })
+const ICON = () => `data:image/svg+xml,${encodeURIComponent(scaleIcon('cpu', { attrs: 'xmlns="http://www.w3.org/2000/svg"', bars: 3 }))}`
 
 // The catalog tree shown beside every page. It stays short as the catalog
 // grows: only the category in `context` is opened to its tasks and packages.
 function sidebar(model, path, context) {
   const link = (href, text, extra = '') => `<a href="${href}"${href === path ? ' aria-current="page"' : ''}>${esc(text)}${extra}</a>`
-  const categories = model.categories
-    .map((c) => {
-      if (c.id !== context.category) return `<li>${link(urls.category(c.id), c.title)}</li>`
-      const packages = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === c.id))
-      return `<li>${link(urls.category(c.id), c.title)}<ul>${c.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
-<h3>Packages in ${esc(c.title)}</h3><ul>${packages.map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}</ul></li>`
+  // Categories are listed by group. Only the group of the page being shown is
+  // opened, and inside it only that page's category.
+  const measuredOf = (taxonomyId) => model.categories.find((c) => c.taxonomy === taxonomyId)
+  const here = context.listed ?? model.categories.find((c) => c.id === context.category)?.taxonomy
+  const hereGroup = model.catalog.categories.find((c) => c.id === here)?.group
+  const categoryItem = (c) => {
+    const measured = measuredOf(c.id)
+    if (!measured) return `<li>${link(`/${c.id}/`, c.title)}</li>`
+    if (measured.id !== context.category) return `<li>${link(urls.category(measured.id), measured.title)}</li>`
+    const packages = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id))
+    return `<li>${link(urls.category(measured.id), measured.title)}<ul>${measured.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
+<h3>Packages in ${esc(measured.title)}</h3><ul>${packages.slice(0, SIDE_LIMIT).map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}${packages.length > SIDE_LIMIT ? `<li><a class="more" href="${urls.category(measured.id)}">All ${packages.length} packages</a></li>` : ''}</ul></li>`
+  }
+  const categories = (model.catalog.groups ?? [])
+    .map((group) => {
+      const members = model.catalog.categories.filter((c) => c.group === group.id)
+      const measured = members.filter((c) => measuredOf(c.id)).length
+      const head = `<a href="/categories/#${group.id}">${esc(group.title)} <span class="count">${measured ? `${measured} of ${members.length}` : members.length}</span></a>`
+      if (group.id !== hereGroup) return `<li>${head}</li>`
+      // Measured categories first, then the rest by name.
+      const ordered = [...members].sort((a, b) => !!measuredOf(b.id) - !!measuredOf(a.id) || a.title.localeCompare(b.title))
+      return `<li class="open">${head}<ul>${ordered.map(categoryItem).join('')}</ul></li>`
     })
     .join('')
   const ecosystems = Object.entries(ECOSYSTEMS)
-    .map(([id, eco]) => `<li><a href="${urls.ecosystem(id)}"${urls.ecosystem(id) === path ? ' aria-current="page"' : ''}>${inlineIcon(`eco-${id}`)}${esc(eco.title)} <span class="count">${model.packages.filter((p) => p.ecosystem === id).length}</span></a></li>`)
+    .map(([id, eco]) => `<li><a href="${urls.ecosystem(id)}"${urls.ecosystem(id) === path ? ' aria-current="page"' : ''}>${inlineIcon(`eco-${id}`)}${esc(eco.title)} <span class="count">${(model.catalog.byEcosystem[id]?.length ?? model.packages.filter((p) => p.ecosystem === id).length).toLocaleString('en-US')}</span></a></li>`)
     .join('')
   return `<nav class="side" aria-label="Catalog">
 <h2>${link('/categories/', 'Categories')}</h2>
@@ -100,8 +118,6 @@ function sidebar(model, path, context) {
 <ul>${ecosystems}</ul>
 <h2>${link('/runtimes/', 'Runtimes')}</h2>
 <ul>${model.runtimes.map((rt) => `<li><a href="${urls.runtime(rt.id)}"${urls.runtime(rt.id) === path ? ' aria-current="page"' : ''}>${inlineIcon(rt.id)}${esc(rt.title)}</a></li>`).join('')}</ul>
-<details><summary>Not measured yet <span class="count">${model.index.planned.length}</span></summary>
-<ul class="planned">${model.index.planned.map((c) => `<li><a href="/categories/#${esc(c.id)}">${esc(c.title)} <span class="count">${c.packages}</span></a></li>`).join('')}</ul></details>
 </nav>`
 }
 
@@ -109,6 +125,10 @@ function sidebar(model, path, context) {
 // the table and outside the sideways scroll, so it stays put and readable.
 const captionsBelow = (html) =>
   html.replace(/<div class="scroll">(<table\b[^>]*>)\s*<caption>([\s\S]*?)<\/caption>([\s\S]*?<\/table>)<\/div>/g, '<figure class="tablefig"><div class="scroll">$1$3</div><figcaption>$2</figcaption></figure>')
+
+// The side menu lists at most this many packages or planned categories, then
+// links to the full list, so it stays short however large the catalog gets.
+const SIDE_LIMIT = 24
 
 function layout({ title, description, path, crumbs = [], context = {}, model, body }) {
   body = captionsBelow(body)
@@ -122,7 +142,7 @@ function layout({ title, description, path, crumbs = [], context = {}, model, bo
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<link rel="icon" href="${ICON}">
+<link rel="icon" href="${ICON()}">
 ${FONTS}
 <link rel="stylesheet" href="/styles.css">
 <script type="module" src="/app.js"></script>
@@ -131,8 +151,8 @@ ${FONTS}
 <input type="checkbox" id="menu" class="menu-toggle" aria-label="Show the catalog menu">
 <header class="top">
 <label for="menu" class="menu-button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14v2H1zM1 7h14v2H1zM1 11h14v2H1z" fill="currentColor"/></svg>Browse</label>
-<a class="name" href="/">Package efficiency labels</a>
-<div class="search"><label for="q">Search</label><input id="q" type="search" autocomplete="off" placeholder="Search packages, tasks and categories"><ul id="q-results" hidden></ul></div>
+<a class="name" href="/">${LOGO()}Package efficiency labels</a>
+<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><kbd class="search-key" hidden></kbd><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
 <nav aria-label="Indexes"><a href="/categories/">Categories</a><a href="/tasks/">Tasks</a><a href="/packages/">Packages</a><a href="/runtimes/">Runtimes</a></nav>
 </header>
 <div class="frame">
@@ -141,7 +161,8 @@ ${sidebar(model, path, context)}
 ${trail}
 ${body}
 <footer>
-<p>Edition ${esc(model.index.edition)}, provisional. Measured on one developer laptop, not a reference machine. Every benchmark adapter was written by an AI coding agent and has not been reviewed by a person. Not affiliated with npm, crates.io or any labelling authority. Raw data: <a href="/data/index.json">data/index.json</a>. <a href="/credits/">Credits</a>.</p>
+<p>Edition ${esc(model.index.edition)}, provisional. Measured on one developer laptop, not a reference machine. Every benchmark adapter was written by an AI coding agent and has not been reviewed by a person. Not affiliated with npm, crates.io or any labelling authority. <a href="/credits/">Credits</a>.</p>
+<p>All results: <a href="/data/results.csv">CSV</a>, <a href="/data/results.json">JSON</a>, <a href="/llms.txt">Markdown index for language models</a>.</p>
 </footer>
 </div>
 </div>
@@ -159,12 +180,15 @@ function card({ entry, data, runtime, rankingId, model, caption, linkPackage = t
   const svg = renderLabel({ entry, data, runtime, rankingId })
   if (!svg) return ''
   const pkg = model.packageOf(entry)
+  // The label as a file of its own; the label menu copies and saves from it.
+  const labelUrl = urls.label(data.task.id, runtime.id, entry.id, rankingId, older ? entry.version : null)
   const lines = [
     caption && esc(caption),
     linkPackage && `<a href="${urls.package(pkg, entry.version !== pkg.version ? entry.version : null)}">${esc(pkg.title)}, all runtimes</a>`,
-    `<a class="soft" href="${urls.label(data.task.id, runtime.id, entry.id, rankingId, older ? entry.version : null)}">SVG</a>`,
+    `<a href="${urls.source(data.task.id, adapterIdOf(entry))}">Source</a>`,
+    `<a class="soft svg-link" href="${labelUrl}">SVG</a>`,
   ].filter(Boolean)
-  return `<li>${svg}<p class="under">${lines.join(' &nbsp; ')}</p></li>`
+  return `<li data-label="${esc(labelUrl)}">${svg}<p class="under">${lines.join(' &nbsp; ')}</p></li>`
 }
 
 // A row of labels, in rank order. A short row wraps as a grid. A long one
@@ -361,6 +385,7 @@ export function taskPage(data, model) {
     crumbs: [['Categories', '/categories/'], [category.title, urls.category(category.id)], [data.task.title]],
     model,
     body: `<main>
+${pageMenu({ markdown: `${urls.task(data.task.id)}index.md`, csv: `${urls.task(data.task.id)}results.csv`, json: `/data/${data.task.id}.json` })}
 <h1>${esc(data.task.title)}</h1>
 <p class="intro">${esc(data.task.summary)} Every entry is graded against the most efficient implementation in any language or runtime, so a class means the same on every tab.</p>
 ${explorer(data, model)}
@@ -385,8 +410,11 @@ ${data.task.notes ? `<li>${esc(data.task.notes)}</li>` : ""}
 ${data.task.kind === "http-server" ? "<li>Rust and Go servers use every core by default and the JavaScript servers use one, which is why throughput is not graded. Their one-thread variants are listed beside them.</li><li>An entry named for a package runs it as installed. A tuned variant changes one setting from a fixed list (worker threads, or one application thread) and says which in its name.</li>" : ""}
 <li>Machine: ${esc(data.machine.cpu)}, ${data.machine.cores} cores, ${esc(data.machine.os)}.</li>
 <li>Adapters written by ${esc([...authors].join(', '))}. None reviewed by a person or by the package's maintainers.</li>
-<li>All of it can be read: <a href="${urls.source(data.task.id)}">the task and its scenario</a>, each entry's adapter from the Benchmark column above, and the <a href="${repoUrl(model, 'tree', 'harness')}">measuring harness</a> on GitHub.</li>
 </ul>
+
+<h2>Benchmark source</h2>
+<p>The task's rules, load settings and the scenario every adapter is checked against. Each entry's own adapter is on its package page and behind the Source link under its label. The <a href="${repoUrl(model, 'tree', 'harness')}">measuring harness</a> is on GitHub.</p>
+${taskSource(data.task.id).map((f) => sourceFile(f, model, { open: false, id: `source-${f.name}` })).join('\n')}
 </main>`,
   })
 }
@@ -473,7 +501,8 @@ ${cell(rateOf(e.metrics), num(rateOf(e.metrics)))}
 ${cell(e.metrics.latencyP99Ms, num(e.metrics.latencyP99Ms, ' ms'))}</tr>`)
         .join('\n')}</tbody></table></div>`
 
-      const adapters = [...new Map(rows.map((a) => [a.entry.id, a.entry])).values()]
+      // The package as installed first, then its tuned variants.
+      const adapters = [...new Map(rows.map((a) => [a.entry.id, a.entry])).values()].sort((a, b) => (a.name !== a.package) - (b.name !== b.package))
       const adapterList = adapters
         .map((e) => {
           const a = e.adapter
@@ -483,7 +512,8 @@ ${cell(e.metrics.latencyP99Ms, num(e.metrics.latencyP99Ms, ' ms'))}</tr>`)
             .filter((runtime) => a.runtimeNotes?.[runtime.id])
             .map((runtime) => `${esc(runtime.title)}: ${esc(a.runtimeNotes[runtime.id])}`)
             .join(' ')
-          return `<li>${esc(e.title)}: written by ${esc(who)} on ${esc(a.author.date)}, ${reviewed}.${a.dependencies.length ? ` Measured with ${esc(a.dependencies.join(', '))}.` : ''}${a.notes ? ` ${esc(a.notes)}` : ''}${runtimeNotes ? ` ${runtimeNotes}` : ''} <a href="${urls.source(data.task.id, adapterIdOf(e))}">Source code</a></li>`
+          return `<div class="adapter"><p>${esc(e.title)}: written by ${esc(who)} on ${esc(a.author.date)}, ${reviewed}.${a.dependencies.length ? ` Measured with ${esc(a.dependencies.join(', '))}.` : ''}${a.notes ? ` ${esc(a.notes)}` : ''}${runtimeNotes ? ` ${runtimeNotes}` : ''}</p>
+${inlineSource(data.task.id, adapterIdOf(e), model, { withShared: !adapters.some((other) => adapterIdOf(other) === adapterSource(data.task.id, adapterIdOf(e)).variantOf) })}</div>`
         })
         .join('')
       return `<section>
@@ -492,8 +522,8 @@ ${table}
 ${versionHistory(pkg, data, version)}
 ${perRanking}
 ${typeSection}
-<h3>Benchmark adapters</h3>
-<ul>${adapterList}</ul>
+<h3>Benchmark source</h3>
+${adapterList}
 </section>`
     })
     .join('\n')
@@ -509,6 +539,7 @@ ${typeSection}
     crumbs: [['Packages', '/packages/'], [eco.title, urls.ecosystem(pkg.ecosystem)], ...(older ? [[pkg.title, urls.package(pkg)], [version]] : [[pkg.title]])],
     model,
     body: `<main>
+${older ? '' : pageMenu({ markdown: `${urls.package(pkg)}index.md`, csv: `${urls.package(pkg)}results.csv`, json: `${urls.package(pkg)}results.json` })}
 <h1>${esc(pkg.title)}${version ? ` <span class="ver">${esc(version)}</span>` : ''}</h1>
 <p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.name)}">View on the registry</a>.` : ''}</p>
 ${versionNav}
@@ -625,6 +656,17 @@ export function packagesPage(model) {
 <h1>Packages</h1>
 <p class="intro">${plural(model.packages.length, 'package')} measured. Pick a runtime to see what runs on it. Active release lines have separate rows. Within each release, the best variant is shown.</p>
 ${packageTable(model.packages, model, { showEcosystem: true })}
+<h2>Every listed package</h2>
+<p>The most used packages of each registry are all listed, measured or not, with their category.</p>
+<div class="scroll"><table class="narrow sortable">
+<thead><tr><th scope="col">Ecosystem</th>${['Listed', 'Measured', 'Can be benchmarked', 'No comparable task'].map((t) => sortable(t)).join('')}</tr></thead>
+<tbody>${Object.entries(model.catalog.byEcosystem)
+      .map(([id, items]) => {
+        const count = (status) => items.filter((item) => statusOf(item) === status).length
+        return `<tr><td>${inlineIcon(`eco-${id}`)}<a href="${urls.ecosystem(id)}">${esc(ECOSYSTEMS[id].title)}</a></td>${[items.length, count('Measured'), count('Not benchmarked yet'), count('No comparable task')].map((n) => cell(n, n.toLocaleString('en-US'))).join('')}</tr>`
+      })
+      .join('\n')}</tbody>
+</table></div>
 </main>`,
   })
 }
@@ -632,11 +674,15 @@ ${packageTable(model.packages, model, { showEcosystem: true })}
 export function ecosystemPage(id, model) {
   const eco = ECOSYSTEMS[id]
   const packages = model.packages.filter((p) => p.ecosystem === id)
+  const listed = model.catalog.byEcosystem[id] ?? []
   const intro = {
     npm: 'Packages from the npm registry, measured on each JavaScript runtime where they run.',
     cargo: 'Rust crates. They share tasks with the npm packages, so their results set the top of the scale where they are the most efficient.',
     jsr: 'Packages from their official JSR distribution, measured across compatible runtimes. The npm-compatible bridge is an installation mechanism, not a second package entry.',
     builtin: 'What each runtime ships with. These show the cost of using no package at all.',
+    pypi: 'Python packages from PyPI, measured on CPython and PyPy.',
+    rubygems: 'Ruby gems, measured on CRuby with and without YJIT.',
+    gomod: 'Go modules, measured as compiled Go programs.',
   }[id]
   return layout({
     title: `${eco.title}: package efficiency labels`,
@@ -647,7 +693,10 @@ export function ecosystemPage(id, model) {
     body: `<main>
 <h1>${esc(eco.title)}</h1>
 <p class="intro">${esc(intro)}</p>
-${packages.length ? packageTable(packages, model, { showEcosystem: false }) : '<p class="note">Nothing measured in this ecosystem yet.</p>'}
+${packages.length ? `${listed.length ? '<h2>Measured</h2>' : ''}${packageTable(packages, model, { showEcosystem: false })}` : '<p class="note">Nothing measured in this ecosystem yet.</p>'}
+${listed.length ? `<h2>Most used packages</h2>
+<p>The ${listed.length.toLocaleString('en-US')} most used ${esc(eco.title)} packages, ranked by ${esc(listed[0].popularity.label)}: ${listed.filter((item) => item.measured).length} measured, ${listed.filter((item) => !item.measured && item.category?.benchmarkable).length} in a category that can be benchmarked.</p>
+${catalogTable(listed, model, { caption: `Use: ${esc(listed[0].popularity.label)}.` })}` : ''}
 </main>`,
   })
 }
@@ -696,6 +745,10 @@ ${taskRows(category.tasks)}
 ${runtimeSection(category.tasks, model, category.title)}
 <h2>Packages</h2>
 ${packageTable(packages, model, { showEcosystem: true })}
+${(() => {
+  const others = (model.catalog.byCategory.get(category.taxonomy) ?? []).filter((item) => !item.measured)
+  return others.length ? `<h2>Not measured yet in this category</h2>\n${catalogTable(others, model, { showEcosystem: true, caption: `${plural(others.length, 'listed package')} that could run these tasks but have no adapter yet. ${USE_NOTE}` })}` : ''
+})()}
 </main>`,
   })
 }
@@ -720,19 +773,44 @@ const CATEGORY_ART = Object.fromEntries(
 const categoryIcon = (id, size = 48) =>
   `<svg class="cat" viewBox="0 0 96 96" width="${size}" height="${size}" aria-hidden="true">${CATEGORY_ART[id] ?? CATEGORY_ART._default}</svg>`
 
-function categoryTiles(model) {
-  return `<ul class="tiles">${model.categories
-    .map((c) => {
-      const packages = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === c.id))
-      return `<li><a href="${urls.category(c.id)}">${categoryIcon(c.id)}<span><b>${esc(c.title)}</b><small>${plural(c.tasks.length, 'task')}, ${plural(packages.length, 'package')}</small></span></a></li>`
+// Every category as a tile, measured or not, under its group.
+function categoryTile(c, model) {
+  const measured = model.categories.find((m) => m.taxonomy === c.id)
+  const listed = model.catalog.byCategory.get(c.id)?.length ?? 0
+  if (measured) {
+    const packages = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id))
+    return `<li><a href="${urls.category(measured.id)}">${categoryIcon(measured.id)}<span><b>${esc(measured.title)}</b><small>${plural(measured.tasks.length, 'task')}, ${plural(packages.length, 'package')} measured</small></span></a></li>`
+  }
+  return `<li class="pending"><a href="/${c.id}/">${categoryIcon(c.id)}<span><b>${esc(c.title)}</b><small>${plural(listed, 'package')}${c.benchmarkable ? ', not measured yet' : ''}</small></span></a></li>`
+}
+function categoryTiles(model, categories = model.catalog.categories.filter((c) => model.categories.some((m) => m.taxonomy === c.id))) {
+  return `<ul class="tiles">${categories.map((c) => categoryTile(c, model)).join('')}</ul>`
+}
+function groupedTiles(model, heading = 'h2') {
+  const measured = (c) => model.categories.some((m) => m.taxonomy === c.id)
+  return model.catalog.groups
+    .map((group) => {
+      const members = model.catalog.categories.filter((c) => c.group === group.id).sort((a, b) => measured(b) - measured(a) || a.title.localeCompare(b.title))
+      return `<${heading} id="${group.id}">${esc(group.title)} <span class="count">${members.length}</span></${heading}>\n${categoryTiles(model, members)}`
     })
-    .join('')}</ul>`
+    .join('\n')
 }
 
-function plannedTable(model) {
+// Every task in one table: the measured ones, then the candidate task of each
+// category that has not been measured yet.
+function allTasksTable(model) {
+  const groupTitle = (taxonomyId) => model.catalog.groups.find((g) => g.id === model.catalog.categories.find((c) => c.id === taxonomyId)?.group)?.title ?? ''
+  const measured = model.categories.flatMap((c) =>
+    c.tasks.map((d) => {
+      const packages = new Set(d.runtimes.flatMap((r) => r.entries.map((e) => `${e.ecosystem}/${e.package}`))).size
+      return `<tr><td>${categoryIcon(c.id, 24)}<a href="${urls.category(c.id)}">${esc(c.title)}</a></td><td class="l">${esc(groupTitle(c.taxonomy))}</td><td class="l"><a href="${urls.task(d.task.id)}">${esc(d.task.title)}</a></td><td class="l" data-v="0">Measured</td>${cell(packages, packages)}<td class="l wrap">${esc(d.task.summary)}</td></tr>`
+    }),
+  )
+  const planned = model.index.planned.map((c) => `<tr id="${esc(c.id)}"><td>${categoryIcon(c.id, 24)}<a href="/${esc(c.id)}/">${esc(c.title)}</a></td><td class="l">${esc(groupTitle(c.id))}</td><td class="l soft">Candidate</td><td class="l soft" data-v="1">Not measured yet</td>${cell(c.packages, c.packages)}<td class="l wrap">${esc(c.benchmarkIdea ?? '')}</td></tr>`)
   return `<div class="scroll"><table class="sortable" id="planned">
-<thead><tr><th scope="col">Category</th>${sortable('Packages in the top 1,000')}<th scope="col" class="l">Candidate task</th></tr></thead>
-<tbody>${model.index.planned.map((c) => `<tr id="${esc(c.id)}"><td>${categoryIcon(c.id, 24)}${esc(c.title)}</td>${cell(c.packages, c.packages)}<td class="l wrap">${esc(c.benchmarkIdea ?? '')}</td></tr>`).join('\n')}</tbody>
+<caption>Packages: measured in the task, or for a candidate, found in the category among the most used packages of npm, crates.io, PyPI, RubyGems, Go modules and JSR.</caption>
+<thead><tr><th scope="col">Category</th>${sortable('Group', ' class="l"')}${sortable('Task', ' class="l"')}${sortable('Status', ' class="l"')}${sortable('Packages')}<th scope="col" class="l">What the task does</th></tr></thead>
+<tbody>${[...measured, ...planned].join('\n')}</tbody>
 </table></div>`
 }
 
@@ -745,12 +823,11 @@ export function categoriesPage(model) {
     model,
     body: `<main>
 <h1>Categories</h1>
-<p class="intro">A category groups packages that can do the same job, so they can run the same task and be compared.</p>
-<h2>Measured</h2>
-${categoryTiles(model)}
-<h2>Not measured yet</h2>
-<p>${plural(model.index.planned.length, 'category')} found among the 1,000 most downloaded npm packages, each with a candidate task.</p>
-${plannedTable(model)}
+<p class="intro">A category groups packages that can do the same job, so they can run the same task and be compared. ${model.catalog.categories.length} categories in ${model.catalog.groups.length} groups, ${model.categories.length} measured so far; the <a href="#tasks">table of all tasks</a> is below.</p>
+${groupedTiles(model)}
+<h2 id="tasks">All tasks</h2>
+<p>${plural(model.tasks.length, 'task')} measured, and a candidate task for each of the ${plural(model.index.planned.length, 'category')} not measured yet.</p>
+${allTasksTable(model)}
 </main>`,
   })
 }
@@ -765,16 +842,16 @@ export function homePage(model) {
     body: `<main>
 <h1>Package efficiency labels</h1>
 <p class="intro">Packages that do the same job run the same task. Each gets a class from A to G for CPU, memory and type-check cost, like the label on a fridge.</p>
-<h2>Categories</h2>
+<h2>Measured categories</h2>
 ${categoryTiles(model)}
 <h2>Packages</h2>
 ${packageTable(model.packages, model, { showEcosystem: true })}
 <h2>Reading a label</h2>
 ${legend(lead)}
 <p>Class A is set by the best result for the task in any language or runtime, so a class means the same thing everywhere. A runtime's own built-in counts as an entry, so a package can be compared with using nothing at all.</p>
-<h2>Not measured yet</h2>
-<p>${plural(model.index.planned.length, 'category')} from the 1,000 most downloaded npm packages. <a href="/categories/#planned">See the candidate task for each</a>.</p>
-<ul class="tiles plain">${model.index.planned.map((c) => `<li><a href="/categories/#${esc(c.id)}">${categoryIcon(c.id, 48)}<span><b>${esc(c.title)}</b><small>${plural(c.packages, 'package')}</small></span></a></li>`).join('')}</ul>
+<h2>All categories</h2>
+<p>${model.catalog.categories.length} categories in ${model.catalog.groups.length} groups, from the most used packages of npm, crates.io, PyPI, RubyGems, Go modules and JSR. Dashed ones are not measured yet; <a href="/categories/#tasks">see the candidate task for each</a>.</p>
+${groupedTiles(model, 'h3')}
 </main>`,
   })
 }
@@ -863,7 +940,7 @@ function runtimeCards(tasks, model, scope, rankingId, only) {
       }
       const svg = renderLabel({ entry, data, runtime: s.runtime, rankingId, subtitle: `Version ${s.runtime.version}`, context: `${scope}, best across ${plural(s.tasks, 'task')}` })
       const typical = s[rankingId].typical
-      return `<li>${svg}<p class="under"><a href="${urls.runtime(s.runtime.id)}">${esc(s.runtime.title)}, all tasks</a><br><span class="nowrap">Typical entry ${formatNumber(typical.ratio)}×${chip(rankingId, typical)}</span></p></li>`
+      return `<li data-label>${svg}<p class="under"><a href="${urls.runtime(s.runtime.id)}">${esc(s.runtime.title)}, all tasks</a><br><span class="nowrap">Typical entry ${formatNumber(typical.ratio)}×${chip(rankingId, typical)}</span></p></li>`
     })
   return shelf(cards)
 }
@@ -1009,6 +1086,128 @@ ${marks.map(([icon, use, source, licence, changes]) => `<tr><td class="marks">${
   })
 }
 
+// --- The catalog: every listed package, measured or not --------------------
+
+// The most used packages of each ecosystem are all listed, so a reader who
+// looks one up finds it, with its category and whether it has been measured.
+const categoryHref = (id, model) => {
+  const measured = model.categories.find((c) => c.taxonomy === id)
+  return measured ? urls.category(measured.id) : `/${id}/`
+}
+const catalogUrl = (item) => (item.measured ? urls.package(item.measured) : `/${item.ecosystem}/${item.name}/`)
+const STATUS_ORDER = ['Measured', 'Not benchmarked yet', 'No comparable task']
+const statusOf = (item) => (item.measured ? 'Measured' : item.category?.benchmarkable ? 'Not benchmarked yet' : item.category && item.category.id !== 'other' ? 'No comparable task' : 'Not benchmarked yet')
+const compact = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(n >= 1e4 ? 0 : 1)}K` : String(n))
+
+function catalogTable(items, model, { showEcosystem = false, caption }) {
+  const rows = items.map((item) => {
+    const status = statusOf(item)
+    const category = item.category
+    return `<tr><td><a href="${catalogUrl(item)}">${esc(item.name)}</a></td>
+${showEcosystem ? `<td class="l">${inlineIcon(`eco-${item.ecosystem}`)}${esc(ECOSYSTEMS[item.ecosystem].title)}</td>` : ''}
+<td data-v="${item.rank}">${item.rank}</td>
+<td data-v="${item.popularity.value}" title="${esc(item.popularity.label)}">${compact(item.popularity.value)}</td>
+<td class="l">${category ? `<a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>` : NA}</td>
+<td class="l${status === 'Measured' ? '' : ' soft'}" data-v="${STATUS_ORDER.indexOf(status)}">${status}</td></tr>`
+  })
+  return `<div class="scroll"><table class="sortable">
+<caption>${caption}</caption>
+<thead><tr><th scope="col">Package</th>${showEcosystem ? sortable('Ecosystem', ' class="l"') : ''}${sortable('Rank')}${sortable('Use')}${sortable('Category', ' class="l"')}${sortable('Status', ' class="l"')}</tr></thead>
+<tbody>${rows.join('\n')}</tbody>
+</table></div>`
+}
+
+const USE_NOTE = 'Use is the figure each registry is ranked by: downloads per month for npm and PyPI, in total for crates.io and RubyGems, in the last 90 days for JSR, and repositories that depend on it for Go modules.'
+
+// The page of a listed package that has no benchmark results.
+export function catalogPackagePage(item, model) {
+  const eco = ECOSYSTEMS[item.ecosystem]
+  const category = item.category
+  const status = statusOf(item)
+  const measuredCategory = category && model.categories.find((c) => c.taxonomy === category.id)
+  const why =
+    status === 'No comparable task'
+      ? `It is filed under <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, a group with no single task its members could all run, so there is nothing to compare it on.`
+      : !category || category.id === 'other'
+        ? 'It could be benchmarked, but no category with comparable packages has been set up for it yet.'
+        : measuredCategory
+          ? `Its category, <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, is measured, but no adapter has been written for this package yet.`
+          : `Its category, <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, has a candidate task but has not been measured yet.`
+  const types = item.typeCheck
+  return layout({
+    title: `${item.name}: package efficiency labels`,
+    description: `${item.name} is listed among the most used ${eco.title} packages; it has not been benchmarked yet.`,
+    path: catalogUrl(item),
+    context: { listed: item.category?.id },
+    crumbs: [['Packages', '/packages/'], [eco.title, urls.ecosystem(item.ecosystem)], [item.name]],
+    model,
+    body: `<main>
+<h1>${esc(item.name)}${item.version ? ` <span class="ver">${esc(item.version)}</span>` : ''}</h1>
+<p class="intro">${esc(eco.title)} package, number ${item.rank} by ${esc(item.popularity.label)} (${compact(item.popularity.value)}).${item.description ? ` ${esc(item.description)}` : ''}</p>
+<p class="note"><b>${status}.</b> ${why}</p>
+<table class="narrow facts">
+<tbody>
+<tr><th scope="row">Category</th><td class="l">${category ? `<a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>` : NA}</td></tr>
+${category?.benchmarkIdea ? `<tr><th scope="row">Candidate task</th><td class="l wrap">${esc(category.benchmarkIdea)}</td></tr>` : ''}
+<tr><th scope="row">Registry</th><td class="l"><a href="${eco.registry(item.name)}">${esc(eco.title)}</a>${item.repository ? `, <a href="${esc(item.repository)}">source repository</a>` : ''}</td></tr>
+</tbody>
+</table>
+${types ? `<h2>Type check</h2>
+<p>Loading this package's types adds ${formatNumber(types.cpuMs)} ms of compiler CPU time and ${formatNumber(types.memoryMb)} MB of compiler memory with ${esc(types.tool)}, a cost of <b>${formatNumber(types.cost)}</b>. It has no class, because a class compares packages that do the same task.</p>
+${TYPE_KEY}` : ''}
+</main>`,
+  })
+}
+
+// A category from the categorization that has no measured task: what it
+// covers, its candidate task if it has one, and the listed packages in it.
+export function listedCategoryPage(category, model) {
+  const members = model.catalog.byCategory.get(category.id) ?? []
+  return layout({
+    title: `${category.title}: package efficiency labels`,
+    description: category.description,
+    path: `/${category.id}/`,
+    context: { listed: category.id },
+    crumbs: [['Categories', '/categories/'], [category.title]],
+    model,
+    body: `<main>
+<h1>${categoryIcon(category.id, 48)}${esc(category.title)}</h1>
+<p class="intro">${esc(category.description)}</p>
+<p class="note"><b>${category.benchmarkable ? 'Not measured yet.' : 'No comparable task.'}</b> ${category.benchmarkable ? `Candidate task: ${esc(category.benchmarkIdea ?? 'not written yet')}` : 'The packages in this group do not share one job that could be run the same way for all of them, so they are listed but not compared.'}</p>
+<h2>Packages</h2>
+${members.length ? catalogTable(members, model, { showEcosystem: true, caption: `${plural(members.length, 'listed package')} in this category. ${USE_NOTE}` }) : '<p>No listed package is in this category.</p>'}
+</main>`,
+  })
+}
+
+// --- Copy and download ------------------------------------------------------
+
+const MENU_ICONS = {
+  copy: 'M5 1h9v10h-3v3H2V4h3zm1.500 3H11v5.500h1.500v-7h-6zM3.500 5.500v7h6v-7z',
+  markdown: 'M1 3h14v10H1zm1.500 1.500v7h11v-7zM4 10.500v-5h1.300L6.500 7.300l1.200-1.800H9v5H7.700V7.800L6.500 9.500 5.300 7.800v2.700zm6-2h1.200v-3h1.100v3h1.200L11.750 10.500z',
+  chat: 'M2 2h12v9H8.500L5 14v-3H2zm1.500 1.500v6h3v1.700l2-1.700h4v-6z',
+  table: 'M1 2h14v12H1zm1.500 1.500V6H6V3.500zm5 0V6h6V3.500zM2.500 7.500v2H6v-2zm5 0v2h6v-2zm-5 3.500v1.500H6V11zm5 0v1.500h6V11z',
+  braces: 'M6 2v1.500H5.200c-.4 0-.7.300-.7.700v2.300c0 .700-.400 1.200-1 1.500.6.300 1 .800 1 1.500v2.300c0 .400.300.700.700.700H6V14H5.200C4 14 3 13 3 11.800V9.500c0-.400-.300-.700-.700-.700H2V7.200h.300c.400 0 .700-.300.700-.700V4.200C3 3 4 2 5.200 2zm4 0h.800C12 2 13 3 13 4.200v2.300c0 .400.300.700.700.700h.3v1.600h-.300c-.400 0-.700.300-.700.700v2.300c0 1.200-1 2.200-2.200 2.200H10v-1.500h.800c.400 0 .700-.300.700-.700V9.500c0-.700.400-1.200 1-1.500-.600-.300-1-.800-1-1.500V4.200c0-.400-.300-.700-.700-.700H10z',
+}
+const menuIcon = (id) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${MENU_ICONS[id]}" fill="currentColor" fill-rule="evenodd"/></svg>`
+
+// A page's results in other forms: Markdown to paste into a language model,
+// CSV and JSON for everything else. Without the page script it is a plain
+// list of links; the script adds "Copy page" and closes it on a click outside.
+function pageMenu({ markdown, csv, json }) {
+  const item = (icon, href, title, detail, attrs = '') => `<li><a href="${href}"${attrs}>${menuIcon(icon)}<span><b>${title}</b><small>${detail}</small></span></a></li>`
+  return `<div class="page-menu" data-markdown="${markdown}">
+<details class="menu"><summary>${menuIcon('copy')}<span class="menu-title">Copy and download</span></summary>
+<ul>
+${item('markdown', markdown, 'View as Markdown', 'This page as plain text')}
+${item('chat', markdown, 'Open in Claude', 'Ask Claude about this page', ' data-open-claude rel="noopener"')}
+${item('table', csv, 'Download CSV', 'One row per entry per runtime', ' download')}
+${item('braces', json, 'Download JSON', 'The same figures, structured', ' download')}
+</ul>
+</details>
+</div>`
+}
+
 // --- Benchmark source ---------------------------------------------------------
 
 // A link into the repository named in site.json: kind is "blob" or "tree".
@@ -1016,12 +1215,24 @@ const repoUrl = (model, kind, file) => `${model.repository.url}/${kind}/${model.
 
 // One file: its name, a link to it on GitHub, and the highlighted code with
 // line numbers in a column of their own so they are not selected with it.
-function sourceFile(file, model) {
+// Each file folds; settings and glue start folded when shown inside a page.
+const SETTINGS_FILES = new Set(['adapter.json', 'package.json', 'Cargo.toml', 'go.mod', 'runner.go', 'task.json'])
+function sourceFile(file, model, { open = true, id = file.name } = {}) {
   const numbers = Array.from({ length: file.lines }, (_, i) => i + 1).join('\n')
-  return `<figure class="source" id="${esc(file.name)}">
-<figcaption><a class="name" href="#${esc(file.name)}">${esc(file.name)}</a><span class="soft">${plural(file.lines, 'line')}</span><a href="${repoUrl(model, 'blob', file.path)}">View on GitHub</a></figcaption>
+  return `<details class="source" id="${esc(id)}"${open ? ' open' : ''}>
+<summary><span class="name">${esc(file.name)}</span><span class="soft">${plural(file.lines, 'line')}</span><a href="${repoUrl(model, 'blob', file.path)}">View on GitHub</a></summary>
 <div class="code"><pre class="numbers" aria-hidden="true">${numbers}</pre><pre><code>${file.html}</code></pre></div>
-</figure>`
+</details>`
+}
+
+// An adapter's files, for showing inside another page: the code open, its
+// settings folded. A variant adds the code it runs unless `withShared` is off
+// (when that adapter is already shown on the same page).
+function inlineSource(taskId, adapterId, model, { withShared = true } = {}) {
+  const source = adapterSource(taskId, adapterId)
+  const show = (f, name = f.name) => sourceFile({ ...f, name }, model, { open: !SETTINGS_FILES.has(f.name), id: `${taskId}/${adapterId}/${name}` })
+  const shared = withShared ? source.shared.map((f) => show(f, `${source.variantOf.split('/').at(-1)}/${f.name}`)) : []
+  return [...source.files.map((f) => show(f)), ...shared].join('\n')
 }
 
 const fileIndex = (files) => (files.length > 1 ? `<p class="files">${files.map((f) => `<a href="#${esc(f.name)}">${esc(f.name)}</a>`).join(' ')}</p>` : '')
@@ -1082,6 +1293,7 @@ export function searchIndex(model) {
     ...model.categories.map((c) => ({ t: c.title, k: 'Category', u: urls.category(c.id) })),
     ...Object.entries(ECOSYSTEMS).map(([id, e]) => ({ t: e.title, k: 'Ecosystem', u: urls.ecosystem(id) })),
     ...model.runtimes.map((rt) => ({ t: rt.title, k: 'Runtime', u: urls.runtime(rt.id) })),
-    ...model.index.planned.map((c) => ({ t: c.title, k: 'Not measured yet', u: `/categories/#${c.id}` })),
+    ...model.catalog.categories.filter((c) => !model.categories.some((m) => m.taxonomy === c.id)).map((c) => ({ t: c.title, k: c.benchmarkable ? 'Category, not measured yet' : 'Category', u: `/${c.id}/` })),
+    ...Object.values(model.catalog.byEcosystem).flat().filter((item) => !item.measured).map((item) => ({ t: item.name, k: `${ECOSYSTEMS[item.ecosystem].title}, not benchmarked`, u: catalogUrl(item) })),
   ]
 }

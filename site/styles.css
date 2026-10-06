@@ -16,7 +16,7 @@
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 400 0.875rem/1.45 Archivo, 'Helvetica Neue', Arial, sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 0.875rem/1.45 Archivo, 'Archivo Narrow', 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif; }
 a { color: inherit; text-underline-offset: 2px; }
 a:hover { background: var(--mark); color: #000; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -218,7 +218,7 @@ table.legend thead th.l { text-align: left; }
 .type-cost-score { font-weight: 700; }
 /* The radical is drawn from a mathematical font; the letters under it keep the page's font. */
 math.unit { font-family: math; font-size: 0.92em; }
-math.unit mi, math.unit mo { font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; }
+math.unit mi, math.unit mo { font-family: Archivo, 'Archivo Narrow', 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif; }
 .type-cost .cls { margin-left: 0; }
 .type-cost-elapsed { color: var(--soft); font-weight: 400; }
 
@@ -270,14 +270,19 @@ details.licence pre { white-space: pre-wrap; font: inherit; font-size: 0.85rem; 
 }
 p.files { display: flex; flex-wrap: wrap; gap: 4px 6px; max-width: none; }
 p.files a { padding: 1px 8px; border: 1px solid var(--rule); text-decoration: none; }
-figure.source { margin: 16px 0 24px; border: 1px solid var(--rule); }
-figure.source figcaption { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 5px 10px; background: var(--band); border-bottom: 1px solid var(--rule); }
-figure.source figcaption .name { font-weight: 800; text-decoration: none; }
-figure.source figcaption a:last-child { margin-left: auto; }
-figure.source .code { display: flex; overflow-x: auto; font: 0.8125rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
-figure.source pre { margin: 0; padding: 10px 12px; font: inherit; tab-size: 4; }
-figure.source pre code { font: inherit; font-weight: 400; }
-figure.source pre.numbers { position: sticky; left: 0; padding-right: 10px; text-align: right; color: var(--soft); background: var(--bg); border-right: 1px solid var(--rule); user-select: none; -webkit-user-select: none; }
+details.source { margin: 12px 0 20px; border: 1px solid var(--rule); max-width: 100%; }
+details.source summary { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 5px 10px; background: var(--band); cursor: pointer; list-style: none; }
+details.source summary::-webkit-details-marker { display: none; }
+details.source summary::before { content: ''; align-self: center; border: 5px solid transparent; border-left-color: currentColor; border-right-width: 0; }
+details.source[open] summary::before { transform: rotate(90deg); }
+details.source[open] summary { border-bottom: 1px solid var(--rule); }
+details.source summary .name { font-weight: 800; }
+details.source summary a { margin-left: auto; }
+.adapter { margin: 0 0 20px; }
+details.source .code { display: flex; overflow-x: auto; font: 0.8125rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+details.source pre { margin: 0; padding: 10px 12px; font: inherit; tab-size: 4; }
+details.source pre code { font: inherit; font-weight: 400; }
+details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; text-align: right; color: var(--soft); background: var(--bg); border-right: 1px solid var(--rule); user-select: none; -webkit-user-select: none; }
 .hljs-comment, .hljs-quote, .hljs-meta { color: var(--code-comment); }
 .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-built_in, .hljs-type { color: var(--code-keyword); }
 .hljs-string, .hljs-regexp, .hljs-symbol, .hljs-char.escape_ { color: var(--code-string); }
@@ -285,3 +290,74 @@ figure.source pre.numbers { position: sticky; left: 0; padding-right: 10px; text
 .hljs-title, .hljs-section, .hljs-name, .hljs-property { color: var(--code-name); }
 .hljs-strong { font-weight: 700; }
 .hljs-emphasis { font-style: italic; }
+
+/* The site's mark beside its name. */
+.top .name { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.top .name .logo { width: 22px; height: 20px; flex: none; }
+.top .name:hover { background: none; color: inherit; text-decoration: underline; }
+
+/* Search: shortcut hint, results, the active result and matched letters. */
+.search-key { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 0 5px; border: 1px solid #b5b5b5; border-radius: 3px; font: inherit; font-size: 0.75rem; color: #595959; background: #f1f1f1; pointer-events: none; }
+.search:focus-within .search-key, .search input:not(:placeholder-shown) ~ .search-key { display: none; }
+#q-results a[aria-selected="true"] { background: var(--mark); color: #000; }
+#q-results a:hover { background: none; color: inherit; }
+#q-results a[aria-selected="true"]:hover { background: var(--mark); color: #000; }
+#q-results mark { background: none; color: inherit; font-weight: 800; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
+#q-results .search-note { padding: 5px 10px; font-size: 0.75rem; color: var(--soft); border-top: 1px solid var(--rule); }
+
+/* Pages of a long table. */
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: -4px 0 14px; font-size: 0.8125rem; }
+.pager button, .page-menu button, .menu button { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--rule); padding: 3px 10px; cursor: pointer; }
+.pager button:hover:not(:disabled) { background: var(--mark); color: #000; }
+.pager button:disabled { color: var(--soft); cursor: default; }
+.pager span { min-width: 9em; text-align: center; font-variant-numeric: tabular-nums; }
+.pager button:last-child { margin-left: 8px; }
+.side a.more { color: var(--soft); }
+
+/* Menus: a <details> whose list drops below its summary. */
+details.menu { position: relative; }
+details.menu > summary { list-style: none; cursor: pointer; }
+details.menu > summary::-webkit-details-marker { display: none; }
+details.menu > ul { position: absolute; z-index: 20; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; min-width: 15rem; background: var(--bg); border: 1px solid var(--soft); box-shadow: 0 6px 18px rgb(0 0 0 / 0.18); }
+details.menu > ul a, details.menu > ul button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px; border: 0; background: none; text-align: left; text-decoration: none; }
+details.menu > ul a:hover, details.menu > ul button:hover, details.menu > ul a:focus-visible, details.menu > ul button:focus-visible { background: var(--mark); color: #000; }
+details.menu > ul a span { display: flex; flex-direction: column; line-height: 1.25; }
+details.menu > ul small { color: var(--soft); font-size: 0.75rem; }
+details.menu > ul a:hover small { color: #000; }
+details.menu > ul .ico { width: 16px; height: 16px; flex: none; }
+
+/* Copy page, and the other forms a page comes in. */
+.page-menu { float: right; display: flex; margin: 0 0 8px 16px; }
+.page-menu summary, .page-menu .copy-page { display: flex; align-items: center; gap: 7px; padding: 4px 10px; border: 1px solid var(--rule); background: var(--bg); font-size: 0.8125rem; }
+.page-menu summary::after { content: ''; border: 4px solid transparent; border-top-color: currentColor; border-bottom-width: 0; }
+.page-menu summary:hover, .page-menu .copy-page:hover { background: var(--mark); color: #000; }
+.page-menu.split .menu-title, .page-menu.split summary .ico { display: none; }
+.page-menu.split summary { border-left: 0; height: 100%; }
+.page-menu .ico { width: 14px; height: 14px; margin: 0; }
+
+/* The label menu: a button at the label's corner, shown on hover or focus. */
+.has-label-menu { position: relative; }
+details.label-menu { position: absolute; top: 9px; right: 17%; }
+.label-menu > summary { display: grid; place-items: center; width: 26px; height: 22px; background: #fff; color: #000; border: 1px solid #000; border-radius: 3px; opacity: 0; }
+.label-menu > summary svg { width: 14px; height: 14px; fill: currentColor; }
+.has-label-menu:hover .label-menu > summary, .label-menu > summary:focus-visible, .label-menu[open] > summary { opacity: 1; }
+.label-menu > summary:hover, .label-menu[open] > summary { background: var(--mark); }
+details.label-menu > ul { min-width: 9rem; }
+@media (hover: none) { .label-menu > summary { opacity: 1; } }
+.js .svg-link { display: none; }
+
+.toast { position: fixed; z-index: 30; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 8px 14px; background: var(--ink); color: var(--bg); font-weight: 600; box-shadow: 0 6px 18px rgb(0 0 0 / 0.25); }
+
+/* Facts about a listed package. */
+table.facts th { text-align: left; font-weight: 700; padding-right: 16px; white-space: nowrap; vertical-align: top; }
+table.facts td { white-space: normal; }
+
+/* Marks kept in a shared file: a box in the text colour, cut to the mark. */
+.ico-file { display: inline-block; background: currentColor; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+
+/* Categories by group. */
+.tiles .pending a { border-style: dashed; }
+.tiles .pending b { font-weight: 600; }
+h2 .count { font-weight: 400; color: var(--soft); margin-left: 4px; }
+.side li.open > a { font-weight: 800; }
+h3 .count { font-weight: 400; color: var(--soft); margin-left: 4px; }
