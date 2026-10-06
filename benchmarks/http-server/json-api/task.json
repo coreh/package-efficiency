@@ -1,0 +1,40 @@
+{
+  "category": "http-server",
+  "task": "json-api",
+  "title": "JSON API server",
+  "summary": "Serve a small JSON API: a plain-text route, a parameterized JSON route, and a JSON POST echo.",
+  "kind": "http-server",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "workers": 4,
+    "connections": 16,
+    "warmup": 20000,
+    "rounds": 3,
+    "requestsPerRound": 60000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerRequestUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per request",
+      "scale": [
+        1.25,
+        1.6,
+        2,
+        2.5,
+        3.2,
+        4
+      ]
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  }
+}

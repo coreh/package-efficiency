@@ -1,0 +1,2018 @@
+{
+  "categories": [
+    {
+      "id": "glob-matching",
+      "title": "Glob matching",
+      "description": "Test whether path strings match a glob pattern, purely in memory; walking the filesystem, gitignore rule sets and brace-only expansion are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compile a fixed set of glob patterns and match each against a fixed list of 10,000 path strings.",
+      "examples": [
+        "minimatch",
+        "picomatch"
+      ]
+    },
+    {
+      "id": "terminal-styling",
+      "title": "Terminal string styling",
+      "description": "Wrap strings in ANSI color and style escape codes; stripping, measuring or wrapping already-styled text and color-support detection are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Apply a fixed mix of single and nested color/bold/underline styles to 100,000 short strings and concatenate the output.",
+      "examples": [
+        "chalk",
+        "picocolors",
+        "ansi-styles"
+      ]
+    },
+    {
+      "id": "cli-argument-parsing",
+      "title": "CLI argument parsing",
+      "description": "Turn an argv array into structured options, positionals and subcommands; single-flag checks, prompts and terminal layout are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Declare the same set of flags, typed options and positionals, then parse a fixed set of argv arrays into option objects.",
+      "examples": [
+        "commander",
+        "yargs",
+        "yargs-parser",
+        "argparse"
+      ]
+    },
+    {
+      "id": "schema-validation",
+      "title": "Schema validation",
+      "description": "Validate arbitrary JavaScript values against a declared schema and report errors; type-only helpers and schema traversal utilities are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Define one equivalent nested object schema and validate a fixed batch of valid and invalid JSON documents against it.",
+      "examples": [
+        "ajv",
+        "zod"
+      ]
+    },
+    {
+      "id": "id-generation",
+      "title": "Unique ID generation",
+      "description": "Generate random, collision-resistant string identifiers; hashing of content and sequential counters are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Generate one million random unique IDs using the package's default secure generator.",
+      "examples": [
+        "uuid",
+        "nanoid"
+      ]
+    },
+    {
+      "id": "config-format-parsing",
+      "title": "Config format parsing",
+      "description": "Parse human-friendly, JSON-superset configuration text (YAML, JSON5, JSON with comments) into JavaScript values; binary formats, CSV and markup languages are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse the same large nested configuration document, expressed in the subset every member accepts, into a plain object.",
+      "examples": [
+        "js-yaml",
+        "json5",
+        "strip-json-comments"
+      ]
+    },
+    {
+      "id": "source-map-decoding",
+      "title": "Source map decoding",
+      "description": "Decode source map VLQ mappings and trace generated positions back to original ones; generating maps while editing code and converting map container formats are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Load one large real-world source map and decode all of its mappings into position segments.",
+      "examples": [
+        "source-map",
+        "@jridgewell/trace-mapping",
+        "@jridgewell/sourcemap-codec"
+      ]
+    },
+    {
+      "id": "file-lookup",
+      "title": "File existence lookup",
+      "description": "Find the first existing file or directory among candidate paths or by walking up parent directories; glob expansion, executable PATH lookup and module resolution are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "From a deep directory in a fixture tree, locate the nearest existing marker file among candidates in each ancestor directory.",
+      "examples": [
+        "find-up",
+        "locate-path",
+        "path-exists"
+      ]
+    },
+    {
+      "id": "module-resolution",
+      "title": "Module resolution",
+      "description": "Resolve a module specifier to a file path using the Node.js require algorithm from a given base directory; bundler-specific resolvers and loaders are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Resolve a fixed list of relative and bare package specifiers from a base directory inside a fixture node_modules tree.",
+      "examples": [
+        "resolve",
+        "resolve-from"
+      ]
+    },
+    {
+      "id": "stream-implementations",
+      "title": "Stream implementations",
+      "description": "Userland readable/writable/passthrough stream classes that data is piped through; helpers that only consume or collect an existing stream are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Pipe a fixed number of fixed-size buffer chunks through a chain of passthrough streams to a counting sink.",
+      "examples": [
+        "readable-stream",
+        "minipass"
+      ]
+    },
+    {
+      "id": "type-definitions",
+      "title": "Type definitions",
+      "description": "Packages that ship only TypeScript types and have no runtime code.",
+      "benchmarkable": false,
+      "examples": [
+        "@types/node",
+        "@types/estree",
+        "undici-types",
+        "type-fest"
+      ]
+    },
+    {
+      "id": "build-tooling",
+      "title": "Build, lint and test tooling",
+      "description": "Compilers, bundlers, transformers, linters, test runners and their plugins and configs, which run at development time rather than performing one comparable runtime task.",
+      "benchmarkable": false,
+      "examples": [
+        "typescript",
+        "esbuild",
+        "postcss"
+      ]
+    },
+    {
+      "id": "tooling-internals",
+      "title": "Tooling internals (AST and code utilities)",
+      "description": "Building blocks used inside compilers and linters, such as AST node helpers, traversal, scope analysis, tokenizing and code frames; standalone parsers are out of scope.",
+      "benchmarkable": false,
+      "examples": [
+        "@babel/types",
+        "estraverse",
+        "eslint-scope",
+        "eslint-visitor-keys",
+        "@babel/code-frame",
+        "@babel/helper-validator-identifier",
+        "js-tokens"
+      ]
+    },
+    {
+      "id": "platform-binaries",
+      "title": "Platform-specific binaries",
+      "description": "Packages that only carry a prebuilt native executable or addon for one OS and CPU architecture.",
+      "benchmarkable": false,
+      "examples": [
+        "@esbuild/linux-x64"
+      ]
+    },
+    {
+      "id": "runtime-shims",
+      "title": "Runtime helpers and shims",
+      "description": "Ponyfills, compiler helper runtimes and one-line predicates that stand in for built-in language or Node.js features and have no meaningful standalone task.",
+      "benchmarkable": false,
+      "examples": [
+        "tslib",
+        "isarray",
+        "hasown",
+        "safe-buffer",
+        "string_decoder",
+        "has-flag",
+        "path-key"
+      ]
+    },
+    {
+      "id": "static-data",
+      "title": "Static data and patterns",
+      "description": "Packages that export only constant tables or a single regular expression and do no work of their own.",
+      "benchmarkable": false,
+      "examples": [
+        "mime-db",
+        "color-name",
+        "globals",
+        "emoji-regex",
+        "ansi-regex",
+        "shebang-regex"
+      ]
+    },
+    {
+      "id": "javascript-parsing",
+      "title": "JavaScript parsing",
+      "description": "Parse JavaScript source text into an ESTree-style AST; AST traversal, code generation and tokenizer-only packages are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse the same large plain-JavaScript (ES2020, no JSX or types) source file into an AST.",
+      "examples": [
+        "acorn",
+        "espree",
+        "esprima",
+        "@babel/parser",
+        "hermes-parser",
+        "oxc-parser"
+      ]
+    },
+    {
+      "id": "css-parsing",
+      "title": "CSS stylesheet parsing",
+      "description": "Parse a whole CSS stylesheet into an AST or object model; selector-only or value-only parsers, tokenizers and plugin-driven transformers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse one large real-world stylesheet (for example a CSS framework build) into the package's AST.",
+      "examples": [
+        "css-tree",
+        "@adobe/css-tools",
+        "@csstools/css-parser-algorithms"
+      ]
+    },
+    {
+      "id": "markup-parsing",
+      "title": "HTML and XML parsing",
+      "description": "Parse HTML or XML text into a tree or a stream of SAX events; DOM implementations, serializers, sanitizers and XML builders are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse one large well-formed XHTML document, valid as both HTML and XML, and count the elements seen.",
+      "examples": [
+        "parse5",
+        "htmlparser2",
+        "sax",
+        "saxes",
+        "fast-xml-parser"
+      ]
+    },
+    {
+      "id": "html-escaping",
+      "title": "HTML entity escaping",
+      "description": "Escape and unescape HTML special characters and entities in strings; CSS, RegExp and JavaScript string escaping are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Escape the five HTML special characters in 100,000 short strings of mixed text and markup.",
+      "examples": [
+        "entities",
+        "escape-html",
+        "html-escaper"
+      ]
+    },
+    {
+      "id": "json-parsing",
+      "title": "JSON parsing",
+      "description": "Parse strict JSON text into JavaScript values with added behavior such as better errors, bigints or circular references; JSON supersets with comments and file I/O helpers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse the same large standard JSON document string into a JavaScript value.",
+      "examples": [
+        "parse-json",
+        "json-parse-even-better-errors",
+        "json-bigint",
+        "flatted"
+      ]
+    },
+    {
+      "id": "stable-json-stringify",
+      "title": "Deterministic JSON stringification",
+      "description": "Serialize JavaScript values to JSON with a stable, sorted key order; pretty-printers for debugging and content hashing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Stringify a fixed set of large nested objects with shuffled key order into canonical JSON.",
+      "examples": [
+        "fast-json-stable-stringify",
+        "json-stable-stringify-without-jsonify",
+        "safe-stable-stringify"
+      ]
+    },
+    {
+      "id": "value-inspection",
+      "title": "Value inspection and formatting",
+      "description": "Render arbitrary JavaScript values as human-readable strings for logs, assertions and snapshots; JSON serialization and diffing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Format a fixed set of nested objects, arrays, Maps, Sets and primitives into strings.",
+      "examples": [
+        "pretty-format",
+        "@vitest/pretty-format",
+        "object-inspect",
+        "loupe"
+      ]
+    },
+    {
+      "id": "deep-equality",
+      "title": "Deep equality",
+      "description": "Compare two JavaScript values for structural equality; assertion libraries, diff output and shallow comparison are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compare a fixed set of equal and unequal pairs of nested objects, arrays, Maps and Dates.",
+      "examples": [
+        "fast-deep-equal",
+        "dequal",
+        "deep-eql",
+        "fast-equals",
+        "deep-is"
+      ]
+    },
+    {
+      "id": "object-merging",
+      "title": "Object merging",
+      "description": "Copy or recursively merge properties of source objects into a target object; cloning a single value, immutable-update libraries and Object.assign ponyfills are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Merge a fixed sequence of nested plain option objects into one result object, 100,000 times.",
+      "examples": [
+        "deepmerge",
+        "extend",
+        "lodash.merge",
+        "defaults",
+        "xtend"
+      ]
+    },
+    {
+      "id": "file-globbing",
+      "title": "Filesystem globbing",
+      "description": "Expand glob patterns into the list of matching paths by walking the filesystem; in-memory pattern matching and unfiltered directory crawling are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Expand a fixed set of glob patterns such as **/*.js against a fixture directory tree and collect the matching paths.",
+      "examples": [
+        "glob",
+        "fast-glob",
+        "tinyglobby",
+        "globby"
+      ]
+    },
+    {
+      "id": "directory-walking",
+      "title": "Directory walking",
+      "description": "Recursively enumerate every file and directory under a root; glob pattern expansion and file watching are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Recursively list every file in a fixture tree of roughly 10,000 files across nested directories.",
+      "examples": [
+        "fdir",
+        "readdirp",
+        "path-scurry",
+        "@nodelib/fs.walk"
+      ]
+    },
+    {
+      "id": "process-execution",
+      "title": "Child process execution",
+      "description": "Spawn a child process and collect its exit status and output; shell-string quoting, PATH lookup and signal tables are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Spawn the same trivial command 200 times and collect its stdout and exit code.",
+      "examples": [
+        "execa",
+        "cross-spawn",
+        "tinyexec",
+        "foreground-child"
+      ]
+    },
+    {
+      "id": "async-concurrency",
+      "title": "Async concurrency control",
+      "description": "Run many async tasks with a concurrency limit or through a work queue; promisification, retry policies and single-call guards are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Run 100,000 trivial async tasks with a concurrency limit of 10 and wait for all of them to settle.",
+      "examples": [
+        "p-limit",
+        "p-map",
+        "fastq",
+        "async",
+        "neo-async"
+      ]
+    },
+    {
+      "id": "event-emitter",
+      "title": "Event emitters",
+      "description": "In-process publish/subscribe objects with on/off/emit semantics; DOM EventTarget implementations, plugin hook systems and reactive streams are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Register 10 listeners on each of several event names and emit one million events with two arguments.",
+      "examples": [
+        "eventemitter3",
+        "events",
+        "@protobufjs/eventemitter"
+      ]
+    },
+    {
+      "id": "stream-merging",
+      "title": "Stream merging",
+      "description": "Combine several readable streams into one output stream, in sequence or interleaved; stream class implementations and pipe/cleanup helpers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Merge 100 readable streams of fixed buffer chunks into one stream and consume it to the end.",
+      "examples": [
+        "merge-stream",
+        "merge2",
+        "combined-stream"
+      ]
+    },
+    {
+      "id": "http-client",
+      "title": "HTTP clients",
+      "description": "Send HTTP requests and read responses from Node.js; proxy agents, service-specific SDKs and header parsing helpers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Issue 10,000 GET requests for a small JSON body to a local HTTP server and parse each response.",
+      "examples": [
+        "undici",
+        "axios",
+        "node-fetch",
+        "gaxios",
+        "follow-redirects"
+      ]
+    },
+    {
+      "id": "http-server-routing",
+      "title": "HTTP server routing",
+      "description": "Match incoming HTTP requests against registered routes and middleware and dispatch to a handler; single-purpose middleware, header utilities and full-stack frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Register 100 parameterized routes with two middleware and dispatch a fixed mix of requests to handlers that return JSON.",
+      "examples": [
+        "express",
+        "hono",
+        "router"
+      ]
+    },
+    {
+      "id": "url-parsing",
+      "title": "URL and URI parsing",
+      "description": "Parse, resolve and serialize URL or URI strings into components; query-string decoding, route pattern matching and data: URL decoding are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed list of 100,000 absolute URLs into components and serialize them back.",
+      "examples": [
+        "whatwg-url",
+        "uri-js",
+        "fast-uri",
+        "parseurl"
+      ]
+    },
+    {
+      "id": "jwt-signing",
+      "title": "JWT signing and verification",
+      "description": "Sign and verify JSON Web Tokens or JSON Web Signatures; general hashing, OAuth clients and cloud credential providers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Sign a fixed claims payload with HS256 and verify the resulting compact token, 10,000 times.",
+      "examples": [
+        "jsonwebtoken",
+        "jose",
+        "jws"
+      ]
+    },
+    {
+      "id": "deflate-compression",
+      "title": "Deflate compression",
+      "description": "Compress and decompress byte buffers with deflate, zlib or gzip framing; archive formats and string-oriented LZ codecs are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Gzip and then gunzip the same 10 MB mixed text and binary buffer.",
+      "examples": [
+        "pako",
+        "fflate",
+        "minizlib"
+      ]
+    },
+    {
+      "id": "tar-archiving",
+      "title": "Tar archiving",
+      "description": "Create and extract tar archives; the underlying compression codecs and other archive formats are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Pack a fixture directory of 1,000 small files into a tar archive and extract it again.",
+      "examples": [
+        "tar",
+        "tar-stream",
+        "tar-fs"
+      ]
+    },
+    {
+      "id": "arbitrary-precision-math",
+      "title": "Arbitrary-precision arithmetic",
+      "description": "Number classes for integers or decimals beyond double precision; fixed-width 64-bit integer wrappers, number formatting and random number generation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compute the factorial of 1,000 by repeated multiplication and convert the result to a decimal string.",
+      "examples": [
+        "bignumber.js",
+        "decimal.js",
+        "bn.js",
+        "fraction.js"
+      ]
+    },
+    {
+      "id": "css-color-parsing",
+      "title": "Color parsing and conversion",
+      "description": "Parse CSS color strings and convert between color spaces such as RGB, HSL and Lab; terminal styling, named-color tables and interpolation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed list of 100,000 hex, rgb() and hsl() color strings and convert each to an RGB triple.",
+      "examples": [
+        "color-string",
+        "color-convert",
+        "d3-color",
+        "@csstools/css-color-parser",
+        "@asamuzakjp/css-color"
+      ]
+    },
+    {
+      "id": "terminal-string-width",
+      "title": "Terminal string width",
+      "description": "Compute how many terminal columns a string or code point occupies, accounting for wide East Asian characters; wrapping, truncating and stripping styled text are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compute the display width of 100,000 strings mixing ASCII, CJK and emoji characters.",
+      "examples": [
+        "string-width",
+        "eastasianwidth",
+        "get-east-asian-width"
+      ]
+    },
+    {
+      "id": "indentation-stripping",
+      "title": "Indentation stripping",
+      "description": "Remove common leading whitespace from multi-line strings; adding indentation, word wrapping and code formatting are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Strip the common leading indentation from 10,000 multi-line text blocks of varying depth.",
+      "examples": [
+        "dedent",
+        "strip-indent",
+        "redent",
+        "min-indent"
+      ]
+    },
+    {
+      "id": "debug-logging",
+      "title": "Namespaced debug logging",
+      "description": "Create named loggers that are switched on or off by an environment variable or pattern and format messages to a stream; structured log pipelines, console wrappers and telemetry SDKs are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Create 100 namespaced loggers, enable half of them, and log 100,000 formatted messages to a null sink.",
+      "examples": [
+        "debug",
+        "obug",
+        "google-logging-utils"
+      ]
+    },
+    {
+      "id": "frameworks",
+      "title": "Frameworks and broad libraries",
+      "description": "Application frameworks, UI runtimes, DOM implementations and general-purpose standard libraries that span many tasks and cannot be reduced to one comparable benchmark.",
+      "benchmarkable": false,
+      "examples": [
+        "react",
+        "react-dom",
+        "next",
+        "lodash",
+        "rxjs",
+        "jsdom",
+        "core-js"
+      ]
+    },
+    {
+      "id": "ui-components",
+      "title": "UI components and hooks",
+      "description": "Browser UI component libraries, icon sets, positioning engines and React hooks, whose work is rendering and interaction rather than one standard computational task.",
+      "benchmarkable": false,
+      "examples": [
+        "@radix-ui/react-dialog",
+        "@floating-ui/dom",
+        "lucide-react",
+        "recharts",
+        "react-remove-scroll"
+      ]
+    },
+    {
+      "id": "service-sdks",
+      "title": "Service SDKs and telemetry",
+      "description": "Client SDKs, credential providers, middleware and instrumentation tied to one vendor or protocol stack, such as AWS, Google Cloud, OpenTelemetry and Sentry.",
+      "benchmarkable": false,
+      "examples": [
+        "@aws-sdk/core",
+        "@smithy/types",
+        "google-auth-library",
+        "@opentelemetry/api",
+        "@sentry/core"
+      ]
+    },
+    {
+      "id": "library-internals",
+      "title": "Library internals",
+      "description": "Sub-packages that exist only as implementation pieces of one parent library outside the compiler and linter world and have no standalone task of their own.",
+      "benchmarkable": false,
+      "examples": [
+        "micromark-util-character",
+        "@protobufjs/utf8",
+        "side-channel-map",
+        "domhandler",
+        "pg-protocol",
+        "webidl-conversions"
+      ]
+    },
+    {
+      "id": "hash-maps",
+      "title": "Hash maps",
+      "description": "General-purpose in-memory key-value hash tables, including insertion-ordered and concurrent variants; bounded caches, tries, slabs and the hash functions themselves are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Insert 1,000,000 integer and string keys, look each up, iterate, then remove half.",
+      "examples": [
+        "hashbrown",
+        "indexmap",
+        "dashmap",
+        "hashlink",
+        "linked-hash-map"
+      ]
+    },
+    {
+      "id": "lru-cache",
+      "title": "LRU caches",
+      "description": "Bounded in-memory key-value caches that evict the least recently used entry; unbounded maps, memoization decorators and remote cache clients are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Replay a fixed Zipf-distributed trace of 1,000,000 get/set operations against a cache capped at 10,000 entries.",
+      "examples": [
+        "lru",
+        "lru-cache",
+        "moka",
+        "@alloc/quick-lru"
+      ]
+    },
+    {
+      "id": "bit-sets",
+      "title": "Bit sets",
+      "description": "Compact collections of bits with set, test and bulk boolean operations; flag-enum macros and compressed bitmaps for serialization are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Set and test 1,000,000 pseudo-random bit positions, then union, intersect and count two sets.",
+      "examples": [
+        "fixedbitset",
+        "bit-vec",
+        "bit-set",
+        "bitvec"
+      ]
+    },
+    {
+      "id": "inline-vectors",
+      "title": "Inline small vectors",
+      "description": "Growable sequences that store their elements inline or on the stack up to a fixed capacity; heap-only vectors, small-string types and arenas are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Create 1,000,000 short vectors of 1 to 8 integers by pushing, then iterate and drop them.",
+      "examples": [
+        "smallvec",
+        "arrayvec",
+        "tinyvec",
+        "heapless"
+      ]
+    },
+    {
+      "id": "message-channels",
+      "title": "Message channels",
+      "description": "In-process queues that pass values between threads or async tasks with send and receive ends; event emitters, OS pipes and network sockets are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Send 1,000,000 small messages from four producers to one consumer through a bounded channel.",
+      "examples": [
+        "crossbeam-channel",
+        "flume",
+        "async-channel",
+        "futures-channel",
+        "crossbeam-queue"
+      ]
+    },
+    {
+      "id": "non-cryptographic-hashing",
+      "title": "Non-cryptographic hashing",
+      "description": "Fast hash functions for hash tables and fingerprints, such as FNV, xxHash, SipHash and Murmur; cryptographic digests and error-detecting checksums are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Hash 1,000,000 short keys and one 64 MB buffer to a 64-bit value.",
+      "examples": [
+        "ahash",
+        "rustc-hash",
+        "fnv",
+        "foldhash",
+        "twox-hash",
+        "xxhash-rust",
+        "siphasher"
+      ]
+    },
+    {
+      "id": "cryptographic-hashing",
+      "title": "Cryptographic hashing",
+      "description": "Compute cryptographic message digests such as SHA-1, SHA-2, SHA-3, BLAKE and MD5; HMAC, key derivation, password hashing and non-cryptographic hashes are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Digest a 64 MB buffer and 100,000 64-byte messages with the package's primary algorithm.",
+      "examples": [
+        "sha2",
+        "sha1",
+        "md-5",
+        "blake3",
+        "blake2",
+        "sha3",
+        "@noble/hashes"
+      ]
+    },
+    {
+      "id": "checksums",
+      "title": "Checksums",
+      "description": "Compute error-detecting checksums such as CRC-32, CRC-32C and Adler-32 over byte buffers; cryptographic digests and hash-table hashes are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Checksum a 64 MB buffer in one call and again in 4 KB incremental updates.",
+      "examples": [
+        "crc32fast",
+        "crc",
+        "crc32c",
+        "adler2",
+        "simd-adler32"
+      ]
+    },
+    {
+      "id": "random-number-generation",
+      "title": "Random number generation",
+      "description": "Pseudo-random number generators that produce integers, floats and byte fills from a seed; OS entropy sources, random ID strings and statistical distributions are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Seed a generator, draw 10,000,000 64-bit integers and fill a 64 MB buffer.",
+      "examples": [
+        "rand",
+        "fastrand",
+        "rand_chacha",
+        "rand_pcg",
+        "rand_xoshiro",
+        "oorandom",
+        "nanorand"
+      ]
+    },
+    {
+      "id": "base64-encoding",
+      "title": "Base64 encoding",
+      "description": "Encode bytes to base64 text and decode them back; hexadecimal, base58 and other alphabets, and PEM framing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Encode and decode a 16 MB buffer and 100,000 32-byte values with the standard alphabet.",
+      "examples": [
+        "base64",
+        "base64ct",
+        "data-encoding",
+        "base64-simd"
+      ]
+    },
+    {
+      "id": "float-formatting",
+      "title": "Float to string formatting",
+      "description": "Convert floating-point numbers to their shortest round-trip decimal string; integer formatting, number parsing and locale-aware formatting are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Format 10,000,000 pseudo-random f64 values into a reused buffer.",
+      "examples": [
+        "ryu",
+        "dtoa",
+        "zmij",
+        "lexical-core",
+        "lexical-write-float"
+      ]
+    },
+    {
+      "id": "regex-matching",
+      "title": "Regular expression matching",
+      "description": "Compile regular expressions and search text with them; regex syntax parsers on their own, glob matching and literal substring search are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compile a fixed set of 20 patterns and find all matches of each in a 10 MB text corpus.",
+      "examples": [
+        "regex",
+        "regex-automata",
+        "fancy-regex",
+        "regex-lite"
+      ]
+    },
+    {
+      "id": "parser-combinators",
+      "title": "Parser combinators and generators",
+      "description": "Libraries for writing a parser for an arbitrary grammar from combinators or a grammar definition; parsers for one fixed format and lexer-only generators are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Implement the same JSON grammar with each library and parse a 10 MB JSON document.",
+      "examples": [
+        "nom",
+        "winnow",
+        "combine",
+        "pest"
+      ]
+    },
+    {
+      "id": "toml-parsing",
+      "title": "TOML parsing",
+      "description": "Parse TOML text into values or a document tree; JSON-superset formats such as YAML and JSON5, INI files and layered configuration loaders are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed corpus of TOML documents, including a 5,000-line lockfile.",
+      "examples": [
+        "toml",
+        "toml_edit",
+        "toml_parser"
+      ]
+    },
+    {
+      "id": "binary-serialization",
+      "title": "Binary serialization",
+      "description": "Encode structured values to a compact binary format and decode them back, such as Protocol Buffers, MessagePack, CBOR and bincode; text formats, columnar data and byte-order helpers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Encode and decode 100,000 records with nested integers, strings and arrays.",
+      "examples": [
+        "bincode",
+        "prost",
+        "protobuf",
+        "rmp-serde",
+        "ciborium",
+        "borsh",
+        "rkyv",
+        "flatbuffers"
+      ]
+    },
+    {
+      "id": "asn1-der-decoding",
+      "title": "ASN.1 DER decoding",
+      "description": "Parse and encode ASN.1 structures in BER or DER, including X.509 certificates; PEM text framing, certificate chain verification and TLS are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Decode a fixed set of 1,000 DER-encoded X.509 certificates into their fields.",
+      "examples": [
+        "der",
+        "asn1-rs",
+        "der-parser",
+        "simple_asn1",
+        "yasna",
+        "x509-parser"
+      ]
+    },
+    {
+      "id": "block-compression",
+      "title": "Non-deflate compression",
+      "description": "Compress and decompress byte buffers with a codec other than deflate, such as Zstandard, Brotli, LZ4, Snappy or bzip2; deflate, zlib and gzip framing and archive formats are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compress and decompress a fixed 32 MB mixed text and binary corpus at the default level.",
+      "examples": [
+        "zstd",
+        "brotli",
+        "lz4_flex",
+        "snap",
+        "bzip2",
+        "lz4"
+      ]
+    },
+    {
+      "id": "authenticated-encryption",
+      "title": "Authenticated encryption",
+      "description": "Encrypt and decrypt byte buffers with an AEAD cipher such as AES-GCM or ChaCha20-Poly1305; bare block and stream ciphers, TLS and public-key cryptography are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Seal and open a 16 MB buffer and 100,000 1 KB messages with one key.",
+      "examples": [
+        "aes-gcm",
+        "chacha20poly1305",
+        "ring",
+        "aws-lc-rs"
+      ]
+    },
+    {
+      "id": "digital-signatures",
+      "title": "Digital signatures",
+      "description": "Generate key pairs, sign messages and verify signatures with ECDSA, Ed25519 or RSA; signature trait definitions, JWT framing and certificate handling are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Generate a key pair, then sign and verify 10,000 short messages.",
+      "examples": [
+        "ed25519-dalek",
+        "p256",
+        "k256",
+        "secp256k1",
+        "rsa",
+        "p384"
+      ]
+    },
+    {
+      "id": "date-time",
+      "title": "Date and time",
+      "description": "Parse, format and do calendar arithmetic on dates, times and durations; time zone database packages, HTTP-date-only helpers and clock sources are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse 100,000 ISO 8601 timestamps, add calendar durations and format each back to a string.",
+      "examples": [
+        "chrono",
+        "time",
+        "jiff",
+        "date-fns",
+        "dayjs"
+      ]
+    },
+    {
+      "id": "text-diff",
+      "title": "Text diffing",
+      "description": "Compute the line or element differences between two texts or sequences; edit-distance scores, assertion pretty-printers and structured JSON patches are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Diff pairs of 10,000-line text files that differ by 1%, 10% and 50% of their lines.",
+      "examples": [
+        "similar",
+        "diff",
+        "difflib",
+        "jest-diff"
+      ]
+    },
+    {
+      "id": "case-conversion",
+      "title": "Identifier case conversion",
+      "description": "Convert strings between naming conventions such as camelCase, snake_case and kebab-case; Unicode case folding and case-insensitive comparison are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Convert 1,000,000 mixed identifiers to snake, camel and kebab case.",
+      "examples": [
+        "heck",
+        "convert_case",
+        "Inflector",
+        "ident_case"
+      ]
+    },
+    {
+      "id": "macro-support",
+      "title": "Macro and derive support",
+      "description": "Procedural macro and derive crates, the libraries they are built from and code generators, all of which run inside the compiler rather than in the built program.",
+      "benchmarkable": false,
+      "examples": [
+        "syn",
+        "quote",
+        "proc-macro2",
+        "serde_derive",
+        "thiserror-impl",
+        "darling",
+        "paste",
+        "tokio-macros"
+      ]
+    },
+    {
+      "id": "language-ergonomics",
+      "title": "Language-level abstractions",
+      "description": "Trait definitions, declarative macros, error types, lazy statics, marker and wrapper types that shape code at compile time and have no standalone runtime task.",
+      "benchmarkable": false,
+      "examples": [
+        "cfg-if",
+        "bitflags",
+        "num-traits",
+        "anyhow",
+        "thiserror",
+        "either",
+        "once_cell",
+        "pin-project-lite",
+        "futures-core",
+        "digest"
+      ]
+    },
+    {
+      "id": "system-bindings",
+      "title": "System and foreign bindings",
+      "description": "Bindings to operating system APIs, C libraries and other language runtimes, whose work is done by the code they wrap; prebuilt per-platform import libraries are out of scope.",
+      "benchmarkable": false,
+      "examples": [
+        "libc",
+        "windows-sys",
+        "rustix",
+        "nix",
+        "openssl-sys",
+        "core-foundation",
+        "wasm-bindgen",
+        "pyo3",
+        "jni"
+      ]
+    },
+    {
+      "id": "environment-detection",
+      "title": "Environment detection",
+      "description": "One-shot probes of the host such as CPU count and features, terminal state, user, host name, time zone and standard directories, which return in constant time and have no workload to scale.",
+      "benchmarkable": false,
+      "examples": [
+        "num_cpus",
+        "cpufeatures",
+        "is-terminal",
+        "terminal_size",
+        "dirs",
+        "home",
+        "hostname",
+        "whoami",
+        "iana-time-zone"
+      ]
+    },
+    {
+      "id": "markdown-parsing",
+      "title": "Markdown rendering",
+      "description": "Parse CommonMark-style Markdown text and render it to HTML or a syntax tree; converting HTML or office documents to Markdown, reStructuredText and terminal rendering are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Render a fixed corpus of Markdown documents totalling several megabytes to HTML.",
+      "examples": [
+        "markdown-it-py",
+        "markdown",
+        "mistune"
+      ]
+    },
+    {
+      "id": "html-sanitizing",
+      "title": "HTML sanitizing",
+      "description": "Strip disallowed tags, attributes and scripts from untrusted HTML according to an allow-list and return safe HTML; plain entity escaping and general HTML parsing are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Sanitize a fixed set of 1,000 HTML fragments containing scripts, event handlers and unknown tags with a default allow-list.",
+      "examples": [
+        "bleach",
+        "nh3",
+        "lxml-html-clean"
+      ]
+    },
+    {
+      "id": "css-selector-matching",
+      "title": "CSS selector matching",
+      "description": "Compile CSS selectors and find the matching elements in an already parsed HTML or XML tree; parsing whole stylesheets and parsing the document itself are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Run a fixed list of 100 selectors against a parsed 1 MB HTML document and count the matches.",
+      "examples": [
+        "soupsieve",
+        "cssselect",
+        "cssselect2"
+      ]
+    },
+    {
+      "id": "json-path-query",
+      "title": "JSON path queries",
+      "description": "Evaluate a path or query expression such as JSONPath, JMESPath or JSON Pointer against in-memory JSON-like data and return the selected values; JSON parsing, JSON Patch and schema validation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compile a fixed set of path expressions and evaluate each against a 1 MB nested document.",
+      "examples": [
+        "jmespath",
+        "jsonpath-ng",
+        "jsonpath-python",
+        "jsonpointer",
+        "glom"
+      ]
+    },
+    {
+      "id": "typed-object-mapping",
+      "title": "Typed object mapping",
+      "description": "Convert plain dictionaries and lists into instances of declared record classes and back again, following the field types; validation-first schema libraries, binary wire formats and pickling of arbitrary objects are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Build 100,000 nested record objects from plain dictionaries and convert them back to dictionaries.",
+      "examples": [
+        "cattrs",
+        "dacite",
+        "mashumaro",
+        "dataclasses-json",
+        "typedload",
+        "py-serializable"
+      ]
+    },
+    {
+      "id": "object-pickling",
+      "title": "Object graph pickling",
+      "description": "Serialize arbitrary live language objects, including functions, closures and class instances, to bytes or text and restore them; schema-driven formats and typed record mapping are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Serialize and restore a graph of 100,000 class instances plus a set of closures.",
+      "examples": [
+        "cloudpickle",
+        "dill",
+        "jsonpickle"
+      ]
+    },
+    {
+      "id": "immutable-collections",
+      "title": "Immutable collections",
+      "description": "Immutable or persistent maps, lists and sets whose updates return a new version, usually with structural sharing; mutable ordered, sorted or multi-value containers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Build a 100,000-entry immutable map by successive inserts, then run a fixed mix of lookups and updates on it.",
+      "examples": [
+        "pyrsistent",
+        "rpds-py",
+        "immutabledict",
+        "frozendict"
+      ]
+    },
+    {
+      "id": "dataframes",
+      "title": "Dataframes",
+      "description": "In-memory columnar tables with filter, join, group-by and aggregate operations; compatibility layers over other dataframe libraries, file-format readers alone and remote warehouse clients are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Load a 1,000,000-row table, filter it, group by a key column and compute sum and mean aggregates.",
+      "examples": [
+        "pandas",
+        "polars",
+        "pyarrow",
+        "dask",
+        "duckdb",
+        "agate"
+      ]
+    },
+    {
+      "id": "chart-rendering",
+      "title": "Chart rendering",
+      "description": "Turn numeric series into a static chart image or vector file; interactive widget front ends, graph-layout tools such as Graphviz and terminal sparklines are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Render a line chart with 10 series of 10,000 points each to SVG or PNG.",
+      "examples": [
+        "matplotlib",
+        "plotly",
+        "seaborn",
+        "altair",
+        "leather"
+      ]
+    },
+    {
+      "id": "image-processing",
+      "title": "Image processing",
+      "description": "Decode raster images, apply pixel operations such as resize and crop, and encode the result; single-format codecs, header-only size readers and OCR are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Decode a fixed set of JPEG and PNG photos, resize each to a thumbnail and re-encode it.",
+      "examples": [
+        "pillow",
+        "opencv-python",
+        "opencv-python-headless",
+        "scikit-image",
+        "imageio"
+      ]
+    },
+    {
+      "id": "pdf-text-extraction",
+      "title": "PDF reading",
+      "description": "Open existing PDF files and extract their text and page structure; creating new PDFs and rasterizing pages through external command-line tools are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Extract the text of every page from a fixed set of PDF documents totalling 1,000 pages.",
+      "examples": [
+        "pypdf",
+        "pymupdf",
+        "pdfminer.six",
+        "pdfplumber",
+        "pypdfium2",
+        "pypdf2"
+      ]
+    },
+    {
+      "id": "pdf-generation",
+      "title": "PDF generation",
+      "description": "Produce new PDF documents from text, tables and drawing commands or from HTML; reading, splitting and merging existing PDFs are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Generate a 100-page PDF of paragraphs and a table from fixed input data.",
+      "examples": [
+        "reportlab",
+        "fpdf2",
+        "pydyf",
+        "weasyprint"
+      ]
+    },
+    {
+      "id": "text-table-rendering",
+      "title": "Text table rendering",
+      "description": "Lay out rows of values as an aligned plain-text or ASCII table; full terminal UI toolkits, progress bars and spreadsheet files are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Render a table of 10,000 rows and 8 mixed-type columns to a string.",
+      "examples": [
+        "tabulate",
+        "prettytable",
+        "texttable"
+      ]
+    },
+    {
+      "id": "structured-logging",
+      "title": "Structured logging",
+      "description": "Application loggers that format records with levels and key-value fields, as JSON or colored text, and write them to a sink; environment-switched debug loggers, telemetry exporters and vendor log shippers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Log 1,000,000 records with five key-value fields each as JSON lines to a null sink.",
+      "examples": [
+        "structlog",
+        "loguru",
+        "python-json-logger",
+        "colorlog",
+        "coloredlogs"
+      ]
+    },
+    {
+      "id": "retry-policies",
+      "title": "Retry policies",
+      "description": "Re-run a failing function according to a policy of attempts, backoff and jitter, or guard it with a circuit breaker; rate limiters, task queues and HTTP-client-specific transports are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Wrap a function that fails a fixed number of times before succeeding and call it 100,000 times with zero delay.",
+      "examples": [
+        "tenacity",
+        "backoff",
+        "retry",
+        "retrying",
+        "aiohttp-retry",
+        "pybreaker"
+      ]
+    },
+    {
+      "id": "file-locking",
+      "title": "File locking",
+      "description": "Acquire and release cross-process advisory locks backed by a lock file; in-process mutexes and distributed locks held in a remote service are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Acquire and release an uncontended lock file 100,000 times, then repeat with several contending processes.",
+      "examples": [
+        "filelock",
+        "portalocker",
+        "locket",
+        "lockfile"
+      ]
+    },
+    {
+      "id": "charset-detection",
+      "title": "Character encoding detection",
+      "description": "Guess the character encoding of a byte buffer of unknown text; transcoding between known encodings and encoding alias tables are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Detect the encoding of a fixed corpus of 1,000 text files in assorted legacy and Unicode encodings.",
+      "examples": [
+        "charset-normalizer",
+        "chardet",
+        "cchardet"
+      ]
+    },
+    {
+      "id": "file-type-detection",
+      "title": "File type detection",
+      "description": "Identify the format or media type of a file or buffer from its content and magic numbers; extension-to-MIME lookup tables and image dimension readers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Identify the type of each of 10,000 buffers holding the first bytes of files in 50 common formats.",
+      "examples": [
+        "filetype",
+        "python-magic",
+        "puremagic",
+        "magika",
+        "identify"
+      ]
+    },
+    {
+      "id": "password-hashing",
+      "title": "Password hashing",
+      "description": "Hash and verify passwords with a deliberately slow, salted algorithm such as bcrypt, scrypt or Argon2; fast message digests, HMAC and general key derivation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Hash and verify 100 passwords at fixed, equivalent cost parameters.",
+      "examples": [
+        "bcrypt",
+        "argon2-cffi",
+        "passlib"
+      ]
+    },
+    {
+      "id": "subword-tokenization",
+      "title": "Subword tokenization",
+      "description": "Encode text into the integer token ids of a trained subword vocabulary such as BPE or unigram, and decode them back; linguistic word tokenizers, stemmers and model inference are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Encode and decode a 10 MB text corpus with a fixed pretrained vocabulary.",
+      "examples": [
+        "tiktoken",
+        "tokenizers",
+        "sentencepiece"
+      ]
+    },
+    {
+      "id": "websocket-messaging",
+      "title": "WebSocket messaging",
+      "description": "Implement the WebSocket protocol as a client, a server or a bring-your-own-I/O state machine and exchange framed messages; Socket.IO-style layers on top, server-sent events and raw HTTP are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Echo 100,000 text and binary messages over a loopback connection, or through the codec in memory.",
+      "examples": [
+        "websockets",
+        "websocket-client",
+        "wsproto",
+        "simple-websocket",
+        "trio-websocket"
+      ]
+    },
+    {
+      "id": "postgres-client",
+      "title": "PostgreSQL clients",
+      "description": "Speak the PostgreSQL wire protocol to run queries and decode result rows; ORMs, query builders, connection-pool add-ons and drivers for other databases are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local PostgreSQL server, insert 100,000 rows with a prepared statement and read them back.",
+      "examples": [
+        "psycopg2",
+        "psycopg2-binary",
+        "psycopg",
+        "asyncpg",
+        "pg8000"
+      ]
+    },
+    {
+      "id": "mysql-client",
+      "title": "MySQL clients",
+      "description": "Speak the MySQL wire protocol to run queries and decode result rows; ORMs, query builders and drivers for other databases are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local MySQL server, insert 100,000 rows with a prepared statement and read them back.",
+      "examples": [
+        "pymysql",
+        "mysqlclient",
+        "mysql-connector-python"
+      ]
+    },
+    {
+      "id": "template-rendering",
+      "title": "Template rendering",
+      "description": "Compile a text template with embedded expressions, loops and partials (ERB, Haml, Slim, Liquid, Mustache and the like) and render it to a string with given data; Markdown conversion, HTML builders driven purely by code and framework view layers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Compile a template that loops over 1,000 records with a conditional and escaped interpolation, then render it 1,000 times.",
+      "examples": [
+        "erubi",
+        "haml",
+        "slim",
+        "liquid",
+        "mustache"
+      ]
+    },
+    {
+      "id": "http-application-servers",
+      "title": "HTTP application servers",
+      "description": "Listen on a socket, parse HTTP requests and hand them to an application callback through the language's standard server interface (Rack, WSGI/ASGI and the like); routers, middleware, reverse proxies and process supervisors are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Serve a fixed 1 KB response from a trivial application callback to 100,000 keep-alive requests from a local load generator.",
+      "examples": [
+        "puma",
+        "unicorn",
+        "thin",
+        "webrick"
+      ]
+    },
+    {
+      "id": "background-job-queues",
+      "title": "Background job queues",
+      "description": "Enqueue jobs to a persistent backend such as Redis or a database and execute them in worker processes or threads; in-process task pools, cron-style schedulers and message-broker clients are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local backend, enqueue 10,000 no-op jobs with small arguments and run a worker until the queue is drained.",
+      "examples": [
+        "sidekiq",
+        "resque",
+        "delayed_job"
+      ]
+    },
+    {
+      "id": "redis-client",
+      "title": "Redis clients",
+      "description": "Speak the Redis protocol to send commands and decode replies; key namespacing wrappers, cache or session stores built on a client, in-memory fakes and job queues are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local Redis server, run 100,000 SET and GET commands, both one at a time and in pipelines of 100.",
+      "examples": [
+        "redis",
+        "redis-client",
+        "hiredis"
+      ]
+    },
+    {
+      "id": "http-message-parsing",
+      "title": "HTTP message parsing",
+      "description": "Parse raw HTTP/1.x request and response bytes into method, target, headers and body chunks; full clients and servers, URL parsing and parsers for a single header are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed buffer of 100,000 concatenated HTTP/1.1 requests with typical browser headers, collecting method, path and headers.",
+      "examples": [
+        "http_parser.rb",
+        "llhttp-ffi",
+        "http-parser"
+      ]
+    },
+    {
+      "id": "ruby-parsing",
+      "title": "Ruby parsing",
+      "description": "Parse Ruby source text into a syntax tree; AST node helpers, unparsers, type signature parsers and linters built on a parser are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed corpus of large Ruby source files into a syntax tree.",
+      "examples": [
+        "parser",
+        "ruby_parser",
+        "prism"
+      ]
+    },
+    {
+      "id": "user-agent-parsing",
+      "title": "User-agent parsing",
+      "description": "Parse an HTTP User-Agent header string into browser, version, operating system and device information; full request parsing and bot-blocking middleware are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed list of 10,000 real-world User-Agent strings and read the browser name, version and platform of each.",
+      "examples": [
+        "browser",
+        "useragent",
+        "device_detector"
+      ]
+    },
+    {
+      "id": "message-translation",
+      "title": "Message translation",
+      "description": "Look up translated messages by key or source string in loaded catalogs, with interpolation and plural forms; locale data packages, framework glue and date or number formatting are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Load a catalog of 5,000 messages in two locales and perform 100,000 lookups with interpolation and pluralization.",
+      "examples": [
+        "i18n",
+        "fast_gettext",
+        "gettext"
+      ]
+    },
+    {
+      "id": "dynamic-attribute-objects",
+      "title": "Dynamic attribute objects",
+      "description": "Wrap a nested dictionary in an object whose keys are read and written as attributes or method calls; declared record classes with typed fields and immutable collections are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Wrap a fixed nested document of 1,000 keys and perform 100,000 attribute reads and writes at varying depths.",
+      "examples": [
+        "hashie",
+        "ostruct",
+        "recursive-open-struct",
+        "snaky_hash"
+      ]
+    },
+    {
+      "id": "object-json-serialization",
+      "title": "Declared object serializers",
+      "description": "Render application objects to JSON-ready structures through a declared serializer, presenter or builder that selects and nests attributes; raw JSON encoders, typed parsing of input into records and schema validation are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Declare a serializer for a record with ten attributes and one nested collection, then serialize a list of 10,000 such records to JSON.",
+      "examples": [
+        "active_model_serializers",
+        "jbuilder",
+        "grape-entity",
+        "representable",
+        "jsonapi-renderer"
+      ]
+    },
+    {
+      "id": "framework-extensions",
+      "title": "Framework and tool extensions",
+      "description": "Plugins, engines, adapters, middleware and asset bundles that only work inside one host framework or tool, such as Rails engines, Rack middleware, OmniAuth strategies, Faraday adapters and Fluentd or Logstash plugins; the host frameworks themselves and build or test tooling plugins are out of scope.",
+      "benchmarkable": false,
+      "examples": [
+        "devise",
+        "kaminari",
+        "rack-cors",
+        "omniauth-oauth2",
+        "faraday-net_http",
+        "jquery-rails"
+      ]
+    },
+    {
+      "id": "ini-parsing",
+      "title": "INI and properties parsing",
+      "description": "Parse INI-style or Java .properties text of sections and name=value pairs into an in-memory structure; TOML, YAML and other JSON-superset formats, dotenv loading into the process environment and layered configuration managers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse the same 5,000-line INI document of sections and key=value pairs, then read every value back by section and key.",
+      "examples": [
+        "gopkg.in/ini.v1",
+        "github.com/go-ini/ini",
+        "gopkg.in/gcfg.v1",
+        "github.com/go-git/gcfg",
+        "github.com/magiconair/properties"
+      ]
+    },
+    {
+      "id": "dotenv-loading",
+      "title": "Dotenv loading",
+      "description": "Parse a .env file of KEY=value lines, with quoting and variable expansion, and load the pairs into the process environment or a map; decoding environment variables into typed structs and general INI or configuration managers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse the same .env text of 1,000 assignments with quotes, comments and variable references into a key-value map.",
+      "examples": [
+        "github.com/joho/godotenv",
+        "github.com/subosito/gotenv",
+        "github.com/gobuffalo/envy"
+      ]
+    },
+    {
+      "id": "semver-comparison",
+      "title": "Semantic version comparison",
+      "description": "Parse semantic version strings, order them and test them against range constraints; language-specific version schemes with no range syntax and dependency resolvers are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed list of 10,000 version strings, sort them, and test each against a fixed set of range constraints.",
+      "examples": [
+        "github.com/Masterminds/semver/v3",
+        "github.com/blang/semver",
+        "github.com/coreos/go-semver",
+        "github.com/hashicorp/go-version"
+      ]
+    },
+    {
+      "id": "shell-word-splitting",
+      "title": "Shell word splitting",
+      "description": "Split a command-line string into argument words following POSIX shell quoting and escaping rules, or quote words back into such a string; argv option parsing and spawning the command are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Split a fixed list of 100,000 command lines with mixed single quotes, double quotes and backslash escapes into their argument words.",
+      "examples": [
+        "github.com/google/shlex",
+        "github.com/mattn/go-shellwords",
+        "github.com/kballard/go-shellquote",
+        "github.com/anmitsu/go-shlex",
+        "github.com/flynn/go-shlex"
+      ]
+    },
+    {
+      "id": "file-watching",
+      "title": "File system watching",
+      "description": "Subscribe to create, write, rename and remove notifications for files and directories through the operating system's notification facility; following the appended lines of one log file and polling build watchers tied to one tool are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Watch a directory tree of 1,000 files, apply a fixed script of 10,000 creates, writes and removes, and collect every resulting event.",
+      "examples": [
+        "github.com/fsnotify/fsnotify",
+        "gopkg.in/fsnotify.v1",
+        "github.com/rjeczalik/notify"
+      ]
+    },
+    {
+      "id": "recursive-file-copy",
+      "title": "Recursive file copying",
+      "description": "Copy a file or a whole directory tree to a new location, preserving structure and modes; atomic single-file replacement, archive extraction and virtual file system abstractions are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Copy a fixed directory tree of 10,000 small files in nested directories to an empty destination.",
+      "examples": [
+        "github.com/otiai10/copy",
+        "github.com/cespare/cp",
+        "github.com/mrunalp/fileutils"
+      ]
+    },
+    {
+      "id": "deep-cloning",
+      "title": "Deep cloning",
+      "description": "Produce an independent deep copy of an arbitrary in-memory value such as nested structs, maps and slices; merging several sources into one target, serialization to bytes and immutable collections are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Deep-copy the same nested value of 10,000 maps, lists and records 100 times and verify the copies share no mutable state.",
+      "examples": [
+        "github.com/mitchellh/copystructure",
+        "github.com/mohae/deepcopy",
+        "github.com/jinzhu/copier"
+      ]
+    },
+    {
+      "id": "human-size-formatting",
+      "title": "Human-readable size formatting",
+      "description": "Format byte counts and other quantities as short human-readable strings with unit suffixes such as 1.5 MiB, and parse such strings back to numbers; date and duration phrasing, locale-aware number formatting and arbitrary-precision arithmetic are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Format a fixed list of 1,000,000 byte counts as human-readable sizes and parse each resulting string back to a number.",
+      "examples": [
+        "github.com/dustin/go-humanize",
+        "github.com/docker/go-units",
+        "github.com/alecthomas/units"
+      ]
+    },
+    {
+      "id": "sorted-maps",
+      "title": "Sorted maps and prefix trees",
+      "description": "Mutable in-memory key-value containers that keep keys in sorted order, such as B-trees, radix trees and skip lists, and support ordered, range or prefix iteration; hash tables, persistent immutable variants, bounded caches and on-disk stores are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Insert 1,000,000 string keys, look each up, then run a fixed set of range and prefix scans in key order.",
+      "examples": [
+        "github.com/google/btree",
+        "github.com/armon/go-radix",
+        "github.com/tchap/go-patricia",
+        "github.com/emirpasic/gods"
+      ]
+    },
+    {
+      "id": "quantile-sketches",
+      "title": "Histograms and quantile sketches",
+      "description": "Record a stream of numeric samples into a compact fixed-memory histogram or sketch, such as HDR Histogram, t-digest or a biased quantile stream, and query percentiles from it; exact descriptive statistics over full arrays and metrics registries that export to a monitoring system are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Record a fixed stream of 10,000,000 latency samples and query the 50th, 90th, 99th and 99.9th percentiles.",
+      "examples": [
+        "github.com/HdrHistogram/hdrhistogram-go",
+        "github.com/codahale/hdrhistogram",
+        "github.com/beorn7/perks",
+        "github.com/influxdata/tdigest",
+        "github.com/circonus-labs/circonusllhist",
+        "github.com/VividCortex/gohistogram"
+      ]
+    },
+    {
+      "id": "metrics-instrumentation",
+      "title": "Metrics instrumentation",
+      "description": "In-process registries of counters, gauges, timers and histograms that application code updates and that render a snapshot for a monitoring system; standalone histogram data structures, distributed tracing and vendor agents that only ship data to one service are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Register 100 labelled counters, gauges and histograms, apply 10,000,000 updates from several threads, then render one text snapshot of the registry.",
+      "examples": [
+        "github.com/prometheus/client_golang",
+        "github.com/rcrowley/go-metrics",
+        "github.com/armon/go-metrics",
+        "github.com/yvasiyarov/go-metrics",
+        "github.com/docker/go-metrics"
+      ]
+    },
+    {
+      "id": "embedded-key-value-stores",
+      "title": "Embedded key-value stores",
+      "description": "Persistent, ordered key-value databases that run inside the application process and store data in local files, such as B+tree and LSM-tree engines; in-memory caches, SQL engines and clients for a database server are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Write 1,000,000 key-value pairs in batches to a fresh on-disk store, read each back at random, then scan a key range in order.",
+      "examples": [
+        "go.etcd.io/bbolt",
+        "github.com/boltdb/bolt",
+        "github.com/syndtr/goleveldb",
+        "github.com/dgraph-io/badger",
+        "github.com/peterbourgon/diskv"
+      ]
+    },
+    {
+      "id": "mongodb-client",
+      "title": "MongoDB clients",
+      "description": "Speak the MongoDB wire protocol to run commands and encode and decode BSON documents; object-document mappers and drivers for other databases are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Against a local server, insert 10,000 documents into a collection and read them back with a query that returns ten fields each.",
+      "examples": [
+        "go.mongodb.org/mongo-driver",
+        "github.com/globalsign/mgo",
+        "gopkg.in/mgo.v2"
+      ]
+    },
+    {
+      "id": "generated-api-types",
+      "title": "Generated API and schema types",
+      "description": "Packages that consist of message, resource and specification types, mostly generated from Protocol Buffers, OpenAPI or other interface definitions, with no behavior beyond field access and serialization glue; the serialization runtimes and the clients that use the types are out of scope.",
+      "benchmarkable": false,
+      "examples": [
+        "google.golang.org/genproto",
+        "k8s.io/api",
+        "github.com/prometheus/client_model",
+        "go.opentelemetry.io/proto/otlp",
+        "github.com/envoyproxy/go-control-plane",
+        "github.com/opencontainers/image-spec",
+        "github.com/opencontainers/runtime-spec"
+      ]
+    },
+    {
+      "id": "applications",
+      "title": "Applications and daemons",
+      "description": "Complete servers, daemons, command-line programs and websites that happen to be published as importable packages and are run rather than called for one task; build, lint and test tools and reusable frameworks are out of scope.",
+      "benchmarkable": false,
+      "examples": [
+        "k8s.io/kubernetes",
+        "github.com/docker/docker",
+        "go.etcd.io/etcd",
+        "github.com/containerd/containerd",
+        "github.com/opencontainers/runc",
+        "github.com/nats-io/nats-server/v2",
+        "github.com/influxdata/influxdb",
+        "github.com/btcsuite/btcd",
+        "github.com/ethereum/go-ethereum"
+      ]
+    },
+    {
+      "id": "zip-archiving",
+      "title": "ZIP archiving",
+      "description": "Create ZIP archives from in-memory entries and read entries back out of them; tar archives, bare deflate or gzip codecs and other container formats are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Pack a fixed set of in-memory files into a deflate-compressed ZIP archive, then list and extract every entry from it.",
+      "examples": [
+        "@zip-js/zip-js",
+        "@quentinadam/zip",
+        "@deno-library/compress"
+      ]
+    },
+    {
+      "id": "qr-code-generation",
+      "title": "QR code generation",
+      "description": "Encode a text or byte payload into a QR code module matrix and render it as SVG, an image or text; QR code scanning and other barcode symbologies are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Encode a fixed set of URLs and text payloads at a given error-correction level and produce the module matrix or SVG for each.",
+      "examples": [
+        "@libs/qrcode",
+        "@levischuck/tiny-qr",
+        "@ghost/kjua-revived"
+      ]
+    },
+    {
+      "id": "cron-scheduling",
+      "title": "Cron expression scheduling",
+      "description": "Parse cron expressions and compute the next matching run times, optionally firing callbacks on that schedule; persistent job queues, process managers and general date arithmetic are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Parse a fixed set of cron expressions and compute the next 1,000 occurrence times of each from a fixed start date.",
+      "examples": [
+        "@hexagon/croner",
+        "@p4sca1/cron-schedule",
+        "@m4rc3l05/cron"
+      ]
+    },
+    {
+      "id": "dependency-injection",
+      "title": "Dependency injection containers",
+      "description": "Register service providers in a container and resolve instances together with their transitive dependencies at run time; compile-time code generators, framework-bound module systems and plain service locators inside one framework are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Register a fixed graph of a few hundred interdependent services with singleton and transient lifetimes, then resolve the root services repeatedly.",
+      "examples": [
+        "@needle-di/core",
+        "@arthur-fontaine/diabolo",
+        "@fathym/ioc",
+        "@uri/inject"
+      ]
+    },
+    {
+      "id": "iterator-combinators",
+      "title": "Iterator combinators",
+      "description": "Lazy map, filter, take, chunk, zip and similar combinators over synchronous or asynchronous iterables; eager array and object helpers, general utility belts and stream class implementations are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Push a million-element iterable through a fixed chain of map, filter, chunk and take steps and reduce the result to a single value.",
+      "examples": [
+        "@core/iterutil",
+        "@lambdalisue/itertools",
+        "@hongminhee/aitertools",
+        "@coven/iterables",
+        "@doctor/iterstar"
+      ]
+    },
+    {
+      "id": "reactive-signals",
+      "title": "Reactive signals",
+      "description": "Fine-grained reactive primitives, such as signals, computed values, effects or observable objects, that propagate changes through a dependency graph; UI frameworks, framework-bound stores and plain event emitters are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Build a fixed dependency graph of source values, derived values and effects, then apply a series of source updates and let each propagate.",
+      "examples": [
+        "@patrickjs/signals",
+        "@libs/reactive",
+        "@dnbkr/cygnals"
+      ]
+    },
+    {
+      "id": "placeholder-packages",
+      "title": "Placeholder and test packages",
+      "description": "Hello-world demos, registry and tooling publish tests, tutorial examples and stubs that only announce a move to another package, none of which has real functionality to measure.",
+      "benchmarkable": false,
+      "examples": [
+        "@pnpm-e2e/foo",
+        "@rus/greet",
+        "@kt3k/hello",
+        "@ry/test",
+        "@marvinh-test/jsr-cli-test-publish",
+        "@cknight-test/jsr-install-test",
+        "@kevin/mitchell",
+        "@marvinh/add"
+      ]
+    },
+    {
+      "id": "other",
+      "title": "Other (no peers yet)",
+      "description": "Packages that are benchmarkable in principle but have no functionally equivalent peers in the list yet; revisit as the list grows.",
+      "benchmarkable": false,
+      "examples": [
+        "semver",
+        "lru-cache",
+        "ws",
+        "chokidar",
+        "ms",
+        "qs",
+        "dotenv",
+        "ignore",
+        "iconv-lite",
+        "sharp"
+      ]
+    }
+  ],
+  "candidateCategories": [
+    {
+      "id": "lru-cache",
+      "members": [
+        "lru-cache",
+        "@alloc/quick-lru"
+      ],
+      "note": "Needs one more peer (quick-lru, tiny-lru, mnemonist)."
+    },
+    {
+      "id": "date-time",
+      "members": [
+        "date-fns",
+        "dayjs"
+      ],
+      "note": "Format/parse/add on dates; moment and luxon are not in the list yet."
+    },
+    {
+      "id": "markdown-parsing",
+      "members": [
+        "marked",
+        "mdast-util-from-markdown"
+      ],
+      "note": "markdown-it, micromark and remark-parse are not in the list yet."
+    },
+    {
+      "id": "edit-distance",
+      "members": [
+        "fast-levenshtein",
+        "leven"
+      ],
+      "note": "Levenshtein distance; fastest-levenshtein would be the third."
+    },
+    {
+      "id": "text-diff",
+      "members": [
+        "diff",
+        "jest-diff"
+      ],
+      "note": "Line/word diff of two texts; diff-sequences and fast-diff are missing."
+    },
+    {
+      "id": "deep-clone",
+      "members": [
+        "clone",
+        "@ungap/structured-clone"
+      ],
+      "note": "rfdc, lodash.clonedeep and klona are missing."
+    },
+    {
+      "id": "brace-expansion",
+      "members": [
+        "brace-expansion",
+        "braces"
+      ],
+      "note": "Explicitly excluded from glob-matching; only two members."
+    },
+    {
+      "id": "mime-lookup",
+      "members": [
+        "mime-types",
+        "mime"
+      ],
+      "note": "Extension to media type lookup; whatwg-mimetype and media-typer parse rather than look up."
+    },
+    {
+      "id": "property-path-access",
+      "members": [
+        "dot-prop",
+        "pathval"
+      ],
+      "note": "Get/set by dotted path; lodash.get and lodash.set are missing."
+    },
+    {
+      "id": "ip-address-parsing",
+      "members": [
+        "ipaddr.js",
+        "ip-address"
+      ],
+      "note": "Parse and match IPv4/IPv6 addresses and CIDR ranges."
+    },
+    {
+      "id": "dotenv-loading",
+      "members": [
+        "dotenv",
+        "@next/env"
+      ],
+      "note": "Parse .env text; dotenv-expand is missing."
+    },
+    {
+      "id": "config-file-discovery",
+      "members": [
+        "cosmiconfig",
+        "lilconfig"
+      ],
+      "note": "Search for and load rc/config files; postcss-load-config wraps lilconfig."
+    },
+    {
+      "id": "classname-composition",
+      "members": [
+        "clsx",
+        "class-variance-authority"
+      ],
+      "note": "classnames is missing; tailwind-merge does a different task (conflict resolution)."
+    },
+    {
+      "id": "file-watching",
+      "members": [
+        "chokidar",
+        "watchpack"
+      ],
+      "note": "Watch a tree and report change events."
+    },
+    {
+      "id": "directory-creation",
+      "members": [
+        "mkdirp",
+        "make-dir"
+      ],
+      "note": "Recursive mkdir; fs-extra covers it as one of many functions."
+    },
+    {
+      "id": "retry",
+      "members": [
+        "retry",
+        "p-retry"
+      ],
+      "note": "p-retry wraps retry; async-retry is missing."
+    },
+    {
+      "id": "query-string-parsing",
+      "members": [
+        "qs"
+      ],
+      "note": "query-string and querystring are not in the list yet."
+    },
+    {
+      "id": "websocket",
+      "members": [
+        "ws"
+      ],
+      "note": "No peers yet (socket.io, uWebSockets.js)."
+    },
+    {
+      "id": "semver",
+      "members": [
+        "semver"
+      ],
+      "note": "No peers yet (compare-versions, semver-compare)."
+    },
+    {
+      "id": "promisification",
+      "members": [
+        "pify",
+        "thenify",
+        "universalify",
+        "@protobufjs/aspromise"
+      ],
+      "note": "Has 3+ members but the task is a near-zero-cost wrapper; low benchmark value."
+    },
+    {
+      "id": "call-once",
+      "members": [
+        "once",
+        "onetime",
+        "lodash.once"
+      ],
+      "note": "Has 3 members but the task is trivial; low benchmark value."
+    },
+    {
+      "id": "proxy-agents",
+      "members": [
+        "https-proxy-agent",
+        "http-proxy-agent",
+        "socks-proxy-agent",
+        "agent-base"
+      ],
+      "note": "Has 3+ members but each speaks a different proxy protocol, so one benchmark needs per-protocol fixtures."
+    },
+    {
+      "id": "hashing",
+      "members": [
+        "@noble/hashes",
+        "imurmurhash",
+        "buffer-crc32",
+        "object-hash"
+      ],
+      "note": "Different algorithms and inputs; would need splitting into cryptographic, non-cryptographic and checksum once peers appear."
+    },
+    {
+      "id": "character-encoding",
+      "members": [
+        "iconv-lite",
+        "whatwg-encoding",
+        "base64-js",
+        "@protobufjs/base64"
+      ],
+      "note": "Could split into legacy charset decoding and base64 once each has 3 members."
+    },
+    {
+      "id": "http-header-parsing",
+      "members": [
+        "cookie",
+        "tough-cookie",
+        "content-type",
+        "negotiator",
+        "accepts",
+        "content-disposition",
+        "range-parser"
+      ],
+      "note": "Each parses a different header; cookie parsing (cookie, tough-cookie) is the closest pair."
+    },
+    {
+      "id": "css-selector-parsing",
+      "members": [
+        "css-what",
+        "postcss-selector-parser",
+        "css-select"
+      ],
+      "note": "css-select is an engine rather than a parser; two true parsers."
+    },
+    {
+      "id": "terminal-prompts",
+      "members": [
+        "prompts",
+        "@inquirer/core",
+        "@inquirer/confirm"
+      ],
+      "note": "Interactive, so probably non-benchmarkable; also ora and progress for spinners/progress bars."
+    },
+    {
+      "id": "ansi-text-layout",
+      "members": [
+        "wrap-ansi",
+        "slice-ansi",
+        "cli-truncate",
+        "strip-ansi",
+        "word-wrap"
+      ],
+      "note": "Wrap, slice, truncate and strip are different tasks; word wrapping (wrap-ansi, word-wrap) is the closest pair."
+    },
+    {
+      "id": "module-hooks",
+      "members": [
+        "pirates",
+        "require-in-the-middle",
+        "import-in-the-middle"
+      ],
+      "note": "Intercept module loading; CJS vs ESM hooks are not interchangeable."
+    },
+    {
+      "id": "package-json-reading",
+      "members": [
+        "read-pkg",
+        "pkg-types",
+        "normalize-package-data",
+        "package-json-from-dist"
+      ],
+      "note": "Read and normalize package.json; overlapping but not identical tasks."
+    },
+    {
+      "id": "environment-detection",
+      "members": [
+        "ci-info",
+        "std-env",
+        "supports-color",
+        "is-docker",
+        "is-wsl",
+        "is-interactive",
+        "detect-libc"
+      ],
+      "note": "One-shot environment probes; likely a non-benchmarkable category rather than a benchmark."
+    },
+    {
+      "id": "state-management",
+      "members": [
+        "zustand",
+        "immer",
+        "@tanstack/query-core"
+      ],
+      "note": "Different models (store, immutable update, query cache); redux and jotai are missing."
+    },
+    {
+      "id": "source-map-generation",
+      "members": [
+        "@jridgewell/gen-mapping",
+        "magic-string",
+        "source-map",
+        "source-map-js"
+      ],
+      "note": "Generation side of source maps; source-map and source-map-js are already placed under source-map-decoding."
+    },
+    {
+      "id": "postgres-client",
+      "members": [
+        "pg"
+      ],
+      "note": "No peers yet (postgres, mysql2 for a broader SQL-client class)."
+    }
+  ]
+}

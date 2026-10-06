@@ -1,0 +1,114 @@
+{
+  "edition": "2026.1-dev",
+  "reference": "node",
+  "runtimes": {
+    "node": {
+      "title": "Node.js",
+      "engine": "v8",
+      "bin": "node",
+      "args": [
+        "--expose-gc"
+      ],
+      "language": "javascript",
+      "jit": true
+    },
+    "bun": {
+      "title": "Bun",
+      "engine": "jsc",
+      "bin": "toolchains/node_modules/@oven/bun-*/bin/bun",
+      "args": [],
+      "language": "javascript",
+      "jit": true
+    },
+    "deno": {
+      "title": "Deno",
+      "engine": "v8",
+      "bin": "toolchains/node_modules/@deno/*/deno",
+      "args": [
+        "run",
+        "-A",
+        "--v8-flags=--expose-gc"
+      ],
+      "language": "javascript",
+      "jit": true
+    },
+    "cpython": {
+      "title": "CPython",
+      "engine": "cpython",
+      "language": "python",
+      "jit": false,
+      "bin": "/opt/homebrew/bin/python3",
+      "args": [
+        "-B"
+      ],
+      "expectedVersion": "3.14.3",
+      "heapDescription": "Not collected: tracemalloc would instrument allocations during CPU timing."
+    },
+    "pypy": {
+      "title": "PyPy",
+      "engine": "pypy",
+      "language": "python",
+      "jit": true,
+      "bin": ".cache/toolchains/pypy3.12-v8.0.0-macos_arm64/bin/pypy3",
+      "args": [
+        "-B"
+      ],
+      "versionArgs": [
+        "-c",
+        "import sys; print('.'.join(map(str, sys.pypy_version_info[:3])))"
+      ],
+      "expectedVersion": "8.0.0",
+      "heapDescription": "PyPy GC total memory used; excludes native allocations and JIT code."
+    },
+    "ruby": {
+      "title": "CRuby",
+      "engine": "cruby",
+      "language": "ruby",
+      "jit": false,
+      "bin": "/opt/homebrew/opt/ruby/bin/ruby",
+      "args": [
+        "--disable-yjit"
+      ],
+      "expectedVersion": "4.0.1",
+      "heapDescription": "ObjectSpace.memsize_of_all; estimated object memory, not all native/JIT memory."
+    },
+    "ruby-yjit": {
+      "title": "CRuby + YJIT",
+      "engine": "cruby-yjit",
+      "language": "ruby",
+      "jit": true,
+      "bin": "/opt/homebrew/opt/ruby/bin/ruby",
+      "args": [
+        "--yjit"
+      ],
+      "expectedVersion": "4.0.1",
+      "heapDescription": "ObjectSpace.memsize_of_all; estimated object memory, not all native/JIT memory."
+    }
+  },
+  "compilers": {
+    "tsc": {
+      "title": "tsc (TypeScript 6, JavaScript)",
+      "bin": "toolchains/node_modules/typescript-js/bin/tsc"
+    },
+    "tsgo": {
+      "title": "tsgo (TypeScript 7, native)",
+      "bin": "toolchains/node_modules/typescript-go/bin/tsc"
+    }
+  },
+  "toolchains": {
+    "rust": {
+      "title": "Rust",
+      "bin": "cargo"
+    },
+    "go": {
+      "title": "Go",
+      "bin": "/opt/homebrew/bin/go",
+      "versionArgs": [
+        "version"
+      ],
+      "expectedVersion": "1.25.3",
+      "language": "go",
+      "heapDescription": "runtime.MemStats.HeapAlloc after runtime.GC; excludes stacks and runtime metadata."
+    }
+  }
+}

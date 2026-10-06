@@ -1,0 +1,34 @@
+// Where each ecosystem's package list and categorization live. npm was the
+// first and keeps its files directly under data/; the others get a folder.
+const ECOSYSTEMS = {
+  npm: { title: 'npm', registry: 'npmjs.org', sort: 'downloads', popularity: 'downloads per month' },
+  cargo: { title: 'crates.io', registry: 'crates.io', sort: 'downloads', popularity: 'downloads in total' },
+  pypi: { title: 'PyPI', registry: 'pypi.org', sort: 'downloads', popularity: 'downloads per month' },
+  rubygems: { title: 'RubyGems', registry: 'rubygems.org', sort: 'downloads', popularity: 'downloads in total' },
+  // The Go module proxy publishes no download counts, so Go modules are ranked
+  // by how many repositories depend on them.
+  gomod: { title: 'Go modules', registry: 'proxy.golang.org', sort: 'dependent_repos_count', popularity: 'repositories that depend on it' },
+  // Read from the JSR registry itself; see fetch-top.mjs.
+  jsr: { title: 'JSR', registry: null, sort: 'downloads', popularity: 'downloads in the last 90 days' },
+}
+
+export const ecosystemIds = Object.keys(ECOSYSTEMS)
+
+export function ecosystem(id) {
+  const config = ECOSYSTEMS[id]
+  if (!config) throw new Error(`unknown ecosystem "${id}"; expected one of ${ecosystemIds.join(', ')}`)
+  const dir = id === 'npm' ? 'data' : `data/${id}`
+  return {
+    id,
+    ...config,
+    dir,
+    packages: `${dir}/packages.json`,
+    packagesTsv: `${dir}/packages.tsv`,
+    categories: `${dir}/categories.json`,
+    report: `${dir}/categories.md`,
+    batches: `${dir}/batches`,
+  }
+}
+
+// `--ecosystem=cargo` on a script's command line; npm when absent.
+export const ecosystemFromArgs = (argv = process.argv.slice(2)) => ecosystem(argv.find((a) => a.startsWith('--ecosystem='))?.split('=')[1] ?? 'npm')

@@ -1,0 +1,46 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-05"
+  },
+  "review": "unreviewed",
+  "dependencies": [
+    "@elysiajs/node"
+  ],
+  "tags": [
+    "runtime-specific-server"
+  ],
+  "runtimeNotes": {
+    "node": "Runs through the @elysiajs/node adapter.",
+    "bun": "Serves natively on Bun.",
+    "deno": "Its fetch handler is passed to Deno.serve."
+  },
+  "versions": {
+    "2.0.0-beta.19": {
+      "runtimes": [
+        "node",
+        "bun",
+        "deno"
+      ],
+      "author": {
+        "kind": "agent",
+        "agent": "codex",
+        "model": "GPT-6 Astra",
+        "date": "2026-10-05"
+      },
+      "review": "unreviewed",
+      "notes": "Elysia 2.0.0-beta.19, the newest beta eligible under the seven-day release-age rule when measured.",
+      "dependencies": [
+        "@elysiajs/node"
+      ],
+      "runtimeNotes": {
+        "node": "Unsupported by @elysiajs/node 1.4.5: it imports elysia/cookies, which Elysia 2 beta no longer exports.",
+        "bun": "Serves natively on Bun.",
+        "deno": "Its fetch handler is passed to Deno.serve."
+      }
+    }
+  },
+  "notes": "Ahead-of-time compilation is left on (the default): with it off, CPU per request was higher on every runtime (first round, default against off: 22.7 against 25.3 µs on Node, 8.3 against 10.5 on Bun, 11.0 against 13.8 on Deno), so there is no tuned variant."
+}

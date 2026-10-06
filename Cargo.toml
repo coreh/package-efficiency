@@ -1,0 +1,11 @@
+[workspace]
+resolver = "3"
+members = ["harness/rust", "benchmarks/*/*/cargo/*"]
+
+# Release-only, no debug info, no incremental state: keeps the build directory
+# small. Optimization settings are left at Cargo's defaults on purpose, since
+# that is what users of these crates get.
+[profile.release]
+debug = false
+incremental = false
+strip = true

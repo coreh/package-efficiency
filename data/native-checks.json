@@ -1,0 +1,1361 @@
+{
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "hostPython": "3.14.3",
+  "dependencyPins": "ast_serialize==0.11.2\nlibrt==0.15.0\nmypy==2.3.1\nmypy_extensions==1.1.0\npathspec==1.1.1\ntyping_extensions==4.16.0\n",
+  "measuredAt": "2026-10-06T03:06:11.054Z",
+  "memoryKind": "peak RSS of checker process",
+  "scoreBasis": "sqrt(added process CPU ms * added peak RSS MB)",
+  "checkers": {
+    "python": {
+      "tool": "mypy",
+      "version": "2.3.1",
+      "notes": "mypy strict checks annotated adapter bodies and bundled typeshed, targeting Python 3.12 shared by CPython/PyPy. HTTP adapters use framework types where available; Waitress uses a minimal local API stub; dynamic request payloads have explicit Any boundaries. Fresh checker processes; no incremental cache. Checker runs on CPython, independently of the benchmark runtime.",
+      "negativeControlRejected": true,
+      "baseline": {
+        "runs": [
+          {
+            "cpuMs": 373.674,
+            "timeMs": 377.3341249907389,
+            "peakRssMb": 85.578125
+          },
+          {
+            "cpuMs": 370.521,
+            "timeMs": 374.07283298671246,
+            "peakRssMb": 85.453125
+          },
+          {
+            "cpuMs": 369.563,
+            "timeMs": 373.57437500031665,
+            "peakRssMb": 85.4375
+          },
+          {
+            "cpuMs": 369.55199999999996,
+            "timeMs": 372.68291699001566,
+            "peakRssMb": 85.671875
+          },
+          {
+            "cpuMs": 365.516,
+            "timeMs": 368.2258329936303,
+            "peakRssMb": 85.4375
+          },
+          {
+            "cpuMs": 364.147,
+            "timeMs": 366.93150000064634,
+            "peakRssMb": 85.640625
+          },
+          {
+            "cpuMs": 380.75999999999993,
+            "timeMs": 384.8172909929417,
+            "peakRssMb": 85.5
+          },
+          {
+            "cpuMs": 377.80199999999996,
+            "timeMs": 381.76737498724833,
+            "peakRssMb": 85.578125
+          },
+          {
+            "cpuMs": 371.441,
+            "timeMs": 376.193708012579,
+            "peakRssMb": 85.546875
+          },
+          {
+            "cpuMs": 370.41799999999995,
+            "timeMs": 374.9276250018738,
+            "peakRssMb": 85.5
+          },
+          {
+            "cpuMs": 369.29200000000003,
+            "timeMs": 373.36591599159874,
+            "peakRssMb": 85.515625
+          }
+        ],
+        "cpuMs": 370.41799999999995,
+        "timeMs": 374.07283298671246,
+        "peakRssMb": 85.515625
+      }
+    },
+    "ruby": {
+      "tool": "sorbet",
+      "version": "0.6.13508",
+      "notes": "Sorbet checks adapter bodies with explicit input/output signatures and bundled core RBI. JSON payload elements remain T.untyped; CGI API signatures are provided locally; JSON uses bundled RBI. HTTP routing uses a minimal local Roda RBI; its DSL, Rack input and JSON contents remain dynamic. Shared by CRuby and YJIT; checker runs as a native executable.",
+      "negativeControlRejected": true,
+      "baseline": {
+        "runs": [
+          {
+            "cpuMs": 16.733999999999998,
+            "timeMs": 18.93383401329629,
+            "peakRssMb": 32.15625
+          },
+          {
+            "cpuMs": 16.939,
+            "timeMs": 18.286625010659918,
+            "peakRssMb": 31.484375
+          },
+          {
+            "cpuMs": 22.189999999999998,
+            "timeMs": 32.93016701354645,
+            "peakRssMb": 30.53125
+          },
+          {
+            "cpuMs": 24.53,
+            "timeMs": 50.633792008738965,
+            "peakRssMb": 32.625
+          },
+          {
+            "cpuMs": 17.974999999999998,
+            "timeMs": 20.878291979897767,
+            "peakRssMb": 32.03125
+          },
+          {
+            "cpuMs": 17.778000000000002,
+            "timeMs": 20.039625000208616,
+            "peakRssMb": 31.546875
+          },
+          {
+            "cpuMs": 17.443,
+            "timeMs": 20.082500006537884,
+            "peakRssMb": 31.6875
+          },
+          {
+            "cpuMs": 17.256999999999998,
+            "timeMs": 19.464624987449497,
+            "peakRssMb": 31.90625
+          },
+          {
+            "cpuMs": 18.23,
+            "timeMs": 20.39766701636836,
+            "peakRssMb": 31.3125
+          },
+          {
+            "cpuMs": 16.355999999999998,
+            "timeMs": 18.226041982416064,
+            "peakRssMb": 31.734375
+          },
+          {
+            "cpuMs": 17.203999999999997,
+            "timeMs": 19.51929199276492,
+            "peakRssMb": 31.84375
+          }
+        ],
+        "cpuMs": 17.443,
+        "timeMs": 20.039625000208616,
+        "peakRssMb": 31.734375
+      }
+    },
+    "go": {
+      "tool": "go-types",
+      "version": "1.25.3",
+      "notes": "go/types checks the actual adapter source, including parsing and loading prepared standard-library and framework export data. Preparing export data, compilation, code generation and linking are excluded.",
+      "negativeControlRejected": true,
+      "baseline": {
+        "runs": [
+          {
+            "cpuMs": 5.72,
+            "timeMs": 8.00479098688811,
+            "peakRssMb": 6.28125
+          },
+          {
+            "cpuMs": 3.4859999999999993,
+            "timeMs": 5.425459006801248,
+            "peakRssMb": 5.75
+          },
+          {
+            "cpuMs": 3.2230000000000003,
+            "timeMs": 5.24533397401683,
+            "peakRssMb": 5.953125
+          },
+          {
+            "cpuMs": 3.282,
+            "timeMs": 5.303999991156161,
+            "peakRssMb": 5.75
+          },
+          {
+            "cpuMs": 3.0689999999999995,
+            "timeMs": 4.727624997030944,
+            "peakRssMb": 5.953125
+          },
+          {
+            "cpuMs": 3.0869999999999997,
+            "timeMs": 4.893750010523945,
+            "peakRssMb": 5.90625
+          },
+          {
+            "cpuMs": 3.201,
+            "timeMs": 5.10329200187698,
+            "peakRssMb": 5.75
+          },
+          {
+            "cpuMs": 3.034,
+            "timeMs": 4.971749993273988,
+            "peakRssMb": 5.90625
+          },
+          {
+            "cpuMs": 3.331,
+            "timeMs": 5.069792008725926,
+            "peakRssMb": 5.90625
+          },
+          {
+            "cpuMs": 3.097,
+            "timeMs": 4.943457985064015,
+            "peakRssMb": 5.75
+          },
+          {
+            "cpuMs": 3.352,
+            "timeMs": 4.905000008875504,
+            "peakRssMb": 5.75
+          }
+        ],
+        "cpuMs": 3.2230000000000003,
+        "timeMs": 5.069792008725926,
+        "peakRssMb": 5.90625
+      }
+    }
+  },
+  "adapters": {
+    "stable-json-stringify/nested-records/builtin/python-json": {
+      "language": "python",
+      "tool": "mypy",
+      "version": "2.3.1",
+      "sourceSha256": "9525ca56b5155c17153b1ba6f6ef916258452fa81b3e6ff82faa11f030ac5927",
+      "runs": [
+        {
+          "cpuMs": 370.37299999999993,
+          "timeMs": 376.21183300507255,
+          "peakRssMb": 85.90625
+        },
+        {
+          "cpuMs": 372.31499999999994,
+          "timeMs": 375.5487500166055,
+          "peakRssMb": 85.90625
+        },
+        {
+          "cpuMs": 379.676,
+          "timeMs": 387.1842920198105,
+          "peakRssMb": 85.875
+        },
+        {
+          "cpuMs": 420.647,
+          "timeMs": 472.25312498630956,
+          "peakRssMb": 85.84375
+        },
+        {
+          "cpuMs": 404.902,
+          "timeMs": 441.02583298808895,
+          "peakRssMb": 84.34375
+        },
+        {
+          "cpuMs": 389.62199999999996,
+          "timeMs": 395.3365840134211,
+          "peakRssMb": 85.828125
+        },
+        {
+          "cpuMs": 394.041,
+          "timeMs": 397.7404579927679,
+          "peakRssMb": 86.046875
+        },
+        {
+          "cpuMs": 372.971,
+          "timeMs": 377.35199998132885,
+          "peakRssMb": 85.859375
+        },
+        {
+          "cpuMs": 373.67499999999995,
+          "timeMs": 377.451625012327,
+          "peakRssMb": 85.890625
+        },
+        {
+          "cpuMs": 381.21900000000005,
+          "timeMs": 384.937709022779,
+          "peakRssMb": 85.90625
+        },
+        {
+          "cpuMs": 378.382,
+          "timeMs": 382.69833399681374,
+          "peakRssMb": 85.9375
+        }
+      ],
+      "cpuMs": 9.258000000000038,
+      "timeMs": 10.864876036066562,
+      "peakRssMb": 85.890625,
+      "memoryMb": 0.375
+    },
+    "http-server/json-api/pypi/waitress": {
+      "language": "python",
+      "tool": "mypy",
+      "version": "2.3.1",
+      "sourceSha256": "35f2fc32c637a3f0b0d9d829ba89cb72e18f65fc9e409e13fd7463822a95b255",
+      "runs": [
+        {
+          "cpuMs": 400.777,
+          "timeMs": 408.7514999846462,
+          "peakRssMb": 88.125
+        },
+        {
+          "cpuMs": 401.43399999999997,
+          "timeMs": 406.7230839864351,
+          "peakRssMb": 88.125
+        },
+        {
+          "cpuMs": 392.65999999999997,
+          "timeMs": 397.2278749861289,
+          "peakRssMb": 88.234375
+        },
+        {
+          "cpuMs": 394.77399999999994,
+          "timeMs": 398.9322080160491,
+          "peakRssMb": 88.21875
+        },
+        {
+          "cpuMs": 390.9239999999999,
+          "timeMs": 394.6984159993008,
+          "peakRssMb": 88.328125
+        },
+        {
+          "cpuMs": 393.394,
+          "timeMs": 396.9308329978958,
+          "peakRssMb": 88.09375
+        },
+        {
+          "cpuMs": 397.05800000000005,
+          "timeMs": 401.040416007163,
+          "peakRssMb": 88.234375
+        },
+        {
+          "cpuMs": 435.12899999999996,
+          "timeMs": 440.5829999886919,
+          "peakRssMb": 88.234375
+        },
+        {
+          "cpuMs": 418.584,
+          "timeMs": 427.7359579864424,
+          "peakRssMb": 88.265625
+        },
+        {
+          "cpuMs": 416.896,
+          "timeMs": 420.18295801244676,
+          "peakRssMb": 88.203125
+        },
+        {
+          "cpuMs": 395.536,
+          "timeMs": 399.60116700967774,
+          "peakRssMb": 88.1875
+        }
+      ],
+      "cpuMs": 26.6400000000001,
+      "timeMs": 26.967583020450547,
+      "peakRssMb": 88.21875,
+      "memoryMb": 2.703125
+    },
+    "http-server/json-api/pypi/uvicorn": {
+      "language": "python",
+      "tool": "mypy",
+      "version": "2.3.1",
+      "sourceSha256": "a5f08622e811aed3c9d65c897dcf7ccc380bc57929703cb8e23a59198cf3ecdb",
+      "runs": [
+        {
+          "cpuMs": 827.684,
+          "timeMs": 865.4713750001974,
+          "peakRssMb": 130.25
+        },
+        {
+          "cpuMs": 825.139,
+          "timeMs": 829.8030000005383,
+          "peakRssMb": 130.359375
+        },
+        {
+          "cpuMs": 809.746,
+          "timeMs": 814.0363749989774,
+          "peakRssMb": 130.234375
+        },
+        {
+          "cpuMs": 820.7359999999999,
+          "timeMs": 856.5057909872849,
+          "peakRssMb": 130.28125
+        },
+        {
+          "cpuMs": 835.3849999999999,
+          "timeMs": 855.5018330225721,
+          "peakRssMb": 130.328125
+        },
+        {
+          "cpuMs": 831.299,
+          "timeMs": 836.7260420054663,
+          "peakRssMb": 130.15625
+        },
+        {
+          "cpuMs": 824.471,
+          "timeMs": 832.7815420052502,
+          "peakRssMb": 130.40625
+        },
+        {
+          "cpuMs": 834.0079999999999,
+          "timeMs": 838.9884579810314,
+          "peakRssMb": 130.296875
+        },
+        {
+          "cpuMs": 834.3190000000001,
+          "timeMs": 840.2940420201048,
+          "peakRssMb": 130.265625
+        },
+        {
+          "cpuMs": 852.026,
+          "timeMs": 858.2170000008773,
+          "peakRssMb": 130.15625
+        },
+        {
+          "cpuMs": 829.326,
+          "timeMs": 835.6958340154961,
+          "peakRssMb": 130.3125
+        }
+      ],
+      "cpuMs": 458.9080000000001,
+      "timeMs": 464.91562499431893,
+      "peakRssMb": 130.28125,
+      "memoryMb": 44.765625
+    },
+    "http-server/json-api/pypi/starlette": {
+      "language": "python",
+      "tool": "mypy",
+      "version": "2.3.1",
+      "sourceSha256": "b45a890256377025b5507848f2dcf09e329facd65da673884e09c57e9a21a7c1",
+      "runs": [
+        {
+          "cpuMs": 1064.5880000000002,
+          "timeMs": 1105.9190840169322,
+          "peakRssMb": 144.09375
+        },
+        {
+          "cpuMs": 978.353,
+          "timeMs": 985.3198339988012,
+          "peakRssMb": 143.796875
+        },
+        {
+          "cpuMs": 966.558,
+          "timeMs": 970.1840409834404,
+          "peakRssMb": 143.671875
+        },
+        {
+          "cpuMs": 966.6080000000001,
+          "timeMs": 971.6499159985688,
+          "peakRssMb": 143.875
+        },
+        {
+          "cpuMs": 988.9839999999998,
+          "timeMs": 993.5060419957153,
+          "peakRssMb": 143.890625
+        },
+        {
+          "cpuMs": 979.447,
+          "timeMs": 985.480874980567,
+          "peakRssMb": 143.75
+        },
+        {
+          "cpuMs": 955.311,
+          "timeMs": 961.1589580017608,
+          "peakRssMb": 143.796875
+        },
+        {
+          "cpuMs": 976.598,
+          "timeMs": 983.7984589976259,
+          "peakRssMb": 143.921875
+        },
+        {
+          "cpuMs": 1026.432,
+          "timeMs": 1059.609415999148,
+          "peakRssMb": 143.984375
+        },
+        {
+          "cpuMs": 987.972,
+          "timeMs": 1000.482417002786,
+          "peakRssMb": 143.65625
+        },
+        {
+          "cpuMs": 978.08,
+          "timeMs": 982.9643749981187,
+          "peakRssMb": 143.921875
+        }
+      ],
+      "cpuMs": 607.935,
+      "timeMs": 611.2470010120887,
+      "peakRssMb": 143.875,
+      "memoryMb": 58.359375
+    },
+    "html-escaping/text-attributes/builtin/python-html": {
+      "language": "python",
+      "tool": "mypy",
+      "version": "2.3.1",
+      "sourceSha256": "1baf7458c844755e002fff485d1ecdc0fe08d8fa020d9c0c5493d0d668b1c63d",
+      "runs": [
+        {
+          "cpuMs": 380.58,
+          "timeMs": 385.99491701461375,
+          "peakRssMb": 85.6875
+        },
+        {
+          "cpuMs": 387.295,
+          "timeMs": 392.3005000106059,
+          "peakRssMb": 85.578125
+        },
+        {
+          "cpuMs": 396.951,
+          "timeMs": 409.23762499005534,
+          "peakRssMb": 85.171875
+        },
+        {
+          "cpuMs": 379.327,
+          "timeMs": 383.52395899710245,
+          "peakRssMb": 85.671875
+        },
+        {
+          "cpuMs": 386.66299999999995,
+          "timeMs": 391.89833399723284,
+          "peakRssMb": 85.453125
+        },
+        {
+          "cpuMs": 390.22799999999995,
+          "timeMs": 394.6658749773633,
+          "peakRssMb": 85.4375
+        },
+        {
+          "cpuMs": 371.103,
+          "timeMs": 374.2942499811761,
+          "peakRssMb": 85.546875
+        },
+        {
+          "cpuMs": 376.55899999999997,
+          "timeMs": 380.2930419915356,
+          "peakRssMb": 85.578125
+        },
+        {
+          "cpuMs": 402.331,
+          "timeMs": 413.5581669979729,
+          "peakRssMb": 85.484375
+        },
+        {
+          "cpuMs": 387.109,
+          "timeMs": 393.7208340212237,
+          "peakRssMb": 85.65625
+        },
+        {
+          "cpuMs": 486.51099999999997,
+          "timeMs": 525.5804159969557,
+          "peakRssMb": 85.546875
+        }
+      ],
+      "cpuMs": 16.69100000000003,
+      "timeMs": 18.227667023893446,
+      "peakRssMb": 85.546875,
+      "memoryMb": 0.03125
+    },
+    "deep-equality/nested-json/builtin/python-equality": {
+      "language": "python",
+      "tool": "mypy",
+      "version": "2.3.1",
+      "sourceSha256": "69db39c0af0a72344394c02ed770873d23b90bbe20529ab5835157edd2012058",
+      "runs": [
+        {
+          "cpuMs": 442.59099999999995,
+          "timeMs": 460.96104200114496,
+          "peakRssMb": 86.015625
+        },
+        {
+          "cpuMs": 402.95099999999996,
+          "timeMs": 409.90037500159815,
+          "peakRssMb": 85.921875
+        },
+        {
+          "cpuMs": 387.376,
+          "timeMs": 393.1341250136029,
+          "peakRssMb": 85.75
+        },
+        {
+          "cpuMs": 436.58,
+          "timeMs": 447.0068750088103,
+          "peakRssMb": 85.859375
+        },
+        {
+          "cpuMs": 410.00299999999993,
+          "timeMs": 426.2014999985695,
+          "peakRssMb": 85.96875
+        },
+        {
+          "cpuMs": 370.756,
+          "timeMs": 374.08254100591876,
+          "peakRssMb": 85.84375
+        },
+        {
+          "cpuMs": 376.35999999999996,
+          "timeMs": 380.7103330036625,
+          "peakRssMb": 85.828125
+        },
+        {
+          "cpuMs": 427.701,
+          "timeMs": 435.0494589889422,
+          "peakRssMb": 85.78125
+        },
+        {
+          "cpuMs": 468.195,
+          "timeMs": 522.2743339836597,
+          "peakRssMb": 85.609375
+        },
+        {
+          "cpuMs": 412.708,
+          "timeMs": 423.34816700895317,
+          "peakRssMb": 85.78125
+        },
+        {
+          "cpuMs": 389.893,
+          "timeMs": 393.45445900107734,
+          "peakRssMb": 85.765625
+        }
+      ],
+      "cpuMs": 39.58499999999998,
+      "timeMs": 49.27533402224071,
+      "peakRssMb": 85.828125,
+      "memoryMb": 0.3125
+    },
+    "stable-json-stringify/nested-records/builtin/ruby-json": {
+      "language": "ruby",
+      "tool": "sorbet",
+      "version": "0.6.13508",
+      "sourceSha256": "48e571537bc3b54f1e69cd8ec081579109572e9552a60341a2b57ac5609ebbea",
+      "runs": [
+        {
+          "cpuMs": 18.776999999999997,
+          "timeMs": 32.14329099864699,
+          "peakRssMb": 32.515625
+        },
+        {
+          "cpuMs": 17.104,
+          "timeMs": 19.387291016755626,
+          "peakRssMb": 32.09375
+        },
+        {
+          "cpuMs": 16.851,
+          "timeMs": 18.682375026401132,
+          "peakRssMb": 31.890625
+        },
+        {
+          "cpuMs": 16.732,
+          "timeMs": 19.352666015038267,
+          "peakRssMb": 31.125
+        },
+        {
+          "cpuMs": 17.479000000000003,
+          "timeMs": 19.57629100070335,
+          "peakRssMb": 32.1875
+        },
+        {
+          "cpuMs": 16.801,
+          "timeMs": 18.784208019496873,
+          "peakRssMb": 31.671875
+        },
+        {
+          "cpuMs": 16.877,
+          "timeMs": 18.909167003585026,
+          "peakRssMb": 31.015625
+        },
+        {
+          "cpuMs": 17.043,
+          "timeMs": 18.63066598889418,
+          "peakRssMb": 31.78125
+        },
+        {
+          "cpuMs": 16.801,
+          "timeMs": 18.664333008928224,
+          "peakRssMb": 31.921875
+        },
+        {
+          "cpuMs": 16.901,
+          "timeMs": 18.43554197694175,
+          "peakRssMb": 30.703125
+        },
+        {
+          "cpuMs": 17.817,
+          "timeMs": 21.378667006501928,
+          "peakRssMb": 30.859375
+        }
+      ],
+      "cpuMs": 0,
+      "timeMs": 0,
+      "peakRssMb": 31.78125,
+      "memoryMb": 0.046875
+    },
+    "http-server/json-api/rubygems/roda": {
+      "language": "ruby",
+      "tool": "sorbet",
+      "version": "0.6.13508",
+      "sourceSha256": "daa99f097e477723c6ba528db87890c3605e1ed88bfac190be49eb8dd31255d7",
+      "runs": [
+        {
+          "cpuMs": 18.108,
+          "timeMs": 19.849292002618313,
+          "peakRssMb": 33.421875
+        },
+        {
+          "cpuMs": 23.092000000000002,
+          "timeMs": 31.144125008722767,
+          "peakRssMb": 34.0625
+        },
+        {
+          "cpuMs": 18.804000000000002,
+          "timeMs": 21.120707999216393,
+          "peakRssMb": 33.796875
+        },
+        {
+          "cpuMs": 17.147,
+          "timeMs": 19.07616702374071,
+          "peakRssMb": 32.984375
+        },
+        {
+          "cpuMs": 18.259999999999998,
+          "timeMs": 19.651667011203244,
+          "peakRssMb": 33.71875
+        },
+        {
+          "cpuMs": 17.461,
+          "timeMs": 19.364874984603375,
+          "peakRssMb": 33.890625
+        },
+        {
+          "cpuMs": 32.683,
+          "timeMs": 91.51858399854973,
+          "peakRssMb": 35.734375
+        },
+        {
+          "cpuMs": 18.156,
+          "timeMs": 19.841250003082678,
+          "peakRssMb": 33.390625
+        },
+        {
+          "cpuMs": 16.858999999999998,
+          "timeMs": 18.841624987544492,
+          "peakRssMb": 33.6875
+        },
+        {
+          "cpuMs": 17.41,
+          "timeMs": 19.616208999650553,
+          "peakRssMb": 33.703125
+        },
+        {
+          "cpuMs": 16.857,
+          "timeMs": 18.975292012328282,
+          "peakRssMb": 33.265625
+        }
+      ],
+      "cpuMs": 0.6649999999999991,
+      "timeMs": 0,
+      "peakRssMb": 33.703125,
+      "memoryMb": 1.96875
+    },
+    "http-server/json-api/rubygems/puma": {
+      "language": "ruby",
+      "tool": "sorbet",
+      "version": "0.6.13508",
+      "sourceSha256": "e61487dc6121503430d513995e711fc0433d8cafc126a22a61bb0424f5188fb3",
+      "runs": [
+        {
+          "cpuMs": 17.567,
+          "timeMs": 19.326833978993818,
+          "peakRssMb": 33.578125
+        },
+        {
+          "cpuMs": 20.374,
+          "timeMs": 23.11454198206775,
+          "peakRssMb": 33.125
+        },
+        {
+          "cpuMs": 19.624,
+          "timeMs": 23.718209005892277,
+          "peakRssMb": 33.578125
+        },
+        {
+          "cpuMs": 16.163,
+          "timeMs": 17.898958001751453,
+          "peakRssMb": 32.875
+        },
+        {
+          "cpuMs": 15.972,
+          "timeMs": 17.634332994930446,
+          "peakRssMb": 31.9375
+        },
+        {
+          "cpuMs": 17.583,
+          "timeMs": 23.09733399306424,
+          "peakRssMb": 31.921875
+        },
+        {
+          "cpuMs": 17.203,
+          "timeMs": 20.320167008321732,
+          "peakRssMb": 33.359375
+        },
+        {
+          "cpuMs": 16.343,
+          "timeMs": 18.328333011595532,
+          "peakRssMb": 31.96875
+        },
+        {
+          "cpuMs": 16.648999999999997,
+          "timeMs": 19.139875017572194,
+          "peakRssMb": 32.015625
+        },
+        {
+          "cpuMs": 16.531999999999996,
+          "timeMs": 18.288582999957725,
+          "peakRssMb": 32.71875
+        },
+        {
+          "cpuMs": 16.125999999999998,
+          "timeMs": 18.135374994017184,
+          "peakRssMb": 32.765625
+        }
+      ],
+      "cpuMs": 0,
+      "timeMs": 0,
+      "peakRssMb": 32.765625,
+      "memoryMb": 1.03125
+    },
+    "html-escaping/text-attributes/builtin/ruby-cgi": {
+      "language": "ruby",
+      "tool": "sorbet",
+      "version": "0.6.13508",
+      "sourceSha256": "f016e7e9763f1022bac97fb5fb5658f9ad4203d7f3fba543cb0b497498a05f84",
+      "runs": [
+        {
+          "cpuMs": 16.316,
+          "timeMs": 19.139250012813136,
+          "peakRssMb": 30.9375
+        },
+        {
+          "cpuMs": 19.172,
+          "timeMs": 22.74229101021774,
+          "peakRssMb": 31.8125
+        },
+        {
+          "cpuMs": 16.761,
+          "timeMs": 18.22958400589414,
+          "peakRssMb": 31.546875
+        },
+        {
+          "cpuMs": 15.349,
+          "timeMs": 16.994083009194583,
+          "peakRssMb": 30.25
+        },
+        {
+          "cpuMs": 17.654999999999998,
+          "timeMs": 19.55979099147953,
+          "peakRssMb": 30.796875
+        },
+        {
+          "cpuMs": 15.549,
+          "timeMs": 17.08600000711158,
+          "peakRssMb": 31.34375
+        },
+        {
+          "cpuMs": 17.89,
+          "timeMs": 20.82249999511987,
+          "peakRssMb": 30.3125
+        },
+        {
+          "cpuMs": 15.584999999999997,
+          "timeMs": 17.099499993491918,
+          "peakRssMb": 31.5
+        },
+        {
+          "cpuMs": 15.628,
+          "timeMs": 17.210750025697052,
+          "peakRssMb": 30.640625
+        },
+        {
+          "cpuMs": 18.544999999999998,
+          "timeMs": 22.692083002766594,
+          "peakRssMb": 30.328125
+        },
+        {
+          "cpuMs": 16.721,
+          "timeMs": 19.799500005319715,
+          "peakRssMb": 31.484375
+        }
+      ],
+      "cpuMs": 0,
+      "timeMs": 0,
+      "peakRssMb": 30.9375,
+      "memoryMb": 0
+    },
+    "deep-equality/nested-json/builtin/ruby-equality": {
+      "language": "ruby",
+      "tool": "sorbet",
+      "version": "0.6.13508",
+      "sourceSha256": "62f5fcd28fc6fc922e80e3fb1fca5142a26c45d28283c70d021b7e540f8eb560",
+      "runs": [
+        {
+          "cpuMs": 16.926,
+          "timeMs": 25.560916983522475,
+          "peakRssMb": 30.890625
+        },
+        {
+          "cpuMs": 17.093,
+          "timeMs": 21.269667020533234,
+          "peakRssMb": 30.640625
+        },
+        {
+          "cpuMs": 17.235999999999997,
+          "timeMs": 19.647790992166847,
+          "peakRssMb": 32.109375
+        },
+        {
+          "cpuMs": 16.038,
+          "timeMs": 17.871332995127887,
+          "peakRssMb": 30.671875
+        },
+        {
+          "cpuMs": 15.988,
+          "timeMs": 17.461499985074624,
+          "peakRssMb": 30.640625
+        },
+        {
+          "cpuMs": 15.823,
+          "timeMs": 17.74333301000297,
+          "peakRssMb": 31.265625
+        },
+        {
+          "cpuMs": 15.692999999999998,
+          "timeMs": 17.422250006347895,
+          "peakRssMb": 30.546875
+        },
+        {
+          "cpuMs": 15.703999999999999,
+          "timeMs": 17.863999994006008,
+          "peakRssMb": 30.3125
+        },
+        {
+          "cpuMs": 14.907,
+          "timeMs": 16.488583001773804,
+          "peakRssMb": 30.515625
+        },
+        {
+          "cpuMs": 16.351000000000003,
+          "timeMs": 18.469875009031966,
+          "peakRssMb": 31.609375
+        },
+        {
+          "cpuMs": 15.77,
+          "timeMs": 17.394875001627952,
+          "peakRssMb": 31.375
+        }
+      ],
+      "cpuMs": 0,
+      "timeMs": 0,
+      "peakRssMb": 30.671875,
+      "memoryMb": 0
+    },
+    "stable-json-stringify/nested-records/builtin/go-json": {
+      "language": "go",
+      "tool": "go-types",
+      "version": "1.25.3",
+      "sourceSha256": "11b8a619e3a6e69d0ce9b6199afa5ae29265fe7d1ec0a9f263a265862b51680b",
+      "runs": [
+        {
+          "cpuMs": 4.267999999999999,
+          "timeMs": 6.936332996701822,
+          "peakRssMb": 7.90625
+        },
+        {
+          "cpuMs": 4.558999999999999,
+          "timeMs": 6.4102500036824495,
+          "peakRssMb": 7.90625
+        },
+        {
+          "cpuMs": 4.4879999999999995,
+          "timeMs": 6.778125010896474,
+          "peakRssMb": 7.953125
+        },
+        {
+          "cpuMs": 4.269,
+          "timeMs": 6.402415980119258,
+          "peakRssMb": 8.046875
+        },
+        {
+          "cpuMs": 5.457,
+          "timeMs": 7.446625008014962,
+          "peakRssMb": 8.09375
+        },
+        {
+          "cpuMs": 5.436,
+          "timeMs": 8.118750003632158,
+          "peakRssMb": 7.953125
+        },
+        {
+          "cpuMs": 5.289999999999999,
+          "timeMs": 7.354334025876597,
+          "peakRssMb": 8.046875
+        },
+        {
+          "cpuMs": 8.588000000000001,
+          "timeMs": 24.098791007418185,
+          "peakRssMb": 7.984375
+        },
+        {
+          "cpuMs": 5.44,
+          "timeMs": 7.743291003862396,
+          "peakRssMb": 7.90625
+        },
+        {
+          "cpuMs": 4.7010000000000005,
+          "timeMs": 6.696249998640269,
+          "peakRssMb": 7.90625
+        },
+        {
+          "cpuMs": 4.2620000000000005,
+          "timeMs": 6.652084004599601,
+          "peakRssMb": 8.046875
+        }
+      ],
+      "cpuMs": 1.4780000000000002,
+      "timeMs": 1.8665409879758954,
+      "peakRssMb": 7.953125,
+      "memoryMb": 2.046875
+    },
+    "http-server/json-api/gomod/gin": {
+      "language": "go",
+      "tool": "go-types",
+      "version": "1.25.3",
+      "sourceSha256": "0359aba009bd3ff520761b6fede115e5510ac2320c18cb6bf308770773ca3be2",
+      "runs": [
+        {
+          "cpuMs": 8.7,
+          "timeMs": 11.482458998216316,
+          "peakRssMb": 11.921875
+        },
+        {
+          "cpuMs": 9.686,
+          "timeMs": 11.380665993783623,
+          "peakRssMb": 11.84375
+        },
+        {
+          "cpuMs": 8.267,
+          "timeMs": 9.741125017171726,
+          "peakRssMb": 12.171875
+        },
+        {
+          "cpuMs": 8.107999999999999,
+          "timeMs": 9.142416005488485,
+          "peakRssMb": 12.140625
+        },
+        {
+          "cpuMs": 10.252,
+          "timeMs": 11.136332992464304,
+          "peakRssMb": 12.234375
+        },
+        {
+          "cpuMs": 10.327,
+          "timeMs": 13.0916670022998,
+          "peakRssMb": 11.90625
+        },
+        {
+          "cpuMs": 8.608,
+          "timeMs": 9.612791996914893,
+          "peakRssMb": 11.609375
+        },
+        {
+          "cpuMs": 8.043,
+          "timeMs": 9.284250001655892,
+          "peakRssMb": 11.796875
+        },
+        {
+          "cpuMs": 8.733999999999998,
+          "timeMs": 11.192415986442938,
+          "peakRssMb": 11.703125
+        },
+        {
+          "cpuMs": 8.844999999999999,
+          "timeMs": 11.07050001155585,
+          "peakRssMb": 12.140625
+        },
+        {
+          "cpuMs": 7.845,
+          "timeMs": 8.94299999345094,
+          "peakRssMb": 11.546875
+        }
+      ],
+      "cpuMs": 5.4769999999999985,
+      "timeMs": 6.000708002829924,
+      "peakRssMb": 11.90625,
+      "memoryMb": 6
+    },
+    "http-server/json-api/gomod/chi": {
+      "language": "go",
+      "tool": "go-types",
+      "version": "1.25.3",
+      "sourceSha256": "94a027f78a7836f88963a7ec6c2f59a7f063c4c637fbc5da4518ff51513f0b6f",
+      "runs": [
+        {
+          "cpuMs": 7.72,
+          "timeMs": 8.920457999920473,
+          "peakRssMb": 11.703125
+        },
+        {
+          "cpuMs": 7.507,
+          "timeMs": 8.042874978855252,
+          "peakRssMb": 11.546875
+        },
+        {
+          "cpuMs": 7.476999999999999,
+          "timeMs": 8.052832999965176,
+          "peakRssMb": 11.71875
+        },
+        {
+          "cpuMs": 7.946999999999999,
+          "timeMs": 8.57399997767061,
+          "peakRssMb": 11.5
+        },
+        {
+          "cpuMs": 7.814,
+          "timeMs": 8.398625010158867,
+          "peakRssMb": 11.59375
+        },
+        {
+          "cpuMs": 7.813000000000001,
+          "timeMs": 9.067292005056515,
+          "peakRssMb": 11.515625
+        },
+        {
+          "cpuMs": 7.325,
+          "timeMs": 7.769500021822751,
+          "peakRssMb": 11.34375
+        },
+        {
+          "cpuMs": 7.2509999999999994,
+          "timeMs": 7.94145799591206,
+          "peakRssMb": 11.328125
+        },
+        {
+          "cpuMs": 7.263,
+          "timeMs": 7.9485840105917305,
+          "peakRssMb": 11.234375
+        },
+        {
+          "cpuMs": 8.048,
+          "timeMs": 8.745041996007785,
+          "peakRssMb": 11.625
+        },
+        {
+          "cpuMs": 7.148999999999999,
+          "timeMs": 8.19195798248984,
+          "peakRssMb": 11.0625
+        }
+      ],
+      "cpuMs": 4.283999999999999,
+      "timeMs": 3.122165973763913,
+      "peakRssMb": 11.515625,
+      "memoryMb": 5.609375
+    },
+    "http-server/json-api/builtin/go-net-http": {
+      "language": "go",
+      "tool": "go-types",
+      "version": "1.25.3",
+      "sourceSha256": "2612510988f802a939c9df25834fc04a16707419f2dd50e857779cb96f11d45d",
+      "runs": [
+        {
+          "cpuMs": 9.198999999999998,
+          "timeMs": 9.914458001730964,
+          "peakRssMb": 10.484375
+        },
+        {
+          "cpuMs": 7.119999999999999,
+          "timeMs": 8.002457994734868,
+          "peakRssMb": 10.984375
+        },
+        {
+          "cpuMs": 7.169999999999999,
+          "timeMs": 8.12262500403449,
+          "peakRssMb": 11.09375
+        },
+        {
+          "cpuMs": 7.17,
+          "timeMs": 7.948874990688637,
+          "peakRssMb": 11.3125
+        },
+        {
+          "cpuMs": 6.8919999999999995,
+          "timeMs": 7.545041007688269,
+          "peakRssMb": 10.890625
+        },
+        {
+          "cpuMs": 7.7989999999999995,
+          "timeMs": 8.48129199584946,
+          "peakRssMb": 11.359375
+        },
+        {
+          "cpuMs": 7.3549999999999995,
+          "timeMs": 8.332458004588261,
+          "peakRssMb": 11.0625
+        },
+        {
+          "cpuMs": 7.571999999999999,
+          "timeMs": 8.100584003841504,
+          "peakRssMb": 11.25
+        },
+        {
+          "cpuMs": 6.882,
+          "timeMs": 7.50912501825951,
+          "peakRssMb": 10.875
+        },
+        {
+          "cpuMs": 7.267,
+          "timeMs": 9.547584020765498,
+          "peakRssMb": 10.8125
+        },
+        {
+          "cpuMs": 7.397999999999999,
+          "timeMs": 8.300416986458004,
+          "peakRssMb": 10.859375
+        }
+      ],
+      "cpuMs": 4.0440000000000005,
+      "timeMs": 3.052832995308563,
+      "peakRssMb": 10.984375,
+      "memoryMb": 5.078125
+    },
+    "html-escaping/text-attributes/builtin/go-html": {
+      "language": "go",
+      "tool": "go-types",
+      "version": "1.25.3",
+      "sourceSha256": "461762e10cc96d8e1cb2b2ba5f46efbbc4c43b44ce569c323f19ff522420c5bf",
+      "runs": [
+        {
+          "cpuMs": 3.3139999999999996,
+          "timeMs": 5.182708002394065,
+          "peakRssMb": 7.015625
+        },
+        {
+          "cpuMs": 3.451,
+          "timeMs": 5.612582986941561,
+          "peakRssMb": 6.84375
+        },
+        {
+          "cpuMs": 5.093,
+          "timeMs": 8.233417000155896,
+          "peakRssMb": 6.8125
+        },
+        {
+          "cpuMs": 4.989,
+          "timeMs": 6.969833979383111,
+          "peakRssMb": 6.828125
+        },
+        {
+          "cpuMs": 3.231,
+          "timeMs": 5.4119589913170785,
+          "peakRssMb": 7
+        },
+        {
+          "cpuMs": 4.919,
+          "timeMs": 6.925124995177612,
+          "peakRssMb": 7.109375
+        },
+        {
+          "cpuMs": 3.1069999999999993,
+          "timeMs": 5.155082995770499,
+          "peakRssMb": 6.84375
+        },
+        {
+          "cpuMs": 3.4729999999999994,
+          "timeMs": 5.276208015857264,
+          "peakRssMb": 7.0625
+        },
+        {
+          "cpuMs": 3.675,
+          "timeMs": 6.12966698827222,
+          "peakRssMb": 6.84375
+        },
+        {
+          "cpuMs": 3.409,
+          "timeMs": 5.585041013546288,
+          "peakRssMb": 7
+        },
+        {
+          "cpuMs": 3.57,
+          "timeMs": 5.564166989643127,
+          "peakRssMb": 6.890625
+        }
+      ],
+      "cpuMs": 0.2499999999999991,
+      "timeMs": 0.5152490048203617,
+      "peakRssMb": 6.890625,
+      "memoryMb": 0.984375
+    },
+    "deep-equality/nested-json/builtin/go-reflect": {
+      "language": "go",
+      "tool": "go-types",
+      "version": "1.25.3",
+      "sourceSha256": "b6bc78c1d39cfdc4415aa170092f8e20278f07f8c34bfbfd246ec78fedb77b66",
+      "runs": [
+        {
+          "cpuMs": 6.832,
+          "timeMs": 13.369541993597522,
+          "peakRssMb": 7.859375
+        },
+        {
+          "cpuMs": 5.3469999999999995,
+          "timeMs": 9.162208007182926,
+          "peakRssMb": 7.625
+        },
+        {
+          "cpuMs": 5.464999999999999,
+          "timeMs": 8.486083010211587,
+          "peakRssMb": 7.8125
+        },
+        {
+          "cpuMs": 5.835,
+          "timeMs": 8.979500009445474,
+          "peakRssMb": 7.8125
+        },
+        {
+          "cpuMs": 3.741,
+          "timeMs": 5.6642919953446835,
+          "peakRssMb": 7.609375
+        },
+        {
+          "cpuMs": 3.658,
+          "timeMs": 5.544374987948686,
+          "peakRssMb": 7.8125
+        },
+        {
+          "cpuMs": 3.8240000000000003,
+          "timeMs": 5.451499979244545,
+          "peakRssMb": 7.8125
+        },
+        {
+          "cpuMs": 3.591,
+          "timeMs": 5.5357499804813415,
+          "peakRssMb": 7.609375
+        },
+        {
+          "cpuMs": 6.22,
+          "timeMs": 12.130207993322983,
+          "peakRssMb": 7.640625
+        },
+        {
+          "cpuMs": 3.6009999999999995,
+          "timeMs": 5.336624977644533,
+          "peakRssMb": 7.609375
+        },
+        {
+          "cpuMs": 4.194,
+          "timeMs": 8.7650420027785,
+          "peakRssMb": 7.609375
+        }
+      ],
+      "cpuMs": 0.9709999999999996,
+      "timeMs": 3.4162910014856607,
+      "peakRssMb": 7.640625,
+      "memoryMb": 1.734375
+    }
+  },
+  "methodologySha256": "b70f900e3ccce7a01c3c3cf2f6df074347f223c4b1fcc697c4bc024dae660ef0"
+}

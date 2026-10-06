@@ -1,0 +1,287 @@
+/* A dense catalog layout: persistent tree on the left, compact type, tables
+   and small label cards on the right. */
+:root {
+  --bg: #fff;
+  --band: #f1f1f1;
+  --rule: #cfcfcf;
+  --ink: #000;
+  --soft: #595959;
+  --mark: #ffd200;
+  --focus: #0b57d0;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #161616; --band: #222; --rule: #3d3d3d; --ink: #f2f2f2; --soft: #a8a8a8; --focus: #8ab4f8; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 0.875rem/1.45 Archivo, 'Helvetica Neue', Arial, sans-serif; }
+a { color: inherit; text-underline-offset: 2px; }
+a:hover { background: var(--mark); color: #000; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+code { font: inherit; font-weight: 600; }
+.soft { color: var(--soft); }
+.na { color: var(--soft); }
+
+/* Top bar: name, a wide search box, index links. */
+.top {
+  position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;
+  padding: 8px 16px; background: var(--band); border-bottom: 1px solid var(--rule);
+}
+.top a { text-decoration: none; }
+.top .name { font-weight: 800; font-stretch: 85%; font-size: 1.0625rem; }
+.top nav { display: flex; gap: 16px; font-weight: 600; }
+.search { position: relative; flex: 1 1 18rem; max-width: 40rem; }
+.search label { position: absolute; clip-path: inset(50%); }
+.search input { font: inherit; width: 100%; padding: 6px 10px; border: 1px solid var(--soft); border-radius: 2px; background: #fff; color: #000; }
+#q-results {
+  position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 2px); margin: 0; padding: 4px; list-style: none;
+  background: #fff; color: #000; border: 1px solid #000;
+}
+#q-results li { padding: 4px 8px; }
+#q-results a { display: flex; justify-content: space-between; gap: 12px; margin: -4px -8px; padding: 4px 8px; text-decoration: none; font-weight: 600; }
+#q-results a:hover, #q-results a:focus { background: var(--mark); }
+#q-results small { font-weight: 400; color: #595959; }
+
+/* The catalog menu is always shown on wide screens. On narrow ones it is
+   opened and closed by a checkbox, so it works without JavaScript. */
+.menu-toggle { position: absolute; opacity: 0; pointer-events: none; }
+.menu-button { display: none; }
+.frame { display: grid; grid-template-columns: 216px minmax(0, 1fr); align-items: start; }
+
+/* The catalog tree. */
+.side { position: sticky; top: 45px; max-height: calc(100vh - 45px); overflow-y: auto; padding: 12px 0 32px; border-right: 1px solid var(--rule); font-size: 0.8125rem; }
+.side h2 { font-size: 0.8125rem; font-weight: 800; margin: 14px 0 2px; padding: 0; border: 0; }
+.side h2:first-child { margin-top: 0; }
+.side ul { list-style: none; margin: 0; padding: 0; }
+.side a { display: block; padding: 2px 12px 2px 16px; text-decoration: none; }
+.side ul ul a { padding-left: 28px; }
+.side a[aria-current] { background: var(--mark); color: #000; font-weight: 700; }
+.side .count { color: var(--soft); font-weight: 400; }
+.side a:hover .count, .side a[aria-current] .count { color: #000; }
+.side h3 { font-size: 0.75rem; font-weight: 700; color: var(--soft); margin: 8px 0 2px; padding-left: 28px; }
+.side details { margin-top: 14px; }
+.side summary { font-weight: 800; padding: 2px 12px 2px 16px; cursor: pointer; }
+.side .planned a { color: var(--soft); }
+.side .planned a:hover { color: #000; }
+
+.content { padding: 12px 20px 48px; min-width: 0; }
+.crumbs ol { display: flex; flex-wrap: wrap; gap: 0 6px; list-style: none; margin: 0 0 8px; padding: 0; font-size: 0.8125rem; color: var(--soft); }
+.crumbs li + li::before { content: '›'; margin-right: 6px; }
+
+h1 { font-size: 1.5rem; font-weight: 800; font-stretch: 85%; line-height: 1.15; margin: 0 0 4px; }
+h2 { font-size: 1rem; font-weight: 800; margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--ink); }
+h3 { font-size: 0.875rem; font-weight: 700; margin: 16px 0 4px; }
+p, ul { max-width: 78ch; margin: 0 0 10px; }
+ul { padding-left: 18px; }
+.intro { color: var(--soft); max-width: 86ch; }
+.note { background: var(--band); border-left: 3px solid var(--mark); padding: 6px 10px; max-width: none; }
+
+/* Runtime and ranking switches: radio inputs, so they work without JavaScript. */
+.switches { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 14px 0 12px; }
+.switch { display: flex; flex-wrap: wrap; align-items: center; margin: 0; padding: 0; border: 0; min-width: 0; }
+.switch legend { float: left; padding: 0; margin-right: 8px; font-weight: 700; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch label { padding: 4px 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--soft); margin-left: -1px; background: var(--bg); }
+.switch label:hover { background: var(--band); }
+.ico { width: 1.15em; height: 1.15em; vertical-align: -0.22em; margin-right: 6px; flex: none; }
+/* A bar that would vanish on the selection highlight takes another colour there. */
+.switch input:checked + label .scale path[style] { fill: var(--selected); }
+.switch label small { font-weight: 400; color: var(--soft); margin-left: 5px; }
+.switch input:checked + label { background: var(--mark); color: #000; border-color: #000; position: relative; }
+.switch input:checked + label small { color: #000; }
+.switch input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: 1px; position: relative; }
+.panel { display: none; }
+/* Settings switch: a cell with a tuned variant holds both figures and shows
+   one. Tuned is the default: the load here is narrow, and defaults chosen for
+   general use should not decide a package's class. */
+.as-installed { display: none; }
+.pick:has(#settings-installed:checked) .as-tuned { display: none; }
+.pick:has(#settings-installed:checked) .as-installed { display: inline; }
+
+/* Label cards. */
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 18px 16px; align-items: start; padding: 0; margin: 10px 0 14px; list-style: none; max-width: none; }
+.shelf svg { display: block; width: 100%; height: auto; }
+.shelf .under { margin: 4px 0 0; font-size: 0.8125rem; }
+
+/* Tables. */
+.scroll { overflow-x: auto; margin: 6px 0 12px; }
+table { border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.8125rem; }
+caption { text-align: left; color: var(--soft); padding-bottom: 4px; caption-side: top; }
+.tablefig { margin: 0 0 12px; }
+.tablefig .scroll { margin-bottom: 4px; }
+.tablefig figcaption { color: var(--soft); font-size: 0.8125rem; max-width: 110ch; }
+.tablefig + .key { margin-top: -8px; }
+th, td { text-align: right; padding: 4px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child, .l { text-align: left; }
+thead th { background: var(--band); font-weight: 700; vertical-align: bottom; border-bottom: 1px solid var(--soft); }
+tbody tr:hover { background: var(--band); }
+tbody tr.here td:first-child { box-shadow: inset 3px 0 0 var(--mark); font-weight: 700; }
+.matrix th.group, .matrix td.group { border-left: 1px solid var(--soft); }
+.matrix thead tr:first-child th { text-align: left; }
+.matrix td { text-align: right; }
+.matrix td:first-child, .matrix td.l { text-align: left; }
+td .ver, h1 .ver { color: var(--soft); margin-left: 6px; font-weight: 400; }
+.versions { display: flex; flex-wrap: wrap; align-items: center; margin: 10px 0 4px; }
+.versions b { margin-right: 8px; }
+.versions a { padding: 4px 11px; font-weight: 600; text-decoration: none; border: 1px solid var(--soft); margin-left: -1px; }
+.versions a[aria-current] { background: var(--mark); color: #000; border-color: #000; position: relative; }
+.versions small { font-weight: 400; margin-left: 5px; }
+td.wrap { white-space: normal; min-width: 20rem; max-width: 34rem; }
+td.categories { white-space: normal; max-width: 14rem; }
+.cls { display: inline-block; width: 1.45em; line-height: 1.45em; text-align: center; font-weight: 800; margin-left: 6px; }
+.matrix td { padding-left: 8px; padding-right: 8px; }
+th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
+th button:hover { text-decoration: underline; }
+/* Sort indicators are drawn shapes, tinted with the text colour. */
+th button::after {
+  content: ''; display: inline-block; width: 0.55em; height: 0.85em; margin-left: 5px; vertical-align: -0.08em; background: currentColor; opacity: 0.35;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath d='M4 0l4 5H0zM4 12L0 7h8z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+th[aria-sort] button::after { opacity: 1; }
+th[aria-sort='ascending'] button::after { mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath d='M4 2l4 6H0z'/%3E%3C/svg%3E"); }
+th[aria-sort='descending'] button::after { mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 12'%3E%3Cpath d='M4 10L0 4h8z'/%3E%3C/svg%3E"); }
+
+table.legend th[scope^='row'] { text-align: left; background: none; vertical-align: top; font-weight: 700; }
+table.legend td { vertical-align: top; }
+table.legend td[style] { text-align: center; font-weight: 700; vertical-align: middle; min-width: 4.6rem; border-bottom-color: var(--bg); }
+table.legend thead th { text-align: center; }
+table.legend thead th:first-child { text-align: left; }
+
+/* Catalog tiles. */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; list-style: none; padding: 0; max-width: none; }
+.tiles a { display: flex; align-items: flex-start; gap: 10px; height: 100%; padding: 8px 10px; border: 1px solid var(--rule); text-decoration: none; }
+.tiles a:hover { border-color: #000; }
+.tiles b { display: block; line-height: 1.2; margin-top: 3px; }
+.tiles small { display: block; margin-top: 2px; }
+.tiles small { color: var(--soft); }
+.tiles a:hover small { color: #000; }
+.tiles.plain a { padding: 5px 10px; }
+/* Category drawings: line and four tones, flipped for dark mode. The classes
+   are the ones used inside site/assets/categories/*.svg. */
+:root { --cat-line: #1c1c1c; --cat-mark: #1c1c1c; --cat-a: #fbfbfb; --cat-b: #dedede; --cat-c: #b5b5b5; --cat-d: #7d7d7d; }
+@media (prefers-color-scheme: dark) {
+  /* Grey lines: softer than white on the dark page, and still clear of every fill. */
+  :root { --cat-line: #c4c4c4; --cat-mark: #c4c4c4; --cat-a: #848484; --cat-b: #4a4a4a; --cat-c: #242424; --cat-d: #000; }
+}
+/* A hovered tile turns yellow, so its drawing takes the light palette there. */
+.tiles a:hover .cat { --cat-line: #1c1c1c; --cat-mark: #1c1c1c; --cat-a: #fbfbfb; --cat-b: #dedede; --cat-c: #b5b5b5; --cat-d: #7d7d7d; }
+.cat .o { stroke: var(--cat-line); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.cat .t { stroke: var(--cat-mark); stroke-width: 2; stroke-linecap: round; fill: none; }
+.cat .n { fill: none; stroke: var(--cat-mark); }
+.cat .a { fill: var(--cat-a); }
+.cat .b { fill: var(--cat-b); }
+.cat .c { fill: var(--cat-c); }
+.cat .d { fill: var(--cat-d); }
+.cat .x { fill: var(--cat-mark); font-weight: 800; }
+.cat .so { stroke: var(--cat-line); }
+.cat .sb { stroke: var(--cat-b); }
+.cat .sa { stroke: var(--cat-a); }
+
+/* The drawings have empty space around them inside their square, so they are
+   pulled outward on the top, left and bottom to sit tighter in their box. */
+.cat { flex: none; }
+.tiles .cat { margin: -4px 0 -4px -4px; }
+h1 .cat { vertical-align: middle; margin: -8px 10px -8px -4px; }
+td .cat { vertical-align: middle; margin: -4px 8px -4px -2px; }
+
+footer { margin-top: 36px; padding-top: 8px; border-top: 1px solid var(--rule); color: var(--soft); font-size: 0.75rem; }
+footer p { max-width: 110ch; }
+
+@media (max-width: 760px) {
+  .frame { display: flex; flex-direction: column; }
+  .content { order: 1; padding: 10px 12px 24px; width: 100%; }
+  /* The opened menu is fixed under the top bar, so it is reachable from anywhere on the page. */
+  :root { --top-height: 88px; }
+  .side { display: none; position: fixed; z-index: 9; top: var(--top-height); left: 0; right: 0; bottom: 0; max-height: none; width: 100%; overflow-y: auto; border-right: 0; background: var(--band); padding: 10px 0 24px; }
+  .menu-toggle:checked ~ .frame .side { display: block; }
+  .menu-button { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--soft); border-radius: 2px; font-weight: 700; cursor: pointer; background: var(--bg); }
+  .menu-button svg { width: 14px; height: 14px; }
+  .menu-toggle:checked ~ .top .menu-button { background: var(--mark); color: #000; border-color: #000; }
+  .menu-toggle:focus-visible ~ .top .menu-button { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .top { position: sticky; top: 0; padding: 8px 12px; height: var(--top-height); align-content: center; }
+  .search { flex-basis: 100%; }
+  .top nav { display: none; }
+  .top .name { margin-right: auto; }
+  .shelf { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 10px; }
+  .switch legend { float: none; width: 100%; margin-bottom: 4px; }
+}
+table.legend thead th.l { text-align: left; }
+
+.language-switch { flex-basis: 100%; }
+.switch[hidden], .switch label[hidden] { display: none; }
+
+/* Fixed subcolumns keep checker figures and grades aligned across rows. */
+.type-cost { display: inline-grid; grid-template-columns: 7ch 8ch 5ch 1.45em; gap: 8px; align-items: center; text-align: right; }
+.type-cost-grade { text-align: center; }
+.type-cost-score { font-weight: 700; }
+/* The radical is drawn from a mathematical font; the letters under it keep the page's font. */
+math.unit { font-family: math; font-size: 0.92em; }
+math.unit mi, math.unit mo { font-family: Archivo, 'Helvetica Neue', Arial, sans-serif; }
+.type-cost .cls { margin-left: 0; }
+.type-cost-elapsed { color: var(--soft); font-weight: 400; }
+
+.memory-cost { display: inline-grid; grid-template-columns: 9ch 1.45em 23ch 22ch; gap: 8px; align-items: center; text-align: right; }
+.memory-cost-grade { text-align: center; }
+.memory-cost .cls { margin-left: 0; }
+.memory-cost-detail { color: var(--soft); font-weight: 400; }
+
+/* A benchmark limitation belongs to the package, not the page renderer. */
+/* Same treatment as .note, using the theme colours so it works in both modes. */
+.compatibility { border-left: 3px solid var(--mark); padding: 6px 10px; margin: 10px 0; background: var(--band); }
+.compatibility-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem 1rem; }
+.compatibility-item + .compatibility-item { margin-top: .65rem; }
+.compatibility p { flex: 1 1 28rem; margin: 0; }
+.compatibility details { color: var(--soft); }
+.compatibility details[open] { flex-basis: 100%; }
+.compatibility summary { cursor: pointer; }
+.compatibility pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; max-height: 18rem; overflow: auto; }
+
+/* The key under a table belongs to it, so it sits close and runs the table's width. */
+.key { margin-top: -6px; max-width: none; font-size: 0.8125rem; }
+
+/* Which order a multi-order column is in. The slot sits before the title and
+   always has the same width, so filling it moves nothing and the title stays
+   flush right over its figures. */
+.sort-field { display: inline-block; width: 3.6em; margin-right: 6px; text-align: right; font-size: 0.75rem; font-weight: 500; color: var(--soft); white-space: nowrap; }
+
+/* A long row of labels is one strip that scrolls sideways. */
+.shelf.strip { display: flex; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 10px; }
+.shelf.strip > li { flex: 0 0 236px; scroll-snap-align: start; }
+.ranked-panel { display: none; }
+@media (max-width: 760px) { .shelf.strip > li { flex-basis: 170px; } }
+
+.nowrap { white-space: nowrap; }
+
+/* Credits */
+table.credits th, table.credits td { text-align: left; }
+table.credits td { vertical-align: top; white-space: normal; max-width: 34ch; }
+table.credits td.marks { white-space: nowrap; font-size: 1.25rem; }
+table.credits td.marks .ico { margin-right: 4px; }
+details.licence { margin: 12px 0; }
+details.licence summary { cursor: pointer; }
+details.licence pre { white-space: pre-wrap; font: inherit; font-size: 0.85rem; color: var(--soft); max-width: 72ch; margin: 8px 0 0; }
+
+/* Benchmark source. Code colours follow the theme. */
+:root { --code-comment: #6a737d; --code-keyword: #c2255c; --code-string: #0a6e31; --code-number: #a5510b; --code-name: #1c5fc4; }
+@media (prefers-color-scheme: dark) {
+  :root { --code-comment: #8b949e; --code-keyword: #ff8fab; --code-string: #7ee08f; --code-number: #f2b36b; --code-name: #8ab4f8; }
+}
+p.files { display: flex; flex-wrap: wrap; gap: 4px 6px; max-width: none; }
+p.files a { padding: 1px 8px; border: 1px solid var(--rule); text-decoration: none; }
+figure.source { margin: 16px 0 24px; border: 1px solid var(--rule); }
+figure.source figcaption { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 5px 10px; background: var(--band); border-bottom: 1px solid var(--rule); }
+figure.source figcaption .name { font-weight: 800; text-decoration: none; }
+figure.source figcaption a:last-child { margin-left: auto; }
+figure.source .code { display: flex; overflow-x: auto; font: 0.8125rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+figure.source pre { margin: 0; padding: 10px 12px; font: inherit; tab-size: 4; }
+figure.source pre code { font: inherit; font-weight: 400; }
+figure.source pre.numbers { position: sticky; left: 0; padding-right: 10px; text-align: right; color: var(--soft); background: var(--bg); border-right: 1px solid var(--rule); user-select: none; -webkit-user-select: none; }
+.hljs-comment, .hljs-quote, .hljs-meta { color: var(--code-comment); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-built_in, .hljs-type { color: var(--code-keyword); }
+.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-char.escape_ { color: var(--code-string); }
+.hljs-number, .hljs-attr, .hljs-attribute, .hljs-variable.constant_ { color: var(--code-number); }
+.hljs-title, .hljs-section, .hljs-name, .hljs-property { color: var(--code-name); }
+.hljs-strong { font-weight: 700; }
+.hljs-emphasis { font-style: italic; }
