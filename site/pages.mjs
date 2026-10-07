@@ -497,6 +497,8 @@ function anchorNote(data, runtime, rankingId, entries) {
   return `<p class="note">The best result in any language sets class A: ${holder}, at ${formatNumber(anchor.value)} ${esc(metric.headline)}. ${gap}</p>`
 }
 
+// It opens on its widest view: every language and every runtime where there
+// are several, which is the first of the views.
 function explorer(data, model) {
   const rankings = Object.keys(RANKINGS)
   const panels = []
@@ -519,7 +521,7 @@ ${content}
   return `<div class="explorer">
 <style>${rules.join(',')}{display:block}</style>
 <div class="switches">
-${switcher('runtime', 'Runtime', runtimes.map((r) => ({ id: r.id, title: r.title, detail: r.version })), data.reference)}
+${switcher('runtime', 'Runtime', runtimes.map((r) => ({ id: r.id, title: r.title, detail: r.version })), runtimes[0].id)}
 ${switcher('ranking', 'Rank by', rankings.map((id) => ({ id, title: RANKINGS[id].title })), 'cpu')}
 ${orderSwitch('order')}
 </div>
