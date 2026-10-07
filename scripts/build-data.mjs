@@ -314,7 +314,9 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   }
   // Runtime comparisons include the runtime itself; package comparisons
   // describe incremental cost over that runtime's empty process.
-  const totalMemoryEntries = Object.values(runtimes).flatMap(runtime => runtime.entries)
+  // Reference entries do not set the best here either, unless there is nothing else.
+  const everyMemoryEntry = Object.values(runtimes).flatMap(runtime => runtime.entries)
+  const totalMemoryEntries = everyMemoryEntry.some(entry => !entry.reference) ? everyMemoryEntry.filter(entry => !entry.reference) : everyMemoryEntry
   const totalMemoryBest = Math.min(...totalMemoryEntries.map(entry => entry.metrics.settledRssMb))
   for (const runtime of Object.values(runtimes)) {
     for (const entry of [...runtime.entries, ...runtime.history]) {

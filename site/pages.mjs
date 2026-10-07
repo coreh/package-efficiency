@@ -1379,7 +1379,8 @@ export function runtimeScores(tasks, model) {
       for (const rankingId of ['cpu', 'memory', 'types']) {
         const perTask = []
         for (const data of tasks) {
-          const entries = data.runtimes.find((r) => r.id === rt.id)?.entries ?? []
+          // Reference entries are not what a runtime is compared by.
+          const entries = (data.runtimes.find((r) => r.id === rt.id)?.entries ?? []).filter((e) => !e.reference)
           const ratios = rankingId === 'types' ? typeCheckRatios(data, entries) : entries.map((e) => rankingId === 'memory' ? e.runtimeGrades?.memory : e.grades[rankingId]).filter(Boolean).map((grade) => grade.ratio)
           if (ratios.length === 0) continue
           const scale = rankingId === 'types' ? TYPE_RUNTIME_SCALE : data.metrics[rankingId].scale
