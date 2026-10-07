@@ -1,0 +1,30 @@
+{
+  "category": "client-side-routing",
+  "task": "nested-branches",
+  "title": "Nested route branches",
+  "summary": "Match a URL path against a tree of 102 nested routes and return the matched branch of routes with its parameters.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 60
+}

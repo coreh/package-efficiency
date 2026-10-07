@@ -1,0 +1,30 @@
+{
+  "category": "dependency-injection",
+  "task": "singleton-graph",
+  "title": "Singleton service graph",
+  "summary": "Create a container, register a layered graph of interdependent singleton services and resolve the root service.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 37
+}
