@@ -26,8 +26,9 @@ test('rendered package lists and version pages preserve both active lines and th
  const {packagePage,packagesPage}=await import('../pages.mjs')
  const data=JSON.parse(readFileSync(new URL('../../dist/data/http-server/json-api.json',import.meta.url)))
  const runtime=data.runtimes.find(r=>r.id==='node')
- const base=runtime.entries.find(e=>e.name==='express')
- const main={...base,version:'3.0.0',id:'npm/express',defaultVersion:'3.0.0',activeRelease:true}
+ // Any measured npm entry will do as the stand-in for the package under test.
+ const base=runtime.entries.find(e=>e.name==='express')??runtime.entries.find(e=>e.ecosystem==='npm')
+ const main={...base,name:'express',package:'express',title:'express',version:'3.0.0',id:'npm/express',defaultVersion:'3.0.0',activeRelease:true}
  const old={...main,version:'2.5.0',id:'npm/express@2.5.0'}
  const beta={...main,version:'4.0.0-beta.1',activeRelease:false}
  const pkg={ecosystem:'npm',name:'express',title:'express',version:'3.0.0',appearances:[main,old].map(entry=>({data,runtime,entry})),history:[{data,runtime,entry:beta}]}

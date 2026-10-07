@@ -10,14 +10,16 @@ for(const language of ['python','ruby','go'])test(`${language}: measured source 
  assert.equal(checker.negativeControlRejected,true)
  assert.equal(checker.baseline.runs.length,11)
  const entries=Object.entries(data.adapters).filter(([,a])=>a.language===language)
- // Benchmarks still being written have no results yet, and are checked once they are first measured.
+ // The adapters of tasks that have results.
  const measured=globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${({python:'py',ruby:'rb',go:'go'})[language]}`)).filter(file=>{
   const [category,task]=file.slice(fromRoot('benchmarks').length+1).split('/')
   return globSync(fromRoot('results',category,task,'**/*.json')).length>0
  })
- // An adapter its checker rejects is recorded as rejected and has no figures.
- const rejected=Object.values(data.rejected??{}).filter(a=>a.language===language).length
- assert.equal(entries.length+rejected,measured.length)
+ // Every adapter of a measured task has a check on record. One its checker
+ // rejects is recorded as rejected and has no figures. Adapters of tasks not
+ // measured yet may be checked ahead of time, so there can be more checks.
+ const missing=measured.map(file=>file.slice(fromRoot('benchmarks').length+1).split('/').slice(0,4).join('/')).filter(id=>!data.adapters[id]&&!data.rejected?.[id])
+ assert.deepEqual(missing,[])
  for(const [id,a] of entries){
   const ext={python:'py',ruby:'rb',go:'go'}[language]
   const bytes=readFileSync(fromRoot('benchmarks',id,`adapter.${ext}`))
