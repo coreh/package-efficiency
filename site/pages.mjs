@@ -1318,6 +1318,9 @@ function featured(model) {
 
 export function homePage(model) {
   const lead = model.tasks[0]
+  // Packages from the registries' lists and the hand-picked ones; runtime built-ins are not packages.
+  const measuredCount = model.packages.filter((p) => p.ecosystem !== 'builtin').length
+  const listedCount = Math.max(new Set(Object.values(model.catalog.byEcosystem).flat().map((item) => `${item.ecosystem}/${item.name}`)).size, measuredCount)
   return layout({
     title: 'Package Efficiency Labels',
     description: 'Energy-label style efficiency classes for packages: CPU, memory and type-check cost, measured per task across runtimes.',
@@ -1326,7 +1329,9 @@ export function homePage(model) {
     model,
     body: `<main>
 <h1>Package Efficiency Labels</h1>
-<p class="intro">Packages that do the same job run the same task. Each one gets a class from A to G for CPU, memory and type-check cost, like the label on a fridge.</p>
+<p class="intro">It has never been cheaper to switch languages, runtimes, frameworks and libraries. Compute and memory keep getting more expensive.</p>
+<p>This site helps developers and coding agents choose packages by how efficient they are, across ecosystems. Packages that do the same job run the same task, and each one gets a class from A to G for CPU, memory and type-check cost. It is semi-scientific (see the <a href="#limitations">limitations</a>). The labels take their form from the energy labels of the European Union and other regions. The site is not affiliated with any package, registry or runtime.</p>
+<p>Choose a <a href="/categories/">category</a> or search for a package to start. The site lists ${listedCount.toLocaleString('en-US')} packages. ${measuredCount.toLocaleString('en-US')} of them are measured and compared, in ${model.tasks.length} tasks.</p>
 ${featured(model)}
 <h2>Measured categories</h2>
 ${groupedTiles(model, 'h3', { measuredOnly: true })}
@@ -1340,6 +1345,16 @@ ${legend(lead)}
 <h2>All categories</h2>
 <p>${model.catalog.categories.length} categories in ${model.catalog.groups.length} groups, made from the most used packages on npm, crates.io, PyPI, RubyGems, Go modules and JSR. Categories with a dashed border are not measured yet; <a href="/categories/#tasks">see the candidate task for each</a>.</p>
 ${groupedTiles(model, 'h3')}
+<h2 id="limitations">Limitations</h2>
+<ul>
+<li>All results come from one developer laptop, and other work was running on it. A reference machine will replace it.</li>
+<li>AI coding agents wrote the benchmark adapters. Most are not yet reviewed by a human; those that are carry a mark.</li>
+<li>A category has one or a few tasks. A task shows how a package does that job on those inputs, not how it does everything.</li>
+<li>Packages run with their default settings unless an entry says otherwise. A package tuned for your case can do better.</li>
+<li>A class compares a result with the best result measured for the task. It changes when a better entry arrives.</li>
+<li>Every package is installed at a release at least seven days old, so the newest release of a package can be missing.</li>
+<li>CPU time and memory are measured, not energy. The labels are not an official rating.</li>
+</ul>
 </main>`,
   })
 }

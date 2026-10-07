@@ -14,6 +14,19 @@ import { existsSync } from 'node:fs'
 raisePriority()
 // --verify runs each adapter through its checker once and says which are
 // rejected, without timing or recording anything.
+// An argument this script does not know must not start a full measurement,
+// which rewrites data/native-checks.json: --help, a typo, or anything else
+// prints the usage and stops.
+const FLAGS=['--verify','--missing']
+const strange=process.argv.slice(2).filter(a=>!FLAGS.includes(a)&&!a.startsWith('--only='))
+if(strange.length){
+  console.error(`${strange.includes('--help')||strange.includes('-h')?'':`unknown argument: ${strange.join(' ')}\n`}usage: node scripts/measure-native-checks.mjs [--verify] [--missing] [--only=<id>[,<id>]]
+  --verify   run each adapter through its checker once and say which are rejected; records nothing
+  --missing  measure only the adapters that have no check on record
+  --only     limit to these adapters
+  with no argument every check is measured again and data/native-checks.json is rewritten`)
+  process.exit(strange.includes('--help')||strange.includes('-h')?0:2)
+}
 const verify=process.argv.includes('--verify');let rejected=0
 // --only=<text>[,<text>] checks just the adapters whose id
 // (category/task/registry/name) contains one of the texts, against the checker baselines already on record: for
