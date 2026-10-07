@@ -16,6 +16,8 @@ const goenv={...process.env,GOCACHE:fromRoot('.cache/go-build'),GOPATH:fromRoot(
 const go=config.toolchains.go.bin
 execFileSync(go,['build','-o',`${work}/go-types`,fromRoot('harness/checkers/go-types.go')],{env:goenv,stdio:'inherit'})
 // Export data for every standard-library package an adapter imports.
+// The adapter of a shared application (benchmarks/<category>/_shared/) is not
+// a task's adapter: it starts a whole server and is not checked here.
 const imported=[...new Set(globSync(fromRoot('benchmarks/*/*/builtin/*/adapter.go')).flatMap(file=>goImports(readFileSync(file,'utf8'))).filter(name=>!name.includes('.')))]
 const exportsText=execFileSync(go,['list','-export','-deps','-f','{{.ImportPath}} {{.Export}}','encoding/json','html','reflect','net/http',...imported],{env:goenv,encoding:'utf8'})
 const exports=Object.fromEntries(exportsText.trim().split('\n').map(l=>l.split(' ')).filter(([,p])=>p))
@@ -40,7 +42,7 @@ const methodologySha256=createHash('sha256').update(await readFile(fromRoot('scr
 const previous=process.argv.includes('--missing') ? await readJson(fromRoot('data/native-checks.json'),null) : null
 const result=previous ?? {machine:machine(),hostPython:config.runtimes.cpython.version,dependencyPins,measuredAt:new Date().toISOString(),memoryKind:'peak RSS of checker process',scoreBasis:'added process CPU ms * added peak RSS MB',checkers:{},adapters:{}}
 for(const [language,t] of Object.entries(tools)){
- const sources=globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`))
+ const sources=globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`)).filter(file=>!file.includes('/_shared/'))
  if(previous && previous.methodologySha256===methodologySha256 && previous.dependencyPins===dependencyPins && previous.checkers[language]?.version===t.version && sources.every(file=> {
    const id=path.relative(fromRoot('benchmarks'),path.dirname(file))
    return (previous.adapters[id]??previous.rejected?.[id])?.sourceSha256===createHash('sha256').update(readFileSync(file)).digest('hex')
@@ -50,7 +52,7 @@ for(const [language,t] of Object.entries(tools)){
  await writeFile(base,t.baseline);await writeFile(bad,t.bad)
  if((await once([...t.command,bad])).status===0)throw new Error(`${t.tool} accepted deliberate type error`)
  if(!verify)result.checkers[language]={tool:t.tool,version:t.version,notes:t.notes,negativeControlRejected:true,baseline:await measure([...t.command,base])}
- for(const file of globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`))){
+ for(const file of globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`)).filter(file=>!file.includes('/_shared/'))){
   const id=path.relative(fromRoot('benchmarks'),path.dirname(file));const source=await readFile(file,'utf8');let checked=source
   const http=id.startsWith('http-server/'),equality=id.startsWith('deep-equality/'),html=id.startsWith('html-escaping/')
   // The three original tasks keep their precise wrappers; every other task's
