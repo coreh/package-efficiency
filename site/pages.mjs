@@ -810,8 +810,9 @@ function packageTable(packages, model, { showEcosystem, everyPackage = false }) 
   const actualRuntimes = model.runtimes.filter((rt) => packages.some((p) => p.appearances.some((a) => a.runtime.id === rt.id)))
   const runtimes = runtimeViews(actualRuntimes)
   if (runtimes.length === 0) return ''
-  const reference = model.tasks[0].reference
-  const checked = (runtimes.find((rt) => rt.id === reference) ?? runtimes[0]).id
+  // The table opens on its widest view: every language and every runtime
+  // where there are several, which is the first of the views.
+  const checked = runtimes[0].id
 
   const panels = runtimes.map((rt) => {
     const rows = packages.filter((p) => p.appearances.some((a) => rt.best ? (rt.language === 'all' || languageOf(a.runtime.id) === rt.language) : a.runtime.id === rt.id))
