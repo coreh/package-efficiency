@@ -19,8 +19,10 @@ export default {
     if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405 })
     let path = url.pathname
     try { path = decodeURI(path) } catch {}
-    // A short link to a result: /r/ and its code.
-    const short = /^\/r\/([0-9a-z]{6,40})\/?$/.exec(path)
+    // A short link to a result: its code at the root, as labels print it, or
+    // after /r/, as they did at first. Built pages are answered before this
+    // Worker runs, so a code cannot hide one.
+    const short = /^\/(?:r\/)?([0-9a-z]{6,40})\/?$/.exec(path)
     if (short) {
       const links = await asset(env, url, '/lazy/short.json')
       const to = links.ok ? (await links.json())[short[1]] : null

@@ -1,13 +1,17 @@
 {
-  // The short address for label links: a Worker that only redirects to the
-  // site (site/short-worker.mjs). Its address must match "shortUrl" in
-  // site.json, and SITE_URL must match "url" there. Deployed by
+  // The two addresses the site had first, the short one for label links and
+  // the site itself: a Worker that only redirects to the site
+  // (site/short-worker.mjs), kept so those links go on working. SITE_URL
+  // must match "url" in site.json. Deployed by
   // `npm run deploy` after the site itself.
   "name": "package-efficiency-short",
   "main": "site/short-worker.mjs",
   "compatibility_date": "2026-09-01",
-  "routes": [{ "pattern": "pe.prelude.ltda", "custom_domain": true, "zone_name": "prelude.ltda" }],
-  "vars": { "SITE_URL": "https://package-efficiency.prelude.ltda" },
+  "routes": [
+    { "pattern": "pe.prelude.ltda", "custom_domain": true, "zone_name": "prelude.ltda" },
+    { "pattern": "package-efficiency.prelude.ltda", "custom_domain": true, "zone_name": "prelude.ltda" }
+  ],
+  "vars": { "SITE_URL": "https://package-efficiency.org" },
   "workers_dev": false,
   "preview_urls": false
 }

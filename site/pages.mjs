@@ -115,6 +115,19 @@ const ICON_LINKS = () => `<link rel="icon" href="${tabIcon('#8a8a8a')}">
 
 // The catalog tree shown beside every page. It stays short as the catalog
 // grows: only the category in `context` is opened to its tasks and packages.
+// The small count after a category in the menu: its packages, and for a
+// measured category how many of them are measured. Worked out once.
+function categoryCount(model, taxonomyId, measured) {
+  model.categoryCounts ??= new Map()
+  if (!model.categoryCounts.has(taxonomyId)) {
+    const listed = model.catalog.byCategory.get(taxonomyId)?.length ?? 0
+    const done = measured ? model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id && !a.entry.reference)).length : 0
+    const total = Math.max(listed, done)
+    model.categoryCounts.set(taxonomyId, total ? ` <span class="count">${done ? `${done} of ${total}` : total}</span>` : '')
+  }
+  return model.categoryCounts.get(taxonomyId)
+}
+
 function sidebar(model, path, context) {
   const link = (href, text, extra = '') => `<a href="${href}"${href === path ? ' aria-current="page"' : ''}>${esc(text)}${extra}</a>`
   // Categories are listed by group. Only the group of the page being shown is
@@ -127,14 +140,15 @@ function sidebar(model, path, context) {
   const hereGroup = context.group ?? model.catalog.categories.find((c) => c.id === here)?.group
   const categoryItem = (c) => {
     const measured = measuredOf(c.id)
-    if (!measured) return `<li>${link(`/${c.id}/`, c.title)}</li>`
-    if (measured.id !== context.category) return `<li>${link(urls.category(measured.id), measured.title)}</li>`
+    const count = categoryCount(model, c.id, measured)
+    if (!measured) return `<li>${link(`/${c.id}/`, c.title, count)}</li>`
+    if (measured.id !== context.category) return `<li>${link(urls.category(measured.id), measured.title, count)}</li>`
     const inCategory = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id))
     // Entries kept for reference have a list of their own.
     const isReference = (p) => p.appearances.filter((a) => a.data.task.category === measured.id).every((a) => a.entry.reference)
     const packages = inCategory.filter((p) => !isReference(p))
     const references = inCategory.filter(isReference)
-    return `<li>${link(urls.category(measured.id), measured.title)}<ul>${measured.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
+    return `<li>${link(urls.category(measured.id), measured.title, count)}<ul>${measured.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
 <h3>Packages in ${esc(measured.title)}</h3><ul>${packages.slice(0, SIDE_LIMIT).map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}${packages.length > SIDE_LIMIT ? `<li><a class="more" href="${urls.category(measured.id)}">All ${packages.length} packages</a></li>` : ''}</ul>${references.length ? `
 <h3>For reference</h3><ul>${references.map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}</ul>` : ''}</li>`
   }
