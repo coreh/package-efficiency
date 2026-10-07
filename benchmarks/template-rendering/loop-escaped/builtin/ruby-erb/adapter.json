@@ -12,5 +12,8 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Standard-library ERB with ERB::Util.html_escape; the template is compiled in every call. ERB has no automatic escaping, so each text value is escaped explicitly, as its documentation shows."
+  "notes": "Standard-library ERB with ERB::Util.html_escape; the template is compiled in every call. ERB has no automatic escaping, so each text value is escaped explicitly, as its documentation shows.",
+  "runtimeNotes": {
+    "ruby-yjit": "No result: the run does not finish in the time allowed. Compiling a new template in every call makes YJIT compile new code each time, and each call gets slower as the run goes on (about 380 µs at the start and over 660 µs after 6,000 calls, against a steady 110 µs without YJIT)."
+  }
 }
