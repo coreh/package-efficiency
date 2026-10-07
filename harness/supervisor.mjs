@@ -374,3 +374,7 @@ export async function measureOperation({ command, args, cwd, env, load, verifyRe
     return { status: error.message.includes('verify-failed') ? 'verify-failed' : 'failed', error: error.message }
   }
 }
+
+// For the drivers of other task kinds that live in their own files
+// (harness/client.mjs): the same launch and the same readings.
+export { launch, rest, rssBytes, footprintBytes }

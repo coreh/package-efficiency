@@ -1,0 +1,35 @@
+{
+  "category": "async-concurrency",
+  "task": "limited-jobs",
+  "title": "Run trivial async jobs through a concurrency limit",
+  "summary": "Run 100 to 1,600 trivial asynchronous jobs, each of which yields once, with at most 1, 4, 10 or 32 in flight, and wait for every result in input order.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 32
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 12,
+  "notes": "An asynchronous task on one thread: each operation is one awaited call that ends when every job has finished. A job only counts itself in and out and yields once, so the figures are the cost of the limiter and of the runtime's scheduling, not of any work in the jobs. No timer or sleep with a real delay is involved. Go runs with GOMAXPROCS=1, Rust on a single-thread executor, Python on one asyncio loop."
+}

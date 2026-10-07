@@ -6,12 +6,29 @@ publish = false
 
 [features]
 operations = ["dep:serde_json", "dep:libc"]
+# Client tasks (see "Client tasks" in benchmarks/README.md): `client` is the
+# adapter's side, `client-tokio` adds the driver for asynchronous clients, and
+# `peers` builds the scripted peers the supervisor starts.
+client = ["dep:serde_json", "dep:libc"]
+client-tokio = ["client", "dep:tokio"]
+peers = ["dep:serde_json", "dep:libc"]
 
 [dependencies]
 serde_json = { version = "1", optional = true }
 libc = { version = "0.2", optional = true }
+tokio = { version = "1", features = ["rt"], optional = true }
 
 [[bin]]
 name = "warm-baseline"
 path = "src/bin/warm-baseline.rs"
 required-features = ["operations"]
+
+[[bin]]
+name = "http-peer"
+path = "src/bin/http-peer.rs"
+required-features = ["peers"]
+
+[[bin]]
+name = "http-peer-ceiling"
+path = "src/bin/http-peer-ceiling.rs"
+required-features = ["peers"]

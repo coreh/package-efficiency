@@ -83,6 +83,219 @@ New adapter versions use the existing seven-day release-age filter, disabled
 install scripts, and shared `versions.json`. Raw results include runtime and
 machine versions. Adapter metadata records authorship and unreviewed status.
 
+## Adapters for PyPI, RubyGems and Go modules
+
+A synchronous task (`"kind": "sync-operation"`) takes third-party packages in
+Python, Ruby and Go beside the standard-library adapters under `builtin/`.
+You write files in the task's folder only. The scripts choose the version,
+install it and record what they installed.
+
+### What you write
+
+| Registry | Folder | Files you write |
+| --- | --- | --- |
+| PyPI | `<task>/pypi/<name>/` | `adapter.py`, `adapter.json` |
+| RubyGems | `<task>/rubygems/<name>/` | `adapter.rb`, `adapter.json` |
+| Go modules | `<task>/gomod/<name>/` | `adapter.go`, `adapter.json` |
+
+`<name>` is the package's name in its registry:
+
+- PyPI: the project name in lower case with `-` for `_` and `.`
+  (`orjson`, `typing-extensions`, `pyyaml`).
+- RubyGems: the gem's name exactly (`oj`, `multi_json`).
+- Go: made from the module path. Drop a major-version suffix (`/v5`, `.v3`),
+  drop `github.com/`, write `-` for `/`, lower case:
+  `github.com/goccy/go-json` is `goccy-go-json`, `github.com/go-chi/chi/v5`
+  is `go-chi-chi`, `golang.org/x/text` is `golang.org-x-text`,
+  `gopkg.in/yaml.v3` is `gopkg.in-yaml`. The full module path goes in
+  `adapter.json` as `"module"`; the site links the module by it.
+
+A wrong name is refused with the right one in the message.
+
+The adapter source follows the same contract as a `builtin/` adapter of its
+language (see "Synchronous operations" above): `operation(input)`, and where
+needed `prepare(input)` and `describe(result)`. Read the task's `task.md`,
+`scenario.mjs` and its `builtin/` adapter in your language first, and return
+the same shape.
+
+PyPI, `pypi/orjson/`:
+
+```python
+import orjson
+def operation(value):
+    return orjson.loads(value)
+```
+
+```json
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "<your model>", "date": "<today>" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "notes": "One or two sentences: which function is called, with which options, and what is returned."
+}
+```
+
+RubyGems, `rubygems/oj/`:
+
+```ruby
+require 'oj'
+def operation(value)
+  Oj.load(value, mode: :strict)
+end
+```
+
+```json
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "<your model>", "date": "<today>" },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": ["ruby", "ruby-yjit"],
+  "notes": "…"
+}
+```
+
+Go, `gomod/goccy-go-json/`:
+
+```go
+package main
+import json "github.com/goccy/go-json"
+func operation(value any) any { var out any; if err:=json.Unmarshal([]byte(value.(string)),&out);err!=nil {panic(err)}; return out }
+```
+
+```json
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "<your model>", "date": "<today>" },
+  "review": "unreviewed",
+  "title": "goccy/go-json",
+  "language": "go",
+  "runtimes": ["go"],
+  "module": "github.com/goccy/go-json",
+  "notes": "…"
+}
+```
+
+Optional fields of `adapter.json`:
+
+- `"title"`: the name shown, when the folder name reads badly (Go).
+- `"package"`: the package's name, when the folder is a second adapter for the
+  same package (`pypi/orjson-option-x/` with `"package": "orjson"`).
+- `"dependencies"`: other packages of the same registry that your adapter
+  itself imports (PyPI and RubyGems). Not the package's own dependencies:
+  those are found for you. A Go adapter just imports what it needs.
+
+Always list every runtime of the language (`cpython` and `pypy`; `ruby` and
+`ruby-yjit`). Where a package cannot run on one, the scripts say so and
+record it; you do not remove the runtime.
+
+Do not write or edit `lock.json`, `go.mod`, `go.sum` or `versions.json`, and
+do not run `pip`, `gem` or `go get` yourself. Do not edit anything outside
+your task's folder.
+
+### What the scripts do
+
+The first time an adapter is run (`--check` counts):
+
+1. The version is chosen: the one in `versions.json` if another task already
+   uses the package, otherwise the newest release published at least seven
+   days ago that runs on the pinned runtime. The same for every dependency.
+2. The exact files are written beside the adapter: `lock.json` (PyPI,
+   RubyGems: each file with its SHA-256 and publication date, per kind of
+   machine) or `go.mod` and `go.sum` (Go). The version is added to
+   `versions.json`. Keep these files: they are part of the adapter, and a
+   rerun installs exactly what they name. Delete them only to resolve again.
+3. The package is installed under `.cache/native-packages/` in a folder named
+   by a hash of its files (Go: built under `.cache/work/<task>/gomod/`), so
+   runs of different tasks at the same time do not disturb each other.
+
+The adapter then runs under the harness's own runner for its language, with
+the same warm baseline as the `builtin/` adapters: the figures mean the same.
+The version, the dependencies and the install size are recorded with each
+result (Python: the files of the package and what it requires; Ruby: the
+gem folders; Go: what the module adds to the binary over the baseline
+binary, as for Rust).
+
+PyPy is given pure-Python wheels only. A package with none (orjson) prints
+`not available: …` for `pypy`; that is recorded as such and is not a failure.
+A package with both kinds of wheel (simplejson) runs its compiled code on
+CPython and its Python code on PyPy.
+
+### Install rules
+
+These are the project's safety rules. Never work around them; if a package
+cannot be installed under them, leave it out and say so.
+
+- Every release installed, the package's and each dependency's, was published
+  at least seven days ago. "Latest" means the latest within that window. The
+  registry is asked before anything is downloaded.
+- PyPI: wheels only. A release with only a source distribution is not
+  installed, because building it runs the package's code. A wheel with
+  compiled code (a C or Rust extension, as orjson has) is allowed: it is a
+  binary the authors built and published for this platform, pinned by its
+  SHA-256, and installing it unpacks files and runs nothing. (The shared web
+  applications allow pure-Python wheels only because CPython and PyPy import
+  from one folder there; here each runtime has its own files.)
+- RubyGems: a precompiled gem for the platform is used when there is one. A
+  gem with a native extension and no precompiled build is compiled by
+  `gem install`, which runs its `extconf.rb`, after its age and SHA-256 are
+  checked. This is the one case where a package's code runs at install, as
+  for the Rails application. `lock.json` marks each such gem
+  (`"compiles": true`) and the site says so in the entry's details.
+- Go: `go build -mod=readonly` of the pinned, age-checked modules, through a
+  proxy of the scripts' own that refuses the source of any version less than
+  seven days old. No `go generate`.
+- No install scripts, no sudo, nothing installed outside `.cache/`.
+
+### Check your work
+
+```sh
+node scripts/measure.mjs <category>/<task> --check --only=<name>
+```
+
+`<name>` is your folder name. Each runtime must print `works` (or, for PyPy,
+`not available: …`) and the command must exit with 0. `--check` runs the
+task's correctness checks and one short round; it is safe to run while other
+tasks are being checked. What the other lines mean:
+
+| Line | What to do |
+| --- | --- |
+| `could not install: name the folder …` | Rename the folder as the message says. |
+| `could not install: no eligible release …` | Nothing at least seven days old has a wheel (or gem) for the pinned runtime. Leave the package out. |
+| `could not install: … requires go >= …` | A dependency needs a newer Go than the pinned one. Leave the package out. |
+| `verify-failed: …` | Your adapter's results differ from the task's. Fix the adapter, not the task. |
+| `crashed` or `expected phase …` | Run the runner by hand to see the error (below). |
+
+To see an error in full, start the runner as the script does, with the
+interpreter that `runtimes.json` names (`bin`), from the repository's root.
+`<hash>` is the folder the package was installed in: the newest one under
+`.cache/native-packages/pypi/` or `.cache/native-packages/rubygems/`.
+
+```sh
+# Python
+PYTHONPATH=.cache/native-packages/pypi/<hash> /opt/homebrew/bin/python3 -B harness/python/runner.py benchmarks/<category>/<task>/pypi/<name>/adapter.py .cache/work/<category>/<task>/fixtures.json </dev/null
+# Ruby
+GEM_HOME=$PWD/.cache/native-packages/rubygems/<hash> /opt/homebrew/opt/ruby/bin/ruby harness/ruby/runner.rb benchmarks/<category>/<task>/rubygems/<name>/adapter.rb .cache/work/<category>/<task>/fixtures.json </dev/null
+# Go: the build error is printed by --check itself.
+```
+
+It prints the adapter's results for the fixtures (the `verification` line),
+or the error.
+
+Then the type check of the adapter, which records nothing with `--verify`:
+
+```sh
+node scripts/measure-native-checks.mjs --verify --only=<category>/<task>/<registry>/<name>
+```
+
+It must end with `0 rejected`, with one exception: a gem that ships no Sorbet
+signatures is rejected with `Unable to resolve constant`. Leave that as it
+is and report it; the adapter is then recorded as not type-checked.
+
+Do not run `scripts/measure.mjs` without `--check`: measuring is done later,
+in one go, on an idle machine. Until the type checks are measured then
+(`node scripts/measure-native-checks.mjs --missing`), `npm test` reports a
+new adapter of an already measured task as missing a check; that is expected.
+
 ## Reviews
 
 Every adapter starts as `"review": "unreviewed"`. Readers ask for a review, or

@@ -37,6 +37,22 @@ if sys.argv[1] != '-':
     send('ready', memory=memory())
 else:
     send('ready', memory=memory())
+# A task on the file system whose operations write (see harness/files.mjs):
+# the paths in BENCH_FILES_RESET, all under the task's scratch directory
+# BENCH_FILES, are removed before every operation, and that is not timed.
+import resource
+def system_time():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_stime
+reset_paths = json.loads(os.environ.get('BENCH_FILES_RESET') or '[]')
+if not all(p.startswith(os.environ.get('BENCH_FILES', '') + '/') for p in reset_paths):
+    sys.exit('BENCH_FILES_RESET names a path outside BENCH_FILES')
+def reset_files():
+    import shutil
+    for p in reset_paths:
+        if os.path.isdir(p) and not os.path.islink(p):
+            shutil.rmtree(p)
+        elif os.path.lexists(p):
+            os.unlink(p)
 for line in sys.stdin:
     line = line.strip()
     if line == 'exit': break
@@ -46,9 +62,14 @@ for line in sys.stdin:
     command = json.loads(line)
     count, minimum = command['count'], command.get('minMs', 0)/1000
     operations = checksum = 0
-    cpu, start = time.process_time(), time.perf_counter()
+    cpu, start, system = time.process_time(), time.perf_counter(), system_time()
     while True:
         for i in range(count):
+            if reset_paths:
+                # Take the removal out of all three clocks.
+                c0, w0, s0 = time.process_time(), time.perf_counter(), system_time()
+                reset_files()
+                cpu += time.process_time()-c0; start += time.perf_counter()-w0; system += system_time()-s0
             output = adapter.operation(inputs[(operations+i)%len(inputs)])
             try:
                 value = int(output) if isinstance(output,bool) else len(output)
@@ -59,4 +80,4 @@ for line in sys.stdin:
         if time.perf_counter()-start >= minimum: break
     wall_ms = (time.perf_counter()-start)*1000
     cpu_ms = (time.process_time()-cpu)*1000
-    send('round', operations=operations, checksum=checksum, wallMs=wall_ms, cpuMs=cpu_ms)
+    send('round', operations=operations, checksum=checksum, wallMs=wall_ms, cpuMs=cpu_ms, systemCpuMs=(system_time()-system)*1000)

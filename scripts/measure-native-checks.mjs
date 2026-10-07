@@ -8,11 +8,18 @@ import {createHash} from 'node:crypto'
 import {fromRoot,readJson,writeJson,median,loadConfig,machine} from './lib/util.mjs'
 import {wrapPython,wrapRuby,goImports} from './lib/native-wrappers.mjs'
 import { raisePriority } from './lib/util.mjs'
+import { NATIVE_REGISTRIES, lockNativePackage, prepareNativePackage } from './lib/native-packages.mjs'
+import { existsSync } from 'node:fs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
 // --verify runs each adapter through its checker once and says which are
 // rejected, without timing or recording anything.
 const verify=process.argv.includes('--verify');let rejected=0
+// --only=<text>[,<text>] checks just the adapters whose id
+// (category/task/registry/name) contains one of the texts, against the checker baselines already on record: for
+// adding a few adapters without measuring every adapter of a language again.
+const onlyText=process.argv.find(a=>a.startsWith('--only='))?.slice('--only='.length)
+const chosen=file=>!onlyText||onlyText.split(',').some(text=>path.relative(fromRoot('benchmarks'),path.dirname(file)).includes(text))
 const config=await loadConfig(),lock=await readJson(fromRoot('toolchains/checkers.json'))
 const work=fromRoot('.cache/native-checks');await mkdir(work,{recursive:true})
 const goenv={...process.env,GOCACHE:fromRoot('.cache/go-build'),GOPATH:fromRoot('.cache/go-path'),GOMODCACHE:fromRoot('.cache/go-mod'),GOTOOLCHAIN:'local'}
@@ -28,6 +35,27 @@ for(const moduleFile of globSync(fromRoot('benchmarks/http-server/json-api/gomod
  const text=execFileSync(go,['list','-export','-deps','-f','{{.ImportPath}} {{.Export}}','.'],{cwd:path.dirname(moduleFile),env:goenv,encoding:'utf8'})
  Object.assign(exports,Object.fromEntries(text.trim().split('\n').map(l=>l.split(' ')).filter(([,p])=>p)))
 }
+// An adapter for a package from PyPI, RubyGems or the Go module proxy in a
+// synchronous task is checked against the package itself, installed (or
+// built) from the adapter's lock as for a measurement
+// (scripts/lib/native-packages.mjs). The HTTP servers have their own installs.
+const packageOf=new Map()
+for(const file of globSync(fromRoot('benchmarks/*/*/{pypi,rubygems,gomod}/*/adapter.json')).filter(file=>!file.includes('/_shared/')&&chosen(file))){
+ const [category,task,ecosystem,name]=path.relative(fromRoot('benchmarks'),path.dirname(file)).split(path.sep)
+ if((await readJson(fromRoot('benchmarks',category,task,'task.json'))).kind!=='sync-operation')continue
+ const target={ecosystem,name,dir:path.dirname(file)},meta=await readJson(file),id=`${category}/${task}/${ecosystem}/${name}`
+ const runtimeId=NATIVE_REGISTRIES[ecosystem].runtimes[0]
+ try{
+  await lockNativePackage({target,meta,config})
+  const prepared=await prepareNativePackage({taskId:`${category}/${task}`,target,meta,runtimeId,rt:config.runtimes[runtimeId]??config.toolchains[runtimeId],config})
+  packageOf.set(id,prepared)
+  // Export data of the module's packages and all they import, from the program built for the task.
+  if(prepared.workdir){
+   const text=execFileSync(go,['list','-mod=readonly','-export','-deps','-f','{{.ImportPath}} {{.Export}}','.'],{cwd:prepared.workdir,env:{...goenv,GOFLAGS:'',GOPROXY:'off'},encoding:'utf8'})
+   Object.assign(exports,Object.fromEntries(text.trim().split('\n').map(l=>l.split(' ')).filter(([,p])=>p)))
+  }
+ }catch(error){console.error(`${id}: its package could not be installed for the check: ${String(error.message).trim().split('\n')[0]}`)}
+}
 await writeJson(`${work}/exports.json`,exports)
 const sorbet=fromRoot(`.cache/checkers/ruby/gems/sorbet-static-${lock.sorbet}-${lock.sorbetPlatform}/libexec/sorbet`)
 if(!sorbet)throw new Error('Run node scripts/setup-checkers.mjs first')
@@ -38,15 +66,18 @@ const tools={
  ruby:{tool:'sorbet',version:lock.sorbet,ext:'rb',command:[sorbet,'--no-config',fromRoot('harness/checkers/stdlib.rbi')],baseline:'# typed: strict\n',bad:'# typed: strict\nextend T::Sig\nsig { returns(Integer) }\ndef bad; "wrong"; end\n',notes:'Sorbet checks adapter bodies with explicit input/output signatures and bundled core RBI. JSON payload elements remain T.untyped; CGI API signatures are provided locally; JSON uses bundled RBI. HTTP routing uses a minimal local Roda RBI; its DSL, Rack input and JSON contents remain dynamic. Shared by CRuby and YJIT; checker runs as a native executable.'},
  go:{tool:'go-types',version:config.toolchains.go.version,ext:'go',command:[`${work}/go-types`,`${work}/exports.json`],baseline:'package main\n',bad:'package main\nfunc bad() int { return "wrong" }\n',notes:'go/types checks the actual adapter source, including parsing and loading prepared standard-library and framework export data. Preparing export data, compilation, code generation and linking are excluded.'},
 }
-async function once(args){const raw=execFileSync('/opt/homebrew/bin/python3',[fromRoot('harness/checkers/time.py'),...args],{encoding:'utf8',maxBuffer:16<<20,env:{...process.env,MYPYPATH:fromRoot('harness/checkers/stubs'),PYTHONPATH:fromRoot('.cache/http-servers/python')}});return JSON.parse(raw)}
-async function measure(args){const runs=[];for(let i=0;i<11;i++){const r=await once(args);if(r.status!==0)throw new Error(r.stdout+'\n'+r.stderr);runs.push({cpuMs:r.cpuMs,timeMs:r.timeMs,peakRssMb:r.peakRssMb})}return {runs,...Object.fromEntries(['cpuMs','timeMs','peakRssMb'].map(k=>[k,median(runs.map(r=>r[k]))]))}}
+// `packages` is the folder a PyPI adapter's package is installed in: mypy reads the package's own types from there.
+async function once(args,packages){const raw=execFileSync('/opt/homebrew/bin/python3',[fromRoot('harness/checkers/time.py'),...args],{encoding:'utf8',maxBuffer:16<<20,env:{...process.env,MYPYPATH:fromRoot('harness/checkers/stubs'),PYTHONPATH:packages??fromRoot('.cache/http-servers/python')}});return JSON.parse(raw)}
+async function measure(args,packages){const runs=[];for(let i=0;i<11;i++){const r=await once(args,packages);if(r.status!==0)throw new Error(r.stdout+'\n'+r.stderr);runs.push({cpuMs:r.cpuMs,timeMs:r.timeMs,peakRssMb:r.peakRssMb})}return {runs,...Object.fromEntries(['cpuMs','timeMs','peakRssMb'].map(k=>[k,median(runs.map(r=>r[k]))]))}}
 const dependencyPins=await readFile(fromRoot('toolchains/checkers-requirements.txt'),'utf8')
 const methodologySha256=createHash('sha256').update(await readFile(fromRoot('scripts/measure-native-checks.mjs'))).update(await readFile(fromRoot('scripts/lib/native-wrappers.mjs'))).update(await readFile(fromRoot('harness/checkers/http.rbi'))).update(await readFile(fromRoot('harness/checkers/stdlib.rbi'))).update(await readFile(fromRoot('harness/checkers/stubs/waitress/__init__.pyi'))).update(await readFile(fromRoot('toolchains/http-servers.json'))).digest('hex')
-const previous=process.argv.includes('--missing') ? await readJson(fromRoot('data/native-checks.json'),null) : null
+const previous=process.argv.includes('--missing')||onlyText ? await readJson(fromRoot('data/native-checks.json'),null) : null
+if(onlyText&&!previous&&!verify)throw new Error('--only adds to the checks on record; there are none yet')
 const result=previous ?? {machine:machine(),hostPython:config.runtimes.cpython.version,dependencyPins,measuredAt:new Date().toISOString(),memoryKind:'peak RSS of checker process',scoreBasis:'added process CPU ms * added peak RSS MB',checkers:{},adapters:{}}
 for(const [language,t] of Object.entries(tools)){
- const sources=globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`)).filter(file=>!file.includes('/_shared/'))
- if(previous && previous.methodologySha256===methodologySha256 && previous.dependencyPins===dependencyPins && previous.checkers[language]?.version===t.version && sources.every(file=> {
+ const sources=globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`)).filter(file=>!file.includes('/_shared/')&&chosen(file))
+ if(!sources.length)continue
+ if(!onlyText && previous && previous.methodologySha256===methodologySha256 && previous.dependencyPins===dependencyPins && previous.checkers[language]?.version===t.version && sources.every(file=> {
    const id=path.relative(fromRoot('benchmarks'),path.dirname(file))
    return (previous.adapters[id]??previous.rejected?.[id])?.sourceSha256===createHash('sha256').update(readFileSync(file)).digest('hex')
  }))continue
@@ -54,8 +85,9 @@ for(const [language,t] of Object.entries(tools)){
  const base=`${dir}/baseline.${t.ext}`,bad=`${dir}/invalid.${t.ext}`
  await writeFile(base,t.baseline);await writeFile(bad,t.bad)
  if((await once([...t.command,bad])).status===0)throw new Error(`${t.tool} accepted deliberate type error`)
- if(!verify)result.checkers[language]={tool:t.tool,version:t.version,notes:t.notes,negativeControlRejected:true,baseline:await measure([...t.command,base])}
- for(const file of globSync(fromRoot(`benchmarks/*/*/{builtin,pypi,rubygems,gomod}/*/adapter.${t.ext}`)).filter(file=>!file.includes('/_shared/'))){
+ if(onlyText&&!verify&&result.checkers[language]?.version!==t.version)throw new Error(`--only needs a ${t.tool} ${t.version} baseline on record; run without it`)
+ if(!verify&&!onlyText)result.checkers[language]={tool:t.tool,version:t.version,notes:t.notes,negativeControlRejected:true,baseline:await measure([...t.command,base])}
+ for(const file of sources){
   const id=path.relative(fromRoot('benchmarks'),path.dirname(file));const source=await readFile(file,'utf8');let checked=source
   const http=id.startsWith('http-server/'),equality=id.startsWith('deep-equality/'),html=id.startsWith('html-escaping/')
   // The three original tasks keep their precise wrappers; every other task's
@@ -74,12 +106,17 @@ for(const [language,t] of Object.entries(tools)){
   if(language==='ruby'&&http)checked='# typed: strict\nextend T::Sig\n'+source.replace('def application','sig { returns(T.proc.params(env: T::Hash[String, T.untyped]).returns(T::Array[T.untyped])) }\ndef application')
   const adapterDir=`${dir}/${path.basename(path.dirname(file))}`;await mkdir(adapterDir,{recursive:true})
   const dest=`${adapterDir}/entry.${t.ext}`;await writeFile(dest,checked)
-  const extra=language==='ruby'&&http?[fromRoot('harness/checkers/http.rbi')]:[]
+  // A gem's own Sorbet signatures (its rbi/ folder), where it ships any. A gem
+  // without them leaves its constants unknown to Sorbet, and the adapter is
+  // then recorded as not checked.
+  const installed=packageOf.get(id)
+  const extra=language==='ruby'&&http?[fromRoot('harness/checkers/http.rbi')]:language==='ruby'?(installed?.gems??[]).map(gem=>path.join(gem,'rbi')).filter(dir=>existsSync(dir)):[]
+  const packages=language==='python'?installed?.dir:undefined
   // An adapter the checker rejects (its result is not the type the wrapper
   // declares, say) is reported and left without a check; the rest go on.
-  if(verify){const r=await once([...t.command,...extra,dest]);if(r.status!==0){rejected++;console.error(`${id}: ${(r.stdout+'\n'+r.stderr).trim().split('\n').slice(0,3).join(' | ').slice(0,300)}`)}continue}
+  if(verify){const r=await once([...t.command,...extra,dest],packages);if(r.status!==0){rejected++;console.error(`${id}: ${(r.stdout+'\n'+r.stderr).trim().split('\n').slice(0,3).join(' | ').slice(0,300)}`)}continue}
   let measured
-  try{measured=await measure([...t.command,...extra,dest])}catch(error){const why=String(error.message).trim().split('\n')[0].replaceAll(fromRoot(),'').slice(0,200);console.error(`${id}: not checked: ${why}`);delete result.adapters[id];(result.rejected??={})[id]={language,tool:t.tool,sourceSha256:createHash('sha256').update(source).digest('hex'),error:why};continue}
+  try{measured=await measure([...t.command,...extra,dest],packages)}catch(error){const why=String(error.message).trim().split('\n')[0].replaceAll(fromRoot(),'').slice(0,200);console.error(`${id}: not checked: ${why}`);delete result.adapters[id];(result.rejected??={})[id]={language,tool:t.tool,sourceSha256:createHash('sha256').update(source).digest('hex'),error:why};continue}
   if(result.rejected)delete result.rejected[id]
   const baseline=result.checkers[language].baseline
   result.adapters[id]={language,tool:t.tool,version:t.version,sourceSha256:createHash('sha256').update(source).digest('hex'),...measured,cpuMs:Math.max(0,measured.cpuMs-baseline.cpuMs),timeMs:Math.max(0,measured.timeMs-baseline.timeMs),memoryMb:Math.max(0,measured.peakRssMb-baseline.peakRssMb)}
@@ -89,5 +126,6 @@ for(const [language,t] of Object.entries(tools)){
 }
 
 if(verify){console.error(`${rejected} rejected`);process.exit(rejected?1:0)}
-result.methodologySha256=methodologySha256
+// A run with --only leaves the record's methodology as it was: the next full run decides whether everything is measured again.
+if(!onlyText)result.methodologySha256=methodologySha256
 await writeJson(fromRoot('data/native-checks.json'),result)

@@ -3,7 +3,7 @@
 //   npm and JSR  the package and everything it pulls in, as installed for the
 //                benchmark: bytes of all files, and how many packages that is
 //   Python       the package and the installed packages it requires, from the
-//                shared install folder: the files each one's RECORD lists
+//                folder it is installed in: the files each one's RECORD lists
 //   Ruby         the gem and the gems it requires at run time: each one's
 //                folder, compiled extension and specification
 //   Rust and Go  what the package adds to the compiled program: the size of
@@ -92,7 +92,10 @@ export function rubyInstall(dir, names) {
     if (!entry.endsWith('.gemspec')) continue
     const id = entry.slice(0, -'.gemspec'.length)
     const requires = [...readFileSync(path.join(specs, entry), 'utf8').matchAll(/add_runtime_dependency\(%q<([^>]+)>/g)].map((m) => m[1])
-    gems.set(id.slice(0, id.lastIndexOf('-')), { id, requires })
+    // The name is read from the specification: a precompiled gem's file name
+    // ends in its platform (nokogiri-1.19.4-arm64-darwin), not in its version.
+    const text = readFileSync(path.join(specs, entry), 'utf8')
+    gems.set(/^\s*s\.name = "([^"]+)"/m.exec(text)?.[1] ?? id.slice(0, id.lastIndexOf('-')), { id, requires })
   }
   const installed = closure(names, new Map([...gems].map(([name, g]) => [name, g.requires])))
   if (!names.every((name) => installed.has(name))) return null

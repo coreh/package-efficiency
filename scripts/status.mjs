@@ -24,7 +24,8 @@ for (const taskId of taskIds()) {
   const adapterOf = (file) => file.split('/').slice(0, -2).join('/')
   const measured = new Set(results.map((r) => adapterOf(r.file)))
   const ok = results.filter((r) => r.status === 'ok')
-  const failed = results.filter((r) => r.status && r.status !== 'ok')
+  // 'unsupported' is a package that cannot run on a runtime (no wheel for PyPy): recorded, not a failure.
+  const failed = results.filter((r) => r.status && r.status !== 'ok' && r.status !== 'unsupported')
   const old = results.filter((r) => r.harness !== HARNESS_VERSION)
   const never = adapters.filter((a) => !measured.has(a.id))
   // A result carries a fingerprint of the adapter code it ran. One that no

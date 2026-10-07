@@ -1,0 +1,12 @@
+{
+  "title": "Ruby Thread::SizedQueue",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "executor": "Thread, 4 producers and the caller, one at a time under the interpreter lock",
+  "notes": "Core library: Thread::SizedQueue.new(capacity) with blocking push and pop between Thread producers and the calling thread. The threads take turns under the interpreter lock."
+}

@@ -37,6 +37,13 @@ unless ARGV[0] == '-'
   exit 1 unless STDIN.gets&.strip == 'verified'
 end
 send_phase('ready', memory: memory)
+# A task on the file system whose operations write (see harness/files.mjs):
+# the paths in BENCH_FILES_RESET, all under the task's scratch directory
+# BENCH_FILES, are removed before every operation, and that is not timed.
+def system_cpu = Process.times.stime
+reset_paths = ENV['BENCH_FILES_RESET'].to_s.empty? ? [] : JSON.parse(ENV['BENCH_FILES_RESET'])
+abort 'BENCH_FILES_RESET names a path outside BENCH_FILES' unless reset_paths.all? { |p| p.start_with?(ENV.fetch('BENCH_FILES', '') + '/') }
+require 'fileutils' unless reset_paths.empty?
 STDIN.each_line do |line|
   line = line.strip
   break if line == 'exit'
@@ -47,9 +54,15 @@ STDIN.each_line do |line|
   command = JSON.parse(line)
   count, minimum = command['count'], command.fetch('minMs', 0)/1000.0
   operations = checksum = 0
-  before, start = cpu, wall
+  before, start, system = cpu, wall, system_cpu
   loop do
     count.times do |i|
+      unless reset_paths.empty?
+        # Take the removal out of all three clocks.
+        c0, w0, s0 = cpu, wall, system_cpu
+        FileUtils.rm_rf(reset_paths)
+        before += cpu-c0; start += wall-w0; system += system_cpu-s0
+      end
       output = operation(inputs[(operations+i)%inputs.length])
       # Strings and booleans as before; a structured result counts its length.
       value = case output
@@ -65,5 +78,5 @@ STDIN.each_line do |line|
     break if wall-start >= minimum
   end
   elapsed, used = (wall-start)*1000, (cpu-before)*1000
-  send_phase('round', operations: operations, checksum: checksum, wallMs: elapsed, cpuMs: used)
+  send_phase('round', operations: operations, checksum: checksum, wallMs: elapsed, cpuMs: used, systemCpuMs: (system_cpu-system)*1000)
 end

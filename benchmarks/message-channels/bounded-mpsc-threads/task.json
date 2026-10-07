@@ -1,0 +1,33 @@
+{
+  "category": "message-channels",
+  "task": "bounded-mpsc-threads",
+  "title": "Send from four threads to one through a bounded channel",
+  "summary": "Four producer threads each send 250 to 4,000 small integers through one bounded channel of capacity 1, 16 or 1,024 to a single consumer thread, which checks that each producer's messages arrive in order and adds them up.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 500,
+    "rounds": 3,
+    "operationsPerRound": 5000,
+    "minRoundMs": 250,
+    "threads": 5,
+    "concurrency": 4
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 9,
+  "notes": "A task on five threads: four producers and the consumer. CPU time is the sum over all threads, so a channel that spins while it waits pays for the spinning, and wall-clock time is not what is ranked. Each operation starts its four producer threads and joins them; starting them is part of the figure. Go runs with GOMAXPROCS=5. CPython and CRuby run one thread at a time under their interpreter lock, so their threads take turns rather than run in parallel. No JavaScript entry: these are channels between threads."
+}

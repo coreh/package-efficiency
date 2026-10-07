@@ -119,6 +119,21 @@ const rustCheck = await readJson(fromRoot('data/rust-check.json'), { rust: null,
 // check. Where a package has one, it is the figure its class is set from, so
 // that a measured package and a listed one are compared by the same method.
 const SWEPT = { pypi: 'python', rubygems: 'ruby', cargo: 'cargo' }
+// What a result says of its own install, added to the entry's account of how
+// it is set up: compiled code that came prebuilt, and gems compiled on the
+// machine (the one case where a package's code runs at install; see
+// scripts/lib/native-packages.mjs).
+const listOf = (names) => names.join(', ')
+function installNote(result) {
+  const { prebuilt, built } = result.install ?? {}
+  if (!prebuilt?.length && !built?.length) return null
+  const registry = { pypi: 'PyPI', rubygems: 'RubyGems' }[result.ecosystem] ?? result.ecosystem
+  return [
+    `Installed from ${registry} at a release at least seven days old, each file checked by its SHA-256.`,
+    prebuilt?.length ? `${listOf(prebuilt)}: compiled code that its authors built and published for this platform (a ${result.ecosystem === 'pypi' ? 'binary wheel' : 'precompiled gem'}); nothing was compiled or run to install it.` : null,
+    built?.length ? `${listOf(built)}: has a native extension, compiled on this machine when the gem was installed (its extconf.rb runs).` : null,
+  ].filter(Boolean).join(' ')
+}
 const sweeps = {}
 for (const id of Object.keys(SWEPT)) sweeps[id] = await readJson(fromRoot('data', id, 'types.json'), null)
 function sweptCheck(ecosystemId, name) {
@@ -215,7 +230,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
     const id = releaseEntryId(result.ecosystem,result.package,result.version,release)
     const isCurrent = release.active
     if (result.status !== 'ok') {
-      runtime.unsupported.push({ id, package:adapter.package ?? result.package, ecosystem:result.ecosystem, version:result.version, title:adapter.title ?? result.package, status:result.status, notes:adapter.runtimeNotes?.[result.runtime] ?? null, error:stripAnsi(result.error)?.replaceAll(fromRoot(), '[workspace]') })
+      runtime.unsupported.push({ id, package:adapter.package ?? result.package, ecosystem:result.ecosystem, version:result.version, title:adapter.title ?? result.package, status:result.status, notes:adapter.runtimeNotes?.[result.runtime] ?? (result.status === 'unsupported' ? result.error : null), error:stripAnsi(result.error)?.replaceAll(fromRoot(), '[workspace]') })
       continue
     }
 
@@ -248,6 +263,8 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       // Variants of one package (for example a non-default configuration)
       // are separate adapters that share a `package`.
       package: adapter.package ?? result.package,
+      // A Go module's path (adapter.json `module`): what it is listed and linked by.
+      ...(adapter.module ? { module: adapter.module } : {}),
       title: adapter.title ?? result.package,
       version: result.version ?? null,
       defaultVersion: release.primary,
@@ -267,7 +284,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
         notes: [adapter.notes, result.harness < 2 ? 'Historical measurement: predates the full same-process warm-up; not directly comparable with current measurements.' : null].filter(Boolean).join(' ') || null,
         runtimeNotes: adapter.runtimeNotes ?? {},
         // The long account of how the entry is set up; `notes` is the short one on the label.
-        ...(adapter.details ? { details: adapter.details } : {}),
+        ...(adapter.details || installNote(result) ? { details: [adapter.details, installNote(result)].filter(Boolean).join(' ') } : {}),
         dependencies: Object.entries(result.dependencies ?? {})
           .filter(([name]) => name !== result.package)
           .map(([name, version]) => `${name}@${version}`),

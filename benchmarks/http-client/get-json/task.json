@@ -1,0 +1,33 @@
+{
+  "category": "http-client",
+  "task": "get-json",
+  "title": "GET a JSON document",
+  "summary": "Send GET requests for small JSON documents to a local HTTP/1.1 server over keep-alive connections, eight in flight at a time, and parse each response.",
+  "kind": "client",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "concurrency": 8,
+    "connections": 16,
+    "warmup": 8000,
+    "rounds": 3,
+    "requestsPerRound": 24000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerRequestUs",
+      "unit": "µs",
+      "headline": "µs of CPU per request"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 8,
+  "notes": "The server is a scripted program in its own process, the same for every entry; its work is not counted. An entry keeps its connections open and reuses them; the server counts them. Only the client's process is measured: time spent waiting for the server is not CPU time."
+}

@@ -9,14 +9,18 @@ import assert from 'node:assert/strict'
 import { prepareNativeHttp } from './lib/native-http.mjs'
 import { execFileSync } from 'node:child_process'
 import { existsSync, globSync, statSync } from 'node:fs'
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { HARNESS_VERSION, measureBaseline, measureServer, measureOperation, measureStartup } from '../harness/supervisor.mjs'
+import { announceFiles, fixtureFiles } from '../harness/files.mjs'
 import { installPinned, installJsr } from './lib/npm.mjs'
 import { binaryInstall, nodeInstall } from './lib/install-size.mjs'
 import { prepareApp } from './lib/apps.mjs'
+import { NATIVE_REGISTRIES, lockNativePackage, nativeMeta, prepareNativePackage } from './lib/native-packages.mjs'
 import { adapterFingerprint, staleReason, taskInputs } from './lib/tasks.mjs'
+import { ASYNC_JS_RUNNER, ASYNC_KIND, asyncEnv, asyncNativeRunner, checkAsyncTask, concurrencyRecord, measureAsyncOperation } from './lib/async-operation.mjs'
+import { CLIENT_JS_RUNNER, CLIENT_KIND, checkClientTask, clientMeasurer, prepareNativeClient } from './lib/client-tasks.mjs'
 import { ROOT, fromRoot, loadConfig, machine, median, readJson, writeJson } from './lib/util.mjs'
 import { raisePriority } from './lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
@@ -38,6 +42,9 @@ const keepExisting = argv.includes('--keep-existing')
 // --check runs every adapter through the task's correctness checks and one
 // short round, to see that it works, and records nothing: for trying an
 // adapter while writing it, on a machine that is not idle.
+// (No result is recorded. The first run of a PyPI, RubyGems or Go module
+// adapter, with or without --check, does write its lock beside it and its
+// pin in versions.json: see scripts/lib/native-packages.mjs.)
 const check = argv.includes('--check')
 let failures = 0
 const versionOverride = flag('version')
@@ -53,22 +60,34 @@ if (!taskId) {
 
 const taskDir = fromRoot('benchmarks', taskId)
 const task = await readJson(path.join(taskDir, 'task.json'))
+// Fixture files of a task on the file system (harness/files.mjs): the scratch
+// directory is named before the scenario is read, which builds its inputs from it.
+announceFiles(taskId)
 const scenario = await import(pathToFileURL(path.join(taskDir, 'scenario.mjs')).href)
+const fileFixtures = fixtureFiles(taskId, scenario)
 const { requests } = scenario
-const isOperation = task.kind === 'sync-operation'
+// An asynchronous operation (one awaited call each) is measured as an
+// operation, with its own runners; see scripts/lib/async-operation.mjs.
+const isAsync = task.kind === ASYNC_KIND
+if (isAsync) checkAsyncTask(task)
+const isOperation = task.kind === 'sync-operation' || isAsync
 const config = await loadConfig()
-const RUNNER = fromRoot('harness/js/runner.mjs')
+// A client task (the adapter is a client library, the harness provides its
+// peer) has its own runners and driver; see scripts/lib/client-tasks.mjs.
+const isClient = task.kind === CLIENT_KIND
+if (isClient) checkClientTask(task, scenario)
+const RUNNER = isClient ? CLIENT_JS_RUNNER : fromRoot('harness/js/runner.mjs')
 const GO_NO_PREPARE = 'package main\nfunc prepare(v any) any { return v }\n'
 
 // A startup task launches the server anew for each sample; see measureStartup.
 const isStartup = task.kind === 'server-startup'
-const measurer = isOperation ? measureOperation : isStartup ? measureStartup : measureServer
-if (!isOperation && !isStartup && task.kind !== 'http-server') throw new Error(`no driver for task kind "${task.kind}" yet`)
+const measurer = isClient ? clientMeasurer({ scenario, build: (...build) => cargoBuild(...build) }) : isAsync ? measureAsyncOperation : isOperation ? measureOperation : isStartup ? measureStartup : measureServer
+if (!isOperation && !isStartup && !isClient && task.kind !== 'http-server') throw new Error(`no driver for task kind "${task.kind}" yet`)
 
 // What this task's figures depend on. A stored result stands only while all
 // of it is unchanged; otherwise the whole task is measured again, since its
 // entries are graded against each other.
-const inputs = await taskInputs(taskId, { config, machine: machine() })
+let inputs = await taskInputs(taskId, { config, machine: machine() })
 const said = new Set()
 async function stands(file) {
   if (force || !existsSync(file)) return false
@@ -175,7 +194,7 @@ async function warmBaseline(runtimeId, launch) {
   }
   const runs = []
   for (let i = 0; i < reps; i++) {
-    const run = await measureOperation({ ...launch, load: { ...task.load, cycle: scenario.cases?.length }, verifyResults: () => {} })
+    const run = await measureOperation({ ...launch, ...(fileFixtures.declared ? { env: { ...launch.env, BENCH_FILES_RESET: '' } } : {}), load: { ...task.load, cycle: scenario.cases?.length }, verifyResults: () => {} })
     if (run.status !== 'ok') {
       console.error(`warm baseline ${runtimeId}: ${run.status}: ${String(run.error).split('\n')[0]}; using the idle baseline`)
       warmBaselines.set(runtimeId, null)
@@ -201,15 +220,17 @@ async function prepareJs(ecosystem, name, meta, adapterDir) {
   const jsrVersions = ecosystem === 'jsr' ? await installJsr(workdir, name) : {}
   const versions = { ...jsrVersions, ...await installPinned(workdir, packages, override) }
   await copyFile(path.join(adapterDir, 'adapter.js'), path.join(workdir, 'adapter.js'))
-  await copyFile(isOperation ? fromRoot('harness/js/operation-runner.mjs') : RUNNER, path.join(workdir, 'runner.mjs'))
+  await copyFile(isAsync ? ASYNC_JS_RUNNER : isOperation ? fromRoot('harness/js/operation-runner.mjs') : RUNNER, path.join(workdir, 'runner.mjs'))
   if (isOperation) await copyFile(path.join(taskDir, 'scenario.mjs'), path.join(workdir, 'scenario.mjs'))
   return { workdir, version: versions[name] ?? null, dependencies: versions }
 }
 
 async function measure(target, launch, extra) {
+  // The thread count of an asynchronous task, for the adapter and its warm baseline alike.
+  if (isAsync) launch = { ...launch, env: { ...asyncEnv(task), ...launch.env }, warm: launch.warm && { ...launch.warm, env: { ...asyncEnv(task), ...launch.warm.env } } }
   if (check) {
     const load = isStartup ? { launches: 1 } : { ...task.load, cycle: scenario.cases?.length, warmup: Math.min(task.load.warmup, 200), rounds: 1, minRoundMs: 20, ...(isOperation ? { operationsPerRound: Math.min(task.load.operationsPerRound, 500) } : { requestsPerRound: Math.min(task.load.requestsPerRound, 2000) }) }
-    const run = await measurer({ ...launch, requests, load, verifyResults })
+    const run = await fileFixtures.around(() => measurer({ ...launch, requests, load, verifyResults }))
     if (run.status !== 'ok') failures++
     console.error(`${target.ecosystem}/${target.name} on ${launch.runtime}: ${run.status === 'ok' ? 'works' : `${run.status}: ${String(run.error).split('\n')[0]}`}`)
     return
@@ -221,7 +242,7 @@ async function measure(target, launch, extra) {
   }
   const runs = []
   for (let i = 0; i < reps; i++) {
-    const run = await measurer({ ...launch, requests, load: { ...task.load, cycle: scenario.cases?.length }, verifyResults })
+    const run = await fileFixtures.around(() => measurer({ ...launch, requests, load: { ...task.load, cycle: scenario.cases?.length }, verifyResults }))
     runs.push(run)
     if (run.status !== 'ok') break
   }
@@ -233,6 +254,7 @@ async function measure(target, launch, extra) {
     ecosystem: target.ecosystem,
     package: target.name,
     ...extra,
+    ...(isAsync ? { concurrency: concurrencyRecord(task, target.dir) } : {}),
     ...stamp(launch.runtime, launch.version),
     // What was run, so `npm run status` can tell when the adapter has changed since.
     source: adapterFingerprint(taskId, `${target.ecosystem}/${target.name}`),
@@ -275,7 +297,7 @@ async function jsWarm(runtimeId) {
   await mkdir(dir, { recursive: true })
   await writeFile(path.join(dir, 'package.json'), '{"private":true,"type":"module"}\n')
   await writeFile(path.join(dir, 'adapter.js'), 'export const operation = (input) => input\n')
-  await copyFile(fromRoot('harness/js/operation-runner.mjs'), path.join(dir, 'runner.mjs'))
+  await copyFile(isAsync ? ASYNC_JS_RUNNER : fromRoot('harness/js/operation-runner.mjs'), path.join(dir, 'runner.mjs'))
   await copyFile(path.join(taskDir, 'scenario.mjs'), path.join(dir, 'scenario.mjs'))
   return { ...jsLaunch(runtimeId, dir, 'adapter.js'), env: { BENCH_BASELINE: '1' } }
 }
@@ -288,9 +310,65 @@ const adapters = globSync('{npm,jsr,builtin,cargo,pypi,rubygems,gomod}/**/adapte
   .filter((a) => !only || only.includes(a.name))
   .sort((a, b) => a.ecosystem.localeCompare(b.ecosystem) || a.name.localeCompare(b.name))
 
+// A PyPI, RubyGems or Go module adapter of a synchronous task is resolved to
+// exact files the first time it is seen, and the lock is written beside it
+// (scripts/lib/native-packages.mjs). That is done here for every such adapter
+// of the task, selected or not, before anything is measured: a lock is part
+// of its adapter's fingerprint, which each result records.
+// Synchronous tasks only: the other kinds of task have runners of their own.
+const takesPackages = task.kind === 'sync-operation'
+const packaged = (target) => takesPackages && target.ecosystem in NATIVE_REGISTRIES
+const unlocked = new Map()
+if (takesPackages) {
+  let wrote = false
+  for (const file of globSync('{pypi,rubygems,gomod}/*/adapter.json', { cwd: taskDir }).sort()) {
+    const [ecosystem, name] = path.dirname(file).split(path.sep)
+    const target = { ecosystem, name, dir: path.join(taskDir, ecosystem, name) }
+    try {
+      if (await lockNativePackage({ target, meta: await readJson(path.join(taskDir, file)), config })) {
+        wrote = true
+        console.error(`${ecosystem}/${name}: resolved and locked`)
+      }
+    } catch (error) {
+      unlocked.set(`${ecosystem}/${name}`, String(error.message).trim().split('\n')[0])
+    }
+  }
+  if (wrote) inputs = await taskInputs(taskId, { config, machine: machine() })
+}
+
+// A package that cannot run on a runtime (no wheel that PyPy can use) is
+// recorded as not available there. It is not a failure of the task.
+async function notAvailable(target, runtimeId, rt, { version, unavailable }) {
+  console.error(`${target.ecosystem}/${target.name} on ${runtimeId}: not available: ${unavailable}`)
+  if (check) return
+  await writeJson(fromRoot('results', taskId, target.ecosystem, target.name, version ?? '_', `${runtimeId}.json`), {
+    task: taskId, ecosystem: target.ecosystem, package: target.name, version: version ?? null, dependencies: {},
+    ...stamp(runtimeId, rt.version),
+    source: adapterFingerprint(taskId, `${target.ecosystem}/${target.name}`),
+    status: 'unsupported',
+    error: unavailable,
+  })
+}
+
+// The Go runner with a do-nothing adapter: the baseline of the Go adapters and
+// what their binaries are sized against. Built in a folder of this run's own
+// and renamed into place, so a run beside this one never starts a half-written
+// program.
+async function goBaseline(rt) {
+  const shared = fromRoot('.cache/work/go-baseline')
+  const own = path.join(shared, String(process.pid))
+  await mkdir(own, { recursive: true })
+  await copyFile(fromRoot('harness/go/runner.go'), path.join(own, 'runner.go'))
+  await writeFile(path.join(own, 'adapter.go'), 'package main\nfunc operation(v any) any { return v }\n' + GO_NO_PREPARE.replace('package main\n', ''))
+  execFileSync(rt.bin, ['build', '-o', 'runner', 'runner.go', 'adapter.go'], { cwd: own, env: { ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOTOOLCHAIN: 'local' }, stdio: 'inherit' })
+  await rename(path.join(own, 'runner'), path.join(shared, 'runner'))
+  await rm(own, { recursive: true, force: true })
+  return path.join(shared, 'runner')
+}
+
 for (const target of adapters) {
   const sharedMeta = await readJson(path.join(target.dir, 'adapter.json'))
-  const meta = {...sharedMeta,...sharedMeta.versions?.[versionOverride]}
+  const meta = packaged(target) ? nativeMeta(target, {...sharedMeta,...sharedMeta.versions?.[versionOverride]}) : {...sharedMeta,...sharedMeta.versions?.[versionOverride]}
 
   // An application shared by several tasks (adapter.json `app`): its own
   // prepare.mjs installs, builds and says how to start it. See
@@ -315,6 +393,18 @@ for (const target of adapters) {
     continue
   }
 
+  // A client task: the standard-library client of Python, Ruby or Go, above
+  // the same idle baseline as the language's synchronous tasks.
+  if (isClient && meta.language && meta.language !== 'javascript') {
+    for (const runtimeId of meta.runtimes.filter(selected)) {
+      const rt = config.runtimes[runtimeId] ?? config.toolchains[runtimeId]
+      const prepared = await prepareNativeClient({ taskId, target, meta, rt, goBaseline })
+      await baseline(runtimeId, { ...prepared.base, version: rt.version })
+      await measure(target, { ...prepared.launch, runtime: runtimeId, version: rt.version }, { version: null, dependencies: {} })
+    }
+    continue
+  }
+
   if (meta.language && meta.language !== 'javascript' && !isOperation) {
     for (const runtimeId of meta.runtimes.filter(selected)) {
       const rt = config.runtimes[runtimeId] ?? config.toolchains[runtimeId]
@@ -332,22 +422,41 @@ for (const target of adapters) {
     for (const runtimeId of meta.runtimes.filter(selected)) {
       const rt = config.runtimes[runtimeId] ?? config.toolchains[runtimeId]
       let command = rt.bin, args, baseArgs, warm
+      // A package from PyPI, RubyGems or the Go module proxy: installed (or
+      // built) from its lock, then run by the same runner, against the same
+      // baseline, as a standard-library adapter of its language.
+      let prepared = null
+      if (packaged(target)) {
+        const id = `${target.ecosystem}/${target.name}`
+        try {
+          if (unlocked.has(id)) throw new Error(unlocked.get(id))
+          prepared = await prepareNativePackage({ taskId, target, meta, runtimeId, rt, config })
+        } catch (error) {
+          failures++
+          console.error(`${id} on ${runtimeId}: could not install: ${String(error.message).trim().split('\n')[0]}`)
+          continue
+        }
+        if (prepared.unavailable) {
+          await notAvailable(target, runtimeId, rt, prepared)
+          continue
+        }
+      }
       if (meta.language === 'go') {
-        const work = fromRoot('.cache/work', taskId, 'builtin', target.name)
-        await mkdir(work, { recursive: true })
-        await copyFile(fromRoot('harness/go/runner.go'), path.join(work, 'runner.go'))
-        await copyFile(path.join(target.dir, 'adapter.go'), path.join(work, 'adapter.go'))
-        // The runner calls prepare on every fixture; most adapters have none.
-        const prepares = /^func prepare\(/m.test(await readFile(path.join(target.dir, 'adapter.go'), 'utf8'))
-        await writeFile(path.join(work, 'prepare.go'), prepares ? 'package main\n' : GO_NO_PREPARE)
-        command = path.join(work, 'runner')
-        execFileSync(rt.bin, ['build', '-o', command, 'runner.go', 'adapter.go', 'prepare.go'], { cwd: work, env: { ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOTOOLCHAIN: 'local' }, stdio: 'inherit' })
-        const baseWork = fromRoot('.cache/work/go-baseline')
-        await mkdir(baseWork, { recursive: true })
-        await copyFile(fromRoot('harness/go/runner.go'), path.join(baseWork, 'runner.go'))
-        await writeFile(path.join(baseWork, 'adapter.go'), 'package main\nfunc operation(v any) any { return v }\n' + GO_NO_PREPARE.replace('package main\n', ''))
-        const baseBin = path.join(baseWork, 'runner')
-        execFileSync(rt.bin, ['build', '-o', baseBin, 'runner.go', 'adapter.go'], { cwd: baseWork, env: { ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOTOOLCHAIN: 'local' }, stdio: 'inherit' })
+        if (prepared) command = prepared.command
+        else {
+          const work = fromRoot('.cache/work', taskId, 'builtin', target.name)
+          await mkdir(work, { recursive: true })
+          await copyFile(fromRoot('harness/go/runner.go'), path.join(work, 'runner.go'))
+          await copyFile(path.join(target.dir, 'adapter.go'), path.join(work, 'adapter.go'))
+          // The runner calls prepare on every fixture; most adapters have none.
+          const prepares = /^func prepare\(/m.test(await readFile(path.join(target.dir, 'adapter.go'), 'utf8'))
+          await writeFile(path.join(work, 'prepare.go'), prepares ? 'package main\n' : GO_NO_PREPARE)
+          command = path.join(work, 'runner')
+          execFileSync(rt.bin, ['build', '-o', command, 'runner.go', 'adapter.go', 'prepare.go'], { cwd: work, env: { ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOTOOLCHAIN: 'local' }, stdio: 'inherit' })
+        }
+        const baseBin = await goBaseline(rt)
+        // What the module adds to the program, as for a crate.
+        if (prepared) prepared.install = binaryInstall(command, baseBin)
         await baseline(runtimeId, { command: baseBin, args: ['-'], cwd: ROOT, version: rt.version })
         args = [fixtures]
         warm = { command: baseBin, args: [fixtures], cwd: ROOT, phases: ['boot', 'verification', 'ready'] }
@@ -356,12 +465,13 @@ for (const target of adapters) {
         const runner = fromRoot('harness', meta.language, `runner.${ext}`)
         baseArgs = [...rt.args, runner, '-']
         await baseline(runtimeId, { command, args: baseArgs, cwd: ROOT, version: rt.version })
-        args = [...rt.args, runner, path.join(target.dir, `adapter.${ext}`), fixtures]
+        const taskRunner = isAsync ? asyncNativeRunner(meta.language, ext) : runner
+        args = [...rt.args, taskRunner, path.join(target.dir, `adapter.${ext}`), fixtures]
         const idle = fromRoot('.cache/work', taskId, `_warm.${ext}`)
         await writeFile(idle, ext === 'py' ? 'def operation(value):\n    return value\n' : 'def operation(value) = value\n')
-        warm = { command, args: [...rt.args, runner, idle, fixtures], cwd: ROOT, phases: ['boot', 'loaded', 'verification', 'ready'] }
+        warm = { command, args: [...rt.args, taskRunner, idle, fixtures], cwd: ROOT, phases: ['boot', 'loaded', 'verification', 'ready'] }
       }
-      await measure(target, { runtime: runtimeId, version: rt.version, command, args, cwd: ROOT, warm, phases: meta.language === 'go' ? ['boot','verification','ready'] : ['boot','loaded','verification','ready'] }, { version: null, dependencies: {} })
+      await measure(target, { runtime: runtimeId, version: rt.version, command, args, cwd: ROOT, warm, ...(prepared ? { env: { ...prepared.env, ...meta.env } } : {}), phases: meta.language === 'go' ? ['boot','verification','ready'] : ['boot','loaded','verification','ready'] }, prepared ? { version: prepared.version, dependencies: prepared.dependencies, ...(prepared.install ? { install: prepared.install } : {}), ...(meta.env ? { settings: meta.env } : {}) } : { version: null, dependencies: {} })
     }
     continue
   }

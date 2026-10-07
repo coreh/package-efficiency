@@ -34,3 +34,20 @@ export function ecosystem(id) {
 
 // `--ecosystem=cargo` on a script's command line; npm when absent.
 export const ecosystemFromArgs = (argv = process.argv.slice(2)) => ecosystem(argv.find((a) => a.startsWith('--ecosystem='))?.split('=')[1] ?? 'npm')
+
+// A Go module is listed and linked by its path, and measured under a short
+// name: the folder of its adapters and the last part of its address on the
+// site. The name follows from the path, so every task gives a module the same
+// one: the path without its major-version suffix (/v5, .v3), without the host
+// when that is github.com, lower-cased, with "-" for "/".
+//   github.com/goccy/go-json    goccy-go-json
+//   github.com/go-chi/chi/v5    go-chi-chi
+//   golang.org/x/text           golang.org-x-text
+//   gopkg.in/yaml.v3            gopkg.in-yaml
+// (The HTTP servers and web frameworks measured before this rule keep their
+// names: chi, gin, echo, fiber. Their adapter.json names the module too.)
+export const goFamily = (modulePath) => modulePath.replace(/\/v\d+$/, '').replace(/\.v\d+$/, '')
+export function goPackageName(modulePath) {
+  const parts = goFamily(modulePath).split('/')
+  return (parts[0] === 'github.com' && parts.length > 1 ? parts.slice(1) : parts).join('-').toLowerCase().replace(/[^a-z0-9._-]/g, '-')
+}

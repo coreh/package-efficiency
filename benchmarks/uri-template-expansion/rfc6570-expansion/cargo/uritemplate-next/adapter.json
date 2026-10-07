@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "notes": "UriTemplate::new, set for each variable, then build, on every call. Not passing: a prefix modifier on non-ASCII text is cut by bytes, not characters.",
+  "details": "The crate keeps the variables inside the template object, so every call copies them in; that is its documented use and is timed. RFC 6570 section 2.4.1 counts a prefix in characters; {title:12} on a title with accented letters is cut after 12 bytes of UTF-8 (fixture 149). There is no option that changes this, so there is no variant."
+}

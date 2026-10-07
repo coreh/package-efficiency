@@ -577,6 +577,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-concurrency-limited-jobs-futures"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures",
+ "serde_json",
+]
+
+[[package]]
+name = "async-concurrency-limited-jobs-tokio"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "async-lock"
 version = "3.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -986,6 +1004,7 @@ version = "0.0.0"
 dependencies = [
  "libc",
  "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -1057,6 +1076,15 @@ dependencies = [
  "rmp-serde",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "bincode"
+version = "1.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -2250,6 +2278,7 @@ dependencies = [
  "cookie 0.18.2",
  "document-features",
  "idna",
+ "indexmap",
  "log",
  "publicsuffix",
  "serde",
@@ -3238,7 +3267,7 @@ dependencies = [
  "js-sys",
  "mime",
  "pin-project",
- "reqwest",
+ "reqwest 0.12.28",
  "rustversion",
  "send_wrapper",
  "serde",
@@ -3619,6 +3648,24 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-streams 0.4.2",
  "web-sys",
+]
+
+[[package]]
+name = "directory-walking-mixed-trees-ignore"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "ignore",
+ "serde_json",
+]
+
+[[package]]
+name = "directory-walking-mixed-trees-walkdir"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "walkdir",
 ]
 
 [[package]]
@@ -4034,6 +4081,9 @@ name = "fastrand"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
+dependencies = [
+ "getrandom 0.4.3",
+]
 
 [[package]]
 name = "fdeflate"
@@ -4146,6 +4196,18 @@ dependencies = [
  "borrow-or-share",
  "ref-cast",
  "serde",
+]
+
+[[package]]
+name = "flume"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e139bc46ca777eb5efaf62df0ab8cc5fd400866427e56c68b22e414e53bd3be"
+dependencies = [
+ "fastrand",
+ "futures-core",
+ "futures-sink",
+ "spin",
 ]
 
 [[package]]
@@ -4879,6 +4941,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-client-get-json-hyper"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "http-client-get-json-reqwest"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "reqwest 0.13.5",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "http-client-get-json-ureq"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "ureq",
+]
+
+[[package]]
 name = "http-message-parsing-httparse"
 version = "0.0.0"
 dependencies = [
@@ -5409,6 +5502,22 @@ checksum = "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714"
 dependencies = [
  "icu_normalizer 2.3.0",
  "icu_properties 2.3.0",
+]
+
+[[package]]
+name = "ignore"
+version = "0.4.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00b69833ed729dc5aa7d19541d96d6cf8e9137194207a04916d658e43168402f"
+dependencies = [
+ "crossbeam-deque",
+ "globset",
+ "log",
+ "memchr",
+ "regex-automata",
+ "same-file",
+ "walkdir",
+ "winapi-util",
 ]
 
 [[package]]
@@ -6741,6 +6850,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "message-channels-bounded-mpsc-threads-crossbeam-channel"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "crossbeam-channel",
+ "serde_json",
+]
+
+[[package]]
+name = "message-channels-bounded-mpsc-threads-flume"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "flume",
+ "serde_json",
+]
+
+[[package]]
 name = "micromap"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7230,6 +7357,28 @@ name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
+
+[[package]]
+name = "onig"
+version = "6.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0cc3cbf698f9438986c11a880c90a6d04b9de27575afd28bbf45b154b6c709e2"
+dependencies = [
+ "bitflags 2.13.2",
+ "libc",
+ "once_cell",
+ "onig_sys",
+]
+
+[[package]]
+name = "onig_sys"
+version = "69.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e68317604e77e53b85896388e1a803c1d21b74c899ec9e5e1112db90735edd7"
+dependencies = [
+ "cc",
+ "pkg-config",
+]
 
 [[package]]
 name = "or_poisoned"
@@ -7770,6 +7919,19 @@ name = "pkg-config"
 version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
+
+[[package]]
+name = "plist"
+version = "1.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2896bade328c13f7042a297ea5ac5b0951f6cf989dea5f32c2fd98da398195cb"
+dependencies = [
+ "base64 0.23.1",
+ "indexmap",
+ "quick-xml",
+ "serde",
+ "time",
+]
 
 [[package]]
 name = "png"
@@ -8660,6 +8822,37 @@ dependencies = [
  "wasm-streams 0.4.2",
  "web-sys",
  "webpki-roots",
+]
+
+[[package]]
+name = "reqwest"
+version = "0.13.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16a1cfa75cc186dd73d5818e510e042e40927bccc9c236b061cea97e1eb08029"
+dependencies = [
+ "base64 0.23.1",
+ "bytes",
+ "futures-core",
+ "http 1.5.0",
+ "http-body",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "js-sys",
+ "log",
+ "percent-encoding",
+ "pin-project-lite",
+ "serde",
+ "serde_json",
+ "sync_wrapper",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tower-service",
+ "url",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]
@@ -9619,6 +9812,9 @@ name = "spin"
 version = "0.9.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3763264f6b73151db08c50ff20d7d8a0b8796e021cdea7ceedad07b80155fa0e"
+dependencies = [
+ "lock_api",
+]
 
 [[package]]
 name = "spki"
@@ -9879,6 +10075,36 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.6",
+]
+
+[[package]]
+name = "syntax-highlighting-syntect"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "syntect",
+]
+
+[[package]]
+name = "syntect"
+version = "5.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "656b45c05d95a5704399aeef6bd0ddec7b2b3531b7c9e900abbf7c4d2190c925"
+dependencies = [
+ "bincode",
+ "flate2",
+ "fnv",
+ "once_cell",
+ "onig",
+ "plist",
+ "regex-syntax",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "thiserror 2.0.21",
+ "walkdir",
+ "yaml-rust",
 ]
 
 [[package]]
@@ -10822,6 +11048,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
+name = "ureq"
+version = "3.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a7ac20be9b7726e0bbdbf974c059676d9acb1cd414961f570a4e8231cacd7fc"
+dependencies = [
+ "base64 0.23.1",
+ "cookie_store",
+ "log",
+ "percent-encoding",
+ "serde",
+ "serde_json",
+ "ureq-proto",
+ "utf8-zero",
+]
+
+[[package]]
 name = "ureq-proto"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10831,6 +11073,33 @@ dependencies = [
  "http 1.5.0",
  "httparse",
  "log",
+]
+
+[[package]]
+name = "uri-template-expansion-iri-string"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "iri-string",
+ "serde_json",
+]
+
+[[package]]
+name = "uri-template-expansion-uritemplate-next"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "uritemplate-next",
+]
+
+[[package]]
+name = "uritemplate-next"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcde98d1fc3f528255b1ecb22fb688ee0d23deb672a8c57127df10b98b4bd18c"
+dependencies = [
+ "regex",
 ]
 
 [[package]]
@@ -10916,6 +11185,12 @@ dependencies = [
  "serde_json",
  "utf8_iter",
 ]
+
+[[package]]
+name = "utf8-zero"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8c0a043c9540bae7c578c88f91dda8bd82e59ae27c21baca69c8b191aaf5a6e"
 
 [[package]]
 name = "utf8_iter"
@@ -11569,6 +11844,24 @@ name = "xml"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f45bb2c13fec6a6cb4c0f76a7e94839e110a14ec803ec2940777a94c347bc52"
+
+[[package]]
+name = "xml-building-quick-xml"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "quick-xml",
+ "serde_json",
+]
+
+[[package]]
+name = "xml-building-xml-rs"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "xml-rs",
+]
 
 [[package]]
 name = "xml-rs"

@@ -39,5 +39,6 @@ for(const [name,module] of [['go-net-http',null],['chi','github.com/go-chi/chi/v
  }
 }
 const manifest=await readJson(fromRoot('versions.json'))
-manifest.pypi=lock.pypi;manifest.rubygems=lock.rubygems;manifest.gomod={chi:lock.gomod['github.com/go-chi/chi/v5'],gin:lock.gomod['github.com/gin-gonic/gin']}
+// Added to the pins already there: the synchronous tasks' packages are pinned in the same maps (scripts/lib/native-packages.mjs).
+manifest.pypi={...manifest.pypi,...lock.pypi};manifest.rubygems={...manifest.rubygems,...lock.rubygems};manifest.gomod={...manifest.gomod,chi:lock.gomod['github.com/go-chi/chi/v5'],gin:lock.gomod['github.com/gin-gonic/gin']}
 await writeJson(fromRoot('versions.json'),manifest)

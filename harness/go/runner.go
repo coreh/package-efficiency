@@ -24,6 +24,23 @@ func cpu() float64 {
  if err:=syscall.Getrusage(syscall.RUSAGE_SELF,&r); err!=nil {panic(err)}
  return float64(r.Utime.Sec+r.Stime.Sec)*1000+float64(r.Utime.Usec+r.Stime.Usec)/1000
 }
+func systemCpu() float64 {
+ var r syscall.Rusage
+ if err:=syscall.Getrusage(syscall.RUSAGE_SELF,&r); err!=nil {panic(err)}
+ return float64(r.Stime.Sec)*1000+float64(r.Stime.Usec)/1000
+}
+// A task on the file system whose operations write (see harness/files.mjs):
+// the paths in BENCH_FILES_RESET, all under the task's scratch directory
+// BENCH_FILES, are removed before every operation, and that is not timed.
+func resetPaths() []string {
+ var paths []string
+ if v:=os.Getenv("BENCH_FILES_RESET"); v!="" {
+  if err:=json.Unmarshal([]byte(v),&paths);err!=nil {panic(err)}
+  root:=os.Getenv("BENCH_FILES")+"/"
+  for _,p:=range paths {if len(p)<=len(root) || p[:len(root)]!=root {panic("BENCH_FILES_RESET names a path outside BENCH_FILES")}}
+ }
+ return paths
+}
 func main() {
  send("boot",map[string]any{"pid":os.Getpid(),"memory":memory()})
  scanner:=bufio.NewScanner(os.Stdin)
@@ -41,6 +58,7 @@ func main() {
   if !scanner.Scan() || scanner.Text()!="verified" {os.Exit(1)}
  }
  send("ready",map[string]any{"memory":memory()})
+ reset:=resetPaths()
  for scanner.Scan() {
   line:=scanner.Text()
   if line=="exit" {break}
@@ -50,18 +68,25 @@ func main() {
   if command.Count<1 {panic("positive count required")}
   operations:=0;var checksum uint32
   before,start:=cpu(),time.Now()
+  system:=systemCpu();var paused time.Duration
   for {
    for i:=0;i<command.Count;i++ {
+    if len(reset)>0 {
+     // Take the removal out of all three clocks.
+     c0,w0,s0:=cpu(),time.Now(),systemCpu()
+     for _,p:=range reset {if err:=os.RemoveAll(p);err!=nil {panic(err)}}
+     before+=cpu()-c0;paused+=time.Since(w0);system+=systemCpu()-s0
+    }
     output:=operation(inputs[(operations+i)%len(inputs)])
     // A structured result counts its length; any other value counts as one.
     // Verification marshals results to JSON once, before measured work.
     switch value:=output.(type) {case string:checksum+=uint32(len(value));case bool:if value {checksum++};case nil:;case []any:checksum+=uint32(len(value));case map[string]any:checksum+=uint32(len(value));default:checksum++}
    }
    operations+=command.Count
-   if float64(time.Since(start).Nanoseconds())/1e6>=command.MinMs {break}
+   if float64((time.Since(start)-paused).Nanoseconds())/1e6>=command.MinMs {break}
   }
-  elapsed:=float64(time.Since(start).Nanoseconds())/1e6;used:=cpu()-before
-  send("round",map[string]any{"operations":operations,"checksum":checksum,"wallMs":elapsed,"cpuMs":used})
+  elapsed:=float64((time.Since(start)-paused).Nanoseconds())/1e6;used:=cpu()-before
+  send("round",map[string]any{"operations":operations,"checksum":checksum,"wallMs":elapsed,"cpuMs":used,"systemCpuMs":systemCpu()-system})
  }
  if err:=scanner.Err();err!=nil {panic(err)}
 }

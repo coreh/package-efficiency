@@ -1,0 +1,31 @@
+{
+  "category": "sql-parsing",
+  "task": "parse-statements",
+  "title": "Statements to a syntax tree",
+  "summary": "Parse one SELECT, INSERT, UPDATE, DELETE or CREATE TABLE statement of 50 to 800 characters into the library's syntax tree.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 64
+}

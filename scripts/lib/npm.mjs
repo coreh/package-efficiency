@@ -23,7 +23,7 @@ let manifest = await readJson(MANIFEST, { npm: {} })
 // added by re-reading the file, changing it and writing it back while holding
 // a lock file, never by writing out this process's possibly stale copy.
 const LOCK = `${MANIFEST}.lock`
-async function updateManifest(change) {
+export async function updateManifest(change) {
   for (let attempt = 0; ; attempt++) {
     try {
       await writeFile(LOCK, String(process.pid), { flag: 'wx' })

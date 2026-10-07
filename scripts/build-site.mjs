@@ -42,7 +42,7 @@ import { iconFile, iconFiles, iconScales } from '../site/icons.mjs'
 import { embedFiles } from '../site/layouts.mjs'
 import * as exportsOf from '../site/exports.mjs'
 import { llmsText, packageMarkdown, resultRows, taskMarkdown, toCsv } from '../site/exports.mjs'
-import { ecosystem, ecosystemIds } from './lib/ecosystems.mjs'
+import { ecosystem, ecosystemIds, goFamily } from './lib/ecosystems.mjs'
 import { fromRoot, readJson, writeJson } from './lib/util.mjs'
 
 const dist = (...parts) => fromRoot('dist', ...parts)
@@ -85,6 +85,7 @@ for (const data of tasks) {
         packages.set(key, {
           ecosystem: entry.ecosystem,
           name: entry.package,
+          ...(entry.module ? { module: entry.module } : {}),
           // A variant's title describes the variant; the package page is named for the package.
           title: entry.package === entry.name ? entry.title : entry.package,
           version: entry.defaultVersion ?? entry.version,
@@ -137,8 +138,16 @@ const model = {
 
 // The catalog: the most used packages of every ecosystem, each with its
 // category from the categorization and, when it has results, its measured
-// package. Go modules are measured under a short name.
-const GO_MODULES = { 'github.com/go-chi/chi': 'chi', 'github.com/gin-gonic/gin': 'gin', 'github.com/labstack/echo/v4': 'echo', 'github.com/gofiber/fiber/v3': 'fiber', 'github.com/gofiber/fiber/v2': 'fiber' }
+// package. A Go module is measured under a short name and listed by its path:
+// the two are matched by the module path each adapter.json gives (`module`),
+// whatever major version either names.
+const goMeasured = new Map()
+for (const pkg of packages.values()) {
+  if (pkg.ecosystem !== 'gomod' || !pkg.module) continue
+  const held = goMeasured.get(goFamily(pkg.module))
+  if (held && held !== pkg) throw new Error(`the Go module ${pkg.module} is measured under two names, ${held.name} and ${pkg.name}`)
+  goMeasured.set(goFamily(pkg.module), pkg)
+}
 const { categories: taxonomy, groups = [] } = await readJson(fromRoot('data/taxonomy.json'), { categories: [] })
 const taxonomyById = new Map(taxonomy.map((c) => [c.id, c]))
 const typeData = await readJson(fromRoot('data/types.json'), { packages: {}, compilers: {} })
@@ -170,7 +179,7 @@ for (const id of ecosystemIds) {
       version: p.version,
       repository: p.repository,
       category: taxonomyById.get(assigned[p.name]?.category) ?? null,
-      measured: packages.get(`${id}/${id === 'gomod' ? (GO_MODULES[p.name] ?? p.name) : p.name}`) ?? null,
+      measured: (id === 'gomod' ? goMeasured.get(goFamily(p.name)) : null) ?? packages.get(`${id}/${p.name}`) ?? null,
       // Same cost as the graded packages: the root of added CPU time (at least 10 ms) times added memory.
       typeCheck: tsgo && Number.isFinite(tsgo.cpuMs) ? { tool: `tsgo ${typeData.compilers.tsgo}`, community: typed.communityTypes ?? (!!typed.typesFrom && typed.typesFrom !== 'self'), from: typed.typesFrom === 'self' ? null : typed.typesFrom ?? null, cpuMs: Math.max(0, tsgo.cpuMs), memoryMb: Math.max(0, tsgo.memoryKb) / 1000, cost: ((Math.max(0, tsgo.memoryKb) / 1000) * Math.max(tsgo.cpuMs, 10)) / 1000 } : added ? { community: !!swept.communityTypes, from: swept.typesFrom ?? null, tool: [sweptTypes[id].checker?.tool, sweptTypes[id].checker?.version].filter(Boolean).join(' '), icon: { pypi: 'cpython', rubygems: 'ruby', cargo: 'rust' }[id], cpuMs: Math.max(0, added.cpuMs), memoryMb: Math.max(0, added.memoryMb), cost: (Math.max(0, added.memoryMb) * Math.max(added.cpuMs, 10)) / 1000 } : null,
     }

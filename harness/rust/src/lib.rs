@@ -90,3 +90,11 @@ pub fn ready(port: u16) {
 
 #[cfg(feature = "operations")]
 pub mod operation;
+#[cfg(feature = "operations")]
+pub mod async_operation;
+
+#[cfg(feature = "client")]
+pub mod client;
+
+#[cfg(feature = "peers")]
+pub mod peer;

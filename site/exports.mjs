@@ -5,7 +5,7 @@ import { adapterIdOf, adapterSource, taskSource } from './source.mjs'
 
 const cpuOf = (m) => m.startupCpuMs ?? m.cpuPerOperationUs ?? m.cpuPerRequestUs
 const cpuUnit = (m) => (m.startupCpuMs != null ? ' ms' : ' µs')
-const unitOf = (data) => (data.task.kind === 'sync-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request')
+const unitOf = (data) => (data.task.kind === 'sync-operation' || data.task.kind === 'async-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request')
 const isTuned = (entry) => (entry.adapter.tags ?? []).includes('non-default-options')
 
 // One row per entry per runtime. The same columns for every task, so tasks
@@ -143,7 +143,7 @@ ${(() => {
 
 export function packageMarkdown(pkg, ecosystemTitle, ctx) {
   const { url = (path) => path, edition } = ctx
-  const registry = ctx.ecosystems?.[pkg.ecosystem]?.registry?.(pkg.name)
+  const registry = ctx.ecosystems?.[pkg.ecosystem]?.registry?.(pkg.module ?? pkg.name)
   const tasks = [...new Set(pkg.appearances.map((a) => a.data))]
   const path = `/${pkg.ecosystem}/${pkg.name}/`
   const shownApps = new Set()

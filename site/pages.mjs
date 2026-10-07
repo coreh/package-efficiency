@@ -19,7 +19,7 @@ export const ECOSYSTEMS = {
   jsr: { title: 'JSR', registry: (name) => `https://jsr.io/${name}` },
   pypi: { title: 'PyPI', registry: name => `https://pypi.org/project/${name}/` },
   rubygems: { title: 'RubyGems', registry: name => `https://rubygems.org/gems/${name}` },
-  gomod: { title: 'Go modules', registry: name => `https://pkg.go.dev/${({chi:'github.com/go-chi/chi/v5',gin:'github.com/gin-gonic/gin'})[name] ?? name}` },
+  gomod: { title: 'Go modules', registry: name => `https://pkg.go.dev/${name}` },
   cargo: { title: 'crates.io', registry: (name) => `https://crates.io/crates/${name}` },
   builtin: { title: 'Runtime built-ins', registry: null },
 }
@@ -462,7 +462,7 @@ ${typeRows.map(([language, text, metric], i) => `<tr>${i === 0 ? `<th scope="row
 
 // --- Task page --------------------------------------------------------------
 
-const unitOf = (data) => data.task.kind === 'sync-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request'
+const unitOf = (data) => data.task.kind === 'sync-operation' || data.task.kind === 'async-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request'
 // A startup task's figure is the CPU time of one launch, in milliseconds;
 // every other task's is per operation or request, in microseconds.
 const cpuOf = (m) => m.startupCpuMs ?? m.cpuPerOperationUs ?? m.cpuPerRequestUs
@@ -588,7 +588,7 @@ ${legend(data)}
 
 <h2>How this was measured</h2>
 <ul>
-${data.task.kind === 'sync-operation' ? `<li>${esc(data.task.summary)} There are ${data.task.fixtureCount ?? 0} fixture cases. Each case is checked before measurement starts.</li>
+${data.task.kind === 'sync-operation' || data.task.kind === 'async-operation' ? `<li>${esc(data.task.summary)} There are ${data.task.fixtureCount ?? 0} fixture cases. Each case is checked before measurement starts.</li>
 <li>Every entry gets the same time, whatever one operation costs. First comes a warm-up of ${load.warmup.toLocaleString('en-US')} operations or two seconds, whichever ends first. Then comes one unmeasured rehearsal of ${load.rounds} rounds in the same process. Then come ${load.rounds} measured rounds of at least ${load.minRoundMs} ms each. A round is a whole number of passes over the fixtures. Each round records how many operations it completed, and costs are per operation. A figure is the median of the rounds, then the median of the process runs. This task uses ${[...new Set(data.runtimes.flatMap((r) => r.entries.map((e) => e.measurement.runs)))].join(', ')} runs per entry.</li>
 <li>CPU time is measured inside the child process. An adapter can prepare each fixture once before measurement, so an entry does not pay to read its input. Fixture preparation, correctness checks, messages to the harness and forced garbage collection are not measured. Each result is added to a checksum, so the work cannot be skipped.</li>` : `${data.task.kind === 'server-startup' ? `<li>${esc(data.task.summary)}</li>
 <li>Each sample starts a new process. The time runs from the launch to the first page that comes back correct, and the CPU figure is all the CPU time the process used by then. There are ${load.launches} launches in a run. A figure is the median of the launches, then the median of the runs.</li>
@@ -783,7 +783,7 @@ ${adapterList}`
     actions: feedback(model, { scope: 'package', about: pkg.title, pkg: `${pkg.ecosystem}/${pkg.name}`, category: pkg.appearances[0]?.data.task.category, page: urls.package(pkg, older ? version : null), vouch: pkg.ecosystem !== 'builtin' , top: true }),
     body: `<main>
 <h1>${esc(pkg.title)}${verifiedAll(shown.map((a) => a.entry))}${version ? ` <span class="ver">${esc(version)}</span>` : ''}</h1>
-<p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.name)}">View on the registry</a>.` : ''}</p>
+<p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.module ?? pkg.name)}">View on the registry</a>.` : ''}</p>
 
 ${versionNav}
 ${hasSettings ? `<div class="switches package-settings">${switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')}</div>` : ''}
