@@ -1,4 +1,5 @@
 import re
+from typing import Any
 from lark import Lark, Transformer
 
 grammar = r'''
@@ -31,7 +32,7 @@ def _unescape_one(m):
     return _SIMPLE.get(ch, ch)
 
 
-class ToValue(Transformer):
+class ToValue(Transformer[Any, Any]):
     def string(self, items):
         body = items[0][1:-1]
         return body if '\\' not in body else _ESC.sub(_unescape_one, body)

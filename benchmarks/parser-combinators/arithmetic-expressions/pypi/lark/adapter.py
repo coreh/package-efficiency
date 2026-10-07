@@ -1,3 +1,4 @@
+from typing import Any
 from lark import Lark, Transformer
 
 grammar = r'''
@@ -17,7 +18,7 @@ NUMBER: /[0-9]+(?:\.[0-9]+)?/
 '''
 
 
-class Evaluate(Transformer):
+class Evaluate(Transformer[Any, Any]):
     def number(self, items):
         return float(items[0])
 

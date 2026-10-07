@@ -18,7 +18,7 @@ def _fold(tokens):
 
 
 number = pp.Regex(r'[0-9]+(?:\.[0-9]+)?').set_parse_action(lambda t: float(t[0]))
-expr = pp.infix_notation(number, [
+expr = pp.infix_notation(number, [  # type: ignore[no-untyped-call]
     (pp.Literal('-'), 1, pp.OpAssoc.RIGHT, lambda t: -t[0][1]),
     (pp.one_of('* /'), 2, pp.OpAssoc.LEFT, _fold),
     (pp.one_of('+ -'), 2, pp.OpAssoc.LEFT, _fold),

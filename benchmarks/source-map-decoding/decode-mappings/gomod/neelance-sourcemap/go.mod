@@ -1,0 +1,5 @@
+module bench/neelance-sourcemap
+
+go 1.25.0
+
+require github.com/neelance/sourcemap v0.0.0-20200213170602-2833bce08e4c

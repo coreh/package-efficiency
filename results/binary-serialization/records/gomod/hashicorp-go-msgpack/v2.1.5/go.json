@@ -1,0 +1,114 @@
+{
+  "task": "binary-serialization/records",
+  "ecosystem": "gomod",
+  "package": "hashicorp-go-msgpack",
+  "version": "v2.1.5",
+  "dependencies": {},
+  "install": {
+    "kind": "binary",
+    "bytes": 3589152
+  },
+  "runtime": "go",
+  "runtimeVersion": "1.25.3",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "dcd5b85e086b34c1",
+    "task": "a0afa252aae75394",
+    "adapters": "74d283afd5dadb2f",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/ciborium": "0.2.2",
+      "cargo/rmp-serde": "1.3.1",
+      "gomod/hashicorp-go-msgpack": "v2.1.5",
+      "gomod/ugorji-go-codec": "v1.3.2",
+      "jsr/@std/cbor": "0.1.10",
+      "jsr/@std/msgpack": "1.0.3",
+      "pypi/cbor2": "6.1.4",
+      "pypi/msgpack": "1.2.3",
+      "rubygems/msgpack": "1.8.5"
+    }
+  },
+  "measuredAt": "2026-10-07T22:13:44.221Z",
+  "source": "d2cb401bc435f97b",
+  "baseline": {
+    "runtime": "go",
+    "runtimeVersion": "1.25.3",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "dcd5b85e086b34c1",
+      "task": "a0afa252aae75394",
+      "adapters": "74d283afd5dadb2f",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/ciborium": "0.2.2",
+        "cargo/rmp-serde": "1.3.1",
+        "gomod/hashicorp-go-msgpack": "v2.1.5",
+        "gomod/ugorji-go-codec": "v1.3.2",
+        "jsr/@std/cbor": "0.1.10",
+        "jsr/@std/msgpack": "1.0.3",
+        "pypi/cbor2": "6.1.4",
+        "pypi/msgpack": "1.2.3",
+        "rubygems/msgpack": "1.8.5"
+      }
+    },
+    "measuredAt": "2026-10-07T22:13:44.220Z",
+    "kind": "warm",
+    "task": "binary-serialization/records",
+    "runs": [
+      {
+        "rssBytes": 5357568,
+        "footprintBytes": 5456352,
+        "heapUsedBytes": 485472,
+        "peakRssBytes": 7258112
+      },
+      {
+        "rssBytes": 7274496,
+        "footprintBytes": 5423584,
+        "heapUsedBytes": 480880,
+        "peakRssBytes": 7274496
+      },
+      {
+        "rssBytes": 7487488,
+        "footprintBytes": 5636576,
+        "heapUsedBytes": 485664,
+        "peakRssBytes": 7487488
+      }
+    ]
+  },
+  "status": "failed",
+  "error": "panic: json: error calling MarshalJSON for type main.decoded: json: unsupported type: map[interface {}]interface {}\ngoroutine 1 [running]:\nmain.send({0x10105b27b?, 0x140001d3c20?}, 0x140001d3c20)\n\t.cache/work/binary-serialization/records/gomod/hashicorp-go-msgpack/runner.go:19 +0xe4\nmain.main()\n\t.cache/work/binary-serialization/records/gomod/hashicorp-go-msgpack/runner.go:57 +0x3dc"
+}
