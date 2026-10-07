@@ -18,9 +18,10 @@ const fitted = (text, perChar, width) => (text.length * perChar > width ? ` text
 const MARK = [0, 1, 3, 5, 6].map((i) => RANKINGS.cpu.colors[i])
 
 // The site's mark: five bars, 26 by 20 at scale 1.
-function mark(x, y, scale, pointer = '#000') {
+// `colors` is a ranking's seven class colours, for a mark in that scale.
+function mark(x, y, scale, pointer = '#000', colors = RANKINGS.cpu.colors) {
   const row = 4, tip = row * 0.4
-  return `<g transform="translate(${x} ${y}) scale(${scale})">${MARK.map((color, i) => `<path d="M0 ${i * row}h${10 + 2.25 * i}l2 ${tip}-2 ${tip}H0z" fill="${color}"/>`).join('')}<path d="M16.25 ${tip}l2-${tip}H26v${2 * tip}H18.25z" fill="${pointer}"/></g>`
+  return `<g transform="translate(${x} ${y}) scale(${scale})">${[0, 1, 3, 5, 6].map((c) => colors[c]).map((color, i) => `<path d="M0 ${i * row}h${10 + 2.25 * i}l2 ${tip}-2 ${tip}H0z" fill="${color}"/>`).join('')}<path d="M16.25 ${tip}l2-${tip}H26v${2 * tip}H18.25z" fill="${pointer}"/></g>`
 }
 
 // The wrench that marks a tuned entry (Material Icons "build", Apache 2.0), 24 units square.
@@ -145,7 +146,9 @@ const VERDANA = 'Verdana,Geneva,DejaVu Sans,sans-serif'
 // Verdana's advance widths at 11px, near enough to lay cells out; each text
 // is then given exactly that width, so another typeface cannot overflow.
 const verdana = (text) => [...text].reduce((w, c) => w + (/[ilj.,' |]/.test(c) ? 3.2 : /[ftrI]/.test(c) ? 4.4 : /[mw]/.test(c) ? 10.4 : /[MW]/.test(c) ? 10.6 : /[A-Z]/.test(c) ? 7.7 : 6.6), 0)
-export function badge({ entry, runtime, shaded = true, summary }) {
+// `only` names one measure, for a badge of that class alone.
+export function badge({ entry, runtime, shaded = true, summary, only }) {
+  if (only && !entry.grades[only]) return null
   const H = 20, CHIP = 14
   const tuned = (entry.adapter?.tags ?? []).includes('non-default-options')
   const said = []
@@ -154,9 +157,11 @@ export function badge({ entry, runtime, shaded = true, summary }) {
   // entry's wrench follows each square, in a black cell joined to it. How a figure moved against the entry
   // it is compared with is said in the title only: a bare triangle beside a
   // class reads as a menu.
-  const parts = [{ text: 'efficiency', logo: true }]
+  // The mark stands for the site, with no word beside it. On the badge of
+  // one measure it wears that measure's colours.
+  const parts = [{ text: '', logo: true }]
   for (const id of Object.keys(RANKINGS)) {
-    if (!entry.grades[id]) continue
+    if (!entry.grades[id] || (only && id !== only)) continue
     const change = compare(entry, runtime, id, summary)
     if (change.text) said.push(`${RANKINGS[id].title}: ${change.text}`)
     parts.push({ text: { cpu: 'CPU', memory: 'memory', types: 'types' }[id], letter: entry.grades[id].class, color: classColor(id, entry.grades[id].class), down: change.down })
@@ -167,11 +172,11 @@ export function badge({ entry, runtime, shaded = true, summary }) {
   for (const [i, part] of parts.entries()) {
     // Each name sits close to its own class and well clear of the one before
     // it, with a faint rule between, so it is plain which letter is whose.
-    if (i > 1) { shapes.push(`<path d="M${(x + 7).toFixed(1)} 4v12" stroke="#fff" stroke-opacity=".28"/>`); x += 14 } else x += part.logo ? 5 : 8
-    if (part.logo) { shapes.push(mark(x, 3.500, 0.65, '#fff')); x += 21 }
+    if (i > 1) { shapes.push(`<path d="M${(x + 7).toFixed(1)} 4v12" stroke="#fff" stroke-opacity=".28"/>`); x += 14 } else x += part.logo ? 5 : 7
+    if (part.logo) { shapes.push(mark(x, 3.500, 0.65, '#fff', RANKINGS[only ?? 'cpu'].colors)); x += part.text ? 21 : 17 }
     const width = verdana(part.text)
-    if (shaded) texts.push(say(part.text, x + width / 2, 15, '#010101', width, false, '.3'))
-    texts.push(say(part.text, x + width / 2, 14, '#fff', width))
+    if (part.text && shaded) texts.push(say(part.text, x + width / 2, 15, '#010101', width, false, '.3'))
+    if (part.text) texts.push(say(part.text, x + width / 2, 14, '#fff', width))
     x += width
     if (part.letter) {
       x += 3.5
@@ -188,7 +193,7 @@ export function badge({ entry, runtime, shaded = true, summary }) {
       if (tuned) { shapes.push(wrench(x + 2, top + 2.5, 9)); x += CELL }
     }
   }
-  const W = Math.round(x + 5), about = esc(`Package efficiency of ${entry.title}${tuned ? ', tuned' : ''}: ${summaryOf(entry)}${said.length ? `. ${said.join('; ')}` : ''}`)
+  const W = Math.round(x + 5), about = esc(`Package efficiency of ${entry.title}${tuned ? ', tuned' : ''}: ${only ? `${RANKINGS[only].title} ${entry.grades[only].class}` : summaryOf(entry)}${said.length ? `. ${said.join('; ')}` : ''}`)
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${about}">
 <title>${about}</title>
 ${shaded ? `<linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>` : ''}
@@ -298,6 +303,7 @@ export function embedFiles(result) {
     ['overview.svg', overviewLabel(result)],
     ['badge.svg', badge(result)],
     ['badge.flat.svg', badge({ ...result, shaded: false })],
+    ...perRanking.flatMap((rankingId) => [[`badge.${rankingId}.svg`, badge({ ...result, only: rankingId })], [`badge.${rankingId}.flat.svg`, badge({ ...result, only: rankingId, shaded: false })]]),
     ...perRanking.map((rankingId) => [`button.${rankingId}.svg`, button({ ...result, rankingId })]),
     ...perRanking.map((rankingId) => [`compact.${rankingId}.svg`, compactLabel({ ...result, rankingId })]),
     ...perRanking.map((rankingId) => [`wide.${rankingId}.svg`, wideLabel({ ...result, rankingId })]),

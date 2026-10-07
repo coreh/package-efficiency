@@ -1212,7 +1212,7 @@ function embedDialog(holder) {
   const shapesOf = (id) => id === 'all'
     ? [
         ['Overview', `${embed}overview.svg`, 'CPU, memory and type check on one label.'],
-        ['Badge', `${embed}badge.svg`, 'One line for a README.'],
+        ['Badge', `${embed}badge.svg`, 'One line for a README, with every class.'],
         ['Badge, flat', `${embed}badge.flat.svg`, 'The same line with square corners and no shading.'],
       ]
     : [
@@ -1220,6 +1220,8 @@ function embedDialog(holder) {
         ['Compact', `${embed}compact.${id}.svg`, 'A small label: name, scale and figure.'],
         ['Wide', `${embed}wide.${id}.svg`, 'A label lying down, for a header or a slide.', true],
         ['Button', `${embed}button.${id}.svg`, '88 by 31, like the buttons of old web pages.'],
+        ['Badge', `${embed}badge.${id}.svg`, 'One line for a README, with this class alone.'],
+        ['Badge, flat', `${embed}badge.${id}.flat.svg`, 'The same line with square corners and no shading.'],
       ]
   const body = sheet('Embed this label', 'embed')
   const bar = document.createElement('div')
