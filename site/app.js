@@ -1202,71 +1202,98 @@ document.addEventListener('click', (event) => {
 // Markdown for a README, HTML for a page. The shapes are files whose
 // addresses stay put, so an embedded label follows new measurements.
 function embedDialog(holder) {
-  const { label, embed, embedPage, embedAlt, ranking } = holder.dataset
+  const { embed, embedPage, embedAlt, ranking, labelPattern } = holder.dataset
   const site = document.body.dataset.site || location.origin
-  const shapes = [
-    ['Label', label, 'The full label, as on this page.'],
-    ['Compact', `${embed}compact.${ranking}.svg`, 'A small label: name, scale and figure.'],
-    ['Wide', `${embed}wide.${ranking}.svg`, 'A label lying down, for a header or a slide.'],
-    ['Button', `${embed}button.${ranking}.svg`, '88 by 31, like the buttons of old web pages.'],
-    ['Badge', `${embed}badge.svg`, 'One line for a README, with the CPU, memory and type-check classes together.'],
-    ['Badge, flat', `${embed}badge.flat.svg`, 'The same line with square corners and no shading.'],
-  ].filter(([, file]) => file)
-  const body = sheet('Embed this label', 'embed')
-  const about = document.createElement('p')
-  about.className = 'soft'
-  about.textContent = `${embedAlt}. Each address stays the same and shows the newest measurement.`
-  body.append(about)
   const page = new URL(embedPage, site).href
-  for (const [name, file, note] of shapes) {
-    // A badge carries every class, so it is not described by one of them.
-    const alt = name.startsWith('Badge') ? embedAlt.replace(/: [^:]*$/, '') : embedAlt
-    const src = new URL(file, site).href
-    const shape = document.createElement('div')
-    shape.className = 'embed-shape'
-    const heading = document.createElement('h3')
-    heading.textContent = name
-    const says = document.createElement('p')
-    says.className = 'soft'
-    says.textContent = note
-    const image = document.createElement('img')
-    image.src = file
-    image.alt = alt
-    // Its size in pixels, said beside its name once the file has arrived.
-    image.addEventListener('load', () => {
-      if (!image.naturalWidth) return
-      const size = document.createElement('span')
-      size.className = 'embed-size'
-      size.textContent = `${image.naturalWidth} × ${image.naturalHeight} px`
-      heading.append(size)
-    })
-    // The fields sit beside the shape where there is room, level with its
-    // name; the wide one keeps the whole row and has them underneath.
-    if (name !== 'Wide') shape.classList.add('beside')
-    const main = document.createElement('div')
-    main.className = 'embed-main'
-    const codes = document.createElement('div')
-    codes.className = 'embed-codes'
-    main.append(heading, says, image)
-    shape.append(main, codes)
-    for (const [kind, text] of [['Markdown', `[![${alt}](${src})](${page})`], ['HTML', `<a href="${page}"><img src="${src}" alt="${alt}"></a>`]]) {
-      const row = document.createElement('p')
-      row.className = 'embed-code'
-      const tag = document.createElement('b')
-      tag.textContent = kind
-      const code = document.createElement('code')
-      code.textContent = text
-      const button = document.createElement('button')
-      button.type = 'button'
-      button.dataset.copy = kind
-      button.setAttribute('aria-label', `Copy ${kind}`)
-      button.title = `Copy ${kind}`
-      button.append(actionIcon('copy'))
-      row.append(tag, code, button)
-      codes.append(row)
+  const names = { cpu: 'CPU', memory: 'Memory', types: 'Type check', all: 'Combined' }
+  const tabs = [...(holder.dataset.embedRankings ?? ranking).split(',').filter((id) => names[id]), 'all']
+  // What there is of each: a measure has its own label in four sizes; the
+  // combined ones carry all three classes.
+  const shapesOf = (id) => id === 'all'
+    ? [
+        ['Overview', `${embed}overview.svg`, 'CPU, memory and type check on one label.'],
+        ['Badge', `${embed}badge.svg`, 'One line for a README.'],
+        ['Badge, flat', `${embed}badge.flat.svg`, 'The same line with square corners and no shading.'],
+      ]
+    : [
+        ['Label', labelPattern ? labelPattern.replace('{r}', id) : holder.dataset.label, 'The full label.'],
+        ['Compact', `${embed}compact.${id}.svg`, 'A small label: name, scale and figure.'],
+        ['Wide', `${embed}wide.${id}.svg`, 'A label lying down, for a header or a slide.', true],
+        ['Button', `${embed}button.${id}.svg`, '88 by 31, like the buttons of old web pages.'],
+      ]
+  const body = sheet('Embed this label', 'embed')
+  const bar = document.createElement('div')
+  bar.className = 'sheet-tabs'
+  bar.setAttribute('role', 'tablist')
+  body.before(bar)
+  const show = (id) => {
+    for (const tab of bar.children) tab.setAttribute('aria-selected', tab.dataset.tab === id)
+    body.replaceChildren()
+    body.scrollTop = 0
+    const alt = id === 'all' ? embedAlt : `${embedAlt}: ${names[id]}`
+    const about = document.createElement('p')
+    about.className = 'soft'
+    about.textContent = `${alt}. Each address stays the same and shows the newest measurement.`
+    body.append(about)
+    for (const [name, file, note, full] of shapesOf(id).filter(([, file]) => file)) {
+      const src = new URL(file, site).href
+      const shape = document.createElement('div')
+      shape.className = 'embed-shape'
+      const heading = document.createElement('h3')
+      heading.textContent = name
+      const says = document.createElement('p')
+      says.className = 'soft'
+      says.textContent = note
+      const image = document.createElement('img')
+      image.src = file
+      image.alt = alt
+      // Its size in pixels, said beside its name once the file has arrived.
+      image.addEventListener('load', () => {
+        if (!image.naturalWidth) return
+        const size = document.createElement('span')
+        size.className = 'embed-size'
+        size.textContent = `${image.naturalWidth} × ${image.naturalHeight} px`
+        heading.append(size)
+      })
+      // A shape that does not exist for this result takes its section with it.
+      image.addEventListener('error', () => shape.remove())
+      // The fields sit beside the shape where there is room, level with its
+      // name; a shape that needs the whole row has them underneath.
+      if (!full) shape.classList.add('beside')
+      const main = document.createElement('div')
+      main.className = 'embed-main'
+      const codes = document.createElement('div')
+      codes.className = 'embed-codes'
+      main.append(heading, says, image)
+      shape.append(main, codes)
+      for (const [kind, text] of [['Markdown', `[![${alt}](${src})](${page})`], ['HTML', `<a href="${page}"><img src="${src}" alt="${alt}"></a>`]]) {
+        const row = document.createElement('p')
+        row.className = 'embed-code'
+        const tag = document.createElement('b')
+        tag.textContent = kind
+        const code = document.createElement('code')
+        code.textContent = text
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.dataset.copy = kind
+        button.title = `Copy ${kind}`
+        button.append(actionIcon('copy'))
+        row.append(tag, code, button)
+        codes.append(row)
+      }
+      body.append(shape)
     }
-    body.append(shape)
   }
+  for (const id of tabs) {
+    const tab = document.createElement('button')
+    tab.type = 'button'
+    tab.setAttribute('role', 'tab')
+    tab.dataset.tab = id
+    tab.textContent = names[id]
+    tab.addEventListener('click', () => show(id))
+    bar.append(tab)
+  }
+  show(tabs.includes(ranking) ? ranking : 'all')
 }
 const LABEL_ICONS = { 'Copy as PNG': 'copy', 'Copy as SVG': 'copy', 'Save PNG': 'save', 'Save SVG': 'save', 'Copy link': 'link', 'Open SVG': 'open' }
 const LABEL_ACTIONS = [

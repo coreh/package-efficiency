@@ -4,8 +4,11 @@
 // each beside its name. They are files of their own, meant to be embedded elsewhere,
 // so they do not rely on the site's typeface being loaded: every line of text
 // is given the width it must take.
-import { CLASSES, LEAST, RANKINGS, asInstalled, classColor, formatAtLeast, inkOn, labelSite, metricFor, previousVersion, resultShortLink, shortLinkOf } from './label.mjs'
+import { labelIcon } from './icons.mjs'
+import { CLASSES, LEAST, RANKINGS, asInstalled, classColor, formatAtLeast, formatBytes, formatNumber, inkOn, labelSite, metricFor, previousVersion, resultShortLink, shortLinkOf } from './label.mjs'
 
+// Names and big figures are set at 80% width, as on the full label; a face
+// without that axis draws them at its normal width.
 const FACE = "Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif"
 const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 const cut = (text, max) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text)
@@ -85,7 +88,8 @@ const figureOf = (entry, data, rankingId) => {
 const measured = (rankingId, data, entry, summary) => summary ? metricFor(data, entry, rankingId).headline : ({ cpu: `CPU per ${data.task.kind === 'http-server' ? 'request' : 'operation'}`, memory: 'memory after GC, above baseline', types: 'type-check cost' })[rankingId]
 const versionOf = (entry, runtime) => (entry.builtin ? `Built into ${runtime.title}` : entry.version ? `Version ${entry.version}` : '')
 const summaryOf = (entry) => Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => `${RANKINGS[id].title} ${entry.grades[id].class}`).join(', ')
-const open = (width, height, label) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${esc(label)}" font-family="${FACE}">`
+// The link on a shape turns blue when pointed at, as it does on the full label.
+const open = (width, height, label) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${esc(label)}" font-family="${FACE}"><style>a:hover text{fill:#1558d6}</style>`
 const linkOf = (data, runtime, entry, summary) => (!labelSite.host ? '' : summary ? shortLinkOf(summary.address) : resultShortLink(data.task.id, runtime.id, entry))
 
 // A small label: name, scale, figure. 180 wide.
@@ -97,15 +101,15 @@ export function compactLabel({ entry, data, runtime, rankingId, summary }) {
   const more = change.text ? 12 : 0, H = (link ? 236 : 218) + more
   return `${open(W, H, `${entry.title}: class ${grade.class} for ${RANKINGS[rankingId].title}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="5" fill="#fff" stroke="#000" stroke-width="1.5"/>
-<text x="10" y="21" font-size="15" font-weight="800"${fitted(title, 8.2, W - 20)}>${esc(title)}</text>
+<text x="10" y="21" font-size="15" font-weight="800" style="font-stretch:80%"${fitted(title, 8.2, W - 20)}>${esc(title)}</text>
 <text x="10" y="35" font-size="9.5" font-weight="500"${fitted(meta, 4.9, W - 20)}>${esc(meta)}</text>
 <path d="M0 43.5H${W}" stroke="#000"/>
 ${scale(rankingId, grade.class, { x: 10, y: 52, row: 13, gap: 2.5, first: 44, step: 11, right: W - 10, pointer: 40 }, change)}
 <path d="M0 166.500H${W}" stroke="#000"/>
-<text x="${W / 2}" y="193" font-size="25" font-weight="800" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="3" font-size="12" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
+<text x="${W / 2}" y="193" font-size="25" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="3" font-size="12" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
 <text x="${W / 2}" y="207" font-size="9.5" font-weight="500" text-anchor="middle">${esc(measured(rankingId, data, entry, summary))}</text>
 ${changeLine(change, W / 2, 219, 8.5, Math.min(4.3, (W - 34) / (change.text?.length ?? 1)))}
-${link ? `<path d="M0 ${215.5 + more}H${W}" stroke="#000"/>${mark(10, 221 + more, 0.45)}<a href="${esc(link)}"><text x="27" y="${229 + more}" font-size="8.500" font-weight="600" text-decoration="underline"${fitted(link, 4.4, W - 37)}>${esc(link)}</text></a>` : ''}
+${link ? `<path d="M0 ${215.5 + more}H${W}" stroke="#000"/>${mark(10, 221 + more, 0.45)}<a href="${esc(link)}"><text x="27" y="${229 + more}" font-size="8.500" font-weight="600" text-decoration="underline"${fitted(link, 4.4, W - 37)} style="font-stretch:88%">${esc(link)}</text></a>` : ''}
 </svg>`
 }
 
@@ -118,17 +122,17 @@ export function wideLabel({ entry, data, runtime, rankingId, summary }) {
   const title = cut(entry.title, 26), context = cut(summary ? summary.context : `${rankingId === 'types' ? 'Type check' : data.task.title}, ${runtime.title} ${runtime.version}`, 46)
   return `${open(W, H, `${entry.title}: class ${grade.class} for ${RANKINGS[rankingId].title}, ${figure.text} ${figure.unit} ${measured(rankingId, data, entry, summary)}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="6" fill="#fff" stroke="#000" stroke-width="1.5"/>
-<text x="14" y="27" font-size="20" font-weight="800"${fitted(title, 11, 262)}>${esc(title)}</text>
+<text x="14" y="27" font-size="20" font-weight="800" style="font-stretch:80%"${fitted(title, 11, 262)}>${esc(title)}</text>
 <text x="14" y="43" font-size="11" font-weight="500">${esc(summary ? summary.subtitle : versionOf(entry, runtime))}</text>
 <text x="14" y="57" font-size="11" font-weight="500"${fitted(context, 5.6, 262)}>${esc(context)}</text>
-<text x="14" y="${change.text ? 93 : 98}" font-size="36" font-weight="800">${esc(figure.text)}${figure.unit ? `<tspan dx="4" font-size="16" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
+<text x="14" y="${change.text ? 93 : 98}" font-size="36" font-weight="800" style="font-stretch:80%">${esc(figure.text)}${figure.unit ? `<tspan dx="4" font-size="16" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
 <text x="14" y="${change.text ? 106 : 114}" font-size="11" font-weight="500">${esc(measured(rankingId, data, entry, summary))}</text>
 ${change.text ? `${change.down === null ? '' : triangle(14, 111.500, 7.500, change.down)}<text x="${change.down === null ? 14 : 25}" y="119" font-size="10.500" font-weight="600"${fitted(change.text, 5.4, 250)}>${esc(change.text)}</text>` : ''}
 <path d="M290.500 0V${H - 26}" stroke="#000"/>
 ${scale(rankingId, grade.class, { x: 302, y: 11, row: 12, gap: 3.500, first: 62, step: 14, right: W - 12, pointer: 44 }, change)}
 <path d="M0 ${H - 26.5}H${W}" stroke="#000"/>
-${mark(14, H - 20, 0.6)}<text x="36" y="${H - 9.500}" font-size="11" font-weight="800">${esc(labelSite.name)}</text>
-${link ? `<a href="${esc(link)}"><text x="${W - 14}" y="${H - 9.500}" font-size="11" font-weight="600" text-anchor="end" text-decoration="underline">${esc(link)}</text></a>` : ''}
+${mark(14, H - 20, 0.6)}<text x="36" y="${H - 9.500}" font-size="11" font-weight="800" style="font-stretch:88%">${esc(labelSite.name)}</text>
+${link ? `<a href="${esc(link)}"><text x="${W - 14}" y="${H - 9.500}" font-size="11" font-weight="600" text-anchor="end" text-decoration="underline" style="font-stretch:88%">${esc(link)}</text></a>` : ''}
 </svg>`
 }
 
@@ -160,15 +164,17 @@ export function badge({ entry, runtime, shaded = true, summary }) {
   let x = 0
   const shapes = [], texts = []
   const say = (text, centre, y, fill, width, bold, opacity) => `<text x="${centre.toFixed(1)}" y="${y}" fill="${fill}"${opacity ? ` fill-opacity="${opacity}" aria-hidden="true"` : ''} text-anchor="middle" textLength="${width.toFixed(1)}" lengthAdjust="spacingAndGlyphs"${bold ? ' font-weight="bold" font-size="10"' : ''}>${text}</text>`
-  for (const part of parts) {
-    x += part.logo ? 5 : 7
+  for (const [i, part] of parts.entries()) {
+    // Each name sits close to its own class and well clear of the one before
+    // it, with a faint rule between, so it is plain which letter is whose.
+    if (i > 1) { shapes.push(`<path d="M${(x + 7).toFixed(1)} 4v12" stroke="#fff" stroke-opacity=".28"/>`); x += 14 } else x += part.logo ? 5 : 8
     if (part.logo) { shapes.push(mark(x, 3.500, 0.65, '#fff')); x += 21 }
     const width = verdana(part.text)
     if (shaded) texts.push(say(part.text, x + width / 2, 15, '#010101', width, false, '.3'))
     texts.push(say(part.text, x + width / 2, 14, '#fff', width))
     x += width
     if (part.letter) {
-      x += 4
+      x += 3.5
       const ink = inkOn(part.color) === '#fff' ? '#fff' : '#333'
       // A tuned entry's wrench is a black cell joined to the square's right
       // side: the two share one outline, rounded only at its outer corners.
@@ -214,10 +220,82 @@ ${RANKINGS[rankingId].colors.map((color, i) => `<path d="M3.500 ${3.5 + i * 3.5}
 </svg>`
 }
 
+// All three measures on one label, laid out like a bento box: CPU fills the
+// left half, and memory and type check share the right half, one above the
+// other (memory takes the whole of it for an entry with no type-check cost).
+// 460 by 338.
+export function overviewLabel({ entry, data, runtime, summary }) {
+  if (!entry.grades.cpu) return null
+  // Import time and size on disk have no class; they go in the header, under
+  // the runtime's icon.
+  const extras = summary ? [] : [
+    entry.metrics?.importMs != null && [`${formatNumber(entry.metrics.importMs)} ms`, 'import'],
+    entry.metrics?.installBytes != null && [formatBytes(entry.metrics.installBytes), entry.metrics.installKind === 'binary' ? 'in binary' : 'install'],
+  ].filter(Boolean)
+  const W = 460, HEAD = 60, BODY = 250, FOOT = 28, H = HEAD + BODY + FOOT, MID = W / 2
+  const link = linkOf(data, runtime, entry, summary)
+  const title = cut(entry.title, 34), sub = summary ? summary.subtitle : versionOf(entry, runtime)
+  const context = cut(summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`, 72)
+  const others = ['memory', 'types'].filter((id) => entry.grades[id])
+  const short = { cpu: null, memory: 'above baseline', types: 'type-check cost' }
+  const said = []
+  // One measure in a box at (x, y). A tall box has the scale across it and
+  // the figure underneath.
+  const panel = (rankingId, x, y, w, h) => {
+    const grade = entry.grades[rankingId], figure = figureOf(entry, data, rankingId), change = compare(entry, runtime, rankingId, summary)
+    const what = summary || h > 200 ? measured(rankingId, data, entry, summary) : short[rankingId] ?? measured(rankingId, data, entry, summary)
+    said.push(`${RANKINGS[rankingId].title} class ${grade.class}, ${figure.text}${figure.unit ? ` ${figure.unit}` : ''}`)
+    const name = `<text x="${x + 12}" y="${y + 19}" font-size="13" font-weight="800">${esc(RANKINGS[rankingId].title)}</text>`
+    // A type-check cost is a product; the CPU time and memory it is made of go under it.
+    const cost = rankingId === 'types' && !summary ? (entry.types?.compilers?.[data.typesCompiler] ?? entry.types) : null
+    const parts = cost?.cpuMs != null && cost?.memoryMb != null ? `${cost.cpuMs < 10 ? '< 10' : formatAtLeast(cost.cpuMs, 0)} ms CPU × ${formatAtLeast(cost.memoryMb, LEAST.memory)} MB` : null
+    const number = (cx, base, size) => `<text x="${cx}" y="${base}" font-size="${size}" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="${(size * 0.1).toFixed(1)}" font-size="${(size * 0.45).toFixed(1)}" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>`
+    const partsLine = (cx, base, size, room) => (parts ? `<text x="${cx}" y="${base}" font-size="${size}" font-weight="500" fill="#444" text-anchor="middle"${fitted(parts, size * 0.5, room)}>${esc(parts)}</text>` : '')
+    if (h > 200) {
+      // The figure sits midway between the scale and what is under it: lower
+      // when there is no change line below.
+      const drop = change.text ? 6 : 9
+      return `${name}
+${scale(rankingId, grade.class, { x: x + 12, y: y + 28, row: 17, gap: 3.5, first: 55, step: 14, right: x + w - 12, pointer: 48 }, change)}
+${number(x + w / 2, y + 203 + drop, 34)}
+<text x="${x + w / 2}" y="${y + 219 + drop}" font-size="12" font-weight="500" text-anchor="middle"${fitted(what, 6.2, w - 24)}>${esc(what)}</text>
+${partsLine(x + w / 2, y + 231 + drop, 10, w - 24)}
+${changeLine(change, x + w / 2, y + h - 9, 10, Math.min(5.2, (w - 34) / (change.text?.length ?? 1)))}`
+    }
+    // A low box: the scale keeps its proportions at the left, and the figure
+    // goes beside it.
+    const split = x + 128, cx = split + (x + w - split) / 2, room = x + w - split - 10
+    // A long figure is set smaller so that it fits beside the scale. It is
+    // never given a forced width, which would stretch the letters.
+    const unitWidth = figure.unit ? 2 + figure.unit.length * 6.4 : 0
+    const size = Math.min(21, Math.floor(((room - unitWidth) / (figure.text.length * 0.64)) * 2) / 2)
+    return `${name}
+${scale(rankingId, grade.class, { x: x + 12, y: y + 27, row: 9, gap: 2, first: 30, step: 8, right: split, pointer: 30 }, change)}
+<text x="${cx}" y="${y + 64}" font-size="${size}" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="2" font-size="10" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
+<text x="${cx}" y="${y + 77}" font-size="9.5" font-weight="500" text-anchor="middle"${fitted(what, 4.8, room)}>${esc(what)}</text>
+${partsLine(cx, y + 88, 8.5, room)}
+${changeLine(change, x + w / 2, y + h - 7, 8.5, Math.min(4.3, (w - 34) / (change.text?.length ?? 1)))}`
+  }
+  const boxes = [panel('cpu', 0, HEAD, MID, BODY), ...others.map((id, i) => panel(id, MID, HEAD + (BODY / others.length) * i, MID, BODY / others.length))]
+  return `${open(W, H, `${entry.title}: ${said.join('; ')}. ${context}.`)}
+<rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="7" fill="#fff" stroke="#000" stroke-width="1.5"/>
+<text x="14" y="25" font-size="21" font-weight="800" style="font-stretch:80%"${fitted(title, 11.7, W - 62)}>${esc(title)}</text>
+<text x="14" y="40" font-size="11.5" font-weight="500">${esc(sub)}</text>
+<text x="14" y="53" font-size="11.5" font-weight="500"${fitted(context, 5.9, W - 28 - (extras.length ? 96 : 0))}>${esc(context)}</text>
+<path d="M0 ${HEAD}H${W}M0 ${HEAD + BODY}H${W}${others.length ? `M${MID} ${HEAD}V${HEAD + BODY}` : ''}${others.length > 1 ? `M${MID} ${HEAD + BODY / 2}H${W}` : ''}" stroke="#000" stroke-width="1.5" fill="none"/>
+${boxes.join('\n')}
+${labelIcon(runtime.id, W - 14 - 22, 7, 22)}
+${extras.map(([value, name], i) => `<text x="${W - 14}" y="${42 + i * 12}" font-size="10" text-anchor="end"><tspan font-weight="700">${esc(value)}</tspan><tspan dx="3" font-weight="500">${esc(name)}</tspan></text>`).join('')}
+${mark(14, H - 21, 0.6)}<text x="36" y="${H - 9.500}" font-size="11.5" font-weight="800" style="font-stretch:88%">${esc(labelSite.name)}</text>
+${link ? `<a href="${esc(link)}"><text x="${W - 14}" y="${H - 9.500}" font-size="11.5" font-weight="600" text-anchor="end" text-decoration="underline" style="font-stretch:88%">${esc(link)}</text></a>` : ''}
+</svg>`
+}
+
 // Every embeddable file for one result: [file name, SVG].
 export function embedFiles(result) {
   const perRanking = Object.keys(RANKINGS).filter((id) => result.entry.grades[id])
   return [
+    ['overview.svg', overviewLabel(result)],
     ['badge.svg', badge(result)],
     ['badge.flat.svg', badge({ ...result, shaded: false })],
     ...perRanking.map((rankingId) => [`button.${rankingId}.svg`, button({ ...result, rankingId })]),

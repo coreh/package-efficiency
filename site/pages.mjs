@@ -4,6 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { activeReleaseRows } from '../scripts/lib/releases.mjs'
 import { assistantIcon, groupIcon, inlineIcon } from './icons.mjs'
 import { adapterIdOf, adapterSource, taskSource } from './source.mjs'
+import { overviewLabel } from './layouts.mjs'
 import { CLASSES, LEAST, RANKINGS, classColor, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
 
 const esc = (text) => String(text ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
@@ -298,7 +299,7 @@ function card({ entry, data, runtime, rankingId, model, caption, linkPackage = t
     `<a href="${urls.result(data.task.id, runtime.id, entry)}">Permalink</a>`,
     `<a class="soft svg-link" href="${labelUrl}">SVG</a>`,
   ].filter(Boolean)
-  return `<li data-label="${esc(labelUrl)}" data-embed="${esc(embed.base)}" data-embed-page="${esc(embed.page)}" data-embed-alt="${esc(`Package efficiency of ${entry.title}: ${RANKINGS[rankingId].title}`)}" data-ranking="${rankingId}"><p class="over">${place}${variantTag(entry)}</p>${svg}<p class="under">${lines.join(' &nbsp; ')}</p></li>`
+  return `<li data-label="${esc(labelUrl)}" data-embed="${esc(embed.base)}" data-embed-page="${esc(embed.page)}" data-embed-alt="${esc(`Package efficiency of ${entry.title}`)}" data-ranking="${rankingId}" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, runtime.id, entry.id, '{r}', older ? entry.version : null))}"><p class="over">${place}${variantTag(entry)}</p>${svg}<p class="under">${lines.join(' &nbsp; ')}</p></li>`
 }
 
 // Says, above its label, that an entry is not the package as installed: it
@@ -1072,13 +1073,18 @@ function categoryTile(c, model) {
 function categoryTiles(model, categories = model.catalog.categories.filter((c) => model.categories.some((m) => m.taxonomy === c.id))) {
   return `<ul class="tiles">${categories.map((c) => categoryTile(c, model)).join('')}</ul>`
 }
-function groupedTiles(model, heading = 'h2') {
+// Categories under their groups. `measuredOnly` leaves out the categories
+// (and the groups) with nothing measured; those headings carry no id, since
+// the full list on the same page has them.
+function groupedTiles(model, heading = 'h2', { measuredOnly = false } = {}) {
   const measured = (c) => model.categories.some((m) => m.taxonomy === c.id)
   return model.catalog.groups
     .map((group) => {
-      const members = model.catalog.categories.filter((c) => c.group === group.id).sort((a, b) => measured(b) - measured(a) || categoryShare(model, b.id) - categoryShare(model, a.id) || a.title.localeCompare(b.title))
-      return `<${heading} id="${group.id}"><a href="${urls.group(group.id)}">${groupIcon(group.id)}${esc(group.title)}</a> <span class="count">${members.length}</span></${heading}>\n${categoryTiles(model, members)}`
+      const members = model.catalog.categories.filter((c) => c.group === group.id && (!measuredOnly || measured(c))).sort((a, b) => measured(b) - measured(a) || categoryShare(model, b.id) - categoryShare(model, a.id) || a.title.localeCompare(b.title))
+      if (members.length === 0) return ''
+      return `<${heading}${measuredOnly ? '' : ` id="${group.id}"`}><a href="${urls.group(group.id)}">${groupIcon(group.id)}${esc(group.title)}</a> <span class="count">${members.length}</span></${heading}>\n${categoryTiles(model, members)}`
     })
+    .filter(Boolean)
     .join('\n')
 }
 
@@ -1155,6 +1161,55 @@ ${allTasksTable(model)}
   })
 }
 
+// A few measured packages at the top of the home page, as examples of a
+// label. The pool is the most used measured packages, taken in turn from
+// each registry so that one registry does not fill it. Four show at a time,
+// drawn at random with the day as the seed: the same four for everyone on a
+// day, and another four the next. The page carries the whole pool; a script
+// beside it draws the day's four (without it the first four show).
+const FEATURED = { pool: 24, shown: 4 }
+function featured(model) {
+  const byRegistry = new Map()
+  for (const pkg of model.packages) {
+    if (pkg.ecosystem === 'builtin' || !pkg.listed || pkg.appearances.length === 0) continue
+    if (!byRegistry.has(pkg.ecosystem)) byRegistry.set(pkg.ecosystem, [])
+    byRegistry.get(pkg.ecosystem).push(pkg)
+  }
+  const queues = [...byRegistry.values()].map((list) => list.sort((a, b) => a.listed.rank - b.listed.rank))
+  const pool = []
+  for (let turn = 0; pool.length < FEATURED.pool && queues.some((q) => q[turn]); turn++) for (const queue of queues) if (queue[turn] && pool.length < FEATURED.pool) pool.push(queue[turn])
+  if (pool.length <= FEATURED.shown) return ''
+  const cards = pool.map((pkg) => {
+    const data = pkg.appearances[0].data
+    // The package as installed where it has such an entry, not a tuned variant.
+    const rows = pkg.appearances.filter((a) => a.data === data)
+    const plain = rows.filter((a) => a.entry.name === a.entry.package)
+    const best = bestResult(plain.length ? plain : rows)
+    // All three measures on one label. Its other shapes come from the package's
+    // own address when this is its best result, and from the result's otherwise.
+    const own = !plain.length || best === bestResult(rows)
+    const base = own ? urls.embed(data.task.id, pkg, '') : urls.embedResult(data.task.id, best.runtime.id, best.entry.id, null, '')
+    const svg = overviewLabel({ entry: best.entry, data, runtime: best.runtime })
+    if (!svg) return ''
+    return `<li data-label="${esc(`${base}overview.svg`)}" data-embed="${esc(base)}" data-embed-page="${esc(own ? urls.package(pkg) : urls.result(data.task.id, best.runtime.id, best.entry))}" data-embed-alt="${esc(`Package efficiency of ${best.entry.title}`)}" data-ranking="all" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => best.entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, best.runtime.id, best.entry.id, '{r}', null))}"><p class="over"></p>${svg}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all runtimes</a> &nbsp; <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a> &nbsp; <a href="${urls.result(data.task.id, best.runtime.id, best.entry)}">Permalink</a></p></li>`
+  }).filter(Boolean)
+  return `<h2>Random packages</h2>
+<p class="soft">Four of the most used packages, drawn every day.</p>
+<ul class="shelf featured overview" data-shown="${FEATURED.shown}">${cards.join('\n')}</ul>
+<script>(() => {
+  const list = document.currentScript.previousElementSibling, items = [...list.children]
+  // A small seeded generator (mulberry32), so a day always draws the same four.
+  let seed = Math.floor(Date.now() / 864e5)
+  const random = () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
+  const left = [...items], picked = new Set()
+  while (picked.size < Number(list.dataset.shown) && left.length) picked.add(left.splice(Math.floor(random() * left.length), 1)[0])
+  // In the order drawn, not the pool's.
+  for (const item of items) item.hidden = !picked.has(item)
+  list.prepend(...picked)
+  list.classList.add('picked')
+})()</script>`
+}
+
 export function homePage(model) {
   const lead = model.tasks[0]
   return layout({
@@ -1166,8 +1221,9 @@ export function homePage(model) {
     body: `<main>
 <h1>Package Efficiency Labels</h1>
 <p class="intro">Packages that do the same job run the same task. Each one gets a class from A to G for CPU, memory and type-check cost, like the label on a fridge.</p>
+${featured(model)}
 <h2>Measured categories</h2>
-${categoryTiles(model)}
+${groupedTiles(model, 'h3', { measuredOnly: true })}
 <h2>Packages</h2>
 <p>Every listed package. The ${model.packages.length} measured packages come first, with their classes. The others follow, most used first.</p>
 ${EVERY_PACKAGE_NOTE}
@@ -1507,7 +1563,7 @@ function runtimeCards(tasks, model, scope, rankingId, only, basis = 'best') {
       // the same space there, tagged or not, so the labels stay level.
       const tag = only ? '' : place(s)
       const embed = urls.embedSummary(s.runtime.id, scopeKey, basis, '')
-      return `<li data-label="${esc(`${embed}label.${rankingId}.svg`)}" data-embed="${esc(embed)}" data-embed-page="${esc(summary.address)}" data-embed-alt="${esc(`Package efficiency of ${s.runtime.title}, ${summary.context}: ${RANKINGS[rankingId].title}`)}" data-ranking="${rankingId}">${only ? '' : `<p class="over">${tag}</p>`}${svg}<p class="under"><a href="${urls.runtime(s.runtime.id)}">${esc(s.runtime.title)}, all tasks</a> &nbsp; <a href="${urls.summary(s.runtime.id, scopeKey)}">Permalink</a><br><span class="nowrap">${BASIS[other].title} ${formatNumber(under.ratio)}×${chip(rankingId, under)}</span></p></li>`
+      return `<li data-label="${esc(`${embed}label.${rankingId}.svg`)}" data-embed="${esc(embed)}" data-embed-page="${esc(summary.address)}" data-embed-alt="${esc(`Package efficiency of ${s.runtime.title}, ${summary.context}`)}" data-ranking="${rankingId}" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => summary.entry.grades[id]).join(',')}" data-label-pattern="${esc(`${embed}label.{r}.svg`)}">${only ? '' : `<p class="over">${tag}</p>`}${svg}<p class="under"><a href="${urls.runtime(s.runtime.id)}">${esc(s.runtime.title)}, all tasks</a> &nbsp; <a href="${urls.summary(s.runtime.id, scopeKey)}">Permalink</a><br><span class="nowrap">${BASIS[other].title} ${formatNumber(under.ratio)}×${chip(rankingId, under)}</span></p></li>`
     })
   return shelf(cards)
 }

@@ -609,3 +609,24 @@ td > a + .verified { width: 14px; height: 14px; margin: 0 0 0 5px; vertical-alig
 .sheet-body > p.sheet-note { padding: 0 24px 18px; color: var(--soft); font-size: 0.8125rem; }
 .sheet-body > p.sheet-note + p.sheet-note { margin-top: -8px; }
 .sheet-body > p.sheet-note a { color: var(--accent); font-weight: 700; }
+
+/* The home page's featured packages: the whole pool is in the page, and four
+   show. Until the script has picked the day's four, the first four do. */
+.shelf.featured:not(.picked) > li:nth-child(n+5) { display: none; }
+.shelf.featured > li[hidden] { display: none; }
+
+/* Under a dialog's title, a switch like those on the pages: which measure
+   the shapes below are of. A row of its own that does not scroll, with no
+   rule under it. */
+.sheet-tabs { flex: none; display: flex; padding: 14px 24px 0; background: var(--bg); }
+.sheet-tabs button { font: inherit; font-weight: 700; color: var(--ink); background: var(--bg); border: 1px solid var(--soft); margin-right: -1px; padding: 4px 14px; cursor: pointer; }
+.sheet-tabs button[aria-selected="true"] { background: var(--mark); color: #000; border-color: #000; position: relative; z-index: 1; }
+.sheet-tabs button:hover:not([aria-selected="true"]) { background: var(--band); }
+.sheet-tabs + .sheet-body > p:first-child { padding-top: 12px; }
+/* The home page's random packages show the combined label, two to a row. */
+.shelf.overview { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 460px)); }
+
+/* The short link printed on any label turns blue when pointed at, and does
+   not take the yellow of a page link. */
+svg[role="img"] a:hover { background: none; }
+svg[role="img"] a:hover text { fill: #1558d6; }
