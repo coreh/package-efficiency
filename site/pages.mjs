@@ -840,8 +840,12 @@ function packageGrade(pkg, runtimeId, rankingId) {
 // table leaves most cells empty as languages are added.
 // `everyPackage` marks the table for the page script to add the packages
 // that have no results, so the list is of every known package.
-function packageTable(packages, model, { showEcosystem, everyPackage = false }) {
+// `references` keeps reference entries (and their switch): only a category's
+// own table has them. Elsewhere those results are left out, and a package
+// with nothing else is not listed.
+function packageTable(packages, model, { showEcosystem, everyPackage = false, references = false }) {
   packages = activeReleaseRows(packages)
+  if (!references) packages = packages.map((p) => (p.appearances.some((a) => a.entry.reference) ? { ...p, appearances: p.appearances.filter((a) => !a.entry.reference) } : p)).filter((p) => p.appearances.length)
   const actualRuntimes = model.runtimes.filter((rt) => packages.some((p) => p.appearances.some((a) => a.runtime.id === rt.id)))
   const runtimes = runtimeViews(actualRuntimes)
   if (runtimes.length === 0) return ''
@@ -1111,7 +1115,7 @@ ${taskRows(category.tasks)}
 <p class="soft">Each package on its best runtime. <a href="${urls.task(category.tasks[0].task.id)}">${category.tasks.length > 1 ? 'Each task page' : 'The task page'}</a> has every runtime.</p>
 ${category.tasks.length > 1 ? overallLabels(category, packages, model) : ''}
 ${category.tasks.map((d) => `${category.tasks.length > 1 ? `<h3><a href="${urls.task(d.task.id)}">${esc(d.task.title)}</a></h3>\n` : ''}${taskLabels(d, model)}`).join('\n')}
-${packageTable(packages, model, { showEcosystem: true })}
+${packageTable(packages, model, { showEcosystem: true, references: true })}
 <h2 id="runtimes">Languages and runtimes compared</h2>
 ${runtimeSection(category.tasks, model, category.title)}
 ${(() => {
@@ -1259,7 +1263,7 @@ const FEATURED = { pool: 24, shown: 4 }
 function featured(model) {
   const byRegistry = new Map()
   for (const pkg of model.packages) {
-    if (pkg.ecosystem === 'builtin' || !pkg.listed || pkg.appearances.length === 0) continue
+    if (pkg.ecosystem === 'builtin' || !pkg.listed || pkg.appearances.length === 0 || pkg.appearances.some((a) => a.entry.reference)) continue
     if (!byRegistry.has(pkg.ecosystem)) byRegistry.set(pkg.ecosystem, [])
     byRegistry.get(pkg.ecosystem).push(pkg)
   }
