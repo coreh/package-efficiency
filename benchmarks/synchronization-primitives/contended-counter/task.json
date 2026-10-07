@@ -1,0 +1,33 @@
+{
+  "category": "synchronization-primitives",
+  "task": "contended-counter",
+  "title": "Increment one shared counter under a lock from four threads",
+  "summary": "Four threads each lock one shared mutex, take the next ticket from a counter and unlock, 2,000 to 50,000 times each, and the operation returns the final counter and the sum of all tickets.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 20,
+    "rounds": 3,
+    "operationsPerRound": 100,
+    "minRoundMs": 250,
+    "threads": 4,
+    "concurrency": 4
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "A task on four threads, all contending for one lock with a critical section of a read and a write. CPU time is the sum over all threads, so a lock that spins while it waits pays for the spinning, and one that parks pays in system calls and wakeups; wall-clock time is not what is ranked. Each operation creates the lock, starts its four threads and joins them; starting them is part of the figure. Go runs with GOMAXPROCS=4. CPython and CRuby run one thread at a time under their interpreter lock, so there the threads take turns and the lock is rarely contended. Expect high variance between rounds. No JavaScript entry: these are locks between threads."
+}

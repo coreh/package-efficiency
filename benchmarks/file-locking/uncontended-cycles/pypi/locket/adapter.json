@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "notes": "locket.lock_file(path) for the first handle, lock_file(path, timeout=0) for the probe, whose LockError means refused; acquire() and release().",
+  "details": "locket keeps one lock set per path in the process (a thread lock plus a flock), so a second handle in the same process is refused by the thread lock before flock is tried."
+}

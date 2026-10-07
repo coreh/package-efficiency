@@ -1,0 +1,9 @@
+{
+  "title": "Go buffered channel",
+  "language": "go",
+  "runtimes": ["go"],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "executor": "goroutines, GOMAXPROCS=1",
+  "notes": "Language baseline: a buffered channel holding the 10 resources; receive checks out, send returns. One goroutine per caller, sync.WaitGroup to wait. Yield with runtime.Gosched()."
+}

@@ -1,0 +1,32 @@
+{
+  "category": "structured-logging",
+  "task": "json-lines",
+  "title": "Log records as JSON lines",
+  "summary": "Log 5 to 200 records with a level, a message and five key-value fields each as JSON lines to an in-memory sink and return what the sink captured.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 12
+}

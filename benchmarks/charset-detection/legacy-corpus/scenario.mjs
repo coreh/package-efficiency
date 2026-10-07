@@ -82,9 +82,13 @@ add('mix', 'utf-8', [300, 1500])
 // that uses none of the characters in which they differ) and rejects any
 // encoding that reads the bytes as different text.
 const fromHex = (h) => Uint8Array.from(h.match(/../g), (b) => parseInt(b, 16))
+// Names that detectors in other languages use and the WHATWG decoder does not
+// know, with the encoding they mean (Python's and ICU's code-page names).
+const OTHER_NAMES = { cp932: 'shift_jis', ms932: 'shift_jis', 'windows-31j': 'shift_jis', sjis: 'shift_jis', cp949: 'euc-kr', uhc: 'euc-kr', ms949: 'euc-kr', cp936: 'gbk', ms936: 'gbk', cp950: 'big5', ms950: 'big5', 'big5-hkscs': 'big5', euc_jp: 'euc-jp', euc_jis_2004: 'euc-jp', euc_jisx0213: 'euc-jp', shift_jis_2004: 'shift_jis', shift_jisx0213: 'shift_jis', gb18030_2000: 'gb18030', euc_kr: 'euc-kr', maccyrillic: 'x-mac-cyrillic', 'mac-cyrillic': 'x-mac-cyrillic', koi8_r: 'koi8-r', koi8_u: 'koi8-u', latin_1: 'iso-8859-1', utf_8: 'utf-8' }
 const decodesTo = (name, input, text) => {
   try {
-    return new TextDecoder(String(name).trim(), { ignoreBOM: true }).decode(fromHex(input)) === text
+    const said = String(name).trim().toLowerCase()
+    return new TextDecoder(OTHER_NAMES[said] ?? OTHER_NAMES[said.replaceAll('_', '-')] ?? said.replace(/^iso8859[-_]?(\d+)$/, 'iso-8859-$1').replace(/^cp(125\d)$/, 'windows-$1'), { ignoreBOM: true }).decode(fromHex(input)) === text
   } catch {
     return false
   }

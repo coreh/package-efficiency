@@ -1,0 +1,36 @@
+{
+  "category": "spreadsheet-reading",
+  "task": "read-workbook",
+  "title": "Read an XLSX workbook",
+  "summary": "Open an in-memory XLSX workbook of 3 or 4 sheets and read every cell value: strings, numbers and booleans.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo",
+    "pypi",
+    "rubygems",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "Each adapter opens the workbook bytes with the library and returns the sheets and cell values mapped to a common list of { name, rows }. The verifier compares every cell against the values the scenario wrote."
+}

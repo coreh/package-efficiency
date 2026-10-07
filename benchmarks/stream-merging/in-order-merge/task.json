@@ -1,0 +1,34 @@
+{
+  "category": "stream-merging",
+  "task": "in-order-merge",
+  "title": "Concatenate readable streams in order and read the result to the end",
+  "summary": "Create 10 to 100 readable streams of 1 KiB chunks, merge them one after another into one stream, and collect every chunk it emits.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 1
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "An asynchronous task on one thread: one operation creates the source streams, merges them in order and reads the merged stream to its end. The figure is the merge plus the stream machinery under it (Node streams for merge2 and combined-stream, Web Streams for @std/streams, Node streams read by an async generator for the builtin), including the creation of the sources, which is the same few calls in every adapter. No timer or sleep is involved."
+}

@@ -1,0 +1,15 @@
+{
+  "category": "file-locking",
+  "task": "uncontended-cycles",
+  "title": "Lock and unlock a lock file, refusing a second handle",
+  "summary": "Take an exclusive lock on a lock file, check that a second handle on the same file is refused, release the lock, and check that the second handle can then have it: 20 cycles per operation, on three lock files.",
+  "kind": "sync-operation",
+  "ecosystems": ["cargo", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 3,
+  "notes": "A task on the file system: the lock files are real, created anew before each process and already in the operating system's cache. Each cycle opens, locks and unlocks the file through the package's own handle, so the entries differ by system calls and by their own bookkeeping. CPU time includes the kernel's part."
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Ruby Thread::Queue",
+  "language": "ruby",
+  "runtimes": ["ruby", "ruby-yjit"],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "executor": "Thread, one per caller, one at a time under the interpreter lock",
+  "notes": "Core library: a Thread::Queue holding the 10 resources; pop checks out, push returns. One Thread per caller, joined by the caller of the operation. Yield with Thread.pass."
+}

@@ -24,7 +24,7 @@ the round trip is comparable. Because a round trip alone would also accept a
 function that returns its input, the check also requires the compressed size,
 reported outside timing: the Rust and Python adapters' `describe` returns `{ text, compressedBytes }`.
 It repeats the adapter's compression call once per fixture, before any
-measured work. For every fixture above 300 UTF-8 bytes the compressed size must be smaller than the input, the random base64 and hex ones included (31 of the 40 fixtures). Limits: the size comes from a
+measured work. For every fixture above 300 UTF-8 bytes the compressed size must be smaller than the input. That includes the random base64 and hex ones when they are over 1,024 bytes; a shorter run of random symbols may be stored as it is, since the frame's own bytes can outweigh what entropy coding saves. Limits: the size comes from a
 second, untimed call written next to the timed one, not from the timed call
 itself, so it shows that the library call compresses, and review is still what
 ties it to the timed code. What is timed is the round trip alone: the measured

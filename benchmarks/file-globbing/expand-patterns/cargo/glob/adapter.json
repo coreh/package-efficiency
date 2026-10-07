@@ -1,0 +1,11 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "glob::glob(root + \"/\" + pattern) once per pattern, default options; the iterator is collected into paths. Hidden names match * and **, so it is recorded as not passing.",
+  "details": "MatchOptions { require_literal_leading_dot: true } makes * and ** skip hidden names, but it also hides them from a literal segment after **: **/.gitignore then finds nothing (glob 0.3.3 drops dot entries when it lists a directory for a wildcard). With those two patterns taken out of the check it passed the other patterns; no variant is entered because none can pass."
+}

@@ -1,0 +1,31 @@
+{
+  "category": "temporary-files",
+  "task": "files-and-directories",
+  "title": "Create and remove temporary files and directories",
+  "summary": "Under a given directory, create uniquely named temporary files and directories, write 1 KiB to each file, and remove them all: 240 files and 24 directories, or 40 files and 120 directories.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 40,
+    "rounds": 3,
+    "operationsPerRound": 1000,
+    "minRoundMs": 500
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 2,
+  "notes": "A task on the file system: the temporary root is a real, empty directory under the scratch directory, never the system's temporary directory. Nearly all of the CPU time is spent in the kernel creating, writing and unlinking files, so the entries differ by which system calls they make. CPU time includes the kernel's part and does not include waiting for the disk."
+}

@@ -1,0 +1,16 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "notes": "puremagic.from_string(bytes, mime=True), no file name. Recorded as not passing: it names a plain zip as an OOXML document, ID3v2.3 as audio/vnd.audiokoz, and does not know WebAssembly.",
+  "details": "from_string(data, mime=True) returns the highest-confidence match and raises PureError when nothing matches; the adapter maps that exception to None, as the other entries return no type. Without a file name, puremagic ranks the OOXML signatures (docx, pptx, xlsx) first for every zip, 'ID3' + 3.0 matches audio/vnd.audiokoz (0.7) above audio/mpeg (0.5), and there is no WebAssembly signature. 10 of 56 fixtures fail (4 wasm, 2 mp3, 4 zip). The other 9 formats are right (bmp as image/x-ms-bmp)."
+}

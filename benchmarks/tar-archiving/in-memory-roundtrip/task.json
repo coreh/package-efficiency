@@ -1,0 +1,31 @@
+{
+  "category": "tar-archiving",
+  "task": "in-memory-roundtrip",
+  "title": "Pack and unpack a tar archive of small files",
+  "summary": "Pack tens to hundreds of small in-memory text files (config, source, locale and data files, 100 bytes to 3 KB each) into one tar archive held in memory, then list and read back every entry.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 24,
+  "notes": "A synchronous, in-memory task: the archive is built in a buffer and read back from it, never touching the file system. tar-stream, @std/tar and @mary/tar offer only streaming or asynchronous APIs, tar, tar-fs and fastar work on files or compressed streams, and estargz/tgz are other jobs, so they are not part of this task."
+}

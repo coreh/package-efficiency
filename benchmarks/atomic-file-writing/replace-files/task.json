@@ -1,0 +1,31 @@
+{
+  "category": "atomic-file-writing",
+  "task": "replace-files",
+  "title": "Replace files atomically",
+  "summary": "Replace the contents of files that already exist, through a temporary file and a rename: 120 small text files in seven directories, or 8 files of 256 KB.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 40,
+    "rounds": 3,
+    "operationsPerRound": 1000,
+    "minRoundMs": 500
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 2,
+  "notes": "A task on the file system: the files to replace are real, created anew before each process. Each call writes the same bytes again, so there is no reset. Most of the CPU time is spent in the kernel creating, writing and renaming files. CPU time does not include waiting for the disk (fsync)."
+}

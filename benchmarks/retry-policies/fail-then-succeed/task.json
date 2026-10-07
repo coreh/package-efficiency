@@ -1,0 +1,33 @@
+{
+  "category": "retry-policies",
+  "task": "fail-then-succeed",
+  "title": "Retry a function that fails a few times before it succeeds",
+  "summary": "Run 40 calls one after another, each of a function that fails 0 to 8 times before returning a value, under a policy of 3, 5 or 8 attempts with no waiting, and report the attempts each call used.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 1
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "An asynchronous task on one thread: each operation is one awaited call that makes 40 retried calls one after another. The function is trivial, so the figure is the cost of building a retrier, running its loop and failing or returning, plus what the runtime spends on awaiting. Waiting between attempts is set to zero; a package that cannot do that without a real timer is left out."
+}

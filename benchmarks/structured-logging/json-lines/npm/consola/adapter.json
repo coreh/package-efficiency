@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "notes": "createConsola({ reporters: [custom] }) with a reporter that appends JSON.stringify of the entry; logger.info(message, fields). Throttle is off so repeated records are not collapsed.",
+  "details": "consola has no JSON reporter, so the adapter's own reporter writes the line, as the documentation shows for custom reporters. Its default throttle (1 s, 5 repeats) collapses identical records, and the benchmark logs the same records again and again, so throttle is set to 0; with defaults the correctness check passes but the timed loop would drop records."
+}

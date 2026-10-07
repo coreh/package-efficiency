@@ -1,0 +1,15 @@
+{
+  "category": "file-lookup",
+  "task": "nearest-package-json",
+  "title": "Find the nearest package.json above a directory",
+  "summary": "From each of 95 directories in four trees on disk (a monorepo, a chain 30 levels deep, wide directories, unusual names), walk up the parent directories and return the path of the nearest package.json.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo"],
+  "load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 4,
+  "notes": "A task on the file system: the trees are real directories, created anew before each process and already in the operating system's cache, so no disk is read. CPU time includes the time the kernel spends answering the lookups. locate-path, path-exists and lilconfig do not walk up, and findpython and hike do another job."
+}

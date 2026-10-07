@@ -1,0 +1,15 @@
+{
+  "category": "file-globbing",
+  "task": "expand-patterns",
+  "title": "Expand glob patterns against a tree",
+  "summary": "Expand 25 glob patterns (`**/*.ts`, `packages/*/package.json`, `**/test/*.spec.*`, `**/.gitignore`) against four directory trees on disk (a source project, one wide, one deep, an installed-modules folder; 5,050 files in all) and return the matching files of each pattern.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "jsr", "cargo", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 4,
+  "notes": "A task on the file system: the trees are real directories, created anew before each process and already in the operating system's cache, so no disk is read. Every pattern is expanded by its own call to the library, which walks the tree again. CPU time includes the time the kernel spends listing directories for the process, which is the same floor for every entry on a machine."
+}

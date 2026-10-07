@@ -1,7 +1,7 @@
 // Measures what is written and not run yet, a task at a time, and publishes
 // as it goes: after about every twenty minutes of measuring it records the
 // missing type checks, builds, commits, pushes and deploys.
-// Usage: node scripts/publish-new.mjs [--categories=a,b] [--every=20] [--no-deploy]
+// Usage: node scripts/publish-new.mjs [--categories=a,b] [--skip=c,d] [--every=20] [--checks] [--no-deploy]
 //   --categories  only tasks of these categories (default: every task with
 //                 an adapter that has no result)
 // A lock file stops two of these from running at once.
@@ -11,6 +11,8 @@ import { fromRoot, ROOT } from './lib/util.mjs'
 
 const flag = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3)
 const only = flag('categories')?.split(',')
+// Categories an agent is still writing: their tasks are left alone.
+const skip = new Set(flag('skip')?.split(',') ?? [])
 const everyMs = Number(flag('every') ?? 20) * 60_000
 const deploy = !process.argv.includes('--no-deploy')
 const lock = fromRoot('.cache/publish-new.lock')
@@ -21,12 +23,17 @@ for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => process.exi
 
 const run = (command, args, options = {}) => spawnSync(command, args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...options })
 const say = (text) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${text}`)
-const pending = () => JSON.parse(execFileSync(process.execPath, ['scripts/unmeasured.mjs', '--json'], { cwd: ROOT, encoding: 'utf8' })).filter((t) => !only || only.includes(t.task.split('/')[0]))
+const pending = () => JSON.parse(execFileSync(process.execPath, ['scripts/unmeasured.mjs', '--json'], { cwd: ROOT, encoding: 'utf8' })).filter((t) => (!only || only.includes(t.task.split('/')[0])) && !skip.has(t.task.split('/')[0]))
 
 function publish(measured) {
   say(`publishing after ${measured.length} task(s): ${measured.join(', ')}`)
-  const checks = run(process.execPath, ['scripts/measure-native-checks.mjs', '--missing'])
-  say(`type checks: exit ${checks.status}${checks.status ? ` ${String(checks.stderr).trim().split('\n').at(-1)}` : ''}`)
+  // The per-adapter type checks take long when many are missing, so they are
+  // only run here on request; otherwise run scripts/measure-native-checks.mjs
+  // --missing beside this script.
+  if (process.argv.includes('--checks')) {
+    const checks = run(process.execPath, ['scripts/measure-native-checks.mjs', '--missing'])
+    say(`type checks: exit ${checks.status}${checks.status ? ` ${String(checks.stderr).trim().split('\n').at(-1)}` : ''}`)
+  }
   const data = run(process.execPath, ['scripts/build-data.mjs'])
   const site = data.status === 0 ? run(process.execPath, ['scripts/build-site.mjs']) : data
   if (site.status !== 0) { say(`BUILD FAILED: ${String(site.stderr).trim().split('\n').slice(0, 3).join(' | ')}`); return false }

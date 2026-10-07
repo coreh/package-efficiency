@@ -1,0 +1,33 @@
+{
+  "category": "resource-pools",
+  "task": "fixed-pool",
+  "title": "Check resources out of a pool of 10 and return them, from many callers",
+  "summary": "A pool of 10 reusable resources; 12 to 64 concurrent callers each check one out, touch it, yield once while holding it, and return it, 100 to 4,800 cycles in all.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 30,
+    "rounds": 3,
+    "operationsPerRound": 300,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 64
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 4,
+  "notes": "An asynchronous task on one thread: each operation is one call that ends when every caller has finished its cycles and the pool has been emptied again. A cycle only checks out, touches, yields once and returns, so the figure is the pool's bookkeeping and the runtime's scheduling of callers waiting for a resource, not work in the cycles. The pool and the callers are created inside the call. Go runs with GOMAXPROCS=1, Rust on tokio's current-thread runtime, Python on one asyncio loop; Ruby has no event loop in its standard library and uses threads, which take turns under the interpreter lock."
+}

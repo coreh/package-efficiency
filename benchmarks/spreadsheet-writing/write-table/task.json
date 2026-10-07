@@ -1,0 +1,15 @@
+{
+  "category": "spreadsheet-writing",
+  "task": "write-table",
+  "title": "Write a workbook",
+  "summary": "Write a fixed table of text and number cells, one to three sheets, to an XLSX workbook held in memory, and return the file's bytes.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 200, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 10,
+  "notes": "One operation builds a workbook of 1 to 3 sheets of 6 to 251 rows by 3 to 8 columns (text and numbers) and serializes it to XLSX bytes in memory. The bytes differ between libraries (shared or inline strings, compression, styles); the verifier unzips each file and compares sheet names and every cell's type and value."
+}

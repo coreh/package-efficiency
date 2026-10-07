@@ -1,0 +1,17 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "title": "xuri/excelize/v2",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "module": "github.com/xuri/excelize/v2",
+  "notes": "excelize.OpenReader on the bytes, then GetRows(sheet) per sheet, default options. Not passing: numbers come back formatted to 15 significant digits, so 0.008999999999999994 reads as 0.00899999999999999.",
+  "details": "By default GetRows applies the cell number format (General), which prints at most 15 significant digits, so a stored double that needs 16 or 17 is changed. The RawCellValue option returns the stored text; see the raw variant."
+}

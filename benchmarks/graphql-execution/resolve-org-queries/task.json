@@ -1,0 +1,31 @@
+{
+  "category": "graphql-execution",
+  "task": "resolve-org-queries",
+  "title": "Query against an in-memory schema",
+  "summary": "Parse, validate and execute one GraphQL query of about 40 to 130 resolved fields against a fixed schema and in-memory data, and return the result data.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 32
+}

@@ -32,7 +32,11 @@ cases.push({ input: '', expected: '' }, { input: 'x', expected: 'x' }, { input: 
 const MIN_BYTES = 300, RANDOM_EXEMPT = false
 const utf8 = new TextEncoder()
 const inputBytes = cases.map(({ input }) => utf8.encode(input).length)
-const mustShrink = cases.map((_, i) => inputBytes[i] > MIN_BYTES && !(RANDOM_EXEMPT && i < 36 && (i % kinds.length === 7 || i % kinds.length === 8)))
+// A short run of random symbols (base64, hex) leaves little to gain once the frame's own bytes are
+// counted, and an encoder may store it as it is; those have to shrink only above RANDOM_MIN_BYTES.
+const RANDOM_MIN_BYTES = 1024
+const isRandom = (i) => i < 36 && (i % kinds.length === 7 || i % kinds.length === 8)
+const mustShrink = cases.map((_, i) => inputBytes[i] > MIN_BYTES && !(RANDOM_EXEMPT && isRandom(i)) && !(isRandom(i) && inputBytes[i] <= RANDOM_MIN_BYTES))
 export const verifyResults = (outputs) => {
   assert.ok(Array.isArray(outputs), 'outputs must be an array')
   assert.equal(outputs.length, cases.length, 'one output per fixture is required')

@@ -101,6 +101,8 @@ for(const [language,t] of Object.entries(tools)){
  if(onlyText&&!verify&&result.checkers[language]?.version!==t.version)throw new Error(`--only needs a ${t.tool} ${t.version} baseline on record; run without it`)
  if(!verify&&!onlyText)result.checkers[language]={tool:t.tool,version:t.version,notes:t.notes,negativeControlRejected:true,baseline:await measure([...t.command,base])}
  for(const file of sources){
+  // An adapter someone removed since the files were listed is passed over.
+  if(!existsSync(file))continue
   const id=path.relative(fromRoot('benchmarks'),path.dirname(file));const source=await readFile(file,'utf8');let checked=source
   const http=id.startsWith('http-server/'),equality=id.startsWith('deep-equality/'),html=id.startsWith('html-escaping/')
   // The three original tasks keep their precise wrappers; every other task's
