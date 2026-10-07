@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict'
 import { prepareNativeHttp } from './lib/native-http.mjs'
 import { execFileSync } from 'node:child_process'
-import { existsSync, globSync } from 'node:fs'
+import { existsSync, globSync, statSync } from 'node:fs'
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -99,6 +99,21 @@ const selected = (runtimeId) => !onlyRuntimes || onlyRuntimes.includes(runtimeId
 // --- Rust -------------------------------------------------------------------
 
 let cargoChecked = false
+// A finer CPU clock for the supervisor on macOS (see cpuSeconds there): a
+// small helper, built once and again when its source changes. Without cargo
+// the supervisor reads `ps`, to a hundredth of a second.
+if (process.platform === 'darwin' && !process.env.BENCH_CPUTIME) {
+  const helper = fromRoot('.cache/cargo-target/release/cputime'), source = fromRoot('harness/rust/src/bin/cputime.rs')
+  try {
+    if (!existsSync(helper) || statSync(helper).mtimeMs < statSync(source).mtimeMs) {
+      execFileSync('cargo', ['build', '--locked', '--release', '--quiet', '-p', 'bench-harness', '--bin', 'cputime'], { cwd: ROOT, stdio: 'inherit' })
+    }
+    if (Number.isFinite(Number(execFileSync(helper, [String(process.pid)], { encoding: 'utf8' })))) process.env.BENCH_CPUTIME = helper
+  } catch {
+    console.error('cpu clock: the cputime helper could not be built or run; CPU time is read to a hundredth of a second.')
+  }
+}
+
 function cargoBuild(crate, bin, features) {
   if (!cargoChecked) {
     execFileSync(process.execPath, ['scripts/check-cargo-age.mjs'], { cwd: ROOT, stdio: 'inherit' })

@@ -113,7 +113,9 @@ layout), and frameworks spell the same HTML differently. So only the element
 from `<main id="bench"` to the first `</main>` after it is compared, and both
 sides are first brought to one spelling (`harness/html.mjs`): comments are
 dropped (and the empty `<!>` that Leptos writes where a list or an optional
-piece is filled in, which a browser reads as a comment), whitespace between
+piece is filled in, which a browser reads as a comment), the
+`data-node-hydration` attribute that Dioxus adds for its client code is
+dropped, whitespace between
 tags is dropped, `hidden=""` is `hidden`, `<br/>` is `<br>`, the ways of
 writing an escaped quote or apostrophe become the character, and `&#38;`,
 `&#60;`, `&#62;` become `&amp;`, `&lt;`, `&gt;`. Text that must be escaped

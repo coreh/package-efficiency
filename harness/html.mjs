@@ -5,6 +5,8 @@
 //   - comments are dropped (React puts <!-- --> between pieces of text), and
 //     so is the empty <!> that Leptos leaves where a list or an optional
 //     piece is filled in (a browser reads it as a comment too);
+//   - the attribute that Dioxus puts on elements for its client code to find
+//     them again (data-node-hydration) is dropped;
 //   - whitespace between tags, and at the ends, is dropped;
 //   - an empty attribute value is dropped (hidden="" is hidden);
 //   - a self-closing slash is dropped (<br/> is <br>);
@@ -16,6 +18,7 @@ export function normalizeHtml(html) {
   return html
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<!>/g, '')
+    .replace(/\sdata-node-hydration="[^"]*"/g, '')
     .replace(/>\s+</g, '><')
     .replace(/=""/g, '')
     .replace(/\s*\/>/g, '>')
