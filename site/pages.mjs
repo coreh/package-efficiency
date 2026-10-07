@@ -969,11 +969,11 @@ ${EVERY_PACKAGE_NOTE}
 ${packageTable(model.packages, model, { showEcosystem: true, everyPackage: true })}
 <h2>By registry</h2>
 <div class="scroll"><table class="narrow sortable">
-<thead><tr><th scope="col">Ecosystem</th>${['Listed', 'Measured', 'Can be measured', 'No comparable task'].map((t) => sortable(t)).join('')}</tr></thead>
+<thead><tr><th scope="col">Ecosystem</th>${['Listed', 'Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((t) => sortable(t)).join('')}</tr></thead>
 <tbody>${Object.entries(model.catalog.byEcosystem)
       .map(([id, items]) => {
         const count = (status) => items.filter((item) => statusOf(item) === status).length
-        return `<tr><td>${inlineIcon(`eco-${id}`)}<a href="${urls.ecosystem(id)}">${esc(ECOSYSTEMS[id].title)}</a></td>${[items.length, count('Measured'), count('Not measured yet'), count('No comparable task')].map((n) => cell(n, n.toLocaleString('en-US'))).join('')}</tr>`
+        return `<tr><td>${inlineIcon(`eco-${id}`)}<a href="${urls.ecosystem(id)}">${esc(ECOSYSTEMS[id].title)}</a></td>${[items.length, count('Measured'), count('Benchmark not run yet'), count('No benchmark yet'), count('No comparable task')].map((n) => cell(n, n.toLocaleString('en-US'))).join('')}</tr>`
       })
       .join('\n')}</tbody>
 </table></div>
@@ -1329,9 +1329,11 @@ export function homePage(model) {
     model,
     body: `<main>
 <h1>Package Efficiency Labels</h1>
-<p class="intro">It has never been cheaper to switch languages, runtimes, frameworks and libraries. Compute and memory keep getting more expensive.</p>
-<p>This site helps developers and coding agents choose packages by how efficient they are, across ecosystems. Packages that do the same job run the same task, and each one gets a class from A to G for CPU, memory and type-check cost. It is semi-scientific (see the <a href="#limitations">limitations</a>). The labels take their form from the energy labels of the European Union and other regions. The site is not affiliated with any package, registry or runtime.</p>
-<p>Choose a <a href="/categories/">category</a> or search for a package to start. The site lists ${listedCount.toLocaleString('en-US')} packages. ${measuredCount.toLocaleString('en-US')} of them are measured and compared, in ${model.tasks.length} tasks.</p>
+<div class="pitch">
+<p class="tagline">Switching languages, runtimes, frameworks and libraries has never been cheaper, yet compute and RAM keep getting pricier.</p>
+<p>This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (<a href="#limitations">see limitations</a>), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.</p>
+<p>Choose a <a href="/categories/">category</a> or search for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks.</p>
+</div>
 ${featured(model)}
 <h2>Measured categories</h2>
 ${groupedTiles(model, 'h3', { measuredOnly: true })}
@@ -2113,8 +2115,9 @@ export const categoryHref = (id, model) => {
   return measured ? urls.category(measured.id) : `/${id}/`
 }
 export const catalogUrl = (item) => (item.measured ? urls.package(item.measured) : `/${item.ecosystem}/${item.name}/`)
-const STATUS_ORDER = ['Measured', 'Not measured yet', 'No comparable task']
-export const statusOf = (item) => (item.measured ? 'Measured' : item.category?.benchmarkable ? 'Not measured yet' : item.category && item.category.id !== 'other' ? 'No comparable task' : 'Not measured yet')
+// "Benchmark not run yet": an adapter for the package is written, and it has no result yet.
+const STATUS_ORDER = ['Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task']
+export const statusOf = (item) => (item.measured ? 'Measured' : item.written ? 'Benchmark not run yet' : item.category?.benchmarkable ? 'No benchmark yet' : item.category && item.category.id !== 'other' ? 'No comparable task' : 'No benchmark yet')
 const compact = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(n >= 1e4 ? 0 : 1)}K` : String(n))
 
 // A measured package's best class for CPU and for memory, on any runtime and
@@ -2190,7 +2193,9 @@ export function catalogPackagePage(item, model) {
   const status = statusOf(item)
   const measuredCategory = category && model.categories.find((c) => c.taxonomy === category.id)
   const why =
-    status === 'No comparable task'
+    status === 'Benchmark not run yet'
+      ? 'A benchmark adapter for this package is written. It has not been run yet, so there is no result.'
+      : status === 'No comparable task'
       ? `It is filed under <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, a group that has no one task that all its members can run. Thus there is nothing to compare.`
       : !category || category.id === 'other'
         ? 'It can be measured, but it has no category of comparable packages yet.'

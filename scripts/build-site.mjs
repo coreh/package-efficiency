@@ -43,6 +43,7 @@ import { embedFiles } from '../site/layouts.mjs'
 import * as exportsOf from '../site/exports.mjs'
 import { llmsText, packageMarkdown, resultRows, taskMarkdown, toCsv } from '../site/exports.mjs'
 import { ecosystem, ecosystemIds, goFamily } from './lib/ecosystems.mjs'
+import { adaptersOf, taskIds } from './lib/tasks.mjs'
 import { fromRoot, readJson, writeJson } from './lib/util.mjs'
 
 const dist = (...parts) => fromRoot('dist', ...parts)
@@ -157,6 +158,16 @@ const catalog = { groups, categories: taxonomy, aliases, byEcosystem: {}, byCate
 // Type-check costs of whole packages from the sweeps (scripts/sweep-types/).
 const sweptTypes = {}
 for (const id of ['pypi', 'rubygems', 'cargo']) sweptTypes[id] = await readJson(fromRoot('data', id, 'types.json'), null)
+// Every package that has a benchmark adapter in the repository, measured or
+// not, as `<registry>/<name>` (Go modules by their family, from `module`).
+const written = new Set()
+for (const taskId of taskIds()) {
+  for (const adapter of await adaptersOf(taskId)) {
+    const [registry, ...rest] = adapter.id.split('/')
+    if (registry === 'builtin' || registry.startsWith('_')) continue
+    written.add(`${registry}/${registry === 'gomod' && adapter.module ? goFamily(adapter.module) : adapter.package ?? rest.join('/')}`)
+  }
+}
 for (const id of ecosystemIds) {
   const eco = ecosystem(id)
   // The most used packages, then the few added by hand to fill a category
@@ -180,6 +191,8 @@ for (const id of ecosystemIds) {
       repository: p.repository,
       category: taxonomyById.get(assigned[p.name]?.category) ?? null,
       measured: (id === 'gomod' ? goMeasured.get(goFamily(p.name)) : null) ?? packages.get(`${id}/${p.name}`) ?? null,
+      // An adapter for it is written, whether or not it has run (see statusOf).
+      written: written.has(`${id}/${id === 'gomod' ? goFamily(p.name) : p.name}`),
       // Same cost as the graded packages: the root of added CPU time (at least 10 ms) times added memory.
       typeCheck: tsgo && Number.isFinite(tsgo.cpuMs) ? { tool: `tsgo ${typeData.compilers.tsgo}`, community: typed.communityTypes ?? (!!typed.typesFrom && typed.typesFrom !== 'self'), from: typed.typesFrom === 'self' ? null : typed.typesFrom ?? null, cpuMs: Math.max(0, tsgo.cpuMs), memoryMb: Math.max(0, tsgo.memoryKb) / 1000, cost: ((Math.max(0, tsgo.memoryKb) / 1000) * Math.max(tsgo.cpuMs, 10)) / 1000 } : added ? { community: !!swept.communityTypes, from: swept.typesFrom ?? null, tool: [sweptTypes[id].checker?.tool, sweptTypes[id].checker?.version].filter(Boolean).join(' '), icon: { pypi: 'cpython', rubygems: 'ruby', cargo: 'rust' }[id], cpuMs: Math.max(0, added.cpuMs), memoryMb: Math.max(0, added.memoryMb), cost: (Math.max(0, added.memoryMb) * Math.max(added.cpuMs, 10)) / 1000 } : null,
     }

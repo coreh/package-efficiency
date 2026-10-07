@@ -251,7 +251,7 @@ export function categoryRows(ctx, groupId) {
       return {
         group: model.catalog.groups.find((g) => g.id === c.group)?.title ?? '',
         category: measured?.title ?? c.title,
-        status: measured ? 'Measured' : c.benchmarkable ? 'Not measured yet' : 'No comparable task',
+        status: measured ? 'Measured' : c.benchmarkable ? 'No benchmark yet' : 'No comparable task',
         tasks: measured ? measured.tasks.map((d) => d.task.title).join('; ') : '',
         listed_packages: members.length,
         measured_packages: members.filter((item) => item.measured).length,
@@ -372,7 +372,7 @@ ${marked('measured', catalogTableMdPlain(rows))}
 
 ## By registry
 
-${mdTable(['Ecosystem', 'Listed', 'Measured', 'Can be measured', 'No comparable task'], Object.entries(model.catalog.byEcosystem).map(([id, items]) => [`[${ctx.ecosystems[id].title}](${ctx.url(`/${id}/index.md`)})`, items.length, ...['Measured', 'Not benchmarked yet', 'No comparable task'].map((status) => items.filter((item) => ctx.statusOf(item) === status).length)]))}
+${mdTable(['Ecosystem', 'Listed', 'Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'], Object.entries(model.catalog.byEcosystem).map(([id, items]) => [`[${ctx.ecosystems[id].title}](${ctx.url(`/${id}/index.md`)})`, items.length, ...['Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((status) => items.filter((item) => ctx.statusOf(item) === status).length)]))}
 
 ${footer(ctx, '/packages/', true)}`
   return { markdown, rows }
@@ -553,13 +553,32 @@ This site uses the artwork of other people to identify runtimes, languages and p
 ${footer(ctx, '/credits/', false)}`,
 })
 
+// Packages from the registries' lists and the hand-picked ones; runtime built-ins are not packages.
+const measuredCount = (model) => model.packages.filter((p) => p.ecosystem !== 'builtin').length
+const listedCount = (model) => Math.max(new Set(Object.values(model.catalog.byEcosystem).flat().map((item) => `${item.ecosystem}/${item.name}`)).size, measuredCount(model))
 // The llms.txt convention: a short description and a list of Markdown pages.
 export function llmsText(model, ecosystems, { url = (path) => path }) {
   return `# Package Efficiency Labels
 
 > Efficiency classes from A to G for software packages across npm, JSR, PyPI, RubyGems, Go modules and crates.io: CPU time, memory and type-check cost, measured per task and compared with the best result in any language or runtime. Provisional, and updated as packages are measured.
 
+Switching languages, runtimes, frameworks and libraries has never been cheaper, yet compute and RAM keep getting pricier.
+
+This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (see Limitations below), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.
+
+Choose a category or search for packages to get started. Currently listing ${listedCount(model).toLocaleString('en-US')} packages, out of which ${measuredCount(model).toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks.
+
 Each page has a Markdown version at the same address with index.md added. A page with a list also has results.csv and results.json there. Task and package pages include the benchmark source code.
+
+## Limitations
+
+- All results come from one developer laptop, and other work was running on it. A reference machine will replace it.
+- AI coding agents wrote the benchmark adapters. Most are not yet reviewed by a human; those that are carry a mark.
+- A category has one or a few tasks. A task shows how a package does that job on those inputs, not how it does everything.
+- Packages run with their default settings unless an entry says otherwise. A package tuned for your case can do better.
+- A class compares a result with the best result measured for the task. It changes when a better entry arrives.
+- Every package is installed at a release at least seven days old, so the newest release of a package can be missing.
+- CPU time and memory are measured, not energy. The labels are not an official rating.
 
 ## Indexes
 

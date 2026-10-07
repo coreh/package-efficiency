@@ -642,3 +642,9 @@ svg[role="img"] a:hover text { fill: #1558d6; }
 body:has(input[name^="reference-"][value="hidden"]:checked) tr[data-reference] { display: none; }
 /* Reference rows are set apart by faint diagonal lines. */
 tr[data-reference] > td { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cpath d='M-1 1l2-2M0 6l6-6M5 7l2-2' stroke='%23808080' stroke-opacity='.3' stroke-width='1'/%3E%3C/svg%3E"); background-size: 6px 6px; background-attachment: fixed; }
+
+/* The home page's opening: a tagline and two paragraphs, set larger than the rest. */
+.pitch { max-width: 46rem; margin: 0 0 1.6rem; }
+.pitch p { font-size: 1.12rem; line-height: 1.5; margin: 0 0 .8em; }
+.pitch .tagline { font-size: 1.5rem; line-height: 1.28; font-weight: 700; letter-spacing: -.01em; margin-bottom: .6em; text-wrap: balance; }
+@media (max-width: 700px) { .pitch .tagline { font-size: 1.28rem; } .pitch p { font-size: 1.05rem; } }
