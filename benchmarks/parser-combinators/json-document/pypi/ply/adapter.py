@@ -1,6 +1,13 @@
 import re
+import sys
+import types
 import ply.lex as lex
 import ply.yacc as yacc
+
+if __name__ not in sys.modules:  # the runner does not register the adapter module; ply's inspect calls need it
+    _self = types.ModuleType(__name__)
+    _self.__file__ = __file__
+    sys.modules[__name__] = _self
 
 tokens = ('LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET', 'COMMA', 'COLON', 'STRING', 'NUMBER', 'TRUE', 'FALSE', 'NULL')
 

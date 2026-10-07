@@ -1316,6 +1316,8 @@ function featured(model) {
 })()</script>`
 }
 
+// The day the site was built, as the home page says it.
+export const BUILD_DATE = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 export function homePage(model) {
   const lead = model.tasks[0]
   // Packages from the registries' lists and the hand-picked ones; runtime built-ins are not packages.
@@ -1328,11 +1330,10 @@ export function homePage(model) {
     formats: { data: true },
     model,
     body: `<main>
-<h1>Package Efficiency Labels</h1>
 <div class="pitch">
-<p class="tagline">Switching languages, runtimes, frameworks and libraries has never been cheaper, yet compute and RAM keep getting pricier.</p>
+<h1 class="tagline">Switching languages, runtimes, frameworks and libraries has never been cheaper, yet compute and RAM keep getting pricier.</h1>
 <p>This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (<a href="#limitations">see limitations</a>), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.</p>
-<p>Choose a <a href="/categories/">category</a> or search for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks.</p>
+<p>Choose a <a href="/categories/">category</a> or search for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${BUILD_DATE}.</p>
 </div>
 ${featured(model)}
 <h2>Measured categories</h2>

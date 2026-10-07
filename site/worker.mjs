@@ -28,8 +28,8 @@ export default {
       const to = links.ok ? (await links.json())[short[1]] : null
       if (to) return Response.redirect(new URL(encodeURI(to), url), 308)
     }
-    // An embeddable shape of a label, from its pack.
-    if (path.startsWith('/embed/') && path.endsWith('.svg')) {
+    // A label as a file, or an embeddable shape of one, from its pack.
+    if ((path.startsWith('/embed/') || path.startsWith('/labels/')) && path.endsWith('.svg')) {
       const pack = await asset(env, url, `/lazy/embed/${embedShardOf(path)}.json`)
       const svg = pack.ok ? (await pack.json())[path] : null
       if (svg) return new Response(svg, { headers: { 'cache-control': 'public, max-age=300', 'content-type': 'image/svg+xml' } })

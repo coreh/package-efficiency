@@ -273,6 +273,10 @@ for (const [code, address] of Object.entries(issued)) shortCodes.set(address, co
 const linked = new Set([...resultAddresses, ...summaries.map((s) => s.address)])
 const shortLinks = Object.fromEntries(Object.entries(issued).filter(([, address]) => linked.has(address)))
 let labels = 0
+// Each label as a file of its own (/labels/….svg). They are many, and a
+// site may hold only so many files, so they are packed with the embeddable
+// shapes below and handed out by site/worker.mjs.
+const labelFiles = []
 for (const data of tasks) {
   await page(urls.task(data.task.id), taskPage(data, model))
   await page(urls.source(data.task.id), taskSourcePage(data, model))
@@ -294,7 +298,7 @@ for (const data of tasks) {
       for (const rankingId of Object.keys(RANKINGS)) {
         const svg = renderLabel({ entry, data, runtime, rankingId, standalone: true })
         if (!svg) continue
-        await write(dist(urls.label(data.task.id, runtime.id, entry.id, rankingId)), svg)
+        labelFiles.push([urls.label(data.task.id, runtime.id, entry.id, rankingId), svg])
         labels++
       }
     }
@@ -302,7 +306,7 @@ for (const data of tasks) {
       for (const rankingId of Object.keys(RANKINGS)) {
         const svg = renderLabel({ entry, data, runtime, rankingId, standalone: true })
         if (!svg) continue
-        await write(dist(urls.label(data.task.id, runtime.id, entry.id, rankingId, entry.version)), svg)
+        labelFiles.push([urls.label(data.task.id, runtime.id, entry.id, rankingId, entry.version), svg])
         labels++
       }
     }
@@ -370,6 +374,7 @@ await emit('/', exportsOf.homeExport(ctx))
 const embedPacks = Array.from({ length: EMBED_SHARDS }, () => ({}))
 let embeds = 0
 const embed = (address, svg) => { if (svg) { embedPacks[embedShardOf(address)][address] = svg; embeds++ } }
+for (const [address, svg] of labelFiles) embedPacks[embedShardOf(address)][address] = svg
 for (const data of tasks) {
   for (const runtime of data.runtimes) {
     for (const [entries, versioned] of [[runtime.entries, false], [runtime.history, true]]) {

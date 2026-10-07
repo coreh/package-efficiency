@@ -55,7 +55,7 @@ class ToValue(Transformer):
         return [] if items == [None] else items
 
     def pair(self, items):
-        return (items[0], items[1])
+        return (self.string(items[:1]), items[1])
 
     def object(self, items):
         return {} if items == [None] else dict(items)
