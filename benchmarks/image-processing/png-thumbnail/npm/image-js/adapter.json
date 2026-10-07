@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "notes": "encode(decode(bytes).resize({ width, height }), { format: 'png' }), default options. Not passing: its resize samples between source pixels and does not average the area a thumbnail pixel covers.",
+  "details": "The default interpolation is bilinear between the four nearest source pixels, so at a reduction of 4 it reads 4 of every 16 pixels, and it maps the corner pixels of the source onto the corner pixels of the result, which shifts the picture by up to half a thumbnail pixel. The mean error against the area average is 2.3 to 6.3 levels (limit 2; the entries that average the area are at 0.4 to 1.3). The nearest and bicubic settings of the package do no better, so there is no variant."
+}

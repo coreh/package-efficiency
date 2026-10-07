@@ -1,12 +1,13 @@
 import asyncio
+from typing import Any
 
 
-async def operation(value):
+async def operation(value: Any) -> Any:
     values, limit = value["values"], value["limit"]
     semaphore = asyncio.Semaphore(limit)
     active = peak = 0
 
-    async def job(v):
+    async def job(v: Any) -> Any:
         nonlocal active, peak
         async with semaphore:
             active += 1

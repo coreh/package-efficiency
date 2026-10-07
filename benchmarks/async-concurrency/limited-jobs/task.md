@@ -10,8 +10,8 @@ The job is the same in every adapter, and deliberately does no work of its own:
 
 1. count itself in: add one to a counter of jobs in flight, and remember the
    highest value the counter has had;
-2. yield to the scheduler once (JavaScript `await null`, Python
-   `await asyncio.sleep(0)`, Go `runtime.Gosched()`, Rust a future that returns
+2. yield to the scheduler once (JavaScript one turn of the event loop, a
+   promise resolved by `setImmediate`; Python `await asyncio.sleep(0)`, Go `runtime.Gosched()`, Rust a future that returns
    `Pending` once after waking itself);
 3. count itself out and return `value * 2 + 1`.
 
@@ -36,7 +36,13 @@ documentation shows for mapping over a list (`p-map`, `async.mapLimit`,
 
 Executors, as recorded with each result:
 
-- JavaScript: the runtime's own event loop; a yield is one microtask turn.
+- JavaScript: the runtime's own event loop; a yield is one turn of it
+  (`setImmediate`). A microtask would not do: the job would end before most
+  limiters have started the next one, and the limit would never be reached.
+  A turn costs what the runtime makes it cost. Node makes a system call per
+  turn and Bun and Deno do not, which is why Node's figures are higher for
+  every package here; on macOS the thread also loses the processor at each
+  of those calls, which shows in wall-clock time and not in CPU time.
 - Python: one `asyncio` event loop for the whole run; a yield is one pass of
   the loop, which costs more than a microtask and is the cheapest yield the
   language has.

@@ -1,0 +1,33 @@
+{
+  "category": "redis-client",
+  "task": "get-set",
+  "title": "SET and GET strings",
+  "summary": "Send SET and GET commands for string values of 16 to 1,024 bytes to a local Redis stand-in, eight commands in flight at a time, and decode each reply.",
+  "kind": "client",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "concurrency": 8,
+    "connections": 16,
+    "warmup": 8000,
+    "rounds": 3,
+    "requestsPerRound": 48000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerRequestUs",
+      "unit": "µs",
+      "headline": "µs of CPU per command"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 16,
+  "notes": "The server is not Redis. It is a scripted stand-in in its own process that speaks the Redis protocol for these commands and gives fixed replies, the same for every entry; its work is not counted. A client that keeps one connection sends its eight commands down it; a blocking client uses one connection per lane."
+}

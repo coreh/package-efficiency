@@ -54,6 +54,39 @@ fn cpu_ms() -> f64 {
     ms(usage.ru_utime) + ms(usage.ru_stime)
 }
 
+// System CPU alone, to report beside the total.
+fn system_ms() -> f64 {
+    let mut usage = std::mem::MaybeUninit::<libc::rusage>::uninit();
+    assert_eq!(unsafe { libc::getrusage(libc::RUSAGE_SELF, usage.as_mut_ptr()) }, 0, "getrusage failed");
+    let t = unsafe { usage.assume_init() }.ru_stime;
+    t.tv_sec as f64 * 1000.0 + t.tv_usec as f64 / 1000.0
+}
+
+/// A task on the file system whose operations write (see harness/files.mjs):
+/// the paths in BENCH_FILES_RESET, all under the task's scratch directory
+/// BENCH_FILES, are removed before every operation, and that is not timed.
+/// Operations are awaited one after another, so nothing of the task is in
+/// flight while they are removed.
+fn reset_paths() -> Vec<std::path::PathBuf> {
+    let Ok(list) = std::env::var("BENCH_FILES_RESET") else { return Vec::new() };
+    if list.is_empty() { return Vec::new(); }
+    let root = std::path::PathBuf::from(std::env::var("BENCH_FILES").expect("BENCH_FILES"));
+    let paths: Vec<std::path::PathBuf> = serde_json::from_str::<Vec<String>>(&list).expect("BENCH_FILES_RESET").into_iter().map(Into::into).collect();
+    assert!(paths.iter().all(|path| path.starts_with(&root) && *path != root), "BENCH_FILES_RESET names a path outside BENCH_FILES");
+    paths
+}
+
+fn reset_files(paths: &[std::path::PathBuf]) {
+    for path in paths {
+        let removed = match std::fs::symlink_metadata(path) {
+            Ok(found) if found.is_dir() => std::fs::remove_dir_all(path),
+            Ok(_) => std::fs::remove_file(path),
+            Err(_) => Ok(()),
+        };
+        removed.unwrap_or_else(|error| panic!("could not remove {}: {error}", path.display()));
+    }
+}
+
 /// Gives the executor one turn: the task is woken at once and polled again
 /// after whatever else is ready. It works on any executor, so adapters of
 /// executor-neutral crates can use it where a task has to yield.
@@ -91,6 +124,7 @@ pub fn run<I: 'static, T, E: std::fmt::Display, F: Future<Output = Result<T, E>>
     // Fixtures and prepared inputs live for the whole process, so a future
     // may borrow its input without any lifetime on the operation.
     let inputs: &'static [I] = Box::leak(cases.iter().map(|case| prepare(&case["input"])).collect::<Vec<I>>().into_boxed_slice());
+    let reset = reset_paths();
     block_on(Box::pin(async move {
         let stdin = std::io::stdin();
         let mut commands = stdin.lock().lines();
@@ -121,10 +155,20 @@ pub fn run<I: 'static, T, E: std::fmt::Display, F: Future<Output = Result<T, E>>
             let min_ms = command["minMs"].as_f64().unwrap_or(0.0);
             let mut operations = 0usize;
             let mut checksum = 0u32;
-            let cpu_before = cpu_ms();
+            let mut cpu_before = cpu_ms();
+            let mut system_before = system_ms();
+            let mut paused = 0.0f64;
             let start = Instant::now();
             loop {
                 for i in 0..count {
+                    if !reset.is_empty() {
+                        // Take the removal out of all three clocks.
+                        let (c0, s0, w0) = (cpu_ms(), system_ms(), Instant::now());
+                        reset_files(&reset);
+                        cpu_before += cpu_ms() - c0;
+                        system_before += system_ms() - s0;
+                        paused += w0.elapsed().as_secs_f64() * 1000.0;
+                    }
                     let input = &inputs[(operations + i) % inputs.len()];
                     let output = match operation(black_box(input)).await {
                         Ok(output) => output,
@@ -133,12 +177,13 @@ pub fn run<I: 'static, T, E: std::fmt::Display, F: Future<Output = Result<T, E>>
                     checksum = checksum.wrapping_add(consume(black_box(&output)));
                 }
                 operations += count;
-                if start.elapsed().as_secs_f64() * 1000.0 >= min_ms { break; }
+                if start.elapsed().as_secs_f64() * 1000.0 - paused >= min_ms { break; }
             }
             yield_now().await;
-            let wall_ms = start.elapsed().as_secs_f64() * 1000.0;
+            let wall_ms = start.elapsed().as_secs_f64() * 1000.0 - paused;
             let cpu = cpu_ms() - cpu_before;
-            emit(json!({"phase":"round", "operations":operations, "checksum":checksum, "wallMs":wall_ms, "cpuMs":cpu}));
+            let system = system_ms() - system_before;
+            emit(json!({"phase":"round", "operations":operations, "checksum":checksum, "wallMs":wall_ms, "cpuMs":cpu, "systemCpuMs":system}));
         }
     }));
     // The supervisor has said "exit" or closed stdin. Worker threads of a

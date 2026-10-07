@@ -1,0 +1,31 @@
+{
+  "category": "graph-algorithms",
+  "task": "topological-sort",
+  "title": "Topological sort",
+  "summary": "Build a directed acyclic graph of 20 to 3,000 named nodes from an edge list and return its nodes in a topological order.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 12
+}

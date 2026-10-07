@@ -7,31 +7,31 @@
 // CPU time is what is graded, so an operation that sleeps, or waits on a
 // timer with a real delay, would cost almost nothing here while keeping a
 // real program waiting. Such a task is refused instead of ranked: when a
-// measured round used less CPU than a set share of its wall-clock time, the
-// run fails.
+// measured round used less CPU than MIN_BUSY of its wall-clock time, the run
+// fails.
 //
-// On one thread (task.json load.threads is 1) nothing but a timer, a sleep or
-// outside I/O can make the process wait, and a run that never waits uses
-// about 1.0 of its wall-clock time; the share required is MIN_BUSY. With
-// several threads that block on each other (a full channel, a held lock) the
-// process is idle for a moment whenever the system has to wake the next
-// thread, and under an interpreter lock that is most of the time (PyPy used
-// 0.24 with five threads on a channel of capacity 1). That is the cost of the
-// hand-over and not a timer, so the share required there is only
-// MIN_BUSY_THREADS, which a sleep of any length still fails. A machine too
-// busy to give the process that much cannot measure anything else either.
+// The share is low on purpose, because honest work is not always on the CPU:
+// - A turn of Node's event loop, and of Python's asyncio loop, is a system
+//   call (kevent), and on macOS the thread is switched out at each one: a job
+//   that yields one turn used 0.17 to 0.4 of its wall-clock time in Node
+//   (Bun and Deno, which skip the call, about 1.0).
+// - Threads that block on each other (a full channel, a held lock) leave the
+//   process idle while the system wakes the next one: PyPy used 0.21 with
+//   five threads on a small channel.
+// A one-millisecond timer per operation uses about 0.02. A sleep much shorter
+// than that is not caught: this is a backstop for the rule in the README, not
+// a proof. A machine too busy to give the process this much cannot measure
+// anything else either.
 import { measureOperation } from './supervisor.mjs'
 
-export const MIN_BUSY = 0.25
-export const MIN_BUSY_THREADS = 0.05
+export const MIN_BUSY = 0.08
 // Below this a round is too short for the ratio to mean anything.
 const MIN_ROUND_MS = 10
 
 export async function measureAsyncOperation(options) {
   const run = await measureOperation(options)
   if (run.status !== 'ok') return run
-  const share = (options.load?.threads ?? 1) > 1 ? MIN_BUSY_THREADS : MIN_BUSY
-  const waiting = run.rounds.find((round) => round.wallMs >= MIN_ROUND_MS && round.cpuMs < share * round.wallMs)
+  const waiting = run.rounds.find((round) => round.wallMs >= MIN_ROUND_MS && round.cpuMs < MIN_BUSY * round.wallMs)
   if (waiting) {
     return {
       status: 'failed',

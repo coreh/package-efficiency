@@ -12,7 +12,9 @@
 #
 # A round of `count` exchanges runs on `concurrency` lanes, one thread each:
 # lane w performs exchanges w, w + lanes, w + 2*lanes, ... one after another,
-# and exchange k uses fixture k mod fixtures. CPU time is the whole process's.
+# and exchange k uses fixture k mod fixtures. A lane's thread lives for the
+# whole run and is the one that called connect for it, so a client that keeps
+# its connection per thread (Excon) keeps it. CPU time is the whole process's.
 gem 'json', '= 2.18.0'
 require 'json'
 require 'objspace'
@@ -44,13 +46,41 @@ send_phase('loaded', importMs: elapsed, importCpuMs: used, memory: memory)
 task = JSON.parse(File.read(ENV.fetch('BENCH_CLIENT_TASK')))
 inputs = task['cases'].map { |c| c['input'] }
 lanes = task['concurrency']
-states = [connect(task['host'], task['port'])]
-# One exchange per fixture, in order; the supervisor compares what came back
-# with the task's expected results and with what the peer recorded.
+# One lane: a thread with its own state, given one job at a time.
+class Lane
+  def initialize(host, port)
+    @jobs, @results = Queue.new, Queue.new
+    Thread.new do
+      state = connect(host, port)
+      @results << nil
+      loop { @results << @jobs.pop.call(state) }
+    end
+    @results.pop
+  end
+
+  def run(&job) = @jobs << job
+  def result = @results.pop
+end
+
+def checksum_of(output)
+  case output
+  when true then 1
+  when false, nil then 0
+  when String then output.bytesize
+  when Array, Hash then output.size
+  else 1
+  end
+end
+
+workers = [Lane.new(task['host'], task['port'])]
+# One exchange per fixture, in order, on the first lane; the supervisor
+# compares what came back with the task's expected results and with what the
+# peer recorded.
 described = respond_to?(:describe, true)
-send_phase('verification', outputs: inputs.map { |input| output = operation(states[0], input); described ? describe(output) : output })
+workers[0].run { |state| inputs.map { |input| output = operation(state, input); described ? describe(output) : output } }
+send_phase('verification', outputs: workers[0].result)
 exit 1 unless STDIN.gets&.strip == 'verified'
-states << connect(task['host'], task['port']) while states.length < lanes
+workers << Lane.new(task['host'], task['port']) while workers.length < lanes
 send_phase('ready', memory: memory)
 STDIN.each_line do |line|
   line = line.strip
@@ -61,26 +91,18 @@ STDIN.each_line do |line|
   end
   count = JSON.parse(line)['count']
   before, start = cpu, wall
-  threads = lanes.times.map do |lane|
-    Thread.new(states[lane]) do |state|
+  workers.each_with_index do |worker, lane|
+    worker.run do |state|
       checksum = 0
       k = lane
       while k < count
-        output = operation(state, inputs[k % inputs.length])
-        value = case output
-                when true then 1
-                when false, nil then 0
-                when String then output.bytesize
-                when Array, Hash then output.size
-                else 1
-                end
-        checksum = (checksum + value) & 0xffffffff
+        checksum = (checksum + checksum_of(operation(state, inputs[k % inputs.length]))) & 0xffffffff
         k += lanes
       end
       checksum
     end
   end
-  checksum = threads.sum(&:value) & 0xffffffff
+  checksum = workers.sum(&:result) & 0xffffffff
   elapsed, used = (wall-start)*1000, (cpu-before)*1000
   send_phase('round', requests: count, checksum: checksum, wallMs: elapsed, cpuMs: used)
 end

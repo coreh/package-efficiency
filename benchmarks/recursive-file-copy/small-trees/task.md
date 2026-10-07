@@ -40,7 +40,10 @@ that is their own doing, so it is counted. Three things follow.
 - How the bytes get across is each implementation's choice. On a file system
   that can share blocks between files (APFS, where the published results were
   measured), an implementation may ask the kernel to clone a file instead of
-  copying its bytes, which costs almost nothing for a large file.
+  copying its bytes, which costs almost nothing for a large file. The kernel
+  can also clone a whole directory in one call. That is the likely reason
+  `fs.cpSync` on Bun and Deno costs about a tenth of every other entry in the
+  published results; the result on disk passes the same check.
 - The cost of creating a file depends on the operating system and the file
   system far more than on the package.
 

@@ -1,0 +1,31 @@
+{
+  "category": "source-map-generation",
+  "task": "record-mappings",
+  "title": "Record mappings and encode",
+  "summary": "Record 250 to 17,000 position mappings across 3 to 100 source files and produce the version 3 source map with its mappings encoded.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 12
+}

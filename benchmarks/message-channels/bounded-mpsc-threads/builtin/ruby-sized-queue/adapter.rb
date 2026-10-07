@@ -8,15 +8,15 @@ def operation(value)
   end
   following = Array.new(producers, 0)
   count = sum = 0
-  ordered = true
+  misplaced = 0
   (producers * messages).times do
     v = channel.pop
     p = v % producers
-    ordered = false if v / producers != following[p]
+    misplaced += 1 if v / producers != following[p]
     following[p] += 1
     sum += v
     count += 1
   end
   threads.each(&:join)
-  { 'count' => count, 'sum' => sum, 'ordered' => ordered }
+  { 'count' => count, 'sum' => sum, 'ordered' => misplaced.zero? }
 end

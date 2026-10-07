@@ -46,11 +46,24 @@ export function clientMeasurer({ scenario, build }) {
   }
 }
 
-// A standard-library client of Python, Ruby or Go: how to start it, and the
-// idle process of the same runtime that its memory is counted above (the same
-// baseline as the language's synchronous tasks).
-export async function prepareNativeClient({ taskId, target, meta, rt, goBaseline }) {
-  if (target.ecosystem !== 'builtin') throw new Error(`${target.ecosystem}/${target.name}: client tasks run standard-library clients of ${meta.language} only, for now (see "Client tasks" in benchmarks/README.md)`)
+// A client of Python, Ruby or Go: how to start it, and the idle process of
+// the same runtime that its memory is counted above (the same baseline as the
+// language's synchronous tasks). A standard-library client is run as it is; a
+// package from PyPI or RubyGems is installed from the lock beside its adapter
+// by scripts/lib/native-packages.mjs, under the rules written there, and
+// found through the environment that gives back. Go modules are not run by
+// client tasks yet: their build is tied to the synchronous runner.
+export async function prepareNativeClient({ taskId, target, meta, runtimeId, rt, config, goBaseline, prepareNativePackage }) {
+  let installed = null
+  if (target.ecosystem !== 'builtin') {
+    if (meta.language === 'go') throw new Error('client tasks do not run Go modules yet, only the standard library (see "Client tasks" in benchmarks/README.md)')
+    installed = await prepareNativePackage({ taskId, target, meta, runtimeId, rt, config })
+    if (installed.unavailable) return installed
+  }
+  const env = { ...installed?.env, ...meta.env }
+  const extra = installed
+    ? { version: installed.version, dependencies: installed.dependencies, ...(installed.install ? { install: installed.install } : {}), ...(meta.env ? { settings: meta.env } : {}) }
+    : { version: null, dependencies: {} }
   if (meta.language === 'go') {
     const work = fromRoot('.cache/work', taskId, 'builtin', target.name)
     await mkdir(work, { recursive: true })
@@ -59,13 +72,15 @@ export async function prepareNativeClient({ taskId, target, meta, rt, goBaseline
     const command = path.join(work, 'runner')
     execFileSync(rt.bin, ['build', '-o', command, 'runner.go', 'adapter.go'], { cwd: work, env: { ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOTOOLCHAIN: 'local' }, stdio: 'inherit' })
     return {
-      launch: { command, args: [], cwd: ROOT, env: meta.env, phases: ['boot', 'ready'] },
+      launch: { command, args: [], cwd: ROOT, env, phases: ['boot', 'ready'] },
       base: { command: await goBaseline(rt), args: ['-'], cwd: ROOT },
+      extra,
     }
   }
   const ext = meta.language === 'python' ? 'py' : 'rb'
   return {
-    launch: { command: rt.bin, args: [...rt.args, fromRoot('harness', meta.language, `client-runner.${ext}`), path.join(target.dir, `adapter.${ext}`)], cwd: ROOT, env: meta.env, phases: ['boot', 'loaded', 'ready'] },
+    launch: { command: rt.bin, args: [...rt.args, fromRoot('harness', meta.language, `client-runner.${ext}`), path.join(target.dir, `adapter.${ext}`)], cwd: ROOT, env, phases: ['boot', 'loaded', 'ready'] },
     base: { command: rt.bin, args: [...rt.args, fromRoot('harness', meta.language, `runner.${ext}`), '-'], cwd: ROOT },
+    extra,
   }
 }

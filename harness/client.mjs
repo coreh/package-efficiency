@@ -116,12 +116,14 @@ export async function startPeer({ command, script, dir }) {
 
 // How many times each scripted exchange is sent in a round of `count`:
 // exchange k of a round uses fixture k mod fixtures, and each fixture names
-// the exchange it performs (`exchange`, an index into the peer's script; by
-// default its own position).
+// the exchange it performs (`exchange`, an index into the peer's script, or a
+// list of them; by default its own position).
 function expectedCounts(cases, exchanges, count) {
   const counts = new Array(exchanges).fill(0)
   cases.forEach((c, i) => {
-    counts[c.exchange ?? i] += Math.floor(count / cases.length) + (i < count % cases.length ? 1 : 0)
+    const times = Math.floor(count / cases.length) + (i < count % cases.length ? 1 : 0)
+    // A list: an operation that performs several exchanges (a pipeline).
+    for (const exchange of [].concat(c.exchange ?? i)) counts[exchange] += times
   })
   return counts
 }

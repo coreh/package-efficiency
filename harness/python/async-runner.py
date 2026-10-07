@@ -9,7 +9,25 @@ timed part, so whatever was left scheduled is charged to the round. An adapter
 may instead define a plain `def operation(input)` that starts its own threads
 and joins them before it returns. CPU is process-wide, all threads included.
 prepare(input) and describe(output) are as in runner.py and are not timed."""
-import asyncio, gc, importlib.util, inspect, json, os, sys, time
+import asyncio, gc, importlib.util, inspect, json, os, resource, shutil, sys, time
+
+def system_time():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_stime
+
+# A task on the file system whose operations write (see harness/files.mjs):
+# the paths in BENCH_FILES_RESET, all under the task's scratch directory
+# BENCH_FILES, are removed before every operation, and that is not timed.
+# Operations are awaited one after another, so nothing of the task is in
+# flight while they are removed.
+reset_paths = json.loads(os.environ.get('BENCH_FILES_RESET') or '[]')
+if not all(p.startswith(os.environ.get('BENCH_FILES', '') + '/') for p in reset_paths):
+    sys.exit('BENCH_FILES_RESET names a path outside BENCH_FILES')
+def reset_files():
+    for p in reset_paths:
+        if os.path.isdir(p) and not os.path.islink(p):
+            shutil.rmtree(p)
+        elif os.path.lexists(p):
+            os.unlink(p)
 
 def memory():
     for _ in range(3):
@@ -59,9 +77,17 @@ async def main():
         count, minimum = command['count'], command.get('minMs', 0)/1000
         operations = checksum = 0
         size = len(inputs)
-        cpu, start = time.process_time(), time.perf_counter()
+        cpu, start, system = time.process_time(), time.perf_counter(), system_time()
         while True:
-            if awaited:
+            if reset_paths:
+                for i in range(count):
+                    # Take the removal out of all three clocks.
+                    c0, w0, s0 = time.process_time(), time.perf_counter(), system_time()
+                    reset_files()
+                    cpu += time.process_time()-c0; start += time.perf_counter()-w0; system += system_time()-s0
+                    x = inputs[(operations+i)%size]
+                    checksum = (checksum + measure(await operation(x) if awaited else operation(x))) & 0xffffffff
+            elif awaited:
                 for i in range(count):
                     checksum = (checksum + measure(await operation(inputs[(operations+i)%size]))) & 0xffffffff
             else:
@@ -72,6 +98,6 @@ async def main():
         await asyncio.sleep(0)
         wall_ms = (time.perf_counter()-start)*1000
         cpu_ms = (time.process_time()-cpu)*1000
-        send('round', operations=operations, checksum=checksum, wallMs=wall_ms, cpuMs=cpu_ms)
+        send('round', operations=operations, checksum=checksum, wallMs=wall_ms, cpuMs=cpu_ms, systemCpuMs=(system_time()-system)*1000)
 
 asyncio.run(main())

@@ -296,6 +296,1208 @@ in one go, on an idle machine. Until the type checks are measured then
 (`node scripts/measure-native-checks.mjs --missing`), `npm test` reports a
 new adapter of an already measured task as missing a check; that is expected.
 
+## Asynchronous operations
+
+A task of kind `"async-operation"` is for work that cannot be one synchronous
+call: the result exists only after promises, tasks, goroutines or threads have
+run. Limiters, queues, channels, locks, pools and streams are of this kind.
+Everything under "Synchronous operations" above still holds (fixtures made
+once, `prepare`, `describe`, verification before warm-up, the same warm-up,
+rehearsal and rounds, the same figures and units); this section says only what
+differs. Two finished tasks to copy from:
+`async-concurrency/limited-jobs` (one thread, an awaited call, JavaScript,
+Python, Go and Rust) and `message-channels/bounded-mpsc-threads` (five threads,
+a blocking call, Rust, Go, Python and Ruby).
+
+Use it only where it is needed. If every package in the task does the job in
+one synchronous call, write a `"sync-operation"` task.
+
+### What an operation is, and what is timed
+
+One operation is one call that is **finished when it returns its result**:
+
+- JavaScript and Python coroutines: the runner awaits the call. The whole run
+  is inside one event loop, as in any program in those languages.
+- Rust futures: the runner awaits the call inside one `block_on` of the
+  adapter's executor (see "Executors" below).
+- Go, Ruby, Rust with threads, Python with threads: the call blocks. It starts
+  its goroutines or threads and joins them before it returns.
+
+Operations run one after another, never overlapped. A round is timed from
+before its first call to after its last result, plus one more turn of the
+event loop or executor, so that work an operation left scheduled is charged
+to the round. CPU time is that of the whole process, every thread included
+(`process.cpuUsage()`, `getrusage`, `time.process_time()`,
+`CLOCK_PROCESS_CPUTIME_ID`); threads are not multiplied in. Memory is read as
+for synchronous tasks, above the warm baseline of the same runner.
+
+### Rules that are specific to this kind
+
+1. **The result proves the work is done.** It must be computed from every unit
+   of work (every job's value, every message received), and the verifier must
+   check it strictly. An operation that only schedules work and returns would
+   then return a wrong result. Never return a count you already knew.
+2. **No real delays.** No `sleep`, no timer with a delay, no waiting on a
+   clock. A delay of zero is not free either: `setTimeout(fn, 0)` waits a
+   millisecond on Node. CPU time is what is graded, so waiting would cost
+   nothing and rank first. The harness refuses the plain cases: a run whose
+   measured round used less than 8% of its wall-clock time as CPU fails with
+   "the operations wait instead of working" (a millisecond timer per
+   operation uses about 2%; honest work on Node's event loop or between
+   blocked threads can be as low as 20%, see `harness/async-operation.mjs`).
+   That check is a backstop, not permission for short sleeps. If a package cannot do the job without a real timer, leave it out
+   and say so in `task.md`. Do not replace its timer with a fake one unless the
+   package itself offers that as an option (a `sleep` argument, a paused
+   clock), and then say so in the adapter's `notes`.
+3. **One yield is the same thing everywhere.** Where a unit of work has to
+   give way once, use: JavaScript `await new Promise((r) => setImmediate(r))`
+   with `setImmediate` imported from `node:timers` (a turn of the event loop;
+   `await null` is only a microtask, and a job that short ends before most
+   limiters have started the next one); Python `await asyncio.sleep(0)`; Go
+   `runtime.Gosched()`; Rust `tokio::task::yield_now().await` on tokio and
+   `bench_harness::async_operation::yield_now().await` on anything else.
+4. **Threads and concurrency are part of the task.** `task.json` `load` has
+   two more fields, both required: `threads`, how many threads run the task's
+   code at once, and `concurrency`, the largest number of units in flight
+   (jobs, producers, callers). Every fixture and every adapter of a task uses
+   the same thread count. They are stored in each result with the adapter's
+   executor. What `threads` means:
+   - `1`: JavaScript on its main thread; Python on one asyncio loop; Rust on
+     a single-thread executor; Go with `GOMAXPROCS=1`, which the harness
+     sets. Work interleaves, it never runs in parallel.
+   - `N` above 1: exactly N threads run the task's code (count the calling
+     thread if it does part of the work). Rust `std::thread` or a
+     multi-thread executor with `worker_threads(N)`; Go with `GOMAXPROCS=N`,
+     set by the harness; Python `threading` and Ruby `Thread`, which run one
+     at a time under the interpreter lock (say so in the adapter's `notes`).
+     JavaScript has no entry in such a task unless the packages themselves
+     are about worker threads.
+   The harness also sets `BENCH_THREADS` to the number.
+5. **Executors.** The harness has none. A Rust adapter brings the runtime its
+   crate is built for: a tokio crate runs on tokio (`new_current_thread()`
+   when `threads` is 1, `new_multi_thread().worker_threads(N)` otherwise), a
+   crate with its own executor on that one. A crate that works on any executor
+   uses the one `task.md` names for the task, the same for all such crates in
+   it (`futures::executor::block_on` unless there is a reason). Every adapter,
+   in every language, says what it runs on in `adapter.json` `"executor"`
+   (for example `"tokio current-thread"`, `"event loop"`,
+   `"asyncio event loop"`, `"goroutines, GOMAXPROCS=5"`), and it is written
+   into each result.
+6. **The same unit of work in every adapter.** Write the job, the producer or
+   the caller out step by step in `task.md`, and implement exactly those
+   steps in each language. It should do no work of its own, so that the figure
+   is the package's and the scheduler's.
+7. **Where things are created.** The limiter, channel, pool or lock is created
+   inside the measured call in every adapter, and so are the tasks, goroutines
+   or threads that use it. Their start-up is part of the figure; say so in
+   `task.md`. Size the fixtures so that it is a small part (thousands of
+   messages per started thread, not tens).
+8. **State the scheduler's share.** A task with trivial jobs measures the
+   runtime's scheduling as much as the package. Say in `task.json` `notes`
+   what the figure consists of.
+
+### Files
+
+```
+benchmarks/<category>/category.json            once per category
+benchmarks/<category>/<task>/task.json
+benchmarks/<category>/<task>/task.md
+benchmarks/<category>/<task>/scenario.mjs
+benchmarks/<category>/<task>/npm/<package>/adapter.json, adapter.js
+benchmarks/<category>/<task>/jsr/@scope/name/adapter.json, adapter.js
+benchmarks/<category>/<task>/cargo/<crate>/adapter.json, Cargo.toml, src/main.rs
+benchmarks/<category>/<task>/builtin/<name>/adapter.json, adapter.py | adapter.rb | adapter.go | adapter.js
+```
+
+`task.json` is that of a synchronous task with another `kind` and the two
+`load` fields:
+
+```json
+"kind": "async-operation",
+"load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 20000, "minRoundMs": 250, "threads": 1, "concurrency": 32 },
+```
+
+Lower `warmup` and `operationsPerRound` when one operation is slow (the
+warm-up also ends after two seconds). Copy `metrics` from an existing task.
+
+`scenario.mjs` exports `cases` (`{ input, expected }`, inputs plain JSON),
+`verifyResults(outputs)` (strict, used for every language), `consume(result)`
+and an **async** `verify`:
+
+```js
+export const verify = async (operation) => {
+  const outputs = []
+  for (const { input } of cases) outputs.push(await operation(input))
+  verifyResults(outputs)
+}
+```
+
+Every `adapter.json` has `author`, `"review": "unreviewed"`, `"executor"` and
+`notes`; a `builtin` one also has `title`, `language` and `runtimes`, as in
+the two example tasks.
+
+### Files that operations write
+
+An asynchronous task may use fixture files exactly as "Tasks on the file
+system" below describes: the scenario exports `files = { tree, reset }`, and
+case inputs carry absolute paths under `BENCH_FILES`. When `reset` is
+declared, every runner an asynchronous task can use removes those paths
+before every operation and keeps the removal out of CPU, system CPU, elapsed
+time and the time that counts towards `minMs`; it refuses a reset path
+outside `BENCH_FILES`, and every round also reports `systemCpuMs`. The warm
+baseline runs without the reset. (JavaScript, Python and awaited Rust have
+their own runners for this kind; Ruby, Go and blocking Rust use the
+synchronous ones, which already do it.)
+
+How this meets concurrency:
+
+- Operations are never in flight together. The runner awaits one before it
+  starts the next, so the reset happens between operations with nothing of
+  the task running. An operation must therefore not leave writers behind:
+  whatever it started has finished, and closed its files, when its result is
+  returned (the first rule above). The result should include what was
+  written (a count of files, a size), so the verifier sees it.
+- Inside one operation, units that are in flight together write to different
+  paths, all under the reset paths (for example `out/<i>.txt` for unit `i`,
+  with `reset: ['out']`). The scenario gives the destination; the adapters
+  derive the per-unit names the same way.
+- The verification calls come before any reset, one per fixture, so each
+  fixture needs a destination of its own, as in a synchronous task.
+- File-system work waits on the kernel. A round of an operation that writes
+  can use much less CPU than wall-clock time without sleeping; if the
+  "operations wait instead of working" check (rule 2) refuses an honest task
+  for that reason, report it instead of working around it.
+
+### A minimal adapter in each language
+
+JavaScript (`adapter.js`; runs on node, bun and deno). Export an `operation`
+that returns a promise, and optionally `prepare`:
+
+```js
+import pLimit from 'p-limit'
+import { setImmediate } from 'node:timers'
+const turn = () => new Promise((resolve) => setImmediate(resolve))
+export async function operation({ values, limit }) {
+  const run = pLimit(limit)
+  return Promise.all(values.map((value) => run(async () => { await turn(); return value * 2 + 1 })))
+}
+```
+
+Python (`builtin/<name>/adapter.py`, `"language": "python"`,
+`"runtimes": ["cpython", "pypy"]`). `async def operation` is awaited on one
+asyncio loop; a plain `def operation` is called and must join its threads.
+Annotate every `async def` yourself, as below: the type check adds
+annotations to plain `def` only, and mypy rejects an `async def` without them:
+
+```python
+import asyncio
+from typing import Any
+async def operation(value: Any) -> Any:
+    semaphore = asyncio.Semaphore(value["limit"])
+    async def job(v: Any) -> Any:
+        async with semaphore:
+            await asyncio.sleep(0)
+            return v * 2 + 1
+    return await asyncio.gather(*[job(v) for v in value["values"]])
+```
+
+Go (`builtin/<name>/adapter.go`, `"language": "go"`, `"runtimes": ["go"]`).
+`operation` blocks until its goroutines are done; `prepare` is optional.
+Shared counters must be atomic or locked whatever `threads` is:
+
+```go
+package main
+import "sync"
+func operation(value any) any {
+	values := value.(map[string]any)["values"].([]any)
+	results := make([]float64, len(values))
+	var wg sync.WaitGroup
+	for i, v := range values {
+		wg.Add(1)
+		go func(i int, v float64) { defer wg.Done(); results[i] = v*2 + 1 }(i, v.(float64))
+	}
+	wg.Wait()
+	return results
+}
+```
+
+Ruby (`builtin/<name>/adapter.rb`, `"language": "ruby"`,
+`"runtimes": ["ruby", "ruby-yjit"]`). Ruby has no event loop in its standard
+library, so `operation` blocks and joins its threads. Sorbet rejects a
+variable that changes type inside a block (`ok = true` and later
+`ok = false`): count failures in an integer instead:
+
+```ruby
+def operation(value)
+  queue = Thread::SizedQueue.new(value['capacity'])
+  producer = Thread.new { value['messages'].times { |i| queue.push(i) } }
+  sum = 0
+  value['messages'].times { sum += queue.pop }
+  producer.join
+  sum
+end
+```
+
+Rust, an operation that is a future (`cargo/<crate>/src/main.rs`):
+`bench_harness::async_operation::run(block_on, prepare, operation, consume, describe)`.
+`block_on` is given one future, the whole run, and must drive it to the end;
+`operation` takes a `&'static` prepared input and returns a future of a
+`Result`:
+
+```rust
+use serde_json::{Value, json};
+#[global_allocator]
+static ALLOC: bench_harness::CountingAllocator = bench_harness::CountingAllocator;
+
+async fn operation(input: &'static Vec<u64>) -> Result<Vec<u64>, tokio::task::JoinError> {
+    let handles: Vec<_> = input.iter().map(|&v| tokio::spawn(async move { tokio::task::yield_now().await; v * 2 + 1 })).collect();
+    let mut results = Vec::with_capacity(handles.len());
+    for handle in handles { results.push(handle.await?); }
+    Ok(results)
+}
+
+fn main() {
+    let runtime = tokio::runtime::Builder::new_current_thread().build().unwrap();
+    bench_harness::async_operation::run(
+        |main| runtime.block_on(main),
+        |input: &Value| input["values"].as_array().unwrap().iter().map(|v| v.as_u64().unwrap()).collect::<Vec<u64>>(),
+        operation,
+        |results| results.len() as u32,   // timed: read something cheap
+        |_, results| json!(results),      // not timed: JSON for the verifier
+    );
+}
+```
+
+Rust, an operation that blocks on threads: the synchronous
+`bench_harness::operation::run_prepared(prepare, operation, consume, describe)`,
+with `std::thread::scope` inside `operation`, as in
+`message-channels/bounded-mpsc-threads/cargo/crossbeam-channel`.
+
+`Cargo.toml` is that of any cargo adapter (the harness with
+`features = ["operations"]`, `serde_json`, the crate, and its runtime with
+only the features used, for example
+`tokio = { version = "1", features = ["rt", "sync"] }`). A new cargo adapter
+is a new member of the workspace, and `Cargo.lock` must list it before
+anything builds. That is the one step outside your folder, and it compiles
+nothing: run `node scripts/lock-crates.mjs` (it adds the new member to the
+lock, downloads no source, and steps back any release younger than seven
+days). Never edit `Cargo.lock` by hand, and never run a cargo command
+yourself, `cargo build`, `cargo add`, `cargo update` and `cargo metadata`
+included: `scripts/measure.mjs` builds, after
+checking the age of every locked crate.
+
+### How to check
+
+```sh
+node scripts/measure.mjs <category>/<task> --check
+```
+
+Every adapter must print `works` on every runtime it lists; the command
+records nothing and may be run on a busy machine. What the failures mean:
+
+- `verify-failed: ... fixture N: ...`: the result is wrong. For a limiter or
+  a pool, look first at whether the unit of work really yields (rule 3).
+- `failed: the operations wait instead of working`: something sleeps or uses
+  a timer (rule 2).
+- `timed out waiting for "round"`: an operation never finished: a promise
+  that is never settled, a thread never joined, a channel never drained.
+  It is also what a batch longer than 30 seconds gives: one pass over the
+  fixtures must take well under that on the slowest runtime.
+- `an async-operation task needs load.threads`: `task.json` (rule 4).
+
+Run the check several times for adapters with threads or goroutines: a result
+that depends on timing must pass every time, or the check is too strict for
+what the task defines. Do not measure (the command without `--check`) unless
+asked to.
+
+A package from PyPI, RubyGems or the Go module proxy is written as the section
+above says and is run by the same runners as the `builtin` entries here; no
+such adapter has been tried in a task of this kind yet.
+
+The `builtin` Python, Ruby and Go adapters must also pass their type
+checkers. This runs each once and records nothing; it must end with
+`0 rejected`:
+
+```sh
+node scripts/measure-native-checks.mjs --verify --only=<category>/<task>
+```
+
+Not covered yet: a Rust standard-library entry (there is no `builtin` path
+for Rust, so `std::sync::mpsc` or `std::sync::Mutex` cannot be listed), and
+the type check of a PyPI, RubyGems or Go module adapter in a task of this
+kind (`scripts/measure-native-checks.mjs` takes those from synchronous tasks
+only).
+
+
+## Tasks on the file system
+
+A task whose job is done on files (walk a tree, expand a pattern against a
+directory, copy, archive to a file, write a file) declares the files it
+needs. The harness creates them, hands the adapter paths, and removes them.
+Two finished examples to copy from: `directory-walking/mixed-trees` (reads)
+and `recursive-file-copy/small-trees` (writes).
+
+Use this only when the package's job is on the file system. If the package
+takes bytes or a string and a file would only be a way to get them, write a
+plain task and give the bytes as a fixture (see `prepare` under "Synchronous
+operations").
+
+### How it works
+
+- **Where.** `.cache/scratch/<category>/<task>/`, inside the repository: one
+  fixed path per task, the same for every adapter, runtime and language, so
+  path lengths and the disk are the same for every entry. Not the system's
+  temporary directory, which can be another kind of file system. The script
+  prints the kind once (`on apfs`). The path is in the environment variable
+  `BENCH_FILES` when `scenario.mjs` is loaded and in every adapter process.
+- **When.** The scripts remove the directory, create every declared file and
+  directory, start one adapter process, and remove the directory when that
+  process ends, also when it fails. So each process (each of the three runs of
+  each adapter on each runtime) gets files that nothing has touched. Creating
+  and removing happen in the measuring script, never in the adapter process.
+  Every file and directory gets the same modification time (2026-01-01 UTC).
+- **Writes.** A scenario lists under `reset` the paths its operations create.
+  The runner removes them before every operation: before each call of the
+  warm-up, of the rehearsal and of the measured rounds. The removal is not
+  timed: it is taken out of the CPU time, the system CPU time and the elapsed
+  time of the round, and a round lasts until its operations alone add up to
+  `minRoundMs`. Each call therefore starts from the same files.
+- **Cache.** The files were written a moment before the process starts, and
+  the checks, the warm-up and the rehearsal read them again before anything is
+  measured. Every entry is measured with the files in the operating system's
+  cache, and none reads the disk. Cold-cache cost is not measured.
+- **System time.** CPU time is the process's user plus system time, as in
+  every task. Here the system part is large: it is the kernel doing what the
+  package asked of it. It is counted, because which calls a package makes and
+  how many is the package's own doing (one walker asks about every entry,
+  another reads what the directory listing already told it). Two consequences
+  to state in `task.md`. Every entry pays about the same for the calls nobody
+  can avoid, so classes are closer together than in a task on memory. And
+  time spent waiting for the disk (`fsync`) is not CPU time and is not in the
+  figure. Each round also records its system part alone (`systemCpuMs`, beside
+  `cpuMs` in the raw result), so the share can be read for any entry.
+- **One process, its own CPU.** Work a package hands to a child process is
+  not counted. A package that does its job by running a command (`git`, `tar`)
+  cannot be an entry of these tasks.
+
+Measured shares, on macOS with APFS: in `directory-walking/mixed-trees` system time
+was 85 to 93 % of the CPU time of the fastest entries (fdir, walkdir, Bun's
+`readdirSync`) and 42 to 60 % of the slowest (Node's and Deno's
+`readdirSync`), and eleven of the nineteen entries were within 1.4 times the
+best. In `recursive-file-copy/small-trees` it was 80 to 97 % for every entry.
+The slower entries spend more system time too, not only more of their own.
+
+### Size
+
+- Make one operation cost between about 0.5 ms and 100 ms for the fastest
+  entry. Below that the fixed costs of a call drown the job; above it a round
+  holds too few calls, and with its reset a warm-up may not finish in the 30
+  seconds a phase is allowed.
+- Reading: a few thousand entries in all. Listing a directory costs the
+  kernel a fixed amount per directory and a small amount per entry, so many
+  entries in few directories shows more of the package, and many tiny
+  directories shows mostly the kernel. Use several cases of different shape
+  (a wide one, a deep one, a realistic one) and not one shape only.
+- Writing: a few hundred files and a few megabytes in all. Creating a file
+  costs the kernel far more than listing one.
+- Depth: keep every path under 200 characters after the scratch directory.
+
+### Write a task: files you write
+
+Only files under `benchmarks/<category>/`:
+
+```
+benchmarks/<category>/category.json          (if the category has none yet)
+benchmarks/<category>/<task>/task.json
+benchmarks/<category>/<task>/task.md
+benchmarks/<category>/<task>/scenario.mjs
+benchmarks/<category>/<task>/<registry>/<name>/adapter.json + the adapter
+```
+
+Copy `category.json`, `task.json` and the `adapter.json` files from one of the
+two examples and change the words. In `task.json` keep `"kind":
+"sync-operation"` and set `load` to:
+
+| | reading | writing (has `reset`) |
+| --- | --- | --- |
+| `warmup` | 2000 | 40 |
+| `rounds` | 3 | 3 |
+| `operationsPerRound` | 100000 | 1000 |
+| `minRoundMs` | 250 | 500 |
+
+End the `notes` of `task.json` with one sentence that this is a task on the
+file system and that CPU time includes the kernel's part.
+
+### scenario.mjs
+
+`scenario.mjs` is copied next to each JavaScript adapter and loaded alone, so
+it imports nothing but `node:` modules. It exports:
+
+- `files`: `{ tree, reset }`.
+  - `tree` is an array. A file is `{ path, content }` with `content` a string
+    or a `Uint8Array`; add `mode: 0o755` for other permission bits than 644. A
+    directory that would otherwise be empty is `{ path: 'some/dir/' }` (the
+    slash at the end makes it a directory). A symbolic link is `{ path, link }`
+    with a target relative to the link. Paths are relative, with forward
+    slashes, without `.` or `..`. Parent directories are created for you.
+  - `reset` (only when operations write) is an array of relative paths that
+    the runner removes before every operation. They must not be in `tree` or
+    under a file of it. List the top of what is written: if operations write
+    `out/a` and `out/b`, either list both or list `out` and expect every
+    operation to create `out` itself.
+- `cases`: as in any task. Build every path from `process.env.BENCH_FILES`:
+
+  ```js
+  const scratch = process.env.BENCH_FILES ?? '/BENCH_FILES-is-not-set'
+  export const cases = [{ input: { root: `${scratch}/app` }, expected: [...] }]
+  ```
+
+  The scripts refuse an input that holds an absolute path outside the scratch
+  directory. Keep `expected` free of the scratch path (relative paths, counts),
+  and build it from the same data as `tree`, not by reading the disk.
+- `verifyResults(outputs)`, `verify(operation)` and `consume(result)`: as in
+  any task. Write the checks in one function that both verifiers call.
+
+Generate names, sizes and contents with a fixed-seed generator, never
+`Math.random()` or the date. Include what real trees have and careless code
+drops: an empty file, an empty directory, dot files, a name with a space, a
+name that is not ASCII, a deep path, and for a task that writes, a file with
+mode 755 and one with mode 600.
+
+**A task that reads** (no `reset`): the result of an operation is returned,
+and the check compares it with `expected`. Operations must not create, change
+or remove anything. Say in `task.md` what is forgiven because it is the same
+answer in another spelling (order; absolute or relative paths) and forgive
+nothing else: a missing dot file, a missing empty directory, a duplicate or a
+made-up entry must fail.
+
+**A task that writes** (has `reset`): the result is on the disk, so the check
+reads the disk.
+
+- Give every case its own destination, each listed in `reset`. The checks of
+  all cases run after all cases have been called once, so two cases that wrote
+  to one place would hide each other.
+- In `verify(operation)`, call the operation and then check the disk, case by
+  case. In `verifyResults(outputs)`, check the disk for every case and ignore
+  `outputs` unless the operation also returns something. Python, Ruby, Go and
+  Rust runners call every case once and then wait while `verifyResults` runs
+  in the measuring script, with the files still in place.
+- Compare what was written with the declared `tree` (names, bytes, permission
+  bits), exactly: nothing missing and nothing extra, such as a temporary file
+  left behind.
+- `consume` returns `1` when an operation returns nothing.
+- An operation may instead replace a declared file with the same bytes on
+  every call (an atomic write). That needs no `reset`, since each call leaves
+  what the next one finds.
+
+### Adapters
+
+An adapter is the same as in any synchronous task: `operation(input)`, in the
+folders and with the `adapter.json` described above for each registry
+(`npm/`, `jsr/`, `cargo/`, `pypi/`, `rubygems/`, `gomod/`, and `builtin/` for
+a standard library). It is given the paths from the case's input and does the
+package's job on them. Rules particular to these tasks:
+
+- Use only paths from the input. Never the current directory, the home
+  directory or the system's temporary directory. A package that needs a
+  temporary directory is given one under the scratch directory by the case.
+- Do the work on every call. If the package keeps what it read in an object
+  (a resolver, a walker with a cache), create that object inside `operation`,
+  and say so in `notes`. A cache the package keeps by itself, with no object
+  to create, stays; say so in `task.md`.
+- Do not sort, convert or check results in the adapter unless the task's
+  common shape requires it for every entry.
+- Use the package's synchronous interface. A package with only promises,
+  callbacks or streams is not an entry of a `sync-operation` task: name it
+  under "Left out" in `task.md`. It belongs in a task of the asynchronous
+  kind, which can use the same `files` (see below).
+- Finish before returning: close what was opened, and leave no thread or
+  child still working. Work that continues after `operation` returns falls
+  into the reset and is not counted.
+- `builtin/` adapters call one documented function of the standard library
+  that does the job (`shutil.copytree`, `Find.find`, `filepath.WalkDir`). If a
+  language has none, it has no builtin entry: do not write the job by hand.
+  If the function does not do the whole job, the check fails; leave it out and
+  say why in `task.md` (Go's `os.CopyFS` in the copy example).
+
+The smallest adapters of the examples:
+
+```js
+// builtin/node-fs-cp/adapter.js
+import { cpSync } from 'node:fs'
+export const operation = ({ from, to }) => cpSync(from, to, { recursive: true })
+```
+
+```python
+# builtin/python-shutil-copytree/adapter.py
+import shutil
+def operation(input):
+    shutil.copytree(input['from'], input['to'])
+```
+
+```ruby
+# builtin/ruby-find/adapter.rb
+require 'find'
+def operation(input)
+  Find.find(input['root']).to_a
+end
+```
+
+```go
+// builtin/go-filepath-walkdir/adapter.go: see the file; input is value.(map[string]any)["root"].(string)
+```
+
+```rust
+// cargo/walkdir/src/main.rs: run_prepared(prepare, operation, consume, describe);
+// prepare turns the input into a PathBuf once, describe turns paths into JSON for the check.
+```
+
+A Rust adapter for a crate that `Cargo.lock` does not hold yet cannot be
+built (`cannot update the lock file`). Run `node scripts/lock-crates.mjs`:
+it adds the crate to the lock, downloads no source, and steps back any
+release younger than seven days. Do not run `cargo update`, `cargo add`,
+`cargo metadata` or any other cargo command yourself, and do not edit
+`Cargo.lock`. Crates already locked (`grep 'name = "<crate>"' Cargo.lock`)
+build at once.
+
+### Check your work
+
+```sh
+node scripts/measure.mjs <category>/<task> --check
+```
+
+It prints one `files:` line with the number of files and directories created,
+then `works` for every adapter on every runtime, and exits with 0. Nothing is
+left under `.cache/scratch/` afterwards. Then:
+
+- Break one adapter on purpose (leave out the option that lists directories;
+  copy to the wrong place) and see that `--check` prints `verify-failed` for
+  it. Put the adapter back. A check that cannot fail is not a check.
+- `the scratch directory of … is in use by process …`: another measurement of
+  the same task is running. Wait for it. Different tasks can be checked at the
+  same time.
+- `files.reset: … overlaps the declared tree` or `… is outside the task's
+  scratch directory`: fix `scenario.mjs` as the message says.
+- A writing task that fails with "file exists" on a later call: the path it
+  writes is not in `reset`.
+
+Do not run `scripts/measure.mjs` without `--check`, do not create or remove
+anything under `.cache/` yourself, and do not edit files outside your
+category's folder.
+
+In `task.md`, besides what every task says, state: what the trees hold (counts
+by kind), what is and is not forgiven by the check, that the files are in the
+operating system's cache and CPU time includes the kernel's part, and, for a
+task that writes, that waiting for the disk is not counted and whether file
+times are compared.
+
+### For other kinds of task
+
+The files do not depend on the kind of task. `scripts/measure.mjs` wraps every
+launch of an adapter process, of any kind, in `fixtures.around(...)` from
+`harness/files.mjs`, and both environment variables reach every process. A
+scenario of the asynchronous kind declares `files` in the same way and its
+adapters get the same paths; a task that only reads needs nothing more, and
+one that writes gets the same reset (see "Files that operations write" under
+"Asynchronous operations").
+
+A runner for another kind (or another language) must do one thing itself to
+support tasks that write. When `BENCH_FILES_RESET` is set and not empty, it is
+a JSON array of absolute paths. Before every operation the runner removes
+each of them (a file or a whole directory; a missing one is not an error) and
+keeps that out of what it times: CPU, system CPU and elapsed time, and the
+time that counts towards `minMs`. It refuses to start if a path does not
+begin with `BENCH_FILES` plus `/`. With several operations in flight at once,
+each needs its own destination and the reset can only run between batches;
+such a task is better written with one operation at a time. In an
+asynchronous operation task it never arises: the runner awaits each operation
+before it starts the next, so the reset always runs with nothing in flight,
+and the concurrency is inside one operation. The five
+synchronous runners (`harness/js/operation-runner.mjs`, `harness/python/runner.py`,
+`harness/ruby/runner.rb`, `harness/go/runner.go`, `harness/rust/src/operation.rs`)
+show how; `harness/tests/files.test.mjs` tests each. The three asynchronous
+ones (`harness/js/async-operation-runner.mjs`, `harness/python/async-runner.py`,
+`harness/rust/src/async_operation.rs`) do the same and
+`harness/tests/async-files.test.mjs` tests them. The warm baseline runs
+without the reset.
+
+Not provided: restoring a changed file to its first contents between
+operations (only removal), files larger than memory, and anything outside the
+scratch directory.
+
+## Tasks whose output differs between packages
+
+Some jobs have no single right output: two correct highlighters write
+different markup, two XML writers different bytes, two graph libraries
+different valid orders, two resizers different pixels. Such a task is still
+written as an ordinary task (most are `sync-operation`); what changes is the
+check. The rule is: **strict about the job, neutral about the style.** A
+correct library must pass whatever its style; an output that did not do the
+job must fail.
+
+### Choose the pattern
+
+| The outputs differ because | Pattern | Worked example |
+| --- | --- | --- |
+| The same content can be written in several ways (markup, quoting, entity spellings, key order, white space) | 1. Read the output back and compare the content | `xml-building/build-document`, `source-map-generation/record-mappings` |
+| The output is styled and the styling vocabulary is the library's own | 2. Read the output back and check that it tells apart what must be told apart | `syntax-highlighting/highlight-to-html` |
+| Each library has its own tree or result type for the same parse | 3. Map to a small common shape and compare that | `sql-parsing/parse-statements` |
+| The output is binary and numerically different but equally good | 4. Decode it and compare with a reference within a tolerance | `image-processing/png-thumbnail` |
+| Many answers are valid | 5. Check the properties that make an answer valid | `graph-algorithms/topological-sort` |
+| The specification leaves a detail open | 6. Compute the expected output from a reference and list the accepted variants | `uri-template-expansion/rfc6570-expansion` |
+
+Read the example's `scenario.mjs` and `task.md` before writing your own; each
+is short. What follows is what they have in common and the mistakes to avoid.
+
+### Rules for every pattern
+
+1. **The adapter returns what the library returns.** The normalizing, parsing
+   back, decoding and comparing all happen in `verifyResults` in
+   `scenario.mjs`, which runs once per fixture before any measured work. An
+   adapter never normalizes its output to help the check. (Pattern 3 is the
+   one exception, and there every adapter does the same small mapping.)
+2. **The scenario knows the answer without a library.** Either the generator
+   records the truth while it writes the fixture (where the comments are in a
+   source file, which tables a statement names, the pixels it drew), or the
+   scenario has its own small reference (an RFC 6570 expander, a block
+   average). Never take one package's output as the expected value.
+3. **Write the reader in the scenario, strictly.** `scenario.mjs` is the only
+   file copied beside an adapter, so it must be self-contained: Node built-ins
+   only (`node:assert`, `node:zlib`, `node:buffer`; import `Buffer` explicitly, so
+   it is there on every runtime). The reader accepts every correct spelling and rejects
+   anything malformed: the XML reader fails on an unknown entity, the PNG
+   reader on a bad CRC.
+4. **Export `verifyOne(i, output)`** and have `verifyResults` call it for each
+   fixture. It makes it possible to list every failing fixture of an adapter
+   while you work, instead of only the first.
+5. **Prove the check can fail.** Before you trust it, run it on outputs that
+   did not do the job: the input returned unchanged, an escape-only or
+   regular-expression version, a point-sampled thumbnail, the node list in
+   input order. If one passes, the check is not strict yet. Where it is cheap,
+   keep the proof in the scenario (`topological-sort` asserts at load that the
+   node list is not a valid answer).
+6. **Write every accepted difference in `task.md`,** under "What counts as
+   correct", with the reason it is style and not substance. If you cannot say
+   why a difference is harmless, it is not accepted.
+7. **When packages disagree on substance, find out who is right.** Read the
+   specification. Then one of three things:
+   - One package is wrong and the others agree: keep the fixture. The package
+     is recorded as not passing, with the failing case in `notes` and the
+     account in `details`. (`node-sql-parser` groups `a OR b AND c` wrongly;
+     `uri-template-lite` gets an RFC example wrong; `image-js` does not
+     average.) If an option fixes it, add a variant beside it, as in
+     `css-parsing/error-recovery`; `xml-building` has one for
+     `fast-xml-parser`, whose default drops attributes.
+   - The specification is silent or the packages split evenly on something
+     marginal: leave it out of the fixtures and say so in `task.md`, with which
+     package does what. (An empty list in a URI template; a tab inside an XML
+     attribute value.) Do not bend the check to accept a wrong answer.
+   - It is the heart of the job and no two packages agree: the category is not
+     benchmarkable as one task. Say so; do not write a check that passes
+     everything.
+8. **A tolerance is measured, not guessed.** Run every candidate, in every
+   mode it has, and print the error of each against the reference. Put the
+   limit in a gap, and write both sides of the gap in `task.md`
+   (`png-thumbnail`: area filters 0.4 to 1.3, the limit 2, point sampling 3.3
+   and up). No gap means the fixtures do not separate right from wrong yet:
+   change the fixtures, not the limit.
+9. **Different work for the same job is reported, not hidden.** A highlighter
+   that resolves a theme does more than one that writes class names; a writer
+   that builds a tree first does more than one that streams. If each is the
+   library's normal way, both are measured as they are and `task.md` says what
+   differs.
+
+### 1. Read the output back and compare the content
+
+For text that carries structure: XML, JSON, a source map, CSV, a rendered
+table, generated code. Write the smallest strict reader for the format in the
+scenario and compare what it yields with the fixture.
+
+- Compare what a consumer of the format would see. For XML that is names,
+  attributes as a set, and character data with references resolved; not the
+  declaration, quoting, or `<a/>` against `<a></a>`.
+- Decide what white space means before you write the generator. In
+  `build-document` no element has both text and children, so white space
+  between children is formatting and text is compared exactly, spaces included.
+- Where a format has indexes into its own tables (a source map's `sources`
+  and `names`), resolve them through the output's own tables, so that any
+  table order is accepted.
+- A result may be an object in one language and text in another; the verifier
+  parses text first. Say in `task.md` what extra work that implies.
+
+### 2. Check that the output tells apart what must be told apart
+
+For highlighted code, coloured terminal output, annotated text: the library
+chooses the names and colours. Do not keep a table of every library's class
+names. Instead:
+
+- Have the generator record probes while it writes the fixture: ranges that
+  are certainly a comment, a string, a keyword, a number, a plain identifier.
+  Probe only the body of a token (not quotes or comment markers), skip white
+  space, and probe only what every grammar agrees on.
+- In the verifier, give every character a styling: the attributes of the
+  innermost styled element around it. Require that the text with tags removed
+  is the source, and that no styling is shared between kinds that must differ.
+- Put the traps in the fixtures: a quote inside a comment, a comment marker
+  inside a string, an escaped quote. A tokenizer that falls for one gives two
+  kinds the same styling.
+
+The same idea fits ANSI output (the styling is the active escape codes) and
+any "annotate this text" job.
+
+### 3. Map to a small common shape
+
+For parsers: SQL, Ruby, expressions, queries, any syntax tree.
+
+- Design the shape from the job, not from one library's tree: a few fields
+  that only a real parse can fill (statement kind, names in order, counts) and
+  one part compared deeply. In `parse-statements` that is the WHERE condition,
+  where precedence and parentheses show whether a tree was built.
+- Every adapter does the mapping inside the timed call, in every language
+  alike, and it must be small beside the parse: property reads and one walk
+  over the part compared deeply. No string building, no sorting. Rust builds a
+  struct in the call and turns it into JSON in `describe`, outside it.
+- Let the verifier absorb spelling: operator names in any case, `!=` for
+  `<>`, a string literal raw or unescaped, an associative chain grouped either
+  way (flatten it before comparing). Then the adapter passes the library's
+  values through untouched.
+- Keep the fixtures inside the syntax every dialect reads, and let most of
+  each fixture be syntax that is parsed but only counted (select lists, joins,
+  values), so the parse is realistic while the comparison stays small.
+
+### 4. Decode a binary output and compare within a tolerance
+
+For images, audio, compressed data with a lossy step, documents such as PDF.
+
+- The scenario draws the input itself and so knows the ideal output. Write the
+  decoder in the scenario for exactly what outputs may be (a PNG reader for
+  8-bit colour types; for PDF: the header, the cross-reference table or
+  stream, the page tree, and the text operators of each page's content stream
+  after inflating it).
+- Check the exact things exactly (dimensions, page count, the text of each
+  page) and the numeric things against the reference with a measured limit
+  (rule 8).
+- Draw fixtures on which every sound method agrees: no detail finer than the
+  output can show, no transparency where premultiplication would matter, a
+  whole-number reduction so the reference is a plain block average.
+- Bytes cross to the verifier as base64 text from Rust, Go, Python and Ruby
+  (`describe`), and into the adapter as hex decoded in `prepare`.
+- Where a library needs a choice it has no default for (a filter, a font),
+  name one in `task.md`, use the same in every such entry, and prefer the
+  default of the entry that has one.
+
+### 5. Check the properties of a valid answer
+
+For jobs with many right answers: a topological order, a shortest path (its
+length is unique, its route is not), a set of components, a schedule, a
+solution to constraints, generated test data.
+
+- List the properties that together are the definition of a correct answer
+  and check all of them (`topological-sort`: every node exactly once, every
+  edge forward). One property alone is usually passable by a wrong answer.
+- Compare unordered things as sets: components as a set of sets, not a list.
+- For generated data (fake names and addresses), where even the content is
+  free: check the shape of every record (types, formats by pattern, ranges),
+  that the same seed gives the same records twice, that a different seed gives
+  different ones, and that values vary (a minimum number of distinct values per
+  field). Say plainly in `task.md` that the libraries do not generate the same
+  data and that this is a comparison of producing N records of a given shape.
+
+### 6. A reference with listed variants
+
+For jobs with a specification and test vectors (RFC 6570, a checksum, an
+encoding): write a small reference in the scenario, check the reference
+against the specification's own examples when the scenario loads, and compute
+every expected value with it. Where the specification leaves something open
+(the order of a map's pairs), compute each permitted output and accept any of
+them. Add realistic fixtures beside the examples; the examples alone are
+usually too small and too regular to measure.
+
+Where a reference cannot be written in the scenario (a tokenizer's vocabulary
+of 100,000 entries), record the expected outputs once, keep only those on
+which at least two independent implementations agree, embed them, and say in
+`task.md` which implementations and versions they came from.
+
+### When there is no fair check
+
+Say so in the backlog, with the reason, and write nothing. That is a result.
+A category is not benchmarkable as one task when the packages do not do the
+same job (an edit-tracking source-map builder beside a mapping recorder: two
+tasks), when the libraries only exist in one language and each has its own
+input language (object pickling of closures is a Python-only comparison, which
+is allowed, but say that it is), or when a check strict enough to reject wrong
+output would also reject correct libraries.
+
+### A child process is still a synchronous task
+
+`process-execution/spawn-collect` shows it: the adapter calls the library's
+synchronous form, and the figure is the calling process's CPU. Every runner
+reads its own process's CPU time, so the child's is left out without any
+harness change; say in `task.md` that this is on purpose (the child is the
+same in every entry), give an absolute path to a program that exists on every
+machine, and raise `minRoundMs`, because a round holds few calls.
+
+### Decisions for the categories that waited for one
+
+Each of these was put aside for a design decision, a check, or a reason that
+did not hold. "Written" means the task exists and is the example to copy.
+For the others the decision is made and the task is still to write; the
+gaps are those of `BACKLOG.md` (a: PyPI, RubyGems and Go-module adapters, b:
+asynchronous operations, c: files, d: a local peer).
+
+| Category | One task measures | Correct means | Kind, pattern | State |
+| --- | --- | --- | --- | --- |
+| `uri-template-expansion` | Parse and expand one RFC 6570 template with a variable set | Equal to the scenario's reference expander; both orders of a map's pairs accepted | sync, 6 | Written: `rfc6570-expansion` |
+| `syntax-highlighting` | Highlight one source file to HTML, language given | Visible text is the source; comment, string, keyword and number never share a styling | sync, 2 | Written: `highlight-to-html` |
+| `xml-building` | Build a document from an element tree and serialize it | Read back with a strict reader: same elements, attributes as a set, exact text | sync, 1 | Written: `build-document` |
+| `sql-parsing` | Parse one statement | Kind, tables, columns, counts and the WHERE tree, in a common shape | sync, 3 | Written: `parse-statements` |
+| `image-processing` | Decode a PNG, scale down by a whole factor, encode a PNG | Decoded: exact size, mean error from the block average at most 2 levels | sync, 4 | Written: `png-thumbnail`. `sharp`, `jimp`, `imagescript`, `@cross/image` need b |
+| `source-map-generation` | Add every mapping, produce the encoded map | Mappings decoded and resolved through the output's own lists equal the fixture's | sync, 1 | Written: `record-mappings`. `magic-string` is another job: a second task `track-edits` with the same check |
+| `graph-algorithms` | Build a DAG from an edge list, return a topological order | Every node once, every edge forward | sync, 5 | Written: `topological-sort`. A second task for components: compare as a set of sets |
+| `process-execution` | Run `/bin/echo` with arguments, collect output and status | Exact output (final newline optional) and status 0 | sync; the caller's CPU only | Written: `spawn-collect`. The asynchronous forms need b, same fixtures |
+| `expression-evaluation` | Parse one expression and evaluate it against 8 variable sets | Each value within 1e-9 of the scenario's own evaluation of the tree it generated | sync, 6 | To write. Arithmetic (`+ - * /`, unary minus, parentheses), comparisons, `min`, `max`, `abs`; every literal and variable a float. Left out because the libraries disagree: power (`^` or `**`), `and`/`or` spellings, integer division, modulo. npm `expr-eval`, `mathjs`, `jexl` (`evalSync`), `filtrex`; crates `evalexpr`, `meval`, `fasteval`. `cexpr`, `cfg-expr` and `boolean.py` do other jobs and stay out. `govaluate`, `cel-go`, `simpleeval` need a |
+| `pdf-generation` | Write 20 pages of positioned lines of text and a ruled table, standard Helvetica, A4 | Decoded: page count, page size within a point, and the text shown on each page (`Tj`, `TJ`, `'`, `"` strings of the inflated content streams, WinAnsi) equal to the fixture's lines in order | sync, 4 | To write. Lines come already broken and positioned, because line breaking differs. ASCII and Latin-1 text only, no embedded fonts. npm `jspdf`, crate `printpdf` now; `reportlab`, `fpdf2`, `prawn`, `gofpdf` need a; `pdfkit`, `pdf-lib`, `pdfmake` need b. HTML to PDF (`weasyprint`, `wicked_pdf`) is another job; `wicked_pdf` runs an external program and stays out. `combine_pdf` and `pydyf` (no text layout) stay out |
+| `chart-rendering` | Render a line chart of 5 series of 500 points to SVG at a given size | Parsed SVG: the size asked for; for each series one path or polyline of 500 vertices that is an affine image of the data (residual at most half a pixel) with the y axis flipped; one mapping for all series; everything inside the canvas | sync, 1 and 5 | To write; the hardest here. The reader must handle path commands (absolute and relative) and `transform` on groups. npm `echarts` (server-side SVG string), crates `plotters`, `charts-rs` now; `matplotlib`, `leather`, `gonum/plot` need a. PNG output is not benchmarkable: rasterizers and fonts differ and no pixel check is fair. `svgo` (drawing primitives), `sparklines` (terminal) and `seaborn` (a layer over matplotlib) stay out; `plotly` and `altair` need an external renderer for SVG |
+| `fake-data-generation` | With a given seed, generate 100 records of name, email, street and date | Every record has the shape (non-empty strings, an email by pattern, an ISO date in range); two fixtures with the same seed give the same records; different seeds differ; at least half the names are distinct | sync, 5 | To write. State that the libraries do not produce the same data. npm `@faker-js/faker`, `chance`; crate `fake`; `faker` (PyPI, RubyGems) and `ffaker` need a. `factory-boy` builds objects from factories and stays out; `@laura/testdata-generator` only if it can be seeded |
+| `dataframes` | On a 20,000-row table built once per fixture in `prepare`: filter, group by a key, sum and mean | Rows compared as a set by key; integer sums exact, means within 1e-9 | sync, 1 | To write. Building the table is not timed and `task.md` says so. npm `arquero`, `data-forge`, `nodejs-polars`; crate `polars`. `pandas`, `polars`, `pyarrow`, `duckdb`, `agate` need a; `@nshiab/simple-data-analysis` needs b. `arrow` alone has no group-by; `narwhals`, `pyspark`, `dask` stay out |
+| `embedded-script-interpreters` | Run one script in a fresh context and read its result back | Exact value (a number, a string) | sync, exact | To write, **one task per guest language**: the script is the input, so a Lua run is never compared with a JavaScript run. `javascript-guest`: `quickjs-emscripten`, crates `boa_engine`, `rquickjs`; `goja` needs a. `lua-guest`: `fengari`, crates `mlua`, `piccolo`; `gopher-lua` needs a. Starlark: crate `starlark`; `go.starlark.net` needs a. Scripts: recursive `fib(22)`, sorting 2,000 numbers, building a string. `@eyurtsev/pyodide-sandbox` runs Python, alone, asynchronously: out |
+| `message-translation` | 50 lookups with interpolation and plural selection against a catalog loaded once per fixture | Exact strings | sync, 6 | To write, as **two tasks**, because there are two models. `gettext-catalog` (msgid and plural forms; the scenario writes the `.mo` bytes): `jed`, `node-gettext`, crate `gettext`; `fast_gettext`, `gettext`, `babel`, `gettext-go` need a. `keyed-messages` (key, named placeholders, CLDR plural categories; the scenario gives a neutral catalog and each adapter converts it in `prepare`): `i18next`, `node-polyglot`, `@locale-kit/locale-kit`; `i18n`, `universal-translator` need a. Locales en and ru, whole numbers only, so gettext's and CLDR's plural rules agree. `@moductor/libintl` (binds the system library) and `@axhxrx/internationalization` (TypeScript modules as catalogs) stay out |
+| `subword-tokenization` | Encode one text to token ids with `cl100k_base` and decode it back | Ids equal to recorded ones; decoding gives the text | sync, 6 with recorded outputs | To write. The vocabulary is too large for a reference in the scenario: record the ids once, only where two independent implementations agree, and say in `task.md` where they came from. npm `gpt-tokenizer`, `js-tiktoken`, `tiktoken`; crate `tiktoken-rs` (all carry the vocabulary). PyPI `tiktoken` fetches it over the network on first use and needs a and c; `tokenizers` and `sentencepiece` need a model file (c) and a task of their own. `@wangb/vibrato-deno` is a morphological analyzer: out |
+| `ruby-parsing` | Parse one Ruby source file | A common shape: the classes, modules and methods defined, in order, with nesting path, line and parameter names | sync, 3 | To write. Standard library Ripper and Prism (bundled since Ruby 3.3), npm `@ruby/prism` (WebAssembly), crate `lib-ruby-parser` now; gems `parser`, `ruby_parser`, `prism` need a. Do not count call nodes: the parsers disagree on what a call is |
+| `typed-object-mapping` | Turn plain nested data into declared record objects and back | The round trip equals the input (dates as ISO text), and `describe` reports the class of the object at three places, so returning the input fails | sync, 1 and 3 | To write. npm `class-transformer`, `serializr`; crate `serde_json` (`from_value`, `to_value`) now. `cattrs`, `mashumaro`, `typedload`, `marshmallow`, `dataclasses-json`, `dry-struct`, `virtus` need a. `dacite` and `mapstructure` only load: a second task `load-records`. `proto-plus`, `py-serializable`, `coercible`, `envconfig` stay out |
+| `object-json-serialization` | Serialize 50 records (ten attributes, a nested list) through a serializer declared once | The JSON text, parsed, equals the expected structure | sync, 1 | Needs a: every package is a gem (`representable`, `jbuilder`, `active_model_serializers`, `grape-entity`). A Ruby-only comparison, which is fine. `jsonapi-renderer` writes JSON:API documents, another shape: out |
+| `dynamic-attribute-objects` | Wrap a nested hash, read 200 and write 50 attributes by method call, convert back | Exact values and final hash (keys compared as text) | sync, exact | Needs a: `hashie`, `recursive-open-struct`, `snaky_hash`, beside the standard library's OpenStruct. A Ruby-only comparison. `objx` (Go) reads by path string, a different interface: out. Wrapping is inside the call: some wrap eagerly, some on first read, and both must be counted |
+| `object-pickling` | Serialize and restore a graph of 2,000 class instances with shared references and a cycle | `describe` walks the restored graph: field values, and which references are the same object | sync, 3 | Needs a: `cloudpickle`, `dill`, `jsonpickle`, beside the standard library's `pickle`. A Python-only comparison; no other ecosystem serializes closures. A second task `closures` (restore functions and call them): `cloudpickle`, `dill`; `pickle` is recorded as not passing. `tblib` (tracebacks): out |
+
+## Client tasks
+
+A client library needs something to talk to. A task of kind `client` is the
+mirror image of an HTTP server task: there the harness is the client of the
+adapter, here it provides the adapter's peer.
+`node scripts/measure.mjs http-client/get-json --check` tries one.
+
+### The method
+
+- **The peer** is a scripted program, the same one for every adapter in every
+  language. The harness starts it in its own process before the adapter's
+  process exists, on `127.0.0.1` and a port the system picks, and stops it
+  when the run ends, also when the run fails; a peer exits by itself when its
+  supervisor is gone. Only the adapter's process is measured, so the peer's
+  work is charged to nobody. A peer speaks just enough of its protocol for
+  the task, its answers are fixed by the task's script, and it is strict:
+  whatever it does not expect is refused and recorded, and a run with a
+  recorded refusal fails.
+- **One operation is one exchange**: a request and its whole response, turned
+  into the value the task names (a parsed document, a reply). It is counted
+  as a request (`cpuPerRequestUs`).
+- **Concurrency is the task's.** `load.concurrency` is how many exchanges are
+  in flight, on that many lanes. A lane performs an exchange, waits for all
+  of its result, and only then starts its next one. In a round of `count`
+  exchanges, lane `w` performs exchanges `w`, `w + lanes`, `w + 2·lanes`, …
+  and exchange `k` uses fixture `k mod fixtures`; `warmup` and
+  `requestsPerRound` are multiples of the number of fixtures, so every round
+  of every adapter sends the same requests. How a lane runs is the
+  language's: an asynchronous loop on the one event loop (JavaScript), a
+  thread (a blocking client in Python, Ruby or Rust), a goroutine (Go), a
+  task on the Tokio runtime the adapter builds (an asynchronous Rust client).
+  The harness's runner owns the lanes; an adapter never starts its own.
+- **Keep-alive or new connections is the task's too**, and it is checked. The
+  peer counts the connections it accepts. With `"keepAlive": true` in the
+  peer's script a client may open at most `load.connections` connections in
+  the whole run, the verification and warm-up included (default: twice the
+  concurrency, because a pool may open a spare when a lane's next request is
+  issued before the connection of its last response is back in the pool:
+  Node's `fetch` settles at two per lane, hyper's pool at one or two spares). With
+  `"keepAlive": false` the peer closes after every response and the client
+  must have opened exactly one connection per exchange. A pool that takes a
+  size is given the number of lanes.
+- **What is timed**: the round, inside the adapter's process, from starting
+  the lanes to the last result. CPU time is user plus system on all threads
+  of that process (`process.cpuUsage()`, `getrusage`, the process CPU clock),
+  so a client that works on several threads is charged for all of them. Time
+  spent waiting for the peer is not CPU time. Connecting, the checks,
+  messages to the harness and forced collection are outside it. A run is a
+  warm-up of `load.warmup` exchanges, a rehearsal of `load.rounds` rounds in
+  the same process, then `load.rounds` measured rounds of
+  `load.requestsPerRound`; the figure is the median of rounds, then of runs.
+  Memory is the footprint after the last round above the runtime's idle
+  process, as for servers.
+- **Verification, from both ends.** Before anything is measured the adapter
+  performs one exchange per fixture, in order, on one lane, and hands back
+  what it got: that must be the task's expected results (`verifyResults` in
+  the scenario, or equality with each fixture's `expected`). The peer must
+  have recorded exactly one accepted request for each of those exchanges and
+  no refusal. After the warm-up and after every round, rehearsal included,
+  the peer's record is compared again with what the round should have sent:
+  the exact count per scripted exchange, nothing refused. So a client that
+  sends something else, sends nothing, or sends too much fails
+  (`harness/tests/client.test.mjs` tries each).
+- **A slow peer would hide differences**, because a client that waits looks
+  no worse than one that does not, and fewer responses arrive per turn of an
+  event loop. So the peer must never be what a client waits for. The HTTP
+  peer keeps one thread per connection and answers from prepared bytes, and
+  every measured round records the CPU time the peer used (`peerCpuMs`).
+  `node scripts/peer-ceiling.mjs <category>/<task>` shows the check: how fast
+  the peer answers a client that does nothing but write a prepared request
+  and count the response's bytes, beside the rate each stored result reached
+  and how busy the peer was. On the machine
+  of the first results (8 lanes, a machine that was not idle) the HTTP peer
+  answered 98,000 requests a second to such a client, for 15 µs of its own
+  CPU per request, and that bare client used 15 µs too: what bounds the rate
+  is the two thread wake-ups of a loopback round trip, not the peer's work.
+  The fastest entry (Bun's `fetch`) reached 84 % of that rate, with the peer
+  busy 16 % of its lanes' time; the slowest reached 10 %, with the peer busy
+  2 %. So no entry waited for the peer to work; all of them wait for the
+  round trip, which is the same for all and is not CPU time.
+  The Redis stand-in is nearer its limit with a client that sends all its
+  lanes' commands down one connection, because one connection is one thread
+  of the peer: in the first results that thread was busy 20 % of the time
+  with node-redis and 57 to 69 % with ioredis and Bun's client (1.4 and
+  3.5 µs of peer CPU per command, nearly all of it the system's read and
+  write). It kept ahead of every client, and a real Redis, which is also one
+  thread, would be slower; but how many replies reach such a client per turn
+  of its loop depends on the peer's speed, so its figures are tied to this
+  peer more than the HTTP figures are. Look at `peerCpuMs` over `wallMs` in
+  the raw rounds before trusting a new task of this shape.
+
+### Files
+
+The driver is `harness/client.mjs` (`measureClient`), with one runner per
+language: `harness/js/client-runner.mjs`, `harness/python/client-runner.py`,
+`harness/ruby/client-runner.rb`, `harness/go/client-runner.go` and
+`harness/rust/src/client.rs` (`bench_harness::client`). Peers are binaries of
+the harness crate: `harness/rust/src/bin/<program>-peer.rs`, with what they
+share in `harness/rust/src/peer.rs`. `scripts/lib/client-tasks.mjs` is what
+`scripts/measure.mjs` needs to run the kind. A client task owns its runners;
+it does not use the runners of the asynchronous operation kind. The two could
+share later: the lane loop of the JavaScript runner and of `run_tokio` is the
+same as "N awaited operations in flight", and the client kind could become
+"an asynchronous operation with a peer" if the fixed-count rounds and the
+peer checks after each round were added there. They differ on purpose in one
+thing: an asynchronous operation task fixes the number of threads
+(`load.threads`), a client task leaves a client its default threads and
+counts them all.
+
+### Peers that exist
+
+| `peer.program` | Protocol | Script |
+| --- | --- | --- |
+| `http` | HTTP/1.1 origin, plain TCP | `{ keepAlive, routes: [{ method, path, requestBody?, requestContentType?, status, contentType, body }] }` |
+| `redis` | A stand-in for a Redis server: RESP2, and RESP3 after `HELLO 3` | `{ commands: [{ request: ["GET", "key"], reply: "$5\r\nvalue\r\n", reply3? }] }` |
+
+The HTTP peer accepts a request only if all of this holds; otherwise it
+answers `400`, records the refusal with its reason and closes the connection:
+the request line is `METHOD SP path SP HTTP/1.1` and names a route (method
+and path, compared exactly, query string included); every header line is
+`name: value`; there is exactly one `Host` header and it is
+`127.0.0.1:<port>`; there is no `Transfer-Encoding` and no `Expect`; a route
+with a `requestBody` gets a `Content-Length` equal to its length in bytes,
+exactly those bytes, and a `Content-Type` that starts with
+`requestContentType` if the route names one; a route without one gets no
+body. A connection that ends inside a request is a refusal as well. A
+request that says `Connection: close` is answered and the connection closed,
+which a keep-alive task then counts against the client. It answers `HTTP/1.1 <status>`, `Content-Type`, `Content-Length` and the body in
+one write. It does not speak TLS, HTTP/2, chunked bodies, compression,
+redirects or cookies: a task about one of those needs the peer extended
+first, which is harness work, not adapter work.
+
+The Redis stand-in is not a database: it answers each scripted command with
+its scripted reply, whatever was sent before. A command is accepted only as a
+RESP array of bulk strings equal, byte for byte, to a scripted command (the
+command's name in any case); anything else gets `-ERR`, is recorded as
+refused, and the connection is closed. Pipelined commands are answered in
+order, in one write. What clients send when they connect is answered and not
+counted, and is all that is accepted besides the script: `HELLO` (2 or 3,
+without AUTH), `CLIENT SETINFO`, `CLIENT SETNAME`, `PING`, `SELECT 0`, `INFO`,
+`QUIT`; any other `CLIENT` subcommand gets the error Redis 7.0 gives one it
+does not know (node-redis probes with one). It fits tasks whose commands have
+replies that do not depend on earlier commands of the run: GET, SET, MGET,
+HGETALL, a pipeline of those. It does not fit transactions, scripts, blocking
+pops, pub/sub or anything else that needs a server's state: those need a real
+server (below). An operation that sends several commands (a pipeline) names
+them in its fixture as `exchange: [i, j, …]`.
+
+A peer is one file, `harness/rust/src/bin/<program>-peer.rs`, plus a `[[bin]]`
+entry in `harness/rust/Cargo.toml`: it reads its script with `peer::script()`,
+keeps a `peer::Record` with one counter per scripted exchange, and hands
+`peer::listen` a function that serves one connection. It must call
+`record.accepted(i)` before the reply leaves and `record.refused(reason)` for
+everything outside the script, and it gets a test in
+`harness/tests/client-peer.test.mjs` that sends it wrong bytes.
+
+### Writing a client task (only files under `benchmarks/<category>/`)
+
+1. Read `benchmarks/http-client/get-json/` in full; copy its layout.
+2. `category.json` once per category: `title`, `summary`, and `taxonomy` (the
+   category's id in `data/taxonomy.json`).
+3. `task.json`: `"kind": "client"`, and in `load`: `concurrency`, optionally
+   `connections`, `warmup`, `rounds` (3), `requestsPerRound`. Both counts are
+   multiples of the number of fixtures. Choose `requestsPerRound` so that the
+   slowest adapter's round takes under ten seconds (a phase times out at
+   thirty). `metrics` as in the example (`cpuPerRequestUs`). `fixtureCount`
+   is the number of fixtures. `notes` says in one or two sentences that the
+   server is the harness's and what the task fixes.
+4. `scenario.mjs` exports `peer = { program, script }` (a peer from the table
+   above; the script is plain JSON) and `cases`, a list of
+   `{ input, expected }`. Fixture `i` performs exchange `i` of the script
+   (route `i` for the HTTP peer); if several fixtures use one exchange, or
+   the order differs, give each fixture `exchange: <index>`. `input` is what
+   the adapter needs to ask (a path, a body as the exact text to send),
+   `expected` is the value a correct exchange returns, as plain JSON. A body
+   to send is prepared text in the fixture, the same bytes for every
+   adapter, because the peer compares bytes; serializing it is not the
+   client's work in these tasks. Export `verifyResults(outputs)` only if
+   equality with `expected` is not the right check.
+5. `task.md`: what one operation is, what the peer answers, what the task
+   fixes (in flight, keep-alive or new connections, what is not used: TLS,
+   retries, redirects), what a correct exchange is, and what adapters may
+   configure.
+6. One folder per adapter, with an `adapter.json` as elsewhere (`author`,
+   `review: "unreviewed"`, `notes`; `title`, `language` and `runtimes` for a
+   built-in). The note says what the adapter configured that is not the
+   default and why (almost always: what keep-alive needs).
+
+   **JavaScript** (`npm/<package>/adapter.js`, `jsr/@scope/name/adapter.js`,
+   `builtin/<name>/adapter.js`; runs on Node, Bun and Deno unless `runtimes`
+   narrows it):
+
+   ```js
+   import { Agent, request } from 'undici'
+   let origin, dispatcher
+   // Once, before anything is measured. peer = { host: '127.0.0.1', port,
+   // origin: 'http://127.0.0.1:<port>', concurrency, connections }
+   export function connect(peer) {
+     origin = peer.origin
+     dispatcher = new Agent({ connections: peer.concurrency })
+   }
+   // One exchange. Returns (a promise of) what the library gives back.
+   export async function operation(input) {
+     const { statusCode, body } = await request(origin + input.path, { dispatcher })
+     if (statusCode !== 200) throw new Error(`status ${statusCode}`)
+     return body.json()
+   }
+   // Optional: describe(result) turns a result that is not plain JSON into
+   // JSON for the verifier (outside timing); close() runs once at the end.
+   ```
+
+   **Rust** (`cargo/<crate>/Cargo.toml` and `src/main.rs`; the package name
+   is `<category>-<task>-<crate>`; depend on
+   `bench-harness = { path = "../../../../../harness/rust", features = ["client"] }`,
+   or `"client-tokio"` for an asynchronous client). A blocking client calls
+   `bench_harness::client::run_blocking(connect, operation, consume, describe)`:
+   `connect(&Peer) -> S` once per lane, `operation(&mut S, &Value) -> Result<T, E>`
+   one exchange, `consume(&T) -> u32` something cheap read from the result
+   inside the round, `describe(&T) -> Value` the result as JSON for the
+   verifier. An asynchronous client builds its Tokio runtime and calls
+   `run_tokio(runtime, connect, operation, consume, describe)`, where
+   `connect(&Peer) -> C` returns the client all lanes share and `operation`
+   is an `async fn(&'static C, &'static Value) -> Result<T, E>`. Use the
+   runtime `#[tokio::main]` would build
+   (`Builder::new_multi_thread().enable_all()`) and say so in the note; a
+   one-thread variant is a second adapter with `"package": "<crate>"`, a
+   title and the tag `non-default-options`, as for the servers. Copy
+   `cargo/ureq` or `cargo/reqwest` of the example. After adding a crate, run
+   `node scripts/lock-crates.mjs` at the repository root: it adds the new
+   crate and what it needs to Cargo.lock, changes no other pin, downloads no
+   source, and steps back any release under seven days old. Run no cargo
+   command yourself.
+
+   **Python and Ruby** (`builtin/<name>/adapter.py` or `.rb` for the standard
+   library, with `"language"` and `"runtimes"` in adapter.json;
+   `pypi/<name>/` or `rubygems/<name>/` for a package, named and installed as
+   in "Adapters for PyPI, RubyGems and Go modules" above: the scripts choose
+   the version, write `lock.json` beside the adapter and install from it):
+   define `connect(host, port)`, which returns one lane's own state (a
+   connection, a session), and `operation(state, input)`; optionally
+   `describe(result)`. Each lane is a thread that lives for the whole run,
+   calls `connect` itself and keeps its state, so a client that keeps a
+   connection per thread keeps it. These runners are for blocking clients;
+   an `async def` operation is not run yet.
+
+   **Go, standard library** (`builtin/<name>/adapter.go`, `package main`):
+   `func connect(host string, port int, lanes int)` once, and
+   `func operation(input any) any`, called from `lanes` goroutines.
+
+   Go modules are not run by client tasks yet (see "Not there yet" below).
+7. Every adapter fails an exchange that did not succeed (a status that is not
+   the scripted one, an error reply), in its library's own way, and returns
+   the value the task names. It does not cache, batch, pipeline or retry
+   unless the task says so, and does not start threads or concurrent
+   requests of its own.
+8. `node scripts/measure.mjs <category>/<task> --check` until every adapter
+   says `works`. `the peer refused …` quotes the peer's reason for the first
+   request it refused; `the peer did not receive what the task sends` means
+   requests were missing or extra; `the client opened N connections` means
+   the client does not reuse connections (find its keep-alive setting).
+   Do not measure; say in your report that the task is ready to measure.
+
+### Peers that are real server software
+
+A stub peer is a fair stand-in when the client's work in the task (encode a
+request, read and decode a reply) does not depend on what the server does to
+produce the reply, and when the client does not negotiate features with the
+server that a stub would have to imitate. Then a stub is better than the
+real thing: it is identical for every adapter, costs nothing to install, and
+cannot be slow. Where that does not hold, the real server is needed, under
+the project's rules: a pinned version at least seven days old, its files
+checked against a recorded SHA-256, no install scripts and no package
+manager's hooks, unpacked under `.cache/servers/<name>-<version>/`, never
+installed system-wide, started by the harness on `127.0.0.1` with a
+throw-away data directory under the run's temporary folder, and stopped by
+the harness (the same `startPeer`/`stop` path as a stub, so it cannot be left
+running). None of that is built; this is the plan.
+
+| Peer | A scripted stub? | If the real server is needed |
+| --- | --- | --- |
+| Redis | **Yes, built** (`redis-peer.rs`, 200 lines) for commands whose replies do not depend on state. Clients differ in what they send on connecting, and the stub answers a fixed list of those; a client that needs more fails visibly and the list is extended in the peer, never per adapter. | For stateful tasks and for the job queues that sit on Redis. Redis and Valkey publish no macOS binaries, so the server would be built from a pinned source archive (SHA-256 recorded) with its own Makefile under `.cache/servers/`: compiling the server's C code is the one step that runs code from the download, as a gem's native extension does. Started as `valkey-server --bind 127.0.0.1 --port <p> --save "" --appendonly no --dir <tmp>`. |
+| SMTP server | **Yes, small** (about 200 lines, not built). SMTP is a line protocol: greeting, `EHLO` with a fixed capability list (no STARTTLS, no AUTH), `MAIL FROM`, `RCPT TO`, `DATA`, `RSET`, `QUIT`. The task hands every client the same prepared RFC 5322 message as raw bytes, so the sink can compare the envelope and, after undoing dot-stuffing, every byte of the message. | Not needed. |
+| WebSocket echo | **Yes, small** (about 250 lines with SHA-1 and base64 by hand, not built): the HTTP upgrade with the right `Sec-WebSocket-Accept`, then masked client frames checked against the script and echoed unmasked; no `permessage-deflate` offered. | Not needed. |
+| SOCKS5 proxy | **Yes, small** (about 200 lines, not built): no-auth negotiation and `CONNECT` to the scripted destination only, after which the same program plays the destination (a fixed reply). A task that opens a connection per operation must keep its total under the system's ephemeral ports (about 16,000 on macOS, reusable after 30 s). | Not needed. |
+| PostgreSQL | **Feasible for one narrow task, large** (600 to 900 lines, not built): start-up with trust authentication, the parameter statuses drivers read, then simple and extended query (Parse, Bind, Describe, Execute, Sync) answered with fixed rows in the text or binary format the client asked for. Fair for "run a prepared SELECT and decode its rows" and "INSERT with parameters", with built-in types only. It cannot be byte-strict: drivers name statements, describe, batch and set session parameters differently, so it would match the SQL text and parameter values. Drivers that look types up in `pg_type` or open with `SET`/`SHOW` queries would each add scripted answers. | Probably the better first step. Pinned binaries, no install script: the EDB binary archives for macOS, or the per-platform packages the `embedded-postgres` project publishes on npm, which the project's own npm path could install with the age rule and scripts off (its symlinks are made by an install script, so the harness would have to make them; not verified). `initdb -A trust --no-sync` into the run's temporary folder, then `postgres -c listen_addresses=127.0.0.1 -c unix_socket_directories= -c fsync=off -p <p>`, stopped with SIGTERM then SIGKILL. The server's CPU is outside the client's process as with any peer, but a real server can be the bottleneck and its rate must be checked as for the HTTP peer. |
+| MySQL | **Not recommended** (700 to 1,000 lines): the handshake negotiates capability flags that change the framing of every later packet, and authentication plugins (8.x defaults to `caching_sha2_password`, which needs RSA or TLS); text and binary result sets are separate encodings. | Oracle publishes macOS and Linux tar archives of MySQL Community Server; pinned by version with the SHA-256 recorded at first download and checked after. `mysqld --initialize-insecure --datadir=<tmp>`, then `mysqld --bind-address=127.0.0.1 --port=<p> --mysqlx=OFF --socket=<tmp>/sock`. A download of several hundred MB. |
+| MongoDB | **No.** Drivers do more than send a command and read a reply: server discovery and monitoring (`hello` on separate connections, streamed with a topology version), sessions, cursors with `getMore`, and every command and reply is BSON with fields the driver adds. A stub would be a partial server that each driver trips differently. | MongoDB publishes tar archives for macOS and Linux with `.sha256` files: unpack, `mongod --dbpath <tmp> --bind_ip 127.0.0.1 --port <p> --nounixsocket`. SSPL-licensed; used locally, not redistributed. |
+| Kafka | **No.** Every client negotiates its own version of some forty APIs, and produce, fetch and the group protocol are large. | Apache Kafka in KRaft mode, one node. It needs a JVM, which is a second pinned download (an Eclipse Temurin archive with its SHA-256) beside the Kafka archive (SHA-512 published). Redpanda has no macOS build. Slow to start, several hundred MB of memory. The heaviest peer on this list, and the brief has no npm or Rust package: last in line. |
+| SSH server | **No**: the transport is real cryptography (key exchange, host key, an AEAD cipher), so a "stub" is an SSH server. | Two ways. (a) A peer built in the harness crate on the `russh` crate, pinned by Cargo.lock under the age rule like any crate: an `exec` handler with fixed output and an SFTP subsystem, a few hundred lines. Preferred: portable and pinned. (b) The system's OpenSSH `sshd`, run unprivileged with its own config (`ListenAddress 127.0.0.1`, a port the harness picks, a host key and one authorized key made for the run, `PasswordAuthentication no`, a `ForceCommand`), with its version recorded like the system Python's (`expectedVersion`). Either way the server's config must fix one key exchange, one host key type and one cipher, so every client does the same cryptography; a client that lacks them fails visibly. |
+
+### Verdicts for the categories that need a peer
+
+| Category | Verdict |
+| --- | --- |
+| `http-client` | **Ready for the fan-out.** Two tasks exist (`get-json`, `post-json`) on the `http` peer. More adapters: npm gaxios, superagent, needle, the JSR clients; PyPI httpx (its blocking client), httplib2; RubyGems httparty, httpclient, faraday with a persistent adapter; crates isahc, attohttpc. More tasks need no harness work while they stay within what the peer speaks (a large body, many headers, a new connection per request with `keepAlive: false` and small rounds). |
+| `redis-client` | **Ready for the fan-out** for stateless commands, on the `redis` stub (`get-set` exists). PyPI `redis` and RubyGems `redis`, `redis-client` can be added now; Go's clients wait for Go modules in client tasks. Stateful tasks need the real server. |
+| `websocket-messaging` | **Needs a stub peer** (about 250 lines), then ready: built-in `WebSocket` on the three JavaScript runtimes, npm ws, crates tungstenite and tokio-tungstenite, PyPI websockets and websocket-client. One lane per connection: send a message, wait for its echo. The in-memory codec idea in the backlog is a different, synchronous task. |
+| `smtp-client` | **Needs a stub peer** (about 200 lines), then ready: Python `smtplib` and Go `net/smtp` built in, npm nodemailer, RubyGems net-smtp, crate lettre. |
+| `socks-proxy-client` | **Needs a stub peer** (about 200 lines). Few packages (npm socks and socks-proxy-agent, PyPI pysocks, RubyGems socksify, Go modules); low priority. |
+| `grpc-rpc` | **Needs a stub peer of another kind**: HTTP/2 is too large to write by hand, so the peer would be built on the `h2` crate (already locked, through hyper) and answer one unary method with prepared protobuf bytes, comparing the request bytes with the script (about 300 lines). Also needs a decision on generated code: check the generated stubs in beside each adapter, so no `protoc` is installed. The brief's packages are tonic, grpcio, grpclib; `@grpc/grpc-js` would be the npm entry. |
+| `postgres-client` | **Needs real server software** (or the large stub above for one narrow task). See the table. |
+| `mysql-client` | **Needs real server software.** No npm package in the brief; mysql2 and mariadb would be chosen. |
+| `mongodb-client` | **Needs real server software.** A synchronous BSON encode/decode task fits the existing synchronous kind and needs none of this. |
+| `kafka-client` | **Needs real server software** and a JVM. Last in line. |
+| `ssh-client` | **Needs real server software**, best as a peer on the `russh` crate. Every package in the brief is on PyPI, RubyGems or Go. |
+| `background-job-queues` | **Needs real server software, and is not a client task.** celery, huey, kombu, sidekiq and resque need a real Redis (lists, blocking pops, scripts: state a stub cannot fake), delayed_job a SQL database. What is measured is a worker draining a queue, in one or several processes, which is nearer the asynchronous operation kind with a server beside it. The packages also promise different things (retries, scheduling, acknowledgement), so "the same job" needs care. Low priority; possibly not comparable. |
+| `object-relational-mapping` | **Fits an existing kind, not this one.** With SQLite in memory there is no peer and no network: a synchronous task with PyPI adapters (SQLAlchemy, peewee, SQLModel over the standard library's `sqlite3`) and Go modules (gorm with a pure-Go SQLite driver). It belongs to the work on PyPI and Go adapters. Against PostgreSQL it would need that peer. |
+| `http-application-servers` | **Fits the existing `http-server` kind, not this one.** uvicorn and puma already run in `http-server/json-api` through `scripts/lib/native-http.mjs`; a task with a bare callback would add webrick, thin, actix-http and hyper the same way. gunicorn and unicorn fork worker processes, and the supervisor measures one process: they need CPU and memory summed over a process tree first. |
+
+### Not there yet
+
+- **Go modules** in client tasks. `scripts/lib/native-packages.mjs` builds a
+  Go module adapter with the synchronous runner; it needs the runner as a
+  parameter, then `prepareNativeClient` in `scripts/lib/client-tasks.mjs` can
+  use it as it uses PyPI and RubyGems.
+- **Asynchronous Python clients** (aiohttp, httpx's AsyncClient, asyncpg):
+  `harness/python/client-runner.py` runs a lane as a thread. An asyncio mode
+  (lanes as tasks on one loop when `operation` is a coroutine function) is
+  about thirty lines there.
+- **Type-check cost of Python, Ruby and Go client adapters.**
+  `scripts/measure-native-checks.mjs` wraps an adapter as `operation(input)`;
+  a client adapter's `connect` and `operation(state, input)` need their own
+  wrapper in `scripts/lib/native-wrappers.mjs`. Until then
+  `harness/tests/native-checkers.test.mjs` lists them as unchecked.
+- **TLS, HTTP/2, chunked and compressed bodies** in the HTTP peer.
+- **One-thread variants** of the asynchronous Rust clients, as the servers
+  have.
+- **Peers for WebSocket, SMTP, SOCKS and gRPC**, and every real server above.
+
 ## Reviews
 
 Every adapter starts as `"review": "unreviewed"`. Readers ask for a review, or

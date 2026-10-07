@@ -316,7 +316,9 @@ const adapters = globSync('{npm,jsr,builtin,cargo,pypi,rubygems,gomod}/**/adapte
 // of the task, selected or not, before anything is measured: a lock is part
 // of its adapter's fingerprint, which each result records.
 // Synchronous tasks only: the other kinds of task have runners of their own.
-const takesPackages = task.kind === 'sync-operation'
+// A client task takes PyPI and RubyGems packages too, run by its own
+// runners (scripts/lib/client-tasks.mjs).
+const takesPackages = task.kind === 'sync-operation' || isClient
 const packaged = (target) => takesPackages && target.ecosystem in NATIVE_REGISTRIES
 const unlocked = new Map()
 if (takesPackages) {
@@ -393,14 +395,28 @@ for (const target of adapters) {
     continue
   }
 
-  // A client task: the standard-library client of Python, Ruby or Go, above
-  // the same idle baseline as the language's synchronous tasks.
+  // A client task: a client of Python, Ruby or Go (standard library, or a
+  // package from PyPI or RubyGems installed from its lock), above the same
+  // idle baseline as the language's synchronous tasks.
   if (isClient && meta.language && meta.language !== 'javascript') {
     for (const runtimeId of meta.runtimes.filter(selected)) {
       const rt = config.runtimes[runtimeId] ?? config.toolchains[runtimeId]
-      const prepared = await prepareNativeClient({ taskId, target, meta, rt, goBaseline })
+      const id = `${target.ecosystem}/${target.name}`
+      let prepared
+      try {
+        if (unlocked.has(id)) throw new Error(unlocked.get(id))
+        prepared = await prepareNativeClient({ taskId, target, meta, runtimeId, rt, config, goBaseline, prepareNativePackage })
+      } catch (error) {
+        failures++
+        console.error(`${id} on ${runtimeId}: could not prepare: ${String(error.message).trim().split('\n')[0]}`)
+        continue
+      }
+      if (prepared.unavailable) {
+        await notAvailable(target, runtimeId, rt, prepared)
+        continue
+      }
       await baseline(runtimeId, { ...prepared.base, version: rt.version })
-      await measure(target, { ...prepared.launch, runtime: runtimeId, version: rt.version }, { version: null, dependencies: {} })
+      await measure(target, { ...prepared.launch, runtime: runtimeId, version: rt.version }, prepared.extra)
     }
     continue
   }
@@ -487,7 +503,7 @@ for (const target of adapters) {
       const fixtures = fromRoot('.cache/work', taskId, 'fixtures.json')
       await writeJson(fixtures, { cases: scenario.cases })
       launch.args = [fixtures]
-      launch.warm = { ...rustLaunch(cargoBuild('bench-harness', 'warm-baseline', 'operations')), args: [fixtures], phases: ['boot', 'verification', 'ready'] }
+      launch.warm = { ...rustLaunch(cargoBuild('bench-harness', isAsync ? 'async-warm-baseline' : 'warm-baseline', 'operations')), args: [fixtures], phases: ['boot', 'verification', 'ready'] }
       if (scenario.verifyResults) launch.phases = ['boot', 'verification', 'ready']
     }
     await measure(target, launch, { version: await lockedCrateVersion(meta.package ?? target.name, crate), install: binaryInstall(launch.command, fromRoot('.cache/cargo-target/release/baseline')) })

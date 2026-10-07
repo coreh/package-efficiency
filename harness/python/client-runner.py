@@ -12,8 +12,10 @@ An adapter defines:
 
 A round of `count` exchanges runs on `concurrency` lanes, one thread each:
 lane w performs exchanges w, w + lanes, w + 2*lanes, ... one after another,
-and exchange k uses fixture k mod fixtures. CPU time is the whole process's."""
-import gc, importlib.util, json, os, sys, threading, time
+and exchange k uses fixture k mod fixtures. A lane's thread lives for the
+whole run and is the one that called connect for it, so a client that keeps
+its connection per thread keeps it. CPU time is the whole process's."""
+import gc, importlib.util, json, os, queue, sys, threading, time
 
 def memory():
     for _ in range(3):
@@ -37,29 +39,59 @@ inputs = [c['input'] for c in task['cases']]
 lanes = task['concurrency']
 operation = adapter.operation
 describe = getattr(adapter, 'describe', lambda output: output)
-states = [adapter.connect(task['host'], task['port'])]
-# One exchange per fixture, in order; the supervisor compares what came back
-# with the task's expected results and with what the peer recorded.
-send('verification', outputs=[describe(operation(states[0], x)) for x in inputs])
+
+def checksum_of(output):
+    try:
+        return int(output) if isinstance(output, bool) else len(output)
+    except TypeError:
+        return 0 if output is None else 1
+
+class Lane:
+    """One lane: a thread with its own state, given one job at a time."""
+    def __init__(self, index):
+        self.index, self.jobs, self.results = index, queue.Queue(), queue.Queue()
+        threading.Thread(target=self.work, daemon=True).start()
+        self.result()
+
+    def work(self):
+        try:
+            state = adapter.connect(task['host'], task['port'])
+            self.results.put((None, None))
+        except BaseException as error:
+            self.results.put((None, error))
+            return
+        while True:
+            job = self.jobs.get()
+            try:
+                self.results.put((job(state), None))
+            except BaseException as error:
+                self.results.put((None, error))
+
+    def result(self):
+        value, error = self.results.get()
+        if error is not None:
+            raise error
+        return value
+
+    def round(self, count):
+        def job(state):
+            checksum = 0
+            for k in range(self.index, count, lanes):
+                checksum = (checksum + checksum_of(operation(state, inputs[k % len(inputs)]))) & 0xffffffff
+            return checksum
+        self.jobs.put(job)
+
+workers = [Lane(0)]
+# One exchange per fixture, in order, on the first lane; the supervisor
+# compares what came back with the task's expected results and with what the
+# peer recorded.
+workers[0].jobs.put(lambda state: [describe(operation(state, x)) for x in inputs])
+send('verification', outputs=workers[0].result())
 if sys.stdin.readline().strip() != 'verified':
     sys.exit(1)
-while len(states) < lanes:
-    states.append(adapter.connect(task['host'], task['port']))
+while len(workers) < lanes:
+    workers.append(Lane(len(workers)))
 send('ready', memory=memory())
-
-def lane(first, count, state, sums, failures):
-    checksum = 0
-    try:
-        for k in range(first, count, lanes):
-            output = operation(state, inputs[k % len(inputs)])
-            try:
-                value = int(output) if isinstance(output, bool) else len(output)
-            except TypeError:
-                value = 0 if output is None else 1
-            checksum = (checksum + value) & 0xffffffff
-    except BaseException as error:
-        failures.append(error)
-    sums[first] = checksum
 
 for line in sys.stdin:
     line = line.strip()
@@ -68,13 +100,9 @@ for line in sys.stdin:
         send('settled', memory=memory())
         continue
     count = json.loads(line)['count']
-    sums, failures = [0] * lanes, []
     cpu, start = time.process_time(), time.perf_counter()
-    threads = [threading.Thread(target=lane, args=(w, count, states[w], sums, failures)) for w in range(lanes)]
-    for thread in threads: thread.start()
-    for thread in threads: thread.join()
+    for worker in workers: worker.round(count)
+    checksum = sum(worker.result() for worker in workers) & 0xffffffff
     wall_ms = (time.perf_counter()-start)*1000
     cpu_ms = (time.process_time()-cpu)*1000
-    if failures:
-        raise failures[0]
-    send('round', requests=count, checksum=sum(sums) & 0xffffffff, wallMs=wall_ms, cpuMs=cpu_ms)
+    send('round', requests=count, checksum=checksum, wallMs=wall_ms, cpuMs=cpu_ms)

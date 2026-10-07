@@ -82,13 +82,19 @@ const createTable = (i) => {
 const makers = [select, select, insert, select, update, select, remove, createTable]
 export const cases = Array.from({ length: 64 }, (_, i) => makers[i % makers.length](i))
 
-// AND and OR are associative, so a chain may be grouped either way: both
-// sides are flattened before comparing. Everything else must match exactly.
+// Accepted as the same tree: operator names in either case and `!=` for `<>`
+// (libraries name operators their own way); a string literal with its doubled
+// quote resolved or kept as written; and a chain of AND or of OR grouped
+// either way, since both are associative, so chains are flattened before
+// comparing. Everything else must match exactly.
 const flatten = (node) => {
   if (!Array.isArray(node)) return node
-  const [op, ...rest] = node
-  if (op !== 'and' && op !== 'or') return [op, ...rest.map(flatten)]
-  return [op, ...rest.map(flatten).flatMap((child) => (Array.isArray(child) && child[0] === op ? child.slice(1) : [child]))]
+  if (node[0] === 'col' || node[0] === 'num') return node
+  if (node[0] === 'str') return ['str', String(node[1]).replace(/''/g, "'")]
+  const op = String(node[0]).toLowerCase().replace('!=', '<>')
+  const sides = node.slice(1).map(flatten)
+  if (op !== 'and' && op !== 'or') return [op, ...sides]
+  return [op, ...sides.flatMap((child) => (child[0] === op ? child.slice(1) : [child]))]
 }
 export const verifyOne = (i, output) => {
   const { input, expected } = cases[i]

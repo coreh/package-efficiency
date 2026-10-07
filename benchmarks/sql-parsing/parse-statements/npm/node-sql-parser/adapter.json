@@ -1,1 +1,6 @@
-{"notes":"stub"}
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "notes": "new Parser() once, astify(sql) per call, default options (MySQL grammar). Not passing: a WHERE that mixes AND and OR without parentheses comes back grouped left to right.",
+  "details": "With version 5.4.0 and the default grammar, a = 1 OR b = 2 AND c = 3 is returned as ((a = 1 OR b = 2) AND c = 3); SQL gives AND the higher precedence. Seven of the 64 fixtures have such a condition and fail; the other 57 pass. The MariaDB, SQLite and PostgreSQL grammars of the package do the same; its Transact-SQL grammar groups correctly but does not read LIMIT, so there is no variant."
+}
