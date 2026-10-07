@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Pull reader. Start, end, text, CDATA and GeneralRef events track whether the reader is inside a price or description element. The stock attribute is read with Attribute::normalized_value. A reference in text is its own event since 0.38, so the adapter resolves it with the crate's resolve_char_ref and escape::resolve_predefined_entity; text is read with BytesText::xml10_content."
+  "notes": "Pull reader; events track whether it is inside a price or description element. Since 0.38 text references are separate events, resolved with resolve_char_ref and resolve_predefined_entity.",
+  "details": "Pull reader. Start, end, text, CDATA and GeneralRef events track whether the reader is inside a price or description element. The stock attribute is read with Attribute::normalized_value. A reference in text is its own event since 0.38, so the adapter resolves it with the crate's resolve_char_ref and escape::resolve_predefined_entity; text is read with BytesText::xml10_content."
 }

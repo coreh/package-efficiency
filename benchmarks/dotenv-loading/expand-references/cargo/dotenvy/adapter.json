@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Uses from_read_iter on the text's bytes and collects the owned (key, value) pairs the iterator yields into a Vec, the library's own result shape; the map the verifier compares is built from them outside timing. The iterator expands ${NAME} references to earlier keys while parsing. Nothing is loaded into the process environment, but dotenvy looks every referenced name up in the process environment (std::env::var) before its own map, so each reference costs an environment lookup and the figure depends somewhat on the environment of the measuring process. No fixture name is set in the environment."
+  "notes": "from_read_iter on the text's bytes, collecting owned pairs into a Vec. References are expanded while parsing, each looked up in the process environment first, so the figure depends on it.",
+  "details": "Uses from_read_iter on the text's bytes and collects the owned (key, value) pairs the iterator yields into a Vec, the library's own result shape; the map the verifier compares is built from them outside timing. The iterator expands ${NAME} references to earlier keys while parsing. Nothing is loaded into the process environment, but dotenvy looks every referenced name up in the process environment (std::env::var) before its own map, so each reference costs an environment lookup and the figure depends somewhat on the environment of the measuring process. No fixture name is set in the environment."
 }

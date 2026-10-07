@@ -36,6 +36,10 @@ const VARIANTS = {
   async: { settings: 'config.settings_async', server: 'asgi' },
   // The apps, middleware, context processors and database the shop does not use taken out.
   minimal: { settings: 'config.settings_minimal', server: 'wsgi' },
+  // The generated project on Waitress with a worker thread for each of the
+  // 16 connections the load tasks hold open (2 load workers with 8 each), in
+  // place of Waitress's default of 4.
+  '16-threads': { settings: 'config.settings', server: 'wsgi', threads: 16 },
 }
 
 // name -> { version, info } of what is installed in `dir`.
@@ -111,7 +115,7 @@ export async function prepare({ root, runtime, variant, helpers }) {
       args: [...runtime.args, helpers.pythonRunner, path.join(here, 'adapter.py'), packages],
       cwd: here,
       // The project is found on PYTHONPATH, as it is when a server is started in its folder.
-      env: { DJANGO_SETTINGS_MODULE: form.settings, BENCH_SERVER: form.server, PYTHONPATH: here, PYTHONDONTWRITEBYTECODE: '1' },
+      env: { DJANGO_SETTINGS_MODULE: form.settings, BENCH_SERVER: form.server, ...(form.threads ? { BENCH_THREADS: String(form.threads) } : {}), PYTHONPATH: here, PYTHONDONTWRITEBYTECODE: '1' },
       phases: ['boot', 'loaded', 'ready'],
     },
     base: { command: runtime.bin, args: [...runtime.args, helpers.pythonRunner, '-'], cwd: root },

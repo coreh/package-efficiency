@@ -11,5 +11,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Shallow: each element is unmarshalled into asn1.RawValue, which reads only the tag and length and keeps the content bytes. No integer, OID, time or string is decoded, and the recursion into compound elements is the adapter's loop."
+  "notes": "Shallow: each element is unmarshalled into asn1.RawValue, which keeps only the tag, length and content bytes. Nothing is decoded; the recursion into compound elements is the adapter's loop.",
+  "details": "Shallow: each element is unmarshalled into asn1.RawValue, which reads only the tag and length and keeps the content bytes. No integer, OID, time or string is decoded, and the recursion into compound elements is the adapter's loop."
 }

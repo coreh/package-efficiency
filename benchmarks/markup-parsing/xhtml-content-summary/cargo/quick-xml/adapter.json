@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Pull reader. Attribute values are read with Attribute::normalized_value, which resolves references. Since 0.38 the reader reports a reference in text as its own GeneralRef event and leaves resolving it to the caller, so the adapter resolves each with the crate's BytesRef::resolve_char_ref and escape::resolve_predefined_entity; text itself is read with BytesText::xml10_content."
+  "notes": "Pull reader. Attributes use normalized_value. Since 0.38 text references arrive as GeneralRef events, which the adapter resolves with BytesRef::resolve_char_ref and resolve_predefined_entity.",
+  "details": "Pull reader. Attribute values are read with Attribute::normalized_value, which resolves references. Since 0.38 the reader reports a reference in text as its own GeneralRef event and leaves resolving it to the caller, so the adapter resolves each with the crate's BytesRef::resolve_char_ref and escape::resolve_predefined_entity; text itself is read with BytesText::xml10_content."
 }

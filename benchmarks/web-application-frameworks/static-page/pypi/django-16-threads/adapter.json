@@ -1,0 +1,26 @@
+{
+  "package": "django",
+  "title": "Django, 16 threads",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "app": "../../../_shared/pypi/django",
+  "variant": "16-threads",
+  "dependencies": [
+    "waitress"
+  ],
+  "tags": [
+    "non-default-options"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "Django as generated, with Waitress given 16 worker threads, one for each connection this load holds open, in place of its default of 4.",
+  "details": "The Django entry (the generated project, all default apps and middleware, synchronous views, WSGI on Waitress in one process) with one change: Waitress's `threads` setting is 16 instead of its default of 4 (`waitress-serve --threads=16`). Waitress's documentation gives no formula for the number: it lists `threads` under its tuning options as the number of threads used to process application logic, calls it the number of requests handled at a time (usage, where the example takes it from WEB_CONCURRENCY), and explains in its design notes that when every worker thread is in use, further requests wait in a queue; Waitress logs a 'Task queue depth' warning when that happens. The load tasks here hold 16 connections open (2 load workers with 8 connections each), so 16 is the smallest count at which no request waits for a thread, and that is why it was chosen; it was not picked by measuring several counts. Django's own documentation says nothing about thread counts. Tagged as a non-default option because it is not what Waitress does unless the setting is given. Everything else is as in the Django entry."
+}

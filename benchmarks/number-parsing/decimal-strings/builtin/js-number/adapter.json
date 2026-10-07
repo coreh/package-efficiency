@@ -13,5 +13,6 @@
     "bun",
     "deno"
   ],
-  "notes": "Standard-library baseline: Number(string) on each string via Array.map. V8 keeps the integer value of a string of up to seven digits on the string object, and the fixture strings are reused, so about 17% of the strings are not reparsed after the first pass on Node and Deno."
+  "notes": "Standard-library baseline: Number(string) on each string via Array.map. V8 caches the integer value of strings up to seven digits, so about 17% of the reused strings are not reparsed after the first pass.",
+  "details": "Standard-library baseline: Number(string) on each string via Array.map. V8 keeps the integer value of a string of up to seven digits on the string object, and the fixture strings are reused, so about 17% of the strings are not reparsed after the first pass on Node and Deno."
 }

@@ -5,5 +5,6 @@
     "model": "claude-sonnet-5-5",
     "date": "2026-10-06"
   },
-  "review": "unreviewed", "notes": "Defaults: verify() hashes the message with SHA-256 itself and takes a 64-byte compact signature. Hex decoding and public key parsing happen in the measured call: Uint8Array.fromHex where the runtime has it, otherwise Buffer.from(hex, 'hex')."
+  "review": "unreviewed", "notes": "Defaults: verify() hashes the message with SHA-256 itself and takes a 64-byte compact signature. Hex decoding and public key parsing happen inside the measured call.",
+  "details": "Defaults: verify() hashes the message with SHA-256 itself and takes a 64-byte compact signature. Hex decoding and public key parsing happen in the measured call: Uint8Array.fromHex where the runtime has it, otherwise Buffer.from(hex, 'hex')."
 }

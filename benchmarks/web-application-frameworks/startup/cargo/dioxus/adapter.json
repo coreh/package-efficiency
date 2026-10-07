@@ -1,0 +1,24 @@
+{
+  "package": "dioxus",
+  "title": "Dioxus",
+  "language": "rust",
+  "runtimes": [
+    "rust"
+  ],
+  "app": "../../../_shared/cargo/dioxus",
+  "dependencies": [
+    "axum"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "multi-threaded"
+  ],
+  "notes": "Dioxus fullstack: components rendered on the server by its axum integration; the API is a Dioxus server function with its own path. Server only: no client bundle is built (no dx).",
+  "details": "A Dioxus fullstack application: components written with rsx!, Dioxus's own router (a Routable enum) for /about and /items/:id, rendered on the server with hydration data by dioxus::server::router, the axum router that dioxus::launch serves; values are escaped by Dioxus. It is served by axum on a listener bound in main to a free port, where dioxus::launch would bind the address in IP and PORT. /api/items/:id is a Dioxus server function with a path of its own, #[get(\"/api/items/:id\")], returning the item as Dioxus's default JSON; no axum route is written by hand. Its pages carry data-node-hydration attributes on the elements Dioxus will hydrate and <!--node-id--> comments around filled-in text, and write &, < and > as numeric references; the page comparison drops or equates all three. A boolean attribute that is on is sent with a value: the footer is <footer hidden=true>, which a browser reads as hidden. /about is rendered on each request: prerendering (static generation) is done by the dx tool, which is not used, and incremental caching is off by default. Built with plain cargo build --release, without dx: only the server is built, with the crate's server feature on by default, so there is no client WebAssembly bundle and no page needs one. Dioxus's server stops at start if the public folder that dx would make beside the program is missing, so prepare.mjs makes an empty one (.cache/cargo-target/release/public). No manual version pins: dioxus 0.7.10 (2026-07-30) is the newest stable release, and Cargo.lock holds every crate at a release at least seven days old. One process on Tokio's default multi-threaded runtime (one worker thread per core), at Cargo's default release settings. Cargo cannot skip build scripts or procedural macros, so those of the locked crates run at build time, as for every Rust entry here."
+}

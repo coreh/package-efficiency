@@ -9,5 +9,6 @@
   "tags": [
     "non-default-options"
   ],
-  "notes": "Not the default configuration: decimal.js rounds every result to 20 significant digits by default, which cannot hold these products, so the adapter works on Decimal.clone({ precision: 5000 }). There is no entry at the default precision because it would return wrong digits. Uses mul, divToInt and mod."
+  "notes": "Runs on Decimal.clone({ precision: 5000 }), not the default 20 significant digits, which cannot hold these products. There is no default-precision entry because it would return wrong digits.",
+  "details": "Not the default configuration: decimal.js rounds every result to 20 significant digits by default, which cannot hold these products, so the adapter works on Decimal.clone({ precision: 5000 }). There is no entry at the default precision because it would return wrong digits. Uses mul, divToInt and mod."
 }

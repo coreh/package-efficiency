@@ -10,5 +10,6 @@
   "tags": [
     "non-default-options"
   ],
-  "notes": "Runs at level 9 (bzip2::Compression::new(9)), not the crate's default of 6, so that it compresses at the same level as Python's bz2. Uses bufread::BzEncoder and bufread::BzDecoder directly on the byte slices, without an extra buffer. Rust adapters have no variant mechanism in this kind of task, so there is no separate entry at level 6."
+  "notes": "Runs at level 9 (bzip2::Compression::new(9)), not the crate's default of 6, to match Python's bz2. Uses bufread::BzEncoder and BzDecoder directly on the slices. There is no level 6 entry.",
+  "details": "Runs at level 9 (bzip2::Compression::new(9)), not the crate's default of 6, so that it compresses at the same level as Python's bz2. Uses bufread::BzEncoder and bufread::BzDecoder directly on the byte slices, without an extra buffer. Rust adapters have no variant mechanism in this kind of task, so there is no separate entry at level 6."
 }

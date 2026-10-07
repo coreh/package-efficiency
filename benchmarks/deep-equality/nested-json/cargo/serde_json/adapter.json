@@ -6,7 +6,8 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Uses serde_json::Value PartialEq on separately parsed JSON values. Parsing is outside timing; comparison returns a boolean with no output serialization. preserve_order retains object insertion order, including the reordered-key fixture. Equivalent only for the shared JSON corpus: serde_json distinguishes integer and floating-point number representations.",
+  "notes": "Compares separately parsed serde_json::Value with PartialEq; parsing is outside timing and the result is a boolean. preserve_order keeps key order. Equivalent only for this JSON corpus.",
+  "details": "Uses serde_json::Value PartialEq on separately parsed JSON values. Parsing is outside timing; comparison returns a boolean with no output serialization. preserve_order retains object insertion order, including the reordered-key fixture. Equivalent only for the shared JSON corpus: serde_json distinguishes integer and floating-point number representations.",
   "tags": [
     "non-default-options"
   ]

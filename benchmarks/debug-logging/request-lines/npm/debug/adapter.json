@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Pattern applied with enable(), as DEBUG would. Per-logger log function replaces the stderr write with a capture (util.format plus newline, as the default does). The 100 loggers are created at load and picked by the fixture's numeric id. The line format is fixed in the adapter (inspectOpts.colors = false, hideDate = false), so DEBUG_COLORS, DEBUG_HIDE_DATE and whether stderr is a terminal do not affect it."
+  "notes": "Pattern applied with enable(), as DEBUG would. The log function captures output (util.format plus newline) instead of writing to stderr. Colors and date are fixed off in the adapter.",
+  "details": "Pattern applied with enable(), as DEBUG would. Per-logger log function replaces the stderr write with a capture (util.format plus newline, as the default does). The 100 loggers are created at load and picked by the fixture's numeric id. The line format is fixed in the adapter (inspectOpts.colors = false, hideDate = false), so DEBUG_COLORS, DEBUG_HIDE_DATE and whether stderr is a terminal do not affect it."
 }

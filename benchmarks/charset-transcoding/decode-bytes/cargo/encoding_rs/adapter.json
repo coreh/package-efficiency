@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "The encoding is resolved with Encoding::for_label in every call; decode_without_bom_handling, with the text copied into an owned String. The bytes are built once per fixture, outside the measured call."
+  "notes": "The encoding is resolved with Encoding::for_label in every call, then decode_without_bom_handling, copying the text into an owned String. Bytes are built once per fixture, outside timing.",
+  "details": "The encoding is resolved with Encoding::for_label in every call; decode_without_bom_handling, with the text copied into an owned String. The bytes are built once per fixture, outside the measured call."
 }

@@ -9,5 +9,6 @@
   "tags": [
     "non-default-options"
   ],
-  "notes": "validator_for once at setup, is_valid per call. Not the default build: default-features = false. The defaults add resolving remote and file references (with a TLS backend) and idna for the idn-hostname and idn-email formats, none of which this schema uses, so there is no second entry built with them."
+  "notes": "validator_for once at setup, is_valid per call. Built with default-features = false, which drops remote and file reference resolution and idna; this schema uses neither, so there is no second build.",
+  "details": "validator_for once at setup, is_valid per call. Not the default build: default-features = false. The defaults add resolving remote and file references (with a TLS backend) and idna for the idn-hostname and idn-email formats, none of which this schema uses, so there is no second entry built with them."
 }

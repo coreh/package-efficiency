@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Not the default feature set: built with default-features = false and the rust_crypto feature, because the crate ships no crypto backend by default (aws_lc_rs may perform differently). Validation::new(HS256) with default settings; the ErrorKind of a rejection maps ExpiredSignature to expired and anything else to invalid-signature. Rejections are returned values, not exceptions."
+  "notes": "Built with default-features = false and the rust_crypto feature, since the crate needs a backend chosen (aws_lc_rs may perform differently). Rejections are returned values, not exceptions.",
+  "details": "Not the default feature set: built with default-features = false and the rust_crypto feature, because the crate ships no crypto backend by default (aws_lc_rs may perform differently). Validation::new(HS256) with default settings; the ErrorKind of a rejection maps ExpiredSignature to expired and anything else to invalid-signature. Rejections are returned values, not exceptions."
 }

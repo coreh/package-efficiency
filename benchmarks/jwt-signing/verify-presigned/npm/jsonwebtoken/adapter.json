@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Calls verify with the HS256 algorithm list. Rejections are thrown errors, caught inside the call: TokenExpiredError maps to expired, any other error to invalid-signature (the fixtures only contain these two kinds of rejection). The cost of creating and catching the exception is part of the measured work."
+  "notes": "Calls verify with the HS256 algorithm list. Rejections are thrown errors caught inside the call (TokenExpiredError is expired, anything else invalid-signature), so exception cost is measured.",
+  "details": "Calls verify with the HS256 algorithm list. Rejections are thrown errors, caught inside the call: TokenExpiredError maps to expired, any other error to invalid-signature (the fixtures only contain these two kinds of rejection). The cost of creating and catching the exception is part of the measured work."
 }

@@ -4,7 +4,8 @@ Django is deployed by giving the project's `application` to a WSGI or an ASGI
 server. BENCH_SERVER picks which (prepare.mjs sets it from the variant):
 
   wsgi  `waitress-serve config.wsgi:application`, done from Python: Waitress
-        with its own defaults (4 worker threads).
+        with its own defaults (4 worker threads), or with BENCH_THREADS
+        worker threads (`--threads`) when a variant sets it.
   asgi  `uvicorn config.asgi:application`, done from Python: Uvicorn on
         asyncio with h11.
 
@@ -28,7 +29,9 @@ def start_wsgi() -> tuple[int, Callable[[], None]]:
     from waitress import create_server
     # Waitress warns on stderr whenever requests queue for a thread; the tasks allow no logging.
     logging.getLogger("waitress.queue").setLevel(logging.ERROR)
-    server = create_server(application, host="127.0.0.1", port=0)
+    # Waitress's own default (4) unless the variant sets BENCH_THREADS.
+    threads = {"threads": int(os.environ["BENCH_THREADS"])} if "BENCH_THREADS" in os.environ else {}
+    server = create_server(application, host="127.0.0.1", port=0, **threads)
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
     def close() -> None:

@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "actix_router::Router with one resource per route, built once; the method is checked by the adapter through one router per method, as for matchit. Parameters are copied into owned strings. The 100 routes are therefore split 50 (GET), 25 (POST) and 25 (PUT), and a request with any other method is answered without a lookup."
+  "notes": "One actix_router::Router per method, built once; parameters are copied into owned strings. The 100 routes split 50 GET, 25 POST and 25 PUT, and a request with any other method is answered without a lookup.",
+  "details": "actix_router::Router with one resource per route, built once; the method is checked by the adapter through one router per method, as for matchit. Parameters are copied into owned strings. The 100 routes are therefore split 50 (GET), 25 (POST) and 25 (PUT), and a request with any other method is answered without a lookup."
 }

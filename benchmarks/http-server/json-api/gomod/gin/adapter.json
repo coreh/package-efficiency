@@ -10,7 +10,8 @@
     "date": "2026-10-05"
   },
   "review": "unreviewed",
-  "notes": "Gin in release mode on net/http, one process on the default Go scheduler, which runs on every core. Idle scheduler threads still cost CPU when the load does not fill them, so CPU per request is higher than on one thread. No logging or recovery middleware.",
+  "notes": "Gin in release mode on net/http, one process on the default Go scheduler, which uses every core. Idle threads cost CPU, so CPU per request is higher than on one thread. No logging or recovery middleware.",
+  "details": "Gin in release mode on net/http, one process on the default Go scheduler, which runs on every core. Idle scheduler threads still cost CPU when the load does not fill them, so CPU per request is higher than on one thread. No logging or recovery middleware.",
   "module": "github.com/gin-gonic/gin",
   "tags": [
     "multi-threaded",

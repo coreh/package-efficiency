@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Streaming parser in its default HTML mode: onopentag, onclosetag and ontext handlers track whether the parser is inside a price or description element. By default it does not know CDATA, which it reads as a bogus comment, so the CDATA part of each description is lost and the figure is wrong; recorded as not passing. See the xmlMode variant."
+  "notes": "Streaming parser in its default HTML mode, recorded as not passing: it reads CDATA as a bogus comment, so each description's CDATA part is lost and the figure is wrong. See the xmlMode variant.",
+  "details": "Streaming parser in its default HTML mode: onopentag, onclosetag and ontext handlers track whether the parser is inside a price or description element. By default it does not know CDATA, which it reads as a bogus comment, so the CDATA part of each description is lost and the figure is wrong; recorded as not passing. See the xmlMode variant."
 }

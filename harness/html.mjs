@@ -8,7 +8,8 @@
 //   - the attribute that Dioxus puts on elements for its client code to find
 //     them again (data-node-hydration) is dropped;
 //   - whitespace between tags, and at the ends, is dropped;
-//   - an empty attribute value is dropped (hidden="" is hidden);
+//   - an empty attribute value is dropped (hidden="" is hidden), and so is
+//     the value true on hidden, which Dioxus writes (hidden=true);
 //   - a self-closing slash is dropped (<br/> is <br>);
 //   - the spellings of an escaped quote or apostrophe become the character;
 //   - the numeric spellings of an escaped &, < or > become &amp; &lt; &gt;.
@@ -21,6 +22,7 @@ export function normalizeHtml(html) {
     .replace(/\sdata-node-hydration="[^"]*"/g, '')
     .replace(/>\s+</g, '><')
     .replace(/=""/g, '')
+    .replace(/(\shidden)=(?:"true"|true)(?=[\s>])/g, '$1')
     .replace(/\s*\/>/g, '>')
     .replace(/&(?:#x27|#39|apos);/gi, "'")
     .replace(/&(?:quot|#34|#x22);/gi, '"')

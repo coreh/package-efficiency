@@ -11,7 +11,8 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Roda on Puma with one worker thread instead of Puma's default pool of up to 5. Chosen from 1, 4, 16 and 64 as the least CPU per request on CRuby: 46.0 µs at 1, 52.6 µs at 4, 53.5 µs at 16, 53.6 µs at 64. Ruby runs one thread at a time, so extra threads only add switching.",
+  "notes": "Roda on Puma with one worker thread instead of the default pool of up to 5. Chosen from 1, 4, 16 and 64 as the least CPU per request on CRuby (46.0 µs at 1, 52.6 µs at 4).",
+  "details": "Roda on Puma with one worker thread instead of Puma's default pool of up to 5. Chosen from 1, 4, 16 and 64 as the least CPU per request on CRuby: 46.0 µs at 1, 52.6 µs at 4, 53.5 µs at 16, 53.6 µs at 64. Ruby runs one thread at a time, so extra threads only add switching.",
   "dependencies": [
     "puma"
   ],

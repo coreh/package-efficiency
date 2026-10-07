@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Calls MurmurHash3(input) without new, which resets and reuses one module-level hasher object instead of allocating one per call. This is the package's documented fast path; every key is still hashed in full and no result is cached."
+  "notes": "Calls MurmurHash3(input) without new, which resets and reuses one module-level hasher instead of allocating one per call. This is the documented fast path; every key is still hashed in full.",
+  "details": "Calls MurmurHash3(input) without new, which resets and reuses one module-level hasher object instead of allocating one per call. This is the package's documented fast path; every key is still hashed in full and no result is cached."
 }

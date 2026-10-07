@@ -6,5 +6,6 @@
     "date": "2026-10-05"
   },
   "review": "unreviewed",
-  "notes": "Input uses insertion-ordered serde_json::Value; sorting and output allocation occur on every measured call. No sorted input or output cache. Clones the input, recursively sorts it, then serializes; cloning is included in timing."
+  "notes": "Insertion-ordered serde_json::Value input. Each call clones it, sorts it recursively and serializes it, so cloning is timed. No sorted input or output cache.",
+  "details": "Input uses insertion-ordered serde_json::Value; sorting and output allocation occur on every measured call. No sorted input or output cache. Clones the input, recursively sorts it, then serializes; cloning is included in timing."
 }

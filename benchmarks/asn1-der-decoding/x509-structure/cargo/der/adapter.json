@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Shallow: AnyRef reads only each element's tag and length and borrows the content bytes. No integer, OID, time or string is decoded, and the recursion into constructed elements is the adapter's loop, one AnyRef::decode per element."
+  "notes": "Shallow: AnyRef reads only each element's tag and length and borrows the content bytes. Nothing is decoded; the recursion into constructed elements is the adapter's loop.",
+  "details": "Shallow: AnyRef reads only each element's tag and length and borrows the content bytes. No integer, OID, time or string is decoded, and the recursion into constructed elements is the adapter's loop, one AnyRef::decode per element."
 }

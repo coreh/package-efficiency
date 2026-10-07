@@ -12,5 +12,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Standard-library resolution of a reference against a base, parsing both strings inside each call. Under PyPy, urljoin goes through urlsplit's 128-entry lru_cache (CPython 3.14's urljoin does not); one pass over the fixtures has more distinct strings than that, so only the repeated dot-only references are served from it."
+  "notes": "Standard-library resolution, parsing both strings in each call. Under PyPy urljoin uses urlsplit's 128-entry lru_cache (CPython 3.14 does not), so only the repeated dot-only references hit it.",
+  "details": "Standard-library resolution of a reference against a base, parsing both strings inside each call. Under PyPy, urljoin goes through urlsplit's 128-entry lru_cache (CPython 3.14's urljoin does not); one pass over the fixtures has more distinct strings than that, so only the repeated dot-only references are served from it."
 }

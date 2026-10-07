@@ -10,7 +10,8 @@
     "date": "2026-10-05"
   },
   "review": "unreviewed",
-  "notes": "Go net/http ServeMux with standard-library JSON encoding; one process on the default Go scheduler, which runs on every core. Idle scheduler threads still cost CPU when the load does not fill them, so CPU per request is higher than on one thread.",
+  "notes": "Go net/http ServeMux with standard-library JSON, one process on the default Go scheduler, which uses every core. Idle scheduler threads cost CPU, so CPU per request is higher than on one thread.",
+  "details": "Go net/http ServeMux with standard-library JSON encoding; one process on the default Go scheduler, which runs on every core. Idle scheduler threads still cost CPU when the load does not fill them, so CPU per request is higher than on one thread.",
   "title": "net/http",
   "tags": [
     "multi-threaded"

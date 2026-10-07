@@ -9,5 +9,6 @@
   "dependencies": [
     "@noble/hashes"
   ],
-  "notes": "Synchronous API; the package needs a SHA-512 function supplied once at load, as its README shows, here from @noble/hashes. Hex decoding happens in the measured call: Uint8Array.fromHex where the runtime has it, otherwise Buffer.from(hex, 'hex') from node:buffer."
+  "notes": "Synchronous API; the package needs a SHA-512 function supplied once at load, here from @noble/hashes. Hex decoding happens inside the measured call.",
+  "details": "Synchronous API; the package needs a SHA-512 function supplied once at load, as its README shows, here from @noble/hashes. Hex decoding happens in the measured call: Uint8Array.fromHex where the runtime has it, otherwise Buffer.from(hex, 'hex') from node:buffer."
 }

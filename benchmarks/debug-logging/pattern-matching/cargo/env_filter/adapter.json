@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "Filter built once from the same directives. Each call builds a Metadata with the namespace as target and calls Filter::enabled; there is no logger per namespace. The namespace is read out of the fixture before timing. This entry pins env_filter 0.1; env_logger delegates to env_filter 2.0 for the same decision, so the two entries time the same matching code. The match is a few prefix comparisons, so the figure is close to the cost of the harness loop."
+  "notes": "Filter built once; each call builds a Metadata with the namespace as target and calls Filter::enabled. Pins env_filter 0.1, while env_logger uses 2.0 for the same decision.",
+  "details": "Filter built once from the same directives. Each call builds a Metadata with the namespace as target and calls Filter::enabled; there is no logger per namespace. The namespace is read out of the fixture before timing. This entry pins env_filter 0.1; env_logger delegates to env_filter 2.0 for the same decision, so the two entries time the same matching code. The match is a few prefix comparisons, so the figure is close to the cost of the harness loop."
 }

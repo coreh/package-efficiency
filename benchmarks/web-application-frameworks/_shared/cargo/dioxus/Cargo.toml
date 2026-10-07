@@ -1,0 +1,20 @@
+[package]
+name = "web-application-frameworks-dioxus"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+bench-harness = { path = "../../../../../harness/rust" }
+dioxus = { version = "0.7", features = ["fullstack", "router"] }
+axum = "0.8"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
+
+# A Dioxus fullstack crate has a `server` feature (and a `web` one for the
+# client), which `dx` turns on for the build it is making. This is built with
+# plain cargo and only as the server, so `server` is on by default and there
+# is no `web`.
+[features]
+default = ["server"]
+server = ["dioxus/server"]

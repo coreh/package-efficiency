@@ -6,5 +6,6 @@
     "date": "2026-10-06"
   },
   "review": "unreviewed",
-  "notes": "A thin wrapper: a supported-name check and a three-byte BOM sniff, then iconvLite.decode from its own bundled iconv-lite 0.6.3 (the iconv-lite entry here is 0.7.3). This row is iconv-lite at an older version, not a separate decoder. The bytes are built once per fixture, outside the measured call."
+  "notes": "A thin wrapper over its own bundled iconv-lite 0.6.3 (the iconv-lite entry here is 0.7.3), so this row is iconv-lite at an older version, not a separate decoder. Bytes are built outside timing.",
+  "details": "A thin wrapper: a supported-name check and a three-byte BOM sniff, then iconvLite.decode from its own bundled iconv-lite 0.6.3 (the iconv-lite entry here is 0.7.3). This row is iconv-lite at an older version, not a separate decoder. The bytes are built once per fixture, outside the measured call."
 }
