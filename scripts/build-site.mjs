@@ -138,25 +138,33 @@ const model = {
 // The catalog: the most used packages of every ecosystem, each with its
 // category from the categorization and, when it has results, its measured
 // package. Go modules are measured under a short name.
-const GO_MODULES = { 'github.com/go-chi/chi': 'chi', 'github.com/gin-gonic/gin': 'gin' }
+const GO_MODULES = { 'github.com/go-chi/chi': 'chi', 'github.com/gin-gonic/gin': 'gin', 'github.com/labstack/echo/v4': 'echo', 'github.com/gofiber/fiber/v3': 'fiber', 'github.com/gofiber/fiber/v2': 'fiber' }
 const { categories: taxonomy, groups = [] } = await readJson(fromRoot('data/taxonomy.json'), { categories: [] })
 const taxonomyById = new Map(taxonomy.map((c) => [c.id, c]))
 const typeData = await readJson(fromRoot('data/types.json'), { packages: {}, compilers: {} })
 // Other names people search a category by (see searchIndex).
 const aliases = await readJson(fromRoot('data/category-aliases.json'), {})
 const catalog = { groups, categories: taxonomy, aliases, byEcosystem: {}, byCategory: new Map() }
+// Type-check costs of whole packages from the sweeps (scripts/sweep-types/).
+const sweptTypes = {}
+for (const id of ['pypi', 'rubygems', 'cargo']) sweptTypes[id] = await readJson(fromRoot('data', id, 'types.json'), null)
 for (const id of ecosystemIds) {
   const eco = ecosystem(id)
-  const listed = await readJson(fromRoot(eco.packages), [])
+  // The most used packages, then the few added by hand to fill a category
+  // (a well-known package that is not among the most used). Those have no rank.
+  const listed = [...(await readJson(fromRoot(eco.packages), [])), ...(await readJson(fromRoot(eco.picked), [])).map((p) => ({ ...p, rank: null, picked: true }))]
   if (listed.length === 0) continue
   const assigned = await readJson(fromRoot(eco.categories), {})
   catalog.byEcosystem[id] = listed.map((p) => {
-    const typed = id === 'npm' ? typeData.packages[p.name] : null
+    const typed = id === 'npm' || id === 'jsr' ? typeData.packages[p.name] : null
     const tsgo = typed?.status === 'ok' ? typed.tsgo : null
+    const swept = sweptTypes[id]?.packages?.[p.name]
+    const added = swept?.status === 'ok' ? swept.added : null
     const item = {
       ecosystem: id,
       name: p.name,
       rank: p.rank,
+      picked: Boolean(p.picked),
       popularity: { value: p.downloads ?? p.dependents ?? 0, label: eco.popularity },
       description: p.description,
       version: p.version,
@@ -164,7 +172,16 @@ for (const id of ecosystemIds) {
       category: taxonomyById.get(assigned[p.name]?.category) ?? null,
       measured: packages.get(`${id}/${id === 'gomod' ? (GO_MODULES[p.name] ?? p.name) : p.name}`) ?? null,
       // Same cost as the graded packages: the root of added CPU time (at least 10 ms) times added memory.
-      typeCheck: tsgo && Number.isFinite(tsgo.cpuMs) ? { tool: `tsgo ${typeData.compilers.tsgo}`, cpuMs: Math.max(0, tsgo.cpuMs), memoryMb: Math.max(0, tsgo.memoryKb) / 1000, cost: ((Math.max(0, tsgo.memoryKb) / 1000) * Math.max(tsgo.cpuMs, 10)) / 1000 } : null,
+      typeCheck: tsgo && Number.isFinite(tsgo.cpuMs) ? { tool: `tsgo ${typeData.compilers.tsgo}`, community: typed.communityTypes ?? (!!typed.typesFrom && typed.typesFrom !== 'self'), from: typed.typesFrom === 'self' ? null : typed.typesFrom ?? null, cpuMs: Math.max(0, tsgo.cpuMs), memoryMb: Math.max(0, tsgo.memoryKb) / 1000, cost: ((Math.max(0, tsgo.memoryKb) / 1000) * Math.max(tsgo.cpuMs, 10)) / 1000 } : added ? { community: !!swept.communityTypes, from: swept.typesFrom ?? null, tool: [sweptTypes[id].checker?.tool, sweptTypes[id].checker?.version].filter(Boolean).join(' '), icon: { pypi: 'cpython', rubygems: 'ruby', cargo: 'rust' }[id], cpuMs: Math.max(0, added.cpuMs), memoryMb: Math.max(0, added.memoryMb), cost: (Math.max(0, added.memoryMb) * Math.max(added.cpuMs, 10)) / 1000 } : null,
+    }
+    // A class for its type-check cost, against the lowest-cost package of its
+    // category (see build-data.mjs). A category with no comparable task has none.
+    const anchor = item.category?.benchmarkable ? index.typeAnchors?.[item.category.id] : null
+    if (item.typeCheck && anchor) {
+      const ratio = Math.max(1, Math.max(item.typeCheck.cost, index.typeFloor ?? 0.001) / anchor.value)
+      const at = index.typeScale.findIndex((limit) => ratio <= limit)
+      item.typeCheck.grade = { class: 'ABCDEFG'[at === -1 ? 6 : at], ratio, value: item.typeCheck.cost }
+      item.typeCheck.anchor = anchor
     }
     if (item.category) catalog.byCategory.set(item.category.id, [...(catalog.byCategory.get(item.category.id) ?? []), item])
     return item
@@ -174,7 +191,8 @@ for (const id of ecosystemIds) {
 // across them a package is compared by its share of its own registry's
 // listed use, and a category by the average of its share in each registry.
 for (const items of Object.values(catalog.byEcosystem)) {
-  const total = items.reduce((sum, item) => sum + item.popularity.value, 0) || 1
+  // The total is of the most used alone, so a package added by hand does not move the others' shares.
+  const total = items.filter((item) => !item.picked).reduce((sum, item) => sum + item.popularity.value, 0) || 1
   for (const item of items) {
     item.share = item.popularity.value / total
     if (item.measured) item.measured.listed = item

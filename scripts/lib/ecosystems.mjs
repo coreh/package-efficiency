@@ -23,6 +23,8 @@ export function ecosystem(id) {
     ...config,
     dir,
     packages: `${dir}/packages.json`,
+    // Packages added by hand, outside the most used: same shape, no rank.
+    picked: `${dir}/picked.json`,
     packagesTsv: `${dir}/packages.tsv`,
     categories: `${dir}/categories.json`,
     report: `${dir}/categories.md`,

@@ -1,0 +1,852 @@
+{
+  "checker": {
+    "tool": "cargo check",
+    "version": "1.96.1"
+  },
+  "method": {
+    "program": "use pkg as _;\nfn main() {}\n",
+    "features": "default plus docs.rs metadata",
+    "graded": "cold",
+    "env": {
+      "CARGO_INCREMENTAL": "0"
+    }
+  },
+  "minReleaseAgeDays": 7,
+  "memoryKind": "peak RSS of the largest process in the cargo tree (rustc)",
+  "scoreBasis": "added process CPU ms * added peak RSS MB",
+  "runs": 11,
+  "coldRuns": 3,
+  "baseline": {
+    "cold": {
+      "cpuMs": 80.1,
+      "timeMs": 87.9,
+      "peakRssMb": 61.3,
+      "runs": [
+        {
+          "cpuMs": 113.5,
+          "timeMs": 271.1,
+          "peakRssMb": 61.3
+        },
+        {
+          "cpuMs": 80.1,
+          "timeMs": 87.9,
+          "peakRssMb": 61.3
+        },
+        {
+          "cpuMs": 78.1,
+          "timeMs": 86.4,
+          "peakRssMb": 61.3
+        }
+      ]
+    },
+    "warm": {
+      "cpuMs": 36.73,
+      "timeMs": 43.23,
+      "peakRssMb": 61.28,
+      "runs": [
+        {
+          "cpuMs": 36.73,
+          "timeMs": 43.85,
+          "peakRssMb": 61.3
+        },
+        {
+          "cpuMs": 36.16,
+          "timeMs": 43.23,
+          "peakRssMb": 61.28
+        },
+        {
+          "cpuMs": 36.03,
+          "timeMs": 42.63,
+          "peakRssMb": 61.28
+        },
+        {
+          "cpuMs": 36.72,
+          "timeMs": 43.03,
+          "peakRssMb": 61.27
+        },
+        {
+          "cpuMs": 36.88,
+          "timeMs": 43.14,
+          "peakRssMb": 61.28
+        },
+        {
+          "cpuMs": 37.4,
+          "timeMs": 43.64,
+          "peakRssMb": 61.31
+        },
+        {
+          "cpuMs": 38.59,
+          "timeMs": 43.98,
+          "peakRssMb": 61.28
+        },
+        {
+          "cpuMs": 39.11,
+          "timeMs": 44.83,
+          "peakRssMb": 61.31
+        },
+        {
+          "cpuMs": 39.24,
+          "timeMs": 46,
+          "peakRssMb": 61.28
+        },
+        {
+          "cpuMs": 35.92,
+          "timeMs": 42,
+          "peakRssMb": 61.3
+        },
+        {
+          "cpuMs": 36.42,
+          "timeMs": 42.76,
+          "peakRssMb": 61.27
+        }
+      ]
+    }
+  },
+  "packages": {
+    "axum": {
+      "status": "ok",
+      "version": "0.8.9",
+      "listedVersion": "0.8.9",
+      "lockedCrates": 161,
+      "pinnedBack": [
+        "async-compression 0.4.50 -> 0.4.49",
+        "compression-codecs 0.4.45 -> 0.4.44",
+        "h2 0.4.20 -> 0.4.19",
+        "hyper 1.12.0 -> 1.11.1",
+        "libc 0.2.190 -> 0.2.189",
+        "mio 1.2.4 -> 1.2.3",
+        "tokio 1.53.2 -> 1.53.1",
+        "unicase 2.10.0 -> 2.9.0",
+        "uuid 1.27.0 -> 1.26.1",
+        "want 0.3.2 -> 0.3.1",
+        "yoke-derive 0.8.4 -> 0.8.2",
+        "zerocopy 0.8.61 -> 0.8.59"
+      ],
+      "libName": "axum",
+      "procMacro": false,
+      "buildScript": false,
+      "compiledCrates": 139,
+      "features": {
+        "default": true,
+        "extra": [
+          "__private",
+          "__private_docs",
+          "form",
+          "http1",
+          "http2",
+          "json",
+          "macros",
+          "matched-path",
+          "multipart",
+          "original-uri",
+          "query",
+          "tokio",
+          "tower-log",
+          "tracing",
+          "ws"
+        ],
+        "source": "docs.rs all-features"
+      },
+      "targetMb": 162.7,
+      "gradedBy": "cold",
+      "added": {
+        "cpuMs": 42808.7,
+        "memoryMb": 307.5
+      },
+      "cold": {
+        "cpuMs": 42808.7,
+        "memoryMb": 307.5,
+        "timeMs": 8697.5,
+        "runs": [
+          {
+            "cpuMs": 44793.5,
+            "timeMs": 12130.6,
+            "peakRssMb": 360.7
+          },
+          {
+            "cpuMs": 42888.8,
+            "timeMs": 8779.4,
+            "peakRssMb": 368.8
+          },
+          {
+            "cpuMs": 42042.8,
+            "timeMs": 8785.4,
+            "peakRssMb": 370.3
+          }
+        ]
+      },
+      "warm": {
+        "cpuMs": 81.6,
+        "memoryMb": 11.3,
+        "timeMs": 81.9,
+        "cpuSpreadMs": 7.1,
+        "runs": [
+          {
+            "cpuMs": 118.3,
+            "timeMs": 125.16,
+            "peakRssMb": 72.64
+          },
+          {
+            "cpuMs": 116.42,
+            "timeMs": 123.41,
+            "peakRssMb": 72.25
+          },
+          {
+            "cpuMs": 119.03,
+            "timeMs": 126.56,
+            "peakRssMb": 72.5
+          },
+          {
+            "cpuMs": 117.23,
+            "timeMs": 124.46,
+            "peakRssMb": 72.63
+          },
+          {
+            "cpuMs": 119.22,
+            "timeMs": 126.79,
+            "peakRssMb": 72.55
+          },
+          {
+            "cpuMs": 122.08,
+            "timeMs": 129.17,
+            "peakRssMb": 72.64
+          },
+          {
+            "cpuMs": 118.5,
+            "timeMs": 125.67,
+            "peakRssMb": 72.78
+          },
+          {
+            "cpuMs": 117.59,
+            "timeMs": 124.79,
+            "peakRssMb": 72.55
+          },
+          {
+            "cpuMs": 115.97,
+            "timeMs": 123.23,
+            "peakRssMb": 72.47
+          },
+          {
+            "cpuMs": 117.19,
+            "timeMs": 124.32,
+            "peakRssMb": 72.55
+          },
+          {
+            "cpuMs": 123.1,
+            "timeMs": 130.46,
+            "peakRssMb": 72.52
+          }
+        ]
+      },
+      "baseline": {
+        "coldCpuMs": 80.1,
+        "coldPeakRssMb": 61.3,
+        "warmCpuMs": 36.73,
+        "warmPeakRssMb": 61.28
+      },
+      "load": 7.9,
+      "measuredAt": "2026-10-07T06:15:43.739Z",
+      "harnessSeconds": 52.3
+    },
+    "clap": {
+      "status": "ok",
+      "version": "4.6.7",
+      "listedVersion": "4.6.7",
+      "lockedCrates": 29,
+      "pinnedBack": [
+        "libc 0.2.190 -> 0.2.189",
+        "unicase 2.10.0 -> 2.9.0"
+      ],
+      "libName": "clap",
+      "procMacro": false,
+      "buildScript": false,
+      "compiledCrates": 24,
+      "features": {
+        "default": true,
+        "extra": [
+          "unstable-doc"
+        ],
+        "source": "docs.rs features"
+      },
+      "targetMb": 27,
+      "gradedBy": "cold",
+      "added": {
+        "cpuMs": 5570.9,
+        "memoryMb": 238.2
+      },
+      "cold": {
+        "cpuMs": 5570.9,
+        "memoryMb": 238.2,
+        "timeMs": 2088.9,
+        "runs": [
+          {
+            "cpuMs": 5852.7,
+            "timeMs": 2436.8,
+            "peakRssMb": 298.7
+          },
+          {
+            "cpuMs": 5651,
+            "timeMs": 2124.8,
+            "peakRssMb": 299.5
+          },
+          {
+            "cpuMs": 5621.8,
+            "timeMs": 2176.8,
+            "peakRssMb": 300.6
+          }
+        ]
+      },
+      "warm": {
+        "cpuMs": 14.3,
+        "memoryMb": 1.3,
+        "timeMs": 14.5,
+        "cpuSpreadMs": 2.6,
+        "runs": [
+          {
+            "cpuMs": 53.09,
+            "timeMs": 59.73,
+            "peakRssMb": 62.56
+          },
+          {
+            "cpuMs": 51.56,
+            "timeMs": 58.79,
+            "peakRssMb": 62.58
+          },
+          {
+            "cpuMs": 51.02,
+            "timeMs": 57.48,
+            "peakRssMb": 62.61
+          },
+          {
+            "cpuMs": 50.64,
+            "timeMs": 57.07,
+            "peakRssMb": 62.59
+          },
+          {
+            "cpuMs": 52.59,
+            "timeMs": 59.38,
+            "peakRssMb": 62.63
+          },
+          {
+            "cpuMs": 52.08,
+            "timeMs": 58.44,
+            "peakRssMb": 62.59
+          },
+          {
+            "cpuMs": 50.86,
+            "timeMs": 57.16,
+            "peakRssMb": 62.59
+          },
+          {
+            "cpuMs": 50.53,
+            "timeMs": 56.95,
+            "peakRssMb": 62.58
+          },
+          {
+            "cpuMs": 51.13,
+            "timeMs": 57.97,
+            "peakRssMb": 62.59
+          },
+          {
+            "cpuMs": 50.57,
+            "timeMs": 57.35,
+            "peakRssMb": 62.63
+          },
+          {
+            "cpuMs": 50.91,
+            "timeMs": 57.73,
+            "peakRssMb": 62.59
+          }
+        ]
+      },
+      "baseline": {
+        "coldCpuMs": 80.1,
+        "coldPeakRssMb": 61.3,
+        "warmCpuMs": 36.73,
+        "warmPeakRssMb": 61.28
+      },
+      "load": 6.78,
+      "measuredAt": "2026-10-07T06:16:01.246Z",
+      "harnessSeconds": 17.5
+    },
+    "itoa": {
+      "status": "ok",
+      "version": "1.0.18",
+      "listedVersion": "1.0.18",
+      "lockedCrates": 1,
+      "pinnedBack": [],
+      "libName": "itoa",
+      "procMacro": false,
+      "buildScript": false,
+      "compiledCrates": 1,
+      "features": {
+        "default": true,
+        "extra": [],
+        "source": "default"
+      },
+      "targetMb": 0.1,
+      "gradedBy": "cold",
+      "added": {
+        "cpuMs": 39.3,
+        "memoryMb": 35.5
+      },
+      "cold": {
+        "cpuMs": 39.3,
+        "memoryMb": 35.5,
+        "timeMs": 41.8,
+        "runs": [
+          {
+            "cpuMs": 138.8,
+            "timeMs": 295.5,
+            "peakRssMb": 96.8
+          },
+          {
+            "cpuMs": 119.4,
+            "timeMs": 129.7,
+            "peakRssMb": 96.8
+          },
+          {
+            "cpuMs": 117.5,
+            "timeMs": 127.8,
+            "peakRssMb": 96.8
+          }
+        ]
+      },
+      "warm": {
+        "cpuMs": 5.4,
+        "memoryMb": 0.3,
+        "timeMs": 6,
+        "cpuSpreadMs": 5.2,
+        "runs": [
+          {
+            "cpuMs": 40.64,
+            "timeMs": 47.83,
+            "peakRssMb": 61.52
+          },
+          {
+            "cpuMs": 44.4,
+            "timeMs": 51.72,
+            "peakRssMb": 61.56
+          },
+          {
+            "cpuMs": 42.09,
+            "timeMs": 49.65,
+            "peakRssMb": 61.55
+          },
+          {
+            "cpuMs": 43.86,
+            "timeMs": 50.44,
+            "peakRssMb": 61.58
+          },
+          {
+            "cpuMs": 41.83,
+            "timeMs": 49.26,
+            "peakRssMb": 61.56
+          },
+          {
+            "cpuMs": 40.54,
+            "timeMs": 47.98,
+            "peakRssMb": 61.55
+          },
+          {
+            "cpuMs": 42.4,
+            "timeMs": 49.15,
+            "peakRssMb": 61.56
+          },
+          {
+            "cpuMs": 42.83,
+            "timeMs": 50.04,
+            "peakRssMb": 61.58
+          },
+          {
+            "cpuMs": 40.77,
+            "timeMs": 47.18,
+            "peakRssMb": 61.58
+          },
+          {
+            "cpuMs": 43.48,
+            "timeMs": 49.93,
+            "peakRssMb": 61.55
+          },
+          {
+            "cpuMs": 39.16,
+            "timeMs": 46.32,
+            "peakRssMb": 61.55
+          }
+        ]
+      },
+      "baseline": {
+        "coldCpuMs": 80.1,
+        "coldPeakRssMb": 61.3,
+        "warmCpuMs": 36.73,
+        "warmPeakRssMb": 61.28
+      },
+      "load": 2.71,
+      "measuredAt": "2026-10-07T06:14:27.569Z",
+      "harnessSeconds": 2.6
+    },
+    "regex": {
+      "status": "ok",
+      "version": "1.13.1",
+      "listedVersion": "1.13.1",
+      "lockedCrates": 5,
+      "pinnedBack": [],
+      "libName": "regex",
+      "procMacro": false,
+      "buildScript": false,
+      "compiledCrates": 5,
+      "featuresTried": {
+        "source": "docs.rs all-features",
+        "count": 21,
+        "failed": "error[E0554]: `#![feature]` may not be used on the stable release channel"
+      },
+      "features": {
+        "default": true,
+        "extra": [],
+        "source": "default"
+      },
+      "targetMb": 8.9,
+      "gradedBy": "cold",
+      "added": {
+        "cpuMs": 1690.5,
+        "memoryMb": 191.7
+      },
+      "cold": {
+        "cpuMs": 1690.5,
+        "memoryMb": 191.7,
+        "timeMs": 1287,
+        "runs": [
+          {
+            "cpuMs": 1700.4,
+            "timeMs": 1318.1,
+            "peakRssMb": 253
+          },
+          {
+            "cpuMs": 1770.6,
+            "timeMs": 1374.9,
+            "peakRssMb": 253
+          },
+          {
+            "cpuMs": 1785,
+            "timeMs": 1380.2,
+            "peakRssMb": 252.9
+          }
+        ]
+      },
+      "warm": {
+        "cpuMs": 9.3,
+        "memoryMb": 0.7,
+        "timeMs": 14,
+        "cpuSpreadMs": 6.5,
+        "runs": [
+          {
+            "cpuMs": 44.88,
+            "timeMs": 52.35,
+            "peakRssMb": 61.98
+          },
+          {
+            "cpuMs": 44.2,
+            "timeMs": 51.67,
+            "peakRssMb": 61.97
+          },
+          {
+            "cpuMs": 47.73,
+            "timeMs": 54.29,
+            "peakRssMb": 61.94
+          },
+          {
+            "cpuMs": 44.99,
+            "timeMs": 52.78,
+            "peakRssMb": 61.94
+          },
+          {
+            "cpuMs": 45.5,
+            "timeMs": 59.15,
+            "peakRssMb": 61.95
+          },
+          {
+            "cpuMs": 48.81,
+            "timeMs": 57.5,
+            "peakRssMb": 61.97
+          },
+          {
+            "cpuMs": 50.52,
+            "timeMs": 60.06,
+            "peakRssMb": 61.94
+          },
+          {
+            "cpuMs": 46.06,
+            "timeMs": 57.27,
+            "peakRssMb": 62
+          },
+          {
+            "cpuMs": 43.99,
+            "timeMs": 51.09,
+            "peakRssMb": 61.95
+          },
+          {
+            "cpuMs": 50.06,
+            "timeMs": 66.2,
+            "peakRssMb": 61.94
+          },
+          {
+            "cpuMs": 47.03,
+            "timeMs": 65.35,
+            "peakRssMb": 61.97
+          }
+        ]
+      },
+      "baseline": {
+        "coldCpuMs": 80.1,
+        "coldPeakRssMb": 61.3,
+        "warmCpuMs": 36.73,
+        "warmPeakRssMb": 61.28
+      },
+      "load": 6.13,
+      "measuredAt": "2026-10-07T06:16:10.550Z",
+      "harnessSeconds": 9.3
+    },
+    "serde": {
+      "status": "ok",
+      "version": "1.0.229",
+      "listedVersion": "1.0.229",
+      "lockedCrates": 7,
+      "pinnedBack": [],
+      "libName": "serde",
+      "procMacro": false,
+      "buildScript": true,
+      "compiledCrates": 2,
+      "featuresTried": {
+        "source": "docs.rs features",
+        "count": 3,
+        "failed": "error[E0554]: `#![feature]` may not be used on the stable release channel"
+      },
+      "features": {
+        "default": true,
+        "extra": [],
+        "source": "default"
+      },
+      "targetMb": 5.4,
+      "gradedBy": "cold",
+      "added": {
+        "cpuMs": 1165.4,
+        "memoryMb": 177.2
+      },
+      "cold": {
+        "cpuMs": 1165.4,
+        "memoryMb": 177.2,
+        "timeMs": 1003.6,
+        "runs": [
+          {
+            "cpuMs": 1245.5,
+            "timeMs": 1239.7,
+            "peakRssMb": 238.4
+          },
+          {
+            "cpuMs": 1259.6,
+            "timeMs": 1091.5,
+            "peakRssMb": 238.5
+          },
+          {
+            "cpuMs": 1231.8,
+            "timeMs": 1067.8,
+            "peakRssMb": 238.6
+          }
+        ]
+      },
+      "warm": {
+        "cpuMs": 6.4,
+        "memoryMb": 0.4,
+        "timeMs": 7.6,
+        "cpuSpreadMs": 8.2,
+        "runs": [
+          {
+            "cpuMs": 40.58,
+            "timeMs": 47.97,
+            "peakRssMb": 61.69
+          },
+          {
+            "cpuMs": 40.66,
+            "timeMs": 47.53,
+            "peakRssMb": 61.7
+          },
+          {
+            "cpuMs": 48.29,
+            "timeMs": 54.56,
+            "peakRssMb": 61.67
+          },
+          {
+            "cpuMs": 44.64,
+            "timeMs": 52.69,
+            "peakRssMb": 61.67
+          },
+          {
+            "cpuMs": 42.3,
+            "timeMs": 49.66,
+            "peakRssMb": 61.69
+          },
+          {
+            "cpuMs": 43.91,
+            "timeMs": 52.51,
+            "peakRssMb": 61.66
+          },
+          {
+            "cpuMs": 43.53,
+            "timeMs": 50.82,
+            "peakRssMb": 61.72
+          },
+          {
+            "cpuMs": 41.92,
+            "timeMs": 48.96,
+            "peakRssMb": 61.69
+          },
+          {
+            "cpuMs": 43.23,
+            "timeMs": 50.83,
+            "peakRssMb": 61.69
+          },
+          {
+            "cpuMs": 43.12,
+            "timeMs": 51.13,
+            "peakRssMb": 61.67
+          },
+          {
+            "cpuMs": 40.07,
+            "timeMs": 46.88,
+            "peakRssMb": 61.7
+          }
+        ]
+      },
+      "baseline": {
+        "coldCpuMs": 80.1,
+        "coldPeakRssMb": 61.3,
+        "warmCpuMs": 36.73,
+        "warmPeakRssMb": 61.28
+      },
+      "load": 2.52,
+      "measuredAt": "2026-10-07T06:14:38.665Z",
+      "harnessSeconds": 11.1
+    },
+    "tokio": {
+      "status": "ok",
+      "version": "1.53.1",
+      "listedVersion": "1.53.2",
+      "lockedCrates": 2,
+      "pinnedBack": [],
+      "libName": "tokio",
+      "procMacro": false,
+      "buildScript": false,
+      "compiledCrates": 2,
+      "featuresTried": {
+        "source": "docs.rs all-features",
+        "count": 25,
+        "failed": "error: The `io-uring` feature requires `--cfg tokio_unstable`."
+      },
+      "features": {
+        "default": true,
+        "extra": [],
+        "source": "default"
+      },
+      "targetMb": 0.6,
+      "gradedBy": "cold",
+      "added": {
+        "cpuMs": 99.7,
+        "memoryMb": 58
+      },
+      "cold": {
+        "cpuMs": 99.7,
+        "memoryMb": 58,
+        "timeMs": 104,
+        "runs": [
+          {
+            "cpuMs": 183.6,
+            "timeMs": 195.4,
+            "peakRssMb": 119.3
+          },
+          {
+            "cpuMs": 175.4,
+            "timeMs": 186.9,
+            "peakRssMb": 119.3
+          },
+          {
+            "cpuMs": 179.8,
+            "timeMs": 191.9,
+            "peakRssMb": 119.3
+          }
+        ]
+      },
+      "warm": {
+        "cpuMs": 1.8,
+        "memoryMb": 0.4,
+        "timeMs": 2.1,
+        "cpuSpreadMs": 5,
+        "runs": [
+          {
+            "cpuMs": 37.89,
+            "timeMs": 44.93,
+            "peakRssMb": 61.63
+          },
+          {
+            "cpuMs": 39.33,
+            "timeMs": 46.57,
+            "peakRssMb": 61.61
+          },
+          {
+            "cpuMs": 38.51,
+            "timeMs": 45.35,
+            "peakRssMb": 61.59
+          },
+          {
+            "cpuMs": 38.31,
+            "timeMs": 45.61,
+            "peakRssMb": 61.59
+          },
+          {
+            "cpuMs": 38.5,
+            "timeMs": 45.22,
+            "peakRssMb": 61.64
+          },
+          {
+            "cpuMs": 39.42,
+            "timeMs": 46.62,
+            "peakRssMb": 61.63
+          },
+          {
+            "cpuMs": 38.09,
+            "timeMs": 45.07,
+            "peakRssMb": 61.64
+          },
+          {
+            "cpuMs": 42.43,
+            "timeMs": 50.79,
+            "peakRssMb": 61.64
+          },
+          {
+            "cpuMs": 38.67,
+            "timeMs": 45.53,
+            "peakRssMb": 61.61
+          },
+          {
+            "cpuMs": 37.41,
+            "timeMs": 44.02,
+            "peakRssMb": 61.66
+          },
+          {
+            "cpuMs": 38.33,
+            "timeMs": 44.91,
+            "peakRssMb": 61.66
+          }
+        ]
+      },
+      "baseline": {
+        "coldCpuMs": 80.1,
+        "coldPeakRssMb": 61.3,
+        "warmCpuMs": 36.73,
+        "warmPeakRssMb": 61.28
+      },
+      "load": 2.41,
+      "measuredAt": "2026-10-07T06:14:51.452Z",
+      "harnessSeconds": 12.8
+    }
+  }
+}

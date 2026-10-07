@@ -12,9 +12,10 @@ import { existsSync, globSync } from 'node:fs'
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { HARNESS_VERSION, measureBaseline, measureServer, measureOperation } from '../harness/supervisor.mjs'
+import { HARNESS_VERSION, measureBaseline, measureServer, measureOperation, measureStartup } from '../harness/supervisor.mjs'
 import { installPinned, installJsr } from './lib/npm.mjs'
 import { binaryInstall, nodeInstall } from './lib/install-size.mjs'
+import { prepareApp } from './lib/apps.mjs'
 import { adapterFingerprint, staleReason, taskInputs } from './lib/tasks.mjs'
 import { ROOT, fromRoot, loadConfig, machine, median, readJson, writeJson } from './lib/util.mjs'
 
@@ -56,7 +57,10 @@ const config = await loadConfig()
 const RUNNER = fromRoot('harness/js/runner.mjs')
 const GO_NO_PREPARE = 'package main\nfunc prepare(v any) any { return v }\n'
 
-if (!isOperation && task.kind !== 'http-server') throw new Error(`no driver for task kind "${task.kind}" yet`)
+// A startup task launches the server anew for each sample; see measureStartup.
+const isStartup = task.kind === 'server-startup'
+const measurer = isOperation ? measureOperation : isStartup ? measureStartup : measureServer
+if (!isOperation && !isStartup && task.kind !== 'http-server') throw new Error(`no driver for task kind "${task.kind}" yet`)
 
 // What this task's figures depend on. A stored result stands only while all
 // of it is unchanged; otherwise the whole task is measured again, since its
@@ -186,8 +190,8 @@ async function prepareJs(ecosystem, name, meta, adapterDir) {
 
 async function measure(target, launch, extra) {
   if (check) {
-    const load = { ...task.load, cycle: scenario.cases?.length, warmup: Math.min(task.load.warmup, 200), rounds: 1, minRoundMs: 20, ...(isOperation ? { operationsPerRound: Math.min(task.load.operationsPerRound, 500) } : { requestsPerRound: Math.min(task.load.requestsPerRound, 2000) }) }
-    const run = await (isOperation ? measureOperation : measureServer)({ ...launch, requests, load, verifyResults })
+    const load = isStartup ? { launches: 1 } : { ...task.load, cycle: scenario.cases?.length, warmup: Math.min(task.load.warmup, 200), rounds: 1, minRoundMs: 20, ...(isOperation ? { operationsPerRound: Math.min(task.load.operationsPerRound, 500) } : { requestsPerRound: Math.min(task.load.requestsPerRound, 2000) }) }
+    const run = await measurer({ ...launch, requests, load, verifyResults })
     if (run.status !== 'ok') failures++
     console.error(`${target.ecosystem}/${target.name} on ${launch.runtime}: ${run.status === 'ok' ? 'works' : `${run.status}: ${String(run.error).split('\n')[0]}`}`)
     return
@@ -199,7 +203,7 @@ async function measure(target, launch, extra) {
   }
   const runs = []
   for (let i = 0; i < reps; i++) {
-    const run = await (isOperation ? measureOperation : measureServer)({ ...launch, requests, load: { ...task.load, cycle: scenario.cases?.length }, verifyResults })
+    const run = await measurer({ ...launch, requests, load: { ...task.load, cycle: scenario.cases?.length }, verifyResults })
     runs.push(run)
     if (run.status !== 'ok') break
   }
@@ -227,7 +231,7 @@ async function measure(target, launch, extra) {
     const below = median(base.runs.map((r) => (footprint ? r.footprintBytes : r.rssBytes)))
     const mb = (bytes) => (bytes / 2 ** 20).toFixed(1)
     const spread = runs.length > 1 ? ` (runs ${runs.map((r) => mb(footprint ? r.footprintAfterLoadBytes : r.rssAfterLoadBytes)).join(', ')})` : ''
-    return `${cpu.toFixed(3)} µs CPU/${isOperation ? 'operation' : 'request'}, ${mb(Math.max(0, held - below))} MB memory (${mb(held)} MB held${spread}, ${mb(below)} MB ${base.kind === 'warm' ? 'warm' : 'idle'} baseline${footprint ? '' : ', resident size'})`
+    return `${isStartup ? `${(cpu / 1000).toFixed(0)} ms CPU and ${median(runs.map((run) => median(run.rounds.map((r) => r.wallMs)))).toFixed(0)} ms to the first page` : `${cpu.toFixed(3)} µs CPU/${isOperation ? 'operation' : 'request'}`}, ${mb(Math.max(0, held - below))} MB memory (${mb(held)} MB held${spread}, ${mb(below)} MB ${base.kind === 'warm' ? 'warm' : 'idle'} baseline${footprint ? '' : ', resident size'})`
   })()
   console.error(`${target.ecosystem}/${target.name} on ${launch.runtime}: ${summary}`)
 }
@@ -269,6 +273,29 @@ const adapters = globSync('{npm,jsr,builtin,cargo,pypi,rubygems,gomod}/**/adapte
 for (const target of adapters) {
   const sharedMeta = await readJson(path.join(target.dir, 'adapter.json'))
   const meta = {...sharedMeta,...sharedMeta.versions?.[versionOverride]}
+
+  // An application shared by several tasks (adapter.json `app`): its own
+  // prepare.mjs installs, builds and says how to start it. See
+  // benchmarks/web-application-frameworks/README.md.
+  if (meta.app) {
+    for (const runtimeId of (meta.runtimes ?? jsIds).filter(selected)) {
+      const rt = config.runtimes[runtimeId] ?? config.toolchains[runtimeId]
+      let prepared
+      try {
+        prepared = await prepareApp(path.resolve(target.dir, meta.app), runtimeId, rt, meta.variant ?? null)
+      } catch (error) {
+        failures++
+        console.error(`${target.ecosystem}/${target.name} on ${runtimeId}: could not prepare: ${String(error.stderr || error.message).trim().split('\n')[0]}`)
+        continue
+      }
+      // A language whose runner measures the bare runtime itself gives its own
+      // baseline; JavaScript runtimes use the shared one.
+      const baselineId = prepared.base ? `${runtimeId}-http` : runtimeId
+      await baseline(baselineId, prepared.base ? { ...prepared.base, version: rt.version } : jsLaunch(runtimeId, fromRoot('harness/js'), '-'))
+      await measure(target, { phases: ['boot', 'loaded', 'ready'], ...prepared.launch, runtime: runtimeId, version: rt.version, baselineId }, { version: prepared.version ?? null, dependencies: prepared.dependencies ?? {}, ...(prepared.install ? { install: prepared.install } : {}) })
+    }
+    continue
+  }
 
   if (meta.language && meta.language !== 'javascript' && !isOperation) {
     for (const runtimeId of meta.runtimes.filter(selected)) {

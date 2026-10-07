@@ -1,0 +1,28 @@
+{
+  "package": "next",
+  "variant": "no-compress",
+  "title": "Next.js, compress: false",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../_shared/npm/next",
+  "dependencies": [
+    "react",
+    "react-dom"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "Next.js with compress: false, which its documentation recommends behind a proxy that compresses. Pages are sent uncompressed.",
+  "details": "Next.js with `compress: false` in next.config: Next's own gzip is off, which its documentation says to do when a proxy in front of it compresses. Both pages are sent uncompressed; the API route's JSON is too small for Next to compress and is the same in both entries. Nothing else changes. Built into its own folder (distDir .next-no-compress). App Router with Server Components, built with `next build` and served by Next's production server through the documented custom-server API (next({ dev: false }) and its request handler on node:http) inside the measured process. Otherwise Next's defaults, caching included; only the project root is set (to the work folder) and telemetry is off.",
+  "tags": [
+    "non-default-options"
+  ]
+}

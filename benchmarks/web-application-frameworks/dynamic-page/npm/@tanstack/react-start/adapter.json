@@ -1,0 +1,30 @@
+{
+  "package": "@tanstack/react-start",
+  "title": "TanStack Start",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../../_shared/npm/@tanstack/react-start",
+  "dependencies": [
+    "@tanstack/react-router",
+    "react",
+    "react-dom",
+    "vite",
+    "@vitejs/plugin-react",
+    "nitro",
+    "h3",
+    "srvx"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "TanStack Start built with Vite and Nitro's Node server, as its hosting guide says. /about is prerendered at build time. Nitro 3 is a beta release.",
+  "details": "Built with vite build and the Nitro plugin, as the hosting guide says for Node.js; the Nitro node-server output (.output/server/index.mjs) is imported into the measured process, on Bun and Deno as on Node. The server underneath is a pre-release: Nitro 3 is a beta and its h3 a release candidate, the versions the framework's guide installs. The port is passed through NITRO_PORT (0, for a free one) and the host through NITRO_HOST, and the port is read from the line the server prints when it listens. Not a default: /about is prerendered by Nitro's prerender option, because the page TanStack Start's own prerender option writes is not served by this server."
+}

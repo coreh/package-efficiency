@@ -36,6 +36,8 @@ const steps = [
   runStep('type checkers: mypy, Sorbet', process.execPath, ['scripts/setup-checkers.mjs']),
   runStep('Python, Ruby and Go server packages', process.execPath, ['scripts/setup-http-servers.mjs']),
   runStep('age of the locked Rust crates', process.execPath, ['scripts/check-cargo-age.mjs']),
+  // After the server packages and runtimes above, which the applications use.
+  runStep('applications shared by several tasks: install and build', process.execPath, ['scripts/setup-apps.mjs']),
 ]
 
 console.error(`\n${steps.map((s) => `${s.ok ? 'ok    ' : 'FAILED'}  ${s.title}  (${duration(s.seconds)})`).join('\n')}`)

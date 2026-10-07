@@ -1,0 +1,21 @@
+{
+  "title": "Echo",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "app": "../../../_shared/gomod/echo",
+  "module": "github.com/labstack/echo/v5",
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "Echo's router, template renderer (html/template) and JSON helper, with its recover middleware, served by net/http.",
+  "details": "Echo's router, its renderer (echo.TemplateRenderer and c.Render, which is Go's html/template and does the escaping; Echo renders into a buffer before it sends) and c.JSON. The middleware is that of Echo's own example apart from the request logger: Recover. Served by net/http's server with the Echo instance as its handler, which Echo documents beside e.Start; e.Start's own shutdown handling on signals is therefore not there. One process on the default Go scheduler (GOMAXPROCS is every core), built with go build and no flags beyond -mod=readonly. Go has no build-time prerendering, so /about is a template with no data, rendered on each request like the item page; the templates are parsed once when the server starts. No request logging.",
+  "tags": [
+    "multi-threaded"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "package": "hyper",
+  "title": "hyper, no framework",
+  "language": "rust",
+  "runtimes": [
+    "rust"
+  ],
+  "app": "../../../_shared/cargo/hyper",
+  "dependencies": [
+    "hyper-util",
+    "http-body-util",
+    "serde_json"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "multi-threaded"
+  ],
+  "notes": "The sample application written by hand on hyper, with hand-written routing and escaping: the cost of using no framework. Rust's standard library has no HTTP server.",
+  "details": "The sample application written by hand on hyper: the cost of using no framework. Rust's standard library has no HTTP server (and no JSON), so this is not a built-in: hyper is the HTTP layer that axum and most other Rust frameworks are built on, used here directly with its HTTP/1 connection builder, a hand-written match on the path for a router, pages pushed onto a String with a hand-written escape function, and serde_json for the API. /about is one constant built on first use. Built with cargo build --release at Cargo's default optimization settings and run as one process on Tokio's default multi-threaded runtime (one worker thread per core), so idle workers cost some CPU under a light load. Cargo cannot skip build scripts or procedural macros, so those of the locked crates run at build time, as for every Rust entry here.",
+  "reference": true
+}

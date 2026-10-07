@@ -1,0 +1,24 @@
+{
+  "package": "axum",
+  "title": "axum",
+  "language": "rust",
+  "runtimes": [
+    "rust"
+  ],
+  "app": "../../../_shared/cargo/axum",
+  "dependencies": [
+    "minijinja"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "multi-threaded"
+  ],
+  "notes": "axum's router and JSON helper with MiniJinja templates, on the default multi-threaded Tokio runtime. Release build, no middleware.",
+  "details": "axum's router, Path and State extractors and Json and Html responses; pages are MiniJinja templates (with inheritance and a price filter) parsed once at start and held in the router's state, as in axum's own templates-minijinja example, and escaped by MiniJinja. Askama, the engine most often paired with axum, was not used because it writes &, < and > as numeric references (&#38; &#60; &#62;), which the page comparison does not treat as equal to &amp; &lt; &gt;. /about is rendered from its template on each request: axum has no build-time prerendering. No middleware is added (axum adds none by default, so no compression). Built with cargo build --release at Cargo's default optimization settings and run as one process on Tokio's default multi-threaded runtime (one worker thread per core), so idle workers cost some CPU under a light load. Cargo cannot skip build scripts or procedural macros, so those of the locked crates run at build time, as for every Rust entry here."
+}

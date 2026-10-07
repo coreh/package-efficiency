@@ -1,0 +1,26 @@
+{
+  "package": "django",
+  "title": "Django, minimal settings",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "app": "../../../_shared/pypi/django",
+  "variant": "minimal",
+  "dependencies": [
+    "waitress"
+  ],
+  "tags": [
+    "non-default-options"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "Django with only what this application uses: no admin, sessions, auth, messages, CSRF middleware, context processors or database settings. WSGI on Waitress.",
+  "details": "The Django entry (synchronous views, WSGI on Waitress with its default 4 threads) with what the shop does not use taken out by config/settings_minimal.py: INSTALLED_APPS is the shop alone (no admin, auth, contenttypes, sessions, messages, staticfiles) and the URLconf has no admin; the session, CSRF, authentication and message middleware are removed (the security, common and clickjacking middleware remain, since they set headers on every response); the templates have no context processors; DATABASES is empty."
+}

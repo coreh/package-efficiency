@@ -1,0 +1,26 @@
+{
+  "package": "django",
+  "title": "Django, asynchronous views",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "app": "../../../_shared/pypi/django",
+  "variant": "async",
+  "dependencies": [
+    "uvicorn"
+  ],
+  "tags": [
+    "non-default-options"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "The generated Django project with async views on Uvicorn (ASGI).",
+  "details": "The Django entry with two changes. The views are coroutines (`async def`, in shop/views_async.py, routed by config/settings_async.py, which only sets ROOT_URLCONF); /about is an `async def` view calling render() rather than a TemplateView, whose unrendered response Django's asynchronous handler would render on a thread. Served through the generated config/asgi.py by Uvicorn (one process, loop=asyncio, http=h11, lifespan off, access log off) on a thread inside the one measured process, in place of WSGI on Waitress. The settings are otherwise the generated ones: all default apps, middleware and context processors."
+}

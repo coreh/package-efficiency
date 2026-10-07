@@ -60,7 +60,13 @@ function changeLine(change, centre, y, size, perChar) {
   return `${change.down === null ? '' : triangle(x, y - size * 0.72, size * 0.7, change.down)}<text x="${(x + lead).toFixed(1)}" y="${y}" font-size="${size}" font-weight="600" textLength="${width.toFixed(1)}" lengthAdjust="spacingAndGlyphs">${esc(change.text)}</text>`
 }
 
-// A class scale with its pointer, at any size. `right` is where the pointer
+// What stands in place of a class letter: R for a reference entry, a stroke
+// where there is nothing to compare the entry with.
+const letterOf = (grade) => grade.class ?? (grade.reference ? 'R' : '/')
+const classSaid = (grade) => grade.class ? `class ${grade.class}` : grade.reference ? 'reference, not graded' : 'no class'
+
+// A class scale with its pointer, at any size. A letter that is not a class
+// (see letterOf) is set in an outlined box beside the middle of the scale. `right` is where the pointer
 // ends. `change` adds the wrench of a tuned entry and, where the entry it is
 // compared with was in another class, that class's pointer as an outline.
 function scale(rankingId, letter, { x, y, row, gap, first, step, right, pointer }, change = {}) {
@@ -75,6 +81,11 @@ function scale(rankingId, letter, { x, y, row, gap, first, step, right, pointer 
     rows.push(`<path d="M${right - 0.5} ${top + 0.5}H${right - pointer + nose}l${-nose + 0.6} ${h / 2 - 0.5}l${nose - 0.6} ${h / 2 - 0.5}H${right - 0.5}z" fill="#fff" stroke="#8a8a8a" stroke-dasharray="2.500 2" stroke-linejoin="round"/>`
       + change.words.map((word, i) => `<text x="${right - body / 2 - 1}" y="${(top + h / 2 - 0.4 + i * (size + 0.6)).toFixed(1)}" font-size="${size.toFixed(1)}" font-weight="700" fill="#6f6f6f" text-anchor="middle" textLength="${(body - 6).toFixed(1)}" lengthAdjust="spacingAndGlyphs">${word}</text>`).join(''))
   }
+  if (!CLASSES.includes(letter)) {
+    const side = h, left = right - side, top = y + 3 * (row + gap) + row / 2 - side / 2
+    rows.push(`<rect x="${(left + 0.6).toFixed(1)}" y="${(top + 0.6).toFixed(1)}" width="${(side - 1.2).toFixed(1)}" height="${(side - 1.2).toFixed(1)}" fill="#fff" stroke="#000" stroke-width="1.200"/><text x="${(left + side / 2).toFixed(1)}" y="${(top + side * 0.76).toFixed(1)}" font-size="${(side * 0.7).toFixed(1)}" font-weight="800" fill="#000" text-anchor="middle">${letter}</text>`)
+    return rows.join('')
+  }
   const top = y + CLASSES.indexOf(letter) * (row + gap) - 1.5, icon = h * 0.6
   rows.push(`<path d="M${right} ${top}H${right - pointer + nose}l${-nose} ${h / 2}l${nose} ${h / 2}H${right}z" fill="#000"/><text x="${right - body / 2 - (change.tuned ? icon * 0.55 : 0)}" y="${top + h * 0.77}" font-size="${(h * 0.78).toFixed(1)}" font-weight="800" fill="#fff" text-anchor="middle">${letter}</text>${change.tuned ? wrench(right - body / 2 + icon * 0.15, top + (h - icon) / 2, icon) : ''}`)
   return rows.join('')
@@ -86,9 +97,9 @@ const figureOf = (entry, data, rankingId) => {
 }
 // `summary` marks a runtime's summary label in place of one result's: it
 // carries the label's own lines (`context`, `subtitle`) and its page (`address`).
-const measured = (rankingId, data, entry, summary) => summary ? metricFor(data, entry, rankingId).headline : ({ cpu: `CPU per ${data.task.kind === 'http-server' ? 'request' : 'operation'}`, memory: 'memory after GC, above baseline', types: 'type-check cost' })[rankingId]
+const measured = (rankingId, data, entry, summary) => summary ? metricFor(data, entry, rankingId).headline : ({ cpu: data.task.kind === 'server-startup' ? 'CPU to start' : `CPU per ${data.task.kind === 'http-server' ? 'request' : 'operation'}`, memory: 'memory after GC, above baseline', types: 'type-check cost' })[rankingId]
 const versionOf = (entry, runtime) => (entry.builtin ? `Built into ${runtime.title}` : entry.version ? `Version ${entry.version}` : '')
-const summaryOf = (entry) => Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => `${RANKINGS[id].title} ${entry.grades[id].class}`).join(', ')
+const summaryOf = (entry) => Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => `${RANKINGS[id].title} ${letterOf(entry.grades[id])}`).join(', ')
 // The link on a shape turns blue when pointed at, as it does on the full label.
 const open = (width, height, label) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${esc(label)}" font-family="${FACE}"><style>a:hover text{fill:#1558d6}</style>`
 const linkOf = (data, runtime, entry, summary) => (!labelSite.host ? '' : summary ? shortLinkOf(summary.address) : resultShortLink(data.task.id, runtime.id, entry))
@@ -100,12 +111,12 @@ export function compactLabel({ entry, data, runtime, rankingId, summary }) {
   const W = 180, figure = figureOf(entry, data, rankingId), link = linkOf(data, runtime, entry, summary), change = compare(entry, runtime, rankingId, summary)
   const title = cut(entry.title, 22), meta = cut(summary ? `${runtime.version}, ${summary.context}` : `${entry.version ?? 'built in'}, ${runtime.title} ${runtime.version}`, 34)
   const more = change.text ? 12 : 0, H = (link ? 236 : 218) + more
-  return `${open(W, H, `${entry.title}: class ${grade.class} for ${RANKINGS[rankingId].title}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
+  return `${open(W, H, `${entry.title}: ${classSaid(grade)} for ${RANKINGS[rankingId].title}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="5" fill="#fff" stroke="#000" stroke-width="1.5"/>
 <text x="10" y="21" font-size="15" font-weight="800" style="font-stretch:80%"${fitted(title, 8.2, W - 20)}>${esc(title)}</text>
 <text x="10" y="35" font-size="9.5" font-weight="500"${fitted(meta, 4.9, W - 20)}>${esc(meta)}</text>
 <path d="M0 43.5H${W}" stroke="#000"/>
-${scale(rankingId, grade.class, { x: 10, y: 52, row: 13, gap: 2.5, first: 44, step: 11, right: W - 10, pointer: 40 }, change)}
+${scale(rankingId, letterOf(grade), { x: 10, y: 52, row: 13, gap: 2.5, first: 44, step: 11, right: W - 10, pointer: 40 }, change)}
 <path d="M0 166.500H${W}" stroke="#000"/>
 <text x="${W / 2}" y="193" font-size="25" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="3" font-size="12" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
 <text x="${W / 2}" y="207" font-size="9.5" font-weight="500" text-anchor="middle">${esc(measured(rankingId, data, entry, summary))}</text>
@@ -121,7 +132,7 @@ export function wideLabel({ entry, data, runtime, rankingId, summary }) {
   if (!grade) return null
   const W = 520, H = 152, figure = figureOf(entry, data, rankingId), link = linkOf(data, runtime, entry, summary), change = compare(entry, runtime, rankingId, summary)
   const title = cut(entry.title, 26), context = cut(summary ? summary.context : `${rankingId === 'types' ? 'Type check' : data.task.title}, ${runtime.title} ${runtime.version}`, 46)
-  return `${open(W, H, `${entry.title}: class ${grade.class} for ${RANKINGS[rankingId].title}, ${figure.text} ${figure.unit} ${measured(rankingId, data, entry, summary)}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
+  return `${open(W, H, `${entry.title}: ${classSaid(grade)} for ${RANKINGS[rankingId].title}, ${figure.text} ${figure.unit} ${measured(rankingId, data, entry, summary)}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="6" fill="#fff" stroke="#000" stroke-width="1.5"/>
 <text x="14" y="27" font-size="20" font-weight="800" style="font-stretch:80%"${fitted(title, 11, 262)}>${esc(title)}</text>
 <text x="14" y="43" font-size="11" font-weight="500">${esc(summary ? summary.subtitle : versionOf(entry, runtime))}</text>
@@ -130,7 +141,7 @@ export function wideLabel({ entry, data, runtime, rankingId, summary }) {
 <text x="14" y="${change.text ? 106 : 114}" font-size="11" font-weight="500">${esc(measured(rankingId, data, entry, summary))}</text>
 ${change.text ? `${change.down === null ? '' : triangle(14, 111.500, 7.500, change.down)}<text x="${change.down === null ? 14 : 25}" y="119" font-size="10.500" font-weight="600"${fitted(change.text, 5.4, 250)}>${esc(change.text)}</text>` : ''}
 <path d="M290.500 0V${H - 26}" stroke="#000"/>
-${scale(rankingId, grade.class, { x: 302, y: 11, row: 12, gap: 3.500, first: 62, step: 14, right: W - 12, pointer: 44 }, change)}
+${scale(rankingId, letterOf(grade), { x: 302, y: 11, row: 12, gap: 3.500, first: 62, step: 14, right: W - 12, pointer: 44 }, change)}
 <path d="M0 ${H - 26.5}H${W}" stroke="#000"/>
 ${mark(14, H - 20, 0.6)}<text x="36" y="${H - 9.500}" font-size="11" font-weight="800" style="font-stretch:88%">${esc(labelSite.name)}</text>
 ${link ? `<a href="${esc(link)}"><text x="${W - 14}" y="${H - 9.500}" font-size="11" font-weight="600" text-anchor="end" text-decoration="underline" style="font-stretch:88%">${esc(link)}</text></a>` : ''}
@@ -164,7 +175,7 @@ export function badge({ entry, runtime, shaded = true, summary, only }) {
     if (!entry.grades[id] || (only && id !== only)) continue
     const change = compare(entry, runtime, id, summary)
     if (change.text) said.push(`${RANKINGS[id].title}: ${change.text}`)
-    parts.push({ text: { cpu: 'CPU', memory: 'memory', types: 'types' }[id], letter: entry.grades[id].class, color: classColor(id, entry.grades[id].class), down: change.down })
+    parts.push({ text: { cpu: 'CPU', memory: 'memory', types: 'types' }[id], letter: letterOf(entry.grades[id]), color: entry.grades[id].class ? classColor(id, entry.grades[id].class) : '#ffffff', down: change.down })
   }
   let x = 0
   const shapes = [], texts = []
@@ -193,7 +204,7 @@ export function badge({ entry, runtime, shaded = true, summary, only }) {
       if (tuned) { shapes.push(wrench(x + 2, top + 2.5, 9)); x += CELL }
     }
   }
-  const W = Math.round(x + 5), about = esc(`Package efficiency of ${entry.title}${tuned ? ', tuned' : ''}: ${only ? `${RANKINGS[only].title} ${entry.grades[only].class}` : summaryOf(entry)}${said.length ? `. ${said.join('; ')}` : ''}`)
+  const W = Math.round(x + 5), about = esc(`Package efficiency of ${entry.title}${tuned ? ', tuned' : ''}: ${only ? `${RANKINGS[only].title} ${letterOf(entry.grades[only])}` : summaryOf(entry)}${said.length ? `. ${said.join('; ')}` : ''}`)
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${about}">
 <title>${about}</title>
 ${shaded ? `<linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>` : ''}
@@ -216,12 +227,12 @@ export function button({ entry, runtime, rankingId, summary }) {
   // nothing to say what it is a percentage of.
   const change = compare(entry, runtime, rankingId, summary)
   const body = change.tuned ? 64 : 71.5, room = body - 8.5 - 24 - 2.5
-  return `${open(88, 31, `Package efficiency of ${entry.title}${change.tuned ? ', tuned' : ''}: class ${grade.class} for ${RANKINGS[rankingId].title}${change.text ? `. ${change.text}` : ''}`)}
+  return `${open(88, 31, `Package efficiency of ${entry.title}${change.tuned ? ', tuned' : ''}: ${classSaid(grade)} for ${RANKINGS[rankingId].title}${change.text ? `. ${change.text}` : ''}`)}
 <rect x=".5" y=".5" width="87" height="30" fill="#fff" stroke="#000"/>
 ${RANKINGS[rankingId].colors.map((color, i) => `<path d="M3.500 ${3.5 + i * 3.5}h${7 + i * 1.7}l1.200 1.400l-1.200 1.400H3.500z" fill="${color}"/>`).join('')}
 <text x="24" y="12.500" font-size="6" font-weight="800" letter-spacing=".3" textLength="${room}" lengthAdjust="spacingAndGlyphs">EFFICIENCY</text>
 <text x="24" y="22.500" font-size="7.500" font-weight="800"${fitted(name, 5.2, room)}>${name}</text>
-<path d="M85 4.500H${body}L${body - 8.5} 15.500l8.500 11H85z" fill="#000"/>${change.tuned ? `<text x="68.800" y="21.500" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">${grade.class}</text>${wrench(74.800, 10.700, 9)}` : `<text x="76.500" y="21.500" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">${grade.class}</text>`}
+${grade.class ? '' : `<rect x="64" y="5" width="21" height="21" fill="#fff" stroke="#000" stroke-width="1.500"/><text x="74.500" y="21" font-size="15" font-weight="800" text-anchor="middle">${letterOf(grade)}</text>`}${!grade.class ? '' : `<path d="M85 4.500H${body}L${body - 8.5} 15.500l8.500 11H85z" fill="#000"/>`}${!grade.class ? '' : change.tuned ? `<text x="68.800" y="21.500" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">${grade.class}</text>${wrench(74.800, 10.700, 9)}` : `<text x="76.500" y="21.500" font-size="16" font-weight="800" fill="#fff" text-anchor="middle">${grade.class}</text>`}
 </svg>`
 }
 
@@ -249,7 +260,7 @@ export function overviewLabel({ entry, data, runtime, summary }) {
   const panel = (rankingId, x, y, w, h) => {
     const grade = entry.grades[rankingId], figure = figureOf(entry, data, rankingId), change = compare(entry, runtime, rankingId, summary)
     const what = summary || h > 200 ? measured(rankingId, data, entry, summary) : short[rankingId] ?? measured(rankingId, data, entry, summary)
-    said.push(`${RANKINGS[rankingId].title} class ${grade.class}, ${figure.text}${figure.unit ? ` ${figure.unit}` : ''}`)
+    said.push(`${RANKINGS[rankingId].title} ${classSaid(grade)}, ${figure.text}${figure.unit ? ` ${figure.unit}` : ''}`)
     const name = `<text x="${x + 12}" y="${y + 19}" font-size="13" font-weight="800">${esc(RANKINGS[rankingId].title)}</text>`
     // A type-check cost is a product; the CPU time and memory it is made of go under it.
     const cost = rankingId === 'types' && !summary ? (entry.types?.compilers?.[data.typesCompiler] ?? entry.types) : null
@@ -261,7 +272,7 @@ export function overviewLabel({ entry, data, runtime, summary }) {
       // when there is no change line below.
       const drop = change.text ? 6 : 9
       return `${name}
-${scale(rankingId, grade.class, { x: x + 12, y: y + 28, row: 17, gap: 3.5, first: 55, step: 14, right: x + w - 12, pointer: 48 }, change)}
+${scale(rankingId, letterOf(grade), { x: x + 12, y: y + 28, row: 17, gap: 3.5, first: 55, step: 14, right: x + w - 12, pointer: 48 }, change)}
 ${number(x + w / 2, y + 203 + drop, 34)}
 <text x="${x + w / 2}" y="${y + 219 + drop}" font-size="12" font-weight="500" text-anchor="middle"${fitted(what, 6.2, w - 24)}>${esc(what)}</text>
 ${partsLine(x + w / 2, y + 231 + drop, 10, w - 24)}
@@ -275,7 +286,7 @@ ${changeLine(change, x + w / 2, y + h - 9, 10, Math.min(5.2, (w - 34) / (change.
     const unitWidth = figure.unit ? 2 + figure.unit.length * 6.4 : 0
     const size = Math.min(21, Math.floor(((room - unitWidth) / (figure.text.length * 0.64)) * 2) / 2)
     return `${name}
-${scale(rankingId, grade.class, { x: x + 12, y: y + 27, row: 9, gap: 2, first: 30, step: 8, right: split, pointer: 30 }, change)}
+${scale(rankingId, letterOf(grade), { x: x + 12, y: y + 27, row: 9, gap: 2, first: 30, step: 8, right: split, pointer: 30 }, change)}
 <text x="${cx}" y="${y + 64}" font-size="${size}" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="2" font-size="10" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
 <text x="${cx}" y="${y + 77}" font-size="9.5" font-weight="500" text-anchor="middle"${fitted(what, 4.8, room)}>${esc(what)}</text>
 ${partsLine(cx, y + 88, 8.5, room)}

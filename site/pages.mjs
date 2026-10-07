@@ -48,7 +48,11 @@ export const urls = {
   label: (taskId, runtimeId, entryId, rankingId, version) => `/labels/${taskId}/${runtimeId}/${entryId}${version ? `@${version}` : ''}.${rankingId}.svg`,
 }
 
+// Shows or hides the reference rows of every table on the page (styles.css).
+// A reference entry has no class: its chip holds an R, and says its multiple of the best graded entry on hover.
+const times = (ratio) => `${ratio < 10 ? String(Math.round(ratio * 10) / 10) : Math.round(ratio)}×`
 function chip(rankingId, grade, text) {
+  if (grade?.reference) return `<span class="cls ref" title="Reference, not graded: ${times(grade.ratio)} the best graded entry" role="img" aria-label="Reference, not graded">R</span>`
   if (!grade?.class) return ''
   const color = classColor(rankingId, grade.class)
   return `<span class="cls" style="background:${color};color:${inkOn(color)}"${text ? ` title="${esc(text)}"` : ''}>${grade.class}</span>`
@@ -61,8 +65,10 @@ const cell = (value, html) => `<td data-v="${value ?? ''}">${html}</td>`
 // A graded cell can be sorted two ways: by its figure (`data-value`) or by its
 // class and then its multiple of the best (`data-grade`, `data-v`). `extra`
 // adds further sortable figures.
-const gradedCell = (grade, html, extra = '') => grade?.class
-  ? `<td data-grade="${CLASSES.indexOf(grade.class)}" data-v="${grade.ratio ?? ''}" data-value="${grade.value ?? ''}"${extra}>${html}</td>`
+// A reference entry sorts by its ratio like the others; as a class it comes before A.
+const overheadNote = (grade) => grade?.overhead ? `<span class="overhead" title="${times(grade.overhead.ratio)} the cost of ${esc(grade.overhead.title)} on the same runtime">${times(grade.overhead.ratio)} reference</span>` : ''
+const gradedCell = (grade, html, extra = '') => grade?.class || grade?.reference
+  ? `<td data-grade="${grade.class ? CLASSES.indexOf(grade.class) : -1}" data-v="${grade.ratio ?? ''}" data-value="${grade.value ?? ''}"${extra}>${html}${overheadNote(grade)}</td>`
   : cell(null, html)
 // A type-check cost: the time and memory added, and the class of their product.
 // The type-check score's unit, shown once in the legend; cells and labels give
@@ -71,12 +77,15 @@ const gradedCell = (grade, html, extra = '') => grade?.class
 const ROOT_MB_MS = 'MB·s'
 // A one-line key for the type-check cells, placed under every table that has them.
 const TYPE_KEY = `<p class="soft key">Type check: added CPU time, added memory, then the cost in bold. The cost is CPU time multiplied by memory, in ${ROOT_MB_MS}. Lower is better.</p>`
+// Marks a type-check figure taken from types that the package's authors did
+// not publish (@types/*, stub packages, signature collections).
+const communityMark = (types) => types?.community ? `<span class="community" title="Checked with community types${types.from ? ` (${esc(types.from)})` : ''}, not types from the package's authors">*</span>` : ''
 const typeCost = (cost, grade = cost) => {
   if (!cost) return cell(null, NA)
   const score = grade?.value ?? cost.score ?? cost.value
   // The score and its two ingredients. Elapsed time is not part of the score, so it is a tooltip.
   const figures = ` data-time="${cost.cpuMs ?? ''}" data-memory="${cost.memoryMb ?? ''}" data-score="${score ?? ''}"`
-  return gradedCell(grade, `<span class="type-cost" title="${formatNumber(cost.timeMs)} ms elapsed"><span>${cost.cpuMs < 10 ? '&lt; 10' : formatNumber(cost.cpuMs)} ms</span><span>${esc(formatAtLeast(cost.memoryMb, LEAST.memory))} MB</span><span class="type-cost-score">${score === null || score === undefined ? '' : `${esc(formatAtLeast(score, LEAST.types))} <span class="unit">MB·s</span>`}</span><span class="type-cost-grade">${chip('types', grade)}</span></span>`, figures)
+  return gradedCell(grade, `<span class="type-cost" title="${formatNumber(cost.timeMs)} ms elapsed"><span>${communityMark(cost)}${cost.cpuMs < 10 ? '&lt; 10' : formatNumber(cost.cpuMs)} ms</span><span>${esc(formatAtLeast(cost.memoryMb, LEAST.memory))} MB</span><span class="type-cost-score">${score === null || score === undefined ? '' : `${esc(formatAtLeast(score, LEAST.types))} <span class="unit">MB·s</span>`}</span><span class="type-cost-grade">${chip('types', grade)}</span></span>`, figures)
 }
 const sortable = (text, attrs = '') => `<th scope="col"${attrs}><button type="button" data-sort>${text}</button></th>`
 // A graded column has one sort control that steps through several orders:
@@ -120,9 +129,14 @@ function sidebar(model, path, context) {
     const measured = measuredOf(c.id)
     if (!measured) return `<li>${link(`/${c.id}/`, c.title)}</li>`
     if (measured.id !== context.category) return `<li>${link(urls.category(measured.id), measured.title)}</li>`
-    const packages = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id))
+    const inCategory = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id))
+    // Entries kept for reference have a list of their own.
+    const isReference = (p) => p.appearances.filter((a) => a.data.task.category === measured.id).every((a) => a.entry.reference)
+    const packages = inCategory.filter((p) => !isReference(p))
+    const references = inCategory.filter(isReference)
     return `<li>${link(urls.category(measured.id), measured.title)}<ul>${measured.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
-<h3>Packages in ${esc(measured.title)}</h3><ul>${packages.slice(0, SIDE_LIMIT).map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}${packages.length > SIDE_LIMIT ? `<li><a class="more" href="${urls.category(measured.id)}">All ${packages.length} packages</a></li>` : ''}</ul></li>`
+<h3>Packages in ${esc(measured.title)}</h3><ul>${packages.slice(0, SIDE_LIMIT).map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}${packages.length > SIDE_LIMIT ? `<li><a class="more" href="${urls.category(measured.id)}">All ${packages.length} packages</a></li>` : ''}</ul>${references.length ? `
+<h3>For reference</h3><ul>${references.map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}</ul>` : ''}</li>`
   }
   return (model.catalog.groups ?? [])
     .map((group) => {
@@ -286,6 +300,11 @@ const byRanking = (rankingId) => (a, b) => a.grades[rankingId].value - b.grades[
 // `embed` names other addresses for the label's embeddable shapes and the
 // page they link to: a package's best result has ones that follow the package.
 function card({ entry, data, runtime, rankingId, model, caption, linkPackage = true, older = entry.activeRelease === false, place = '', embed }) {
+  // A type-check figure with no class (the only package of its category that
+  // has one) still gets its label, with no pointer. It has no file of its own
+  // and no other shapes, so nothing to embed.
+  const unclassed = rankingId === 'types' && !entry.grades.types && entry.types?.value != null
+  if (unclassed) entry = { ...entry, grades: { ...entry.grades, types: { class: null, value: entry.types.value } }, adapter: { ...entry.adapter, notes: ['No class: it is the only package in its category with a type-check figure.', entry.adapter?.notes].filter(Boolean).join(' ') } }
   const svg = renderLabel({ entry, data, runtime, rankingId })
   if (!svg) return ''
   const pkg = model.packageOf(entry)
@@ -299,7 +318,8 @@ function card({ entry, data, runtime, rankingId, model, caption, linkPackage = t
     `<a href="${urls.result(data.task.id, runtime.id, entry)}">Permalink</a>`,
     `<a class="soft svg-link" href="${labelUrl}">SVG</a>`,
   ].filter(Boolean)
-  return `<li data-label="${esc(labelUrl)}" data-embed="${esc(embed.base)}" data-embed-page="${esc(embed.page)}" data-embed-alt="${esc(`Package efficiency of ${entry.title}`)}" data-ranking="${rankingId}" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, runtime.id, entry.id, '{r}', older ? entry.version : null))}"><p class="over">${place}${variantTag(entry)}</p>${svg}<p class="under">${lines.join(' &nbsp; ')}</p></li>`
+  if (unclassed) return `<li data-label><p class="over">${place}${variantTag(entry)}</p>${svg}<p class="under">${lines.filter((line) => !line.includes('svg-link')).join(' &nbsp; ')}</p></li>`
+  return `<li${entry.reference ? ' data-reference-card' : ''} data-label="${esc(labelUrl)}" data-embed="${esc(embed.base)}" data-embed-page="${esc(embed.page)}" data-embed-alt="${esc(`Package efficiency of ${entry.title}`)}" data-ranking="${rankingId}" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, runtime.id, entry.id, '{r}', older ? entry.version : null))}"><p class="over">${place}${variantTag(entry)}</p>${svg}<p class="under">${lines.join(' &nbsp; ')}</p></li>`
 }
 
 // Says, above its label, that an entry is not the package as installed: it
@@ -423,14 +443,17 @@ function legend(data) {
 <tr><th scope="row" colspan="2">Memory</th><td class="l wrap">The memory that the process holds after the task and a garbage collection (its physical footprint). The same runtime with a do-nothing adapter on the same inputs is subtracted. A class is a multiple of the best result.</td>${cells('memory', data.metrics.memory)}</tr>
 ${typeRows.map(([language, text, metric], i) => `<tr>${i === 0 ? `<th scope="rowgroup" rowspan="${typeRows.length}">Type check</th>` : ''}<th scope="row">${language}</th><td class="l wrap">${text}</td>${!sharedTypeScale ? cells('types', metric) : i === 0 ? cells('types', metric, typeRows.length) : ''}</tr>`).join('\n')}
 </tbody></table></div>
-<p class="soft">Type-check cost is one figure: the CPU time that the checker adds, multiplied by the memory that it adds, in ${ROOT_MB_MS}. Serverless platforms bill in the same unit. Each class boundary is the CPU boundary multiplied by the memory boundary. In the tables, the cost is the bold figure after its CPU time and its memory. Both are measured above the checker's baseline, which for TypeScript includes the shared runtime typings. A class compares an entry with the lowest-cost package in the task, in any language. Added CPU time below 10 ms counts as 10 ms, because smaller differences are noise. TypeScript reports heap memory. The other checkers report peak resident memory.</p>`
+<p class="soft">Type-check cost is one figure: the CPU time that the checker adds, multiplied by the memory that it adds, in ${ROOT_MB_MS}. Serverless platforms bill in the same unit. Each class boundary is the CPU boundary multiplied by the memory boundary. In the tables, the cost is the bold figure after its CPU time and its memory. Both are measured above the checker's baseline, which for TypeScript includes the shared runtime typings. A class compares an entry with the lowest-cost package in its category, in any language. Added CPU time below 10 ms counts as 10 ms, because smaller differences are noise. TypeScript reports heap memory. The other checkers report peak resident memory.</p>`
 }
 
 // --- Task page --------------------------------------------------------------
 
-const unitOf = (data) => data.task.kind === 'sync-operation' ? 'operation' : 'request'
-const cpuOf = (m) => m.cpuPerOperationUs ?? m.cpuPerRequestUs
-const rateOf = (m) => m.operationsPerCpuSecond ?? m.requestsPerCpuSecond
+const unitOf = (data) => data.task.kind === 'sync-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request'
+// A startup task's figure is the CPU time of one launch, in milliseconds;
+// every other task's is per operation or request, in microseconds.
+const cpuOf = (m) => m.startupCpuMs ?? m.cpuPerOperationUs ?? m.cpuPerRequestUs
+const cpuUnit = (m) => (m.startupCpuMs != null ? ' ms' : ' µs')
+const rateOf = (m) => (m.startupCpuMs != null ? null : m.operationsPerCpuSecond ?? m.requestsPerCpuSecond)
 
 function rankingTable(data, runtime, entries, model) {
   const isRust = runtime.id === 'rust'
@@ -446,10 +469,10 @@ function rankingTable(data, runtime, entries, model) {
       ? typeCost(e.types, e.grades.types) + cell(e.types?.coldCpuS, num(e.types?.coldCpuS, ' s'))
       : isAll ? typeCost(e.types?.compilers?.[data.typesCompiler] ?? e.types, e.grades.types) : isNative ? typeCost(e.types, e.grades.types) : compilers.map((id) => typeCost(e.types?.compilers[id])).join('')
     const marks = medalBadges(['cpu', 'memory', ...(isRust || isAll || isNative ? ['types'] : compilers)].map(mark))
-    return `<tr><td><a href="${urls.package(model.packageOf(e))}">${esc(e.title)}</a>${verified(e.adapter)}<span class="ver">${e.builtin ? 'built in' : esc(e.version ?? '')}</span>${marks}</td>
+    return `<tr${e.reference ? ' data-reference' : ''}><td><a href="${urls.package(model.packageOf(e))}">${esc(e.title)}</a>${verified(e.adapter)}<span class="ver">${e.builtin ? 'built in' : esc(e.version ?? '')}</span>${marks}</td>
 ${isAll ? `<td class="l">${esc(languageTitle(languageOf(e.selectedRuntime.id)))}</td>` : ''}
 ${runtime.best ? `<td class="l">${inlineIcon(e.selectedRuntime.id)}${esc(e.selectedRuntime.title)}</td>` : ''}
-${gradedCell(e.grades.cpu, `${num(cpuOf(m), ' µs', LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
+${gradedCell(e.grades.cpu, `${num(cpuOf(m), cpuUnit(m), LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
 ${gradedCell(e.grades.memory, `<span class="memory-cost"><span>${num(m.memoryMb, ' MB', LEAST.memory)}</span><span class="memory-cost-grade">${chip('memory', e.grades.memory)}</span><span class="memory-cost-detail">${num(m.settledRssMb, ' MB')} total after GC</span><span class="memory-cost-detail">${num(m.peakRssMb, ' MB')} lifetime peak</span></span>`)}
 ${cell(m.heapAboveBaselineKb, num(m.heapAboveBaselineKb, ' KB'))}
 ${isRust ? cell(m.heapPeakMb, num(m.heapPeakMb, ' MB')) : cell(m.retainedKb, num(m.retainedKb, ' KB') + growth)}
@@ -480,7 +503,7 @@ function anchorNote(data, runtime, rankingId, entries) {
   const metric = metricFor(data, entries[0], rankingId)
   if (rankingId === 'types') {
     const { anchor } = metric
-    const holder = anchor ? ` The lowest-cost package in this task, in any language, sets class A. Built-ins add nothing and are not counted. Here it is ${esc(anchor.title)}${anchor.version ? ` ${esc(anchor.version)}` : ''}, checked with ${esc(anchor.tool)}, at ${formatNumber(anchor.value)}.` : ''
+    const holder = anchor ? ` The lowest-cost package in the category${anchor.category ? ` (${esc(anchor.category)})` : ''}, in any language, sets class A. It can be a package that is not in this task. Built-ins add nothing and are not counted. Here it is ${esc(anchor.title)}${anchor.version ? ` ${esc(anchor.version)}` : ''}, checked with ${esc(anchor.tool)}, at ${formatNumber(anchor.value)}.` : ''
     const how = runtime.language === 'all'
       ? 'Each language has its own checker, and the checkers do different amounts of work. The comparison shows what type checking costs in each ecosystem. It does not show which checker is better.'
       : `Measured with ${esc(metric.tool)}${metric.notes ? `: ${esc(metric.notes)}` : '.'}`
@@ -500,30 +523,26 @@ function anchorNote(data, runtime, rankingId, entries) {
 // It opens on its widest view: every language and every runtime where there
 // are several, which is the first of the views.
 function explorer(data, model) {
-  const rankings = Object.keys(RANKINGS)
+  // The labels are switched only between the rankings. The language and
+  // runtime switches belong to the table and filter nothing else, as on a
+  // category page.
   const panels = []
   const rules = []
   const runtimes = runtimeViews(data.runtimes)
   for (const runtime of runtimes) {
-    for (const rankingId of rankings) {
-      const entries = runtime.every ? everyTaskEntry(data.runtimes, runtime.language, rankingId) : runtime.best ? bestTaskEntries(data.runtimes,runtime.language,rankingId) : runtime.entries.filter((e) => e.grades[rankingId]).sort(byRanking(rankingId))
-      rules.push(`.explorer:has(#runtime-${runtime.id}:checked):has(#ranking-${rankingId}:checked) .panel[data-runtime="${runtime.id}"][data-ranking="${rankingId}"]`)
-      const content = entries.length
-        ? `${anchorNote(data, runtime, rankingId, entries)}
-${shelf(entries.map((entry) => card({ entry, data, runtime: entry.selectedRuntime ?? runtime, rankingId, model })))}
-${rankingTable(data, runtime, entries, model)}`
-        : `<p class="note">There are no ${esc(RANKINGS[rankingId].title.toLowerCase())} figures for ${esc(runtime.title)}.</p>`
-      panels.push(`<section class="panel" data-runtime="${runtime.id}" data-ranking="${rankingId}" aria-label="${esc(RANKINGS[rankingId].title)} ranking on ${esc(runtime.title)}">
-${content}
+    const entries = runtime.every ? everyTaskEntry(data.runtimes, runtime.language, 'cpu') : runtime.best ? bestTaskEntries(data.runtimes, runtime.language, 'cpu') : runtime.entries.filter((e) => e.grades.cpu).sort(byRanking('cpu'))
+    rules.push(`.explorer:has(#runtime-${runtime.id}:checked) .panel[data-runtime="${runtime.id}"]`)
+    panels.push(`<section class="panel" data-runtime="${runtime.id}" aria-label="Every figure on ${esc(runtime.title)}">
+${entries.length ? rankingTable(data, runtime, entries, model) : `<p class="note">There are no figures for ${esc(runtime.title)}.</p>`}
 </section>`)
-    }
   }
-  return `<div class="explorer">
+  const hasReference = data.runtimes.some((rt) => rt.entries.some((e) => e.reference))
+  return `${taskLabels(data, model, { all: true })}
+<div class="explorer">
 <style>${rules.join(',')}{display:block}</style>
 <div class="switches">
 ${switcher('runtime', 'Runtime', runtimes.map((r) => ({ id: r.id, title: r.title, detail: r.version })), runtimes[0].id)}
-${switcher('ranking', 'Rank by', rankings.map((id) => ({ id, title: RANKINGS[id].title })), 'cpu')}
-${orderSwitch('order')}
+${hasReference ? switcher('reference-table', 'Reference items', [{ id: 'shown', title: 'Show' }, { id: 'hidden', title: 'Hide' }], 'shown') : ''}
 </div>
 ${panels.join('\n')}
 </div>`
@@ -543,7 +562,7 @@ export function taskPage(data, model) {
     model,
     body: `<main>
 <h1>${esc(data.task.title)}</h1>
-<p class="intro">${esc(data.task.summary)} A class compares an entry with the best result in any language or runtime, so a class means the same on every tab.</p>
+<p class="intro">${esc(data.task.summary)} A class compares an entry with the best result in any language or runtime, so a class means the same on every tab.${data.runtimes.some((rt) => rt.entries.some((e) => e.reference)) ? ' Reference items, marked R, are there for comparison only: they have no class and win no medal, and no class is set against them.' : ''}</p>
 ${explorer(data, model)}
 
 <h2 id="runtimes">Languages and runtimes compared on this task</h2>
@@ -557,9 +576,11 @@ ${legend(data)}
 <ul>
 ${data.task.kind === 'sync-operation' ? `<li>${esc(data.task.summary)} There are ${data.task.fixtureCount ?? 0} fixture cases. Each case is checked before measurement starts.</li>
 <li>Every entry gets the same time, whatever one operation costs. First comes a warm-up of ${load.warmup.toLocaleString('en-US')} operations or two seconds, whichever ends first. Then comes one unmeasured rehearsal of ${load.rounds} rounds in the same process. Then come ${load.rounds} measured rounds of at least ${load.minRoundMs} ms each. A round is a whole number of passes over the fixtures. Each round records how many operations it completed, and costs are per operation. A figure is the median of the rounds, then the median of the process runs. This task uses ${[...new Set(data.runtimes.flatMap((r) => r.entries.map((e) => e.measurement.runs)))].join(', ')} runs per entry.</li>
-<li>CPU time is measured inside the child process. An adapter can prepare each fixture once before measurement, so an entry does not pay to read its input. Fixture preparation, correctness checks, messages to the harness and forced garbage collection are not measured. Each result is added to a checksum, so the work cannot be skipped.</li>` : `<li>${load.workers * load.connections} keep-alive connections send three requests in equal parts: a plain-text route, a JSON route with a parameter, and a JSON POST.</li>
+<li>CPU time is measured inside the child process. An adapter can prepare each fixture once before measurement, so an entry does not pay to read its input. Fixture preparation, correctness checks, messages to the harness and forced garbage collection are not measured. Each result is added to a checksum, so the work cannot be skipped.</li>` : `${data.task.kind === 'server-startup' ? `<li>${esc(data.task.summary)}</li>
+<li>Each sample starts a new process. The time runs from the launch to the first page that comes back correct, and the CPU figure is all the CPU time the process used by then. There are ${load.launches} launches in a run. A figure is the median of the launches, then the median of the runs.</li>
+<li>Memory is read after that first page, above the same runtime with no application.</li>` : `<li>${load.workers * load.connections} keep-alive connections send the requests of the task in turn.</li>
 <li>First come ${load.warmup.toLocaleString('en-US')} warm-up requests. Then comes one unmeasured rehearsal of ${load.rounds} rounds in the same process. Then come ${load.rounds} measured rounds of ${load.requestsPerRound.toLocaleString('en-US')} requests. A figure is the median of the rounds, then the median of the process runs.</li>
-<li>Before measurement starts, each response is checked for the correct status, content type and body.</li>`}
+<li>Before measurement starts, each response is checked for the correct status, content type and body.</li>`}`}
 <li>Runtimes with a garbage collector collect after each round. Memory is read after a short rest, so that memory the runtime releases late is not counted. Rust frees temporary allocations as usual and reports its live and peak allocations. If the heap grows from round to round, the label says so.</li>
 ${data.task.notes ? `<li>${esc(data.task.notes)}</li>` : ""}
 <li>An entry is listed on a runtime only if it runs there and passes the checks of the task.</li>
@@ -580,6 +601,8 @@ ${taskSource(data.task.id).map((f) => sourceFile(f, model, { open: false, id: `s
 // --- Package page -----------------------------------------------------------
 
 function typeDetail(data, entry) {
+  // A figure from a sweep of whole packages (scripts/sweep-types/).
+  if (entry.types.swept) return `<p>Measured with ${esc(entry.types.tool)}: a program that only loads the package is checked, and the same check of an empty program is subtracted. The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time and ${formatNumber(entry.types.memoryMb)} MB of memory.${entry.types.community ? ` The types come from a community package${entry.types.from ? ` (${esc(entry.types.from)})` : ''}, not from the authors of this package.` : ''}</p>`
   if (entry.types.metricKey) return `<p>Measured with ${esc(entry.types.tool)} ${esc(entry.types.version)}: ${esc(entry.types.notes)} The workload and the baseline each run eleven times, each time in a new process. The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB of peak resident memory. A figure below the baseline counts as zero. Added CPU time below 10 ms counts as 10 ms.</p>`
   if (entry.types.tool === 'cargo') {
     return `<p>Measured with ${esc(data.typeChecks.cargo.tool)}. The first check of the crate and its dependencies takes ${formatNumber(entry.types.coldCpuS)} s of CPU time. A second check of the adapter adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB, compared with an empty program.</p>`
@@ -588,7 +611,7 @@ function typeDetail(data, entry) {
     .filter(([, c]) => c)
     .map(([id, c]) => `<tr><td>${id} ${esc(data.compilers[id])}</td>${cell(c.cpuMs, `${formatNumber(c.cpuMs)} ms CPU`)}${cell(c.timeMs, `${formatNumber(c.timeMs)} ms`)}${cell(c.memoryMb, `${formatNumber(c.memoryMb)} MB`)}${cell(c.score, `${formatNumber(c.score)} MB·s${chip('types', c)}`)}${cell(c.symbols, c.symbols.toLocaleString('en-US'))}${cell(c.files, c.files)}</tr>`)
   return `<div class="scroll"><table class="narrow sortable">
-<caption>The types come from ${esc(entry.types.from === 'bundled' ? 'the package itself' : entry.types.from)}. For both compilers, a class compares the entry with the lowest-cost package in the task, in any language.</caption>
+<caption>The types come from ${esc(entry.types.from === 'bundled' ? 'the package itself' : entry.types.from)}. For both compilers, a class compares the entry with the lowest-cost package in its category, in any language.</caption>
 <thead><tr><th scope="col">Compiler</th><th scope="col">CPU added</th><th scope="col">Elapsed added</th><th scope="col">Memory added</th><th scope="col">Cost</th><th scope="col">Symbols</th><th scope="col">Files</th></tr></thead>
 <tbody>${rows.join('')}</tbody></table></div>
 ${TYPE_KEY}`
@@ -610,7 +633,7 @@ function versionHistory(pkg, data, viewing) {
 <thead><tr><th scope="col">Version</th><th scope="col" class="l">Runtime</th>${[`CPU per ${unitOf(data)}`, 'Memory', 'Heap retained after load', 'Import time'].map((t, i) => sortable(t, i === 0 ? ' class="marked" aria-sort="ascending"' : i < 2 ? ' class="marked"' : '')).join('')}</tr></thead>
 <tbody>${[...all].sort(byCpu)
     .map(({ runtime, entry: e, ranked }) => `<tr${e.version === viewing ? ' class="here"' : ''}><td><a href="${urls.package(pkg, e.version===pkg.version ? null : e.version)}">${esc(e.version)}</a>${ranked ? '<span class="ver">ranked</span>' : ''}${medalBadges(['cpu', 'memory'].map((key) => markOf([{ data, entry: e }], key)))}</td><td class="l">${inlineIcon(runtime.id)}${esc(runtime.title)}</td>
-${gradedCell(e.grades.cpu, `${num(cpuOf(e.metrics), ' µs', LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
+${gradedCell(e.grades.cpu, `${num(cpuOf(e.metrics), cpuUnit(e.metrics), LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
 ${gradedCell(e.grades.memory, `${num(e.metrics.memoryMb, ' MB', LEAST.memory)}${chip('memory', e.grades.memory)}`)}
 ${cell(e.metrics.retainedKb, num(e.metrics.retainedKb, ' KB'))}
 ${cell(e.metrics.importMs, num(e.metrics.importMs, ' ms'))}</tr>`)
@@ -630,6 +653,8 @@ export const versionsOf = (pkg) =>
 
 // `version` selects an earlier version; without it the page is for the latest.
 export function packagePage(pkg, model, version = pkg.version) {
+  // Shared applications already shown on this page (see inlineSource).
+  const shownApps = new Set()
   const eco = ECOSYSTEMS[pkg.ecosystem]
   const older = version !== pkg.version
   const shown = [...pkg.appearances,...pkg.history].filter(a=>a.entry.version===version)
@@ -696,7 +721,7 @@ ${['cpu', 'memory'].map((id) => `<div class="ranked-panel" data-ranking="${id}">
 <thead><tr><th scope="col">Runtime</th><th scope="col" class="l">Entry</th>${[`CPU per ${unitOf(data)}`, 'Memory', 'Heap retained after load', 'Import time', `${unitOf(data)}s per CPU-second`, 'Latency, p99'].map((t, i) => sortable(t, i === 0 ? ' class="marked" aria-sort="ascending"' : i < 2 ? ' class="marked"' : '')).join('')}</tr></thead>
 <tbody>${[...rows].sort(byCpu)
         .map(({ runtime, entry: e }) => `<tr><td>${esc(runtime.title)}<span class="ver">${esc(runtime.version)}</span>${medalBadges(['cpu', 'memory'].map((key) => markOf([{ data, entry: e }], key)))}</td><td class="l">${esc(e.title)}</td>
-${gradedCell(e.grades.cpu, `${num(cpuOf(e.metrics), ' µs', LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
+${gradedCell(e.grades.cpu, `${num(cpuOf(e.metrics), cpuUnit(e.metrics), LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
 ${gradedCell(e.grades.memory, `${num(e.metrics.memoryMb, ' MB', LEAST.memory)}${chip('memory', e.grades.memory)}`)}
 ${cell(e.metrics.retainedKb, num(e.metrics.retainedKb, ' KB'))}
 ${cell(e.metrics.importMs, num(e.metrics.importMs, ' ms'))}
@@ -717,7 +742,7 @@ ${cell(e.metrics.latencyP99Ms, num(e.metrics.latencyP99Ms, ' ms'))}</tr>`)
             .join(' ')
           return `<div class="adapter"><p>${esc(e.title)}: written by ${esc(who)} on ${esc(a.author.date)}, ${reviewed}.${a.dependencies.length ? ` Measured with ${esc(a.dependencies.join(', '))}.` : ''}${a.notes ? ` ${esc(a.notes)}` : ''}${runtimeNotes ? ` ${runtimeNotes}` : ''}</p>
 ${feedback(model, { scope: 'entry', about: `${e.title} in ${data.task.title}`, pkg: `${pkg.ecosystem}/${pkg.name}`, task: data.task.id, source: adapterSource(data.task.id, adapterIdOf(e)).dir, code: urls.source(data.task.id, adapterIdOf(e)), page: urls.package(pkg, older ? version : null), vouch: pkg.ecosystem !== 'builtin' })}
-${inlineSource(data.task.id, adapterIdOf(e), model, { withShared: !adapters.some((other) => adapterIdOf(other) === adapterSource(data.task.id, adapterIdOf(e)).variantOf) })}</div>`
+${inlineSource(data.task.id, adapterIdOf(e), model, { shownApps, withShared: !adapters.some((other) => adapterIdOf(other) === adapterSource(data.task.id, adapterIdOf(e)).variantOf) })}</div>`
         })
         .join('')
       return `${bestRow}
@@ -799,8 +824,16 @@ function packageGrade(pkg, runtimeId, rankingId) {
     const variant = isDefault ? tuned.get(data)?.entry : null
     return { grade: entry.grades[rankingId], text: text(entry), pairs: [{ data, entry }], tuned: variant && variant.grades[rankingId].value < entry.grades[rankingId].value ? { grade: variant.grades[rankingId], text: text(variant), title: variant.title, pairs: [{ data, entry: variant }] } : null }
   }
-  const mean = Math.round(hits.reduce((sum, a) => sum + CLASSES.indexOf(a.entry.grades[rankingId].class), 0) / hits.length)
-  return { grade: { class: CLASSES[mean], value: mean, ratio: hits.reduce((sum, a) => sum + a.entry.grades[rankingId].ratio, 0) / hits.length }, text: `${hits.length} tasks`, several: true, pairs: hits.map((a) => ({ data: a.data, entry: a.entry })) }
+  // Reference entries have no class to average: the row keeps its mean multiple.
+  if (hits.every((a) => a.entry.grades[rankingId].reference)) return { grade: { class: null, reference: true, value: 0, ratio: Math.round(hits.reduce((sum, a) => sum + a.entry.grades[rankingId].ratio, 0) / hits.length * 100) / 100 }, text: `${times(hits.reduce((sum, a) => sum + a.entry.grades[rankingId].ratio, 0) / hits.length)} over ${hits.length} tasks`, several: true, pairs: hits.map((a) => ({ data: a.data, entry: a.entry })) }
+  // Across several tasks the figure is the geometric mean of the entry's
+  // multiples of each task's best, and its class is that multiple on the
+  // tasks' scale.
+  const ratio = Math.exp(hits.reduce((sum, a) => sum + Math.log(Math.max(a.entry.grades[rankingId].ratio, 0.01)), 0) / hits.length)
+  const scale = hits[0].data.metrics?.[rankingId]?.scale
+  const at = scale ? scale.findIndex((limit) => ratio <= limit) : -1
+  const mean = scale ? (at === -1 ? CLASSES.length - 1 : at) : Math.round(hits.reduce((sum, a) => sum + CLASSES.indexOf(a.entry.grades[rankingId].class), 0) / hits.length)
+  return { grade: { class: CLASSES[mean], value: Math.round(ratio * 100) / 100, ratio: Math.round(ratio * 100) / 100 }, text: `${times(ratio)} over ${hits.length} tasks`, several: true, pairs: hits.map((a) => ({ data: a.data, entry: a.entry })) }
 }
 
 // One row per package, for one runtime at a time. Mixing runtimes in one
@@ -869,7 +902,7 @@ function packageTable(packages, model, { showEcosystem, everyPackage = false }) 
       const typeCells = isRust
         ? typeCost(typed?.types, typed?.grades.types) + cell(typed?.types?.coldCpuS, num(typed?.types?.coldCpuS, ' s'))
         : rt.language === 'all' ? typeCost(typed?.types?.compilers?.[model.tasks[0].typesCompiler] ?? typed?.types, typed?.grades.types) : nativeLanguage ? typeCost(typed?.types, typed?.grades.types) : compilers.map((id) => typeCost(typed?.types.compilers[id])).join('')
-      return `<tr${everyPackage ? ' data-status="Measured"' : ''}><td><a href="${urls.package(pkg,pkg.version===pkg.defaultVersion?null:pkg.version)}">${esc(pkg.title)}</a><span class="ver">${esc(pkg.version ?? '')}</span>${marks}</td>
+      return `<tr${everyPackage ? ' data-status="Measured"' : ''}${here.length && here.every((a) => a.entry.reference) ? ' data-reference' : ''}><td><a href="${urls.package(pkg,pkg.version===pkg.defaultVersion?null:pkg.version)}">${esc(pkg.title)}</a><span class="ver">${esc(pkg.version ?? '')}</span>${marks}</td>
 ${metricCell(pkg, 'cpu', selected.id)}${metricCell(pkg, 'memory', selected.id)}${typeCells}
 <td>${new Set(here.map((a) => a.data)).size}</td>
 ${pkg.listed ? `<td data-v="${pkg.listed.share}" title="Number ${pkg.listed.rank} on ${esc(ECOSYSTEMS[pkg.ecosystem].title)}, ${esc(pkg.listed.popularity.label)}">${compact(pkg.listed.popularity.value)}</td>` : cell(null, NA)}
@@ -895,7 +928,7 @@ ${TYPE_KEY}
     : ''
   return `<div class="pick"${everyPackage ? ' data-catalog' : ''}>
 <style>${rules.join(',')}{display:block}</style>
-<div class="switches">${settings}${runtimes.length > 1 ? switcher('runtime', 'Runtime', runtimes.map((rt) => ({ id: rt.id, title: rt.title, detail: rt.version })), checked) : ''}</div>
+<div class="switches">${settings}${runtimes.length > 1 ? switcher('runtime', 'Runtime', runtimes.map((rt) => ({ id: rt.id, title: rt.title, detail: rt.version })), checked) : ''}${packages.some((p) => p.appearances.some((a) => a.entry.reference)) ? switcher('reference-packages', 'Reference items', [{ id: 'shown', title: 'Show' }, { id: 'hidden', title: 'Hide' }], 'shown') : ''}</div>
 ${panels.join('\n')}
 </div>`
 }
@@ -955,7 +988,7 @@ export function ecosystemPage(id, model) {
 <p class="intro">${esc(intro)}</p>
 ${packages.length ? `${listed.length ? '<h2>Measured</h2>' : ''}${packageTable(packages, model, { showEcosystem: false })}` : '<p class="note">No package in this registry is measured yet.</p>'}
 ${listed.length ? `<h2>Most used packages</h2>
-<p>The ${listed.length.toLocaleString('en-US')} most used ${esc(eco.title)} packages, ranked by ${esc(listed[0].popularity.label)}: ${listed.filter((item) => item.measured).length} measured, ${listed.filter((item) => !item.measured && item.category?.benchmarkable).length} in a category that can be measured.</p>
+<p>The ${listed.filter((item) => !item.picked).length.toLocaleString('en-US')} most used ${esc(eco.title)} packages, ranked by ${esc(listed[0].popularity.label)}${listed.some((item) => item.picked) ? `, and ${plural(listed.filter((item) => item.picked).length, 'package')} added by hand` : ''}: ${listed.filter((item) => item.measured).length} measured, ${listed.filter((item) => !item.measured && item.category?.benchmarkable).length} in a category that can be measured.</p>
 ${catalogTable(listed, model, { caption: `Use: ${esc(listed[0].popularity.label)}${model.catalog.updated?.[id] ? `, as of ${model.catalog.updated[id].updatedAt}` : ''}.` })}` : ''}
 </main>`,
   })
@@ -991,19 +1024,70 @@ ${model.categories.map((c) => `<h2><a href="${urls.category(c.id)}">${esc(c.titl
 const CUT_ENDS = 5
 // The labels of a task's packages, each on its best runtime, in rank order:
 // the same row that opens the task's own page.
-function taskLabels(data, model) {
+// Size on disk and import time are the package's own, not a task's: they are
+// taken from one of its entries (the largest import time, where they differ).
+const overallSize = (pairs) => {
+  const sized = pairs.map((pair) => pair.entry.metrics).filter((m) => m.installBytes != null)[0]
+  const imports = pairs.map((pair) => pair.entry.metrics.importMs).filter((ms) => ms != null)
+  return { importMs: imports.length ? Math.max(...imports) : null, ...(sized ? { installBytes: sized.installBytes, installKind: sized.installKind } : {}) }
+}
+// One label for each package over every task of a category: its geometric
+// mean multiple of each task's best, on the runtime it covers most tasks and
+// does best on. Reference entries are left out.
+function overallLabels(category, packages, model) {
+  const rankings = Object.keys(RANKINGS)
+  const runtimes = model.runtimes.filter((rt) => packages.some((p) => p.appearances.some((a) => a.runtime.id === rt.id)))
+  const rows = packages.flatMap((pkg) => {
+    const best = runtimes
+      .map((rt) => ({ rt, cpu: packageGrade(pkg, rt.id, 'cpu'), memory: packageGrade(pkg, rt.id, 'memory') }))
+      .filter((r) => r.cpu?.several && r.cpu.grade.class)
+      .sort((a, b) => b.cpu.pairs.length - a.cpu.pairs.length || a.cpu.grade.ratio - b.cpu.grade.ratio)[0]
+    // The type-check cost is the package's own, the same in every task.
+    const typed = best && pkg.appearances.find((a) => a.runtime.id === best.rt.id && a.data.task.category === category.id && a.entry.grades.types && !a.entry.builtin)
+    return best ? [{ pkg, ...best, types: typed ? { grade: typed.entry.grades.types, at: typed } : null }] : []
+  })
+  if (rows.length < 2) return ''
+  const name = `rank-overall-${category.id.replace(/[^a-z0-9]+/gi, '-')}`
+  const data = { metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } }, typeChecks: {} }
+  return `<h3>Overall</h3>
+<div class="ranked">
+<style>${rankings.map((id) => `.ranked:has(#${name}-${id}:checked) .ranked-panel[data-ranking="${id}"]`).join(',')}{display:block}</style>
+<div class="switches">${switcher(name, 'Rank by', rankings.map((id) => ({ id, title: RANKINGS[id].title })), 'cpu')}${orderSwitch(`order-${name}`)}</div>
+${rankings.map((id) => {
+    const cards = rows.filter((row) => row[id]).sort((a, b) => (a[id].grade.ratio ?? a[id].grade.value) - (b[id].grade.ratio ?? b[id].grade.value)).map(({ pkg, rt, cpu, memory, types }) => {
+      if (id === 'types') {
+        const svg = renderLabel({ entry: types.at.entry, data: types.at.data, runtime: rt, rankingId: 'types' })
+        return svg ? `<li data-label><p class="over"></p>${svg}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all tasks</a></p></li>` : ''
+      }
+      const tasks = cpu.pairs.length
+      const svg = renderLabel({
+        entry: { title: pkg.title, grades: { cpu: cpu.grade, memory: memory.grade }, metrics: overallSize(cpu.pairs), adapter: { notes: `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.` }, flags: [] },
+        data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall, ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.category(category.id),
+      })
+      return svg ? `<li data-label><p class="over"></p>${svg}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all tasks</a></p></li>` : ''
+    })
+    return `<div class="ranked-panel" data-ranking="${id}">${shelf(cards)}</div>`
+  }).join('\n')}
+</div>`
+}
+
+// `all` is for the task's own page: every package, none cut, with the note
+// that says which result sets class A.
+function taskLabels(data, model, { all = false } = {}) {
   const rankings = Object.keys(RANKINGS)
   const name = `rank-${data.task.id.replace(/[^a-z0-9]+/gi, '-')}`
   return `<div class="ranked">
 <style>${rankings.map((id) => `.ranked:has(#${name}-${id}:checked) .ranked-panel[data-ranking="${id}"]`).join(',')}{display:block}</style>
 <div class="switches">${switcher(name, 'Rank by', rankings.map((id) => ({ id, title: RANKINGS[id].title })), 'cpu')}${orderSwitch(`order-${name}`)}</div>
 ${rankings.map((id) => {
-    const cards = bestTaskEntries(data.runtimes, 'all', id).map((entry) => card({ entry, data, runtime: entry.selectedRuntime, rankingId: id, model, caption: entry.selectedRuntime.title })).filter(Boolean)
+    // Reference entries are left out of this row.
+    const cards = bestTaskEntries(data.runtimes, 'all', id).filter((entry) => !entry.reference).map((entry) => card({ entry, data, runtime: entry.selectedRuntime, rankingId: id, model, caption: entry.selectedRuntime.title })).filter(Boolean)
     // A long row is cut in the middle: the five at each end, and between them
     // a torn strip that says how many are left out and leads to all of them.
-    const cut = cards.length - 2 * CUT_ENDS
+    const cut = all ? 0 : cards.length - 2 * CUT_ENDS
     const shown = cut < 2 ? cards : [...cards.slice(0, CUT_ENDS), `<li class="shelf-cut"><a href="${urls.task(data.task.id)}"><b>${cut}</b><span>more ${cut === 1 ? 'package' : 'packages'}</span><u>See all</u></a></li>`, ...cards.slice(-CUT_ENDS)]
-    return `<div class="ranked-panel" data-ranking="${id}">${shelf(shown, { limit: cut < 2 ? SHELF_LIMIT : 0 })}</div>`
+    const ranked = all ? bestTaskEntries(data.runtimes, 'all', id).filter((entry) => !entry.reference) : []
+    return `<div class="ranked-panel" data-ranking="${id}">${ranked.length ? anchorNote(data, { best: true }, id, ranked) : ''}${shelf(shown, { limit: cut < 2 ? SHELF_LIMIT : 0 })}</div>`
   }).join('\n')}
 </div>`
 }
@@ -1025,6 +1109,7 @@ export function categoryPage(category, model) {
 ${taskRows(category.tasks)}
 <h2>Packages</h2>
 <p class="soft">Each package on its best runtime. <a href="${urls.task(category.tasks[0].task.id)}">${category.tasks.length > 1 ? 'Each task page' : 'The task page'}</a> has every runtime.</p>
+${category.tasks.length > 1 ? overallLabels(category, packages, model) : ''}
 ${category.tasks.map((d) => `${category.tasks.length > 1 ? `<h3><a href="${urls.task(d.task.id)}">${esc(d.task.title)}</a></h3>\n` : ''}${taskLabels(d, model)}`).join('\n')}
 ${packageTable(packages, model, { showEcosystem: true })}
 <h2 id="runtimes">Languages and runtimes compared</h2>
@@ -1178,7 +1263,7 @@ function featured(model) {
     if (!byRegistry.has(pkg.ecosystem)) byRegistry.set(pkg.ecosystem, [])
     byRegistry.get(pkg.ecosystem).push(pkg)
   }
-  const queues = [...byRegistry.values()].map((list) => list.sort((a, b) => a.listed.rank - b.listed.rank))
+  const queues = [...byRegistry.values()].map((list) => list.filter((p) => p.listed.rank).sort((a, b) => a.listed.rank - b.listed.rank))
   const pool = []
   for (let turn = 0; pool.length < FEATURED.pool && queues.some((q) => q[turn]); turn++) for (const queue of queues) if (queue[turn] && pool.length < FEATURED.pool) pool.push(queue[turn])
   if (pool.length <= FEATURED.shown) return ''
@@ -1341,7 +1426,7 @@ const MEDALS = ['best', 'second', 'third']
 // "12 of 1,000", or the bare total when nothing (or everything) is measured.
 function ecosystemCount(model, id) {
   const listed = model.catalog.byEcosystem[id]
-  const total = (listed?.length ?? model.packages.filter((p) => p.ecosystem === id).length).toLocaleString('en-US')
+  const total = (listed?.filter((item) => !item.picked).length ?? model.packages.filter((p) => p.ecosystem === id).length).toLocaleString('en-US')
   const measured = listed?.filter((item) => item.measured).length
   return measured ? `${measured.toLocaleString('en-US')} of ${total}` : total
 }
@@ -1819,6 +1904,7 @@ ${cards}
 <li>A class compares this result with the best result in the task, in any language or runtime. <a href="${urls.task(data.task.id)}">Every entry in this task</a>.</li>
 <li>Benchmark code written by ${esc(who)}${a.author?.date ? ` on ${esc(a.author.date)}` : ''}, ${reviewOf(a) ? reviewText(a) : '<b>not reviewed by a human</b>'}. <a href="${urls.source(data.task.id, adapterIdOf(entry))}">Read the code</a>.</li>
 ${a.notes ? `<li>${esc(a.notes)}</li>` : ''}
+${a.details ? `<li><details><summary>How this entry is set up, in full</summary><p>${esc(a.details)}</p></details></li>` : ''}
 <li>Measured on ${esc(data.machine.cpu)}, ${data.machine.cores} cores, ${esc(data.machine.os)}; ${entry.measurement.runs} runs.</li>
 <li><a href="${urls.package(pkg, entry.version !== pkg.version ? entry.version : null)}">${esc(pkg.title)} in every task and runtime</a>.</li>
 </ul>
@@ -2007,6 +2093,15 @@ const bestClasses = (pkg) =>
     })
     .join('')
 
+// Where a class would be, for a figure that has none: a box with a stroke through it.
+const NO_CLASS = '<span class="cls none" title="No class: there is nothing to compare it with" role="img" aria-label="No class">/</span>'
+// A listed package's type-check cost: its two parts, the cost, and its class
+// where its category gives it one.
+function typeCell(types) {
+  if (!types) return cell(null, NA)
+  const html = `<span class="type-cost"><span>${communityMark(types)}${types.cpuMs < 10 ? '&lt; 10' : formatNumber(types.cpuMs)} ms</span><span>${esc(formatAtLeast(types.memoryMb, LEAST.memory))} MB</span><span class="type-cost-score">${esc(formatAtLeast(types.cost, LEAST.types))} <span class="unit">MB·s</span></span><span class="type-cost-grade">${types.grade ? chip('types', types.grade) : NO_CLASS}</span></span>`
+  return types.grade ? gradedCell({ ...types.grade, value: types.cost }, html) : `<td data-v="${types.cost}" data-value="${types.cost}">${html}</td>`
+}
 function catalogTable(items, model, { showEcosystem = false, caption }) {
   const rows = items.map((item) => {
     const status = statusOf(item)
@@ -2016,11 +2111,13 @@ ${showEcosystem ? `<td class="l">${inlineIcon(`eco-${item.ecosystem}`)}${esc(ECO
 ${item.rank ? `<td data-v="${item.rank}">${item.rank}</td>` : cell(null, NA)}
 ${item.popularity ? `<td data-v="${showEcosystem ? item.share : item.popularity.value}" title="${esc(item.popularity.label)}">${compact(item.popularity.value)}</td>` : cell(null, NA)}
 <td class="l">${category ? `<a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>` : NA}</td>
+${typeCell(item.typeCheck)}
 <td class="l${status === 'Measured' ? '' : ' soft'}" data-v="${STATUS_ORDER.indexOf(status)}">${status}${item.measured ? bestClasses(item.measured) : ''}</td></tr>`
   })
+  const typed = items.some((item) => item.typeCheck)
   return `<div class="scroll"><table class="sortable" data-md="catalog" data-filters="status${showEcosystem ? ',ecosystem' : ''}">
-<caption>${caption}</caption>
-<thead><tr><th scope="col">Package</th>${showEcosystem ? sortable('Ecosystem', ' class="l"') : ''}${sortable('Rank')}${sortable('Use')}${sortable('Category', ' class="l"')}${sortable('Status', ' class="l"')}</tr></thead>
+<caption>${caption}${typed ? ' Type check: added compiler CPU time, added memory, then the cost in bold. Its class compares the package with the lowest-cost package of its category.' + (items.some((item) => item.typeCheck?.community) ? ' An asterisk marks a figure from community types, which the authors of the package did not publish.' : '') : ''}</caption>
+<thead><tr><th scope="col">Package</th>${showEcosystem ? sortable('Ecosystem', ' class="l"') : ''}${sortable('Rank')}${sortable('Use')}${sortable('Category', ' class="l"')}${sortableGraded('Type check')}${sortable('Status', ' class="l"')}</tr></thead>
 <tbody>${rows.join('\n')}</tbody>
 </table></div>`
 }
@@ -2067,9 +2164,11 @@ export function catalogPackagePage(item, model) {
           ? `Its category, <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, is measured, but this package has no adapter yet.`
           : `Its category, <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, has a candidate task, but is not measured yet.`
   const types = item.typeCheck
+  // Why a package with a type-check figure has no class for it.
+  const noClass = !types || types.grade ? '' : !category || category.id === 'other' ? 'No class: it has no category of comparable packages.' : !category.benchmarkable ? `No class: ${category.title} is a group with no comparable task.` : `No class: it is the only package in ${category.title} with a type-check figure, so there is nothing to compare it with.`
   return layout({
     title: `${item.name}: Package Efficiency Labels`,
-    description: `${item.name} is one of the most used ${eco.title} packages. It is not measured yet.`,
+    description: `${item.name} is ${item.picked ? `a ${eco.title} package` : `one of the most used ${eco.title} packages`}. It is not measured yet.`,
     path: catalogUrl(item),
     context: { listed: item.category?.id },
     crumbs: [['Packages', '/packages/'], [eco.title, urls.ecosystem(item.ecosystem)], [item.name]],
@@ -2077,7 +2176,7 @@ export function catalogPackagePage(item, model) {
     actions: feedback(model, { scope: 'listed', about: item.name, pkg: `${item.ecosystem}/${item.name}`, category: category?.id, page: catalogUrl(item), vouch: false , top: true }),
     body: `<main>
 <h1>${esc(item.name)}${item.version ? ` <span class="ver">${esc(item.version)}</span>` : ''}</h1>
-<p class="intro">${esc(eco.title)} package, number ${item.rank} by ${esc(item.popularity.label)} (${compact(item.popularity.value)}).${item.description ? ` ${esc(item.description)}` : ''}</p>
+<p class="intro">${esc(eco.title)} package, ${item.rank ? `number ${item.rank} by ${esc(item.popularity.label)} (${compact(item.popularity.value)})` : `outside the most used on ${esc(eco.title)} and added by hand${item.popularity.value ? ` (${compact(item.popularity.value)} ${esc(item.popularity.label)})` : ''}`}.${item.description ? ` ${esc(item.description)}` : ''}</p>
 <p class="note"><b>${status}.</b> ${why}</p>
 
 <table class="narrow facts">
@@ -2088,7 +2187,16 @@ ${category?.benchmarkIdea ? `<tr><th scope="row">Candidate task</th><td class="l
 </tbody>
 </table>
 ${types ? `<h2>Type check</h2>
-<p>With ${esc(types.tool)}, the types of this package add ${formatNumber(types.cpuMs)} ms of compiler CPU time and ${formatNumber(types.memoryMb)} MB of compiler memory. That is a cost of <b>${formatNumber(types.cost)} MB·s</b>. The package has no class, because a class compares packages that do the same task.</p>
+<ul class="shelf"><li>${renderLabel({
+    entry: { title: item.name, grades: { types: types.grade ?? { class: null, value: types.cost } }, types: { icon: types.icon ?? 'typescript', cpuMs: types.cpuMs, memoryMb: types.memoryMb, community: types.community }, metrics: { importMs: null }, adapter: { notes: `${types.grade ? `Class A is the lowest-cost package in ${category.title}: ${types.anchor.title}${types.anchor.version ? ` ${types.anchor.version}` : ''}.` : noClass} This package has no benchmark yet, so it has no CPU or memory class.` }, flags: [] },
+    data: { metrics: {}, typeChecks: { typescript: { unit: 'MB·s', headline: 'MB·s of type-check cost (CPU seconds × MB)', tool: types.tool } } },
+    runtime: { id: 'node', title: '', version: '' },
+    rankingId: 'types',
+    subtitle: item.version ? `Version ${item.version}` : '',
+    context: `Type check, ${types.tool}`,
+    address: catalogUrl(item),
+  })}</li></ul>
+<p>With ${esc(types.tool)}, the types of this package add ${formatNumber(types.cpuMs)} ms of compiler CPU time and ${formatNumber(types.memoryMb)} MB of compiler memory. That is a cost of <b>${formatNumber(types.cost)} MB·s</b>. ${types.community ? `* The types come from a community package${types.from ? ` (${esc(types.from)})` : ''}, not from the authors of this package. ` : ''}${types.grade ? `Its class compares it with the lowest-cost package in <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, which is <b>${esc(types.anchor.title)}</b>${types.anchor.version ? ` ${esc(types.anchor.version)}` : ''}.` : esc(noClass)}</p>
 ${TYPE_KEY}` : ''}
 </main>`,
   })
@@ -2167,11 +2275,21 @@ function sourceFile(file, model, { open = true, id = file.name } = {}) {
 // An adapter's files, for showing inside another page: the code open, its
 // settings folded. A variant adds the code it runs unless `withShared` is off
 // (when that adapter is already shown on the same page).
-function inlineSource(taskId, adapterId, model, { withShared = true } = {}) {
+function inlineSource(taskId, adapterId, model, { withShared = true, shownApps } = {}) {
   const source = adapterSource(taskId, adapterId)
+  // A shared application is shown once on a page, folded, and named after that.
+  let app = ''
+  if (source.app) {
+    const name = source.app.dir.split('/_shared/')[1]
+    if (shownApps?.has(source.app.dir)) app = `<p class="soft">It runs the same application as above, <code>${esc(name)}</code>.</p>`
+    else {
+      shownApps?.add(source.app.dir)
+      app = `<p class="soft">The application it runs, shared by every task of this category (<a href="${repoUrl(model, 'tree', source.app.dir)}">${esc(name)} on GitHub</a>):</p>\n${source.app.files.map((f) => sourceFile(f, model, { open: false, id: `${source.app.dir}/${f.name}` })).join('\n')}`
+    }
+  }
   const show = (f, name = f.name) => sourceFile({ ...f, name }, model, { open: !SETTINGS_FILES.has(f.name), id: `${taskId}/${adapterId}/${name}` })
   const shared = withShared ? source.shared.map((f) => show(f, `${source.variantOf.split('/').at(-1)}/${f.name}`)) : []
-  return [...source.files.map((f) => show(f)), ...shared].join('\n')
+  return [...source.files.map((f) => show(f)), ...shared, app].join('\n')
 }
 
 const fileIndex = (files) => (files.length > 1 ? `<p class="files">${files.map((f) => `<a href="#${esc(f.name)}">${esc(f.name)}</a>`).join(' ')}</p>` : '')
@@ -2223,6 +2341,7 @@ ${source.shared.map((f) => sourceFile({ ...f, name: `${source.variantOf.split('/
 ${fileIndex(source.files)}
 ${source.files.map((f) => sourceFile(f, model)).join('\n')}
 ${shared}
+${source.app ? `<h2>The application it runs</h2>\n<p class="soft">One application is shared by every task of this category. <a href="${repoUrl(model, 'tree', source.app.dir)}">This folder on GitHub</a>.</p>\n${fileIndex(source.app.files)}\n${source.app.files.map((f) => sourceFile(f, model, { open: f.lines <= 120 })).join('\n')}` : ''}
 </main>`,
   })
 }
@@ -2241,6 +2360,6 @@ export function searchIndex(model) {
     ...Object.entries(ECOSYSTEMS).map(([id, e]) => ({ t: e.title, k: 'Ecosystem', i: `eco-${id}`, u: urls.ecosystem(id) })),
     ...model.runtimes.map((rt) => ({ t: rt.title, k: 'Runtime', i: rt.id, u: urls.runtime(rt.id) })),
     ...model.catalog.categories.filter((c) => !model.categories.some((m) => m.taxonomy === c.id)).map((c) => ({ t: c.title, k: c.benchmarkable ? 'Category, not measured yet' : 'Category', i: categoryMark(c.id), u: `/${c.id}/`, ...also(c.id) })),
-    ...Object.values(model.catalog.byEcosystem).flat().filter((item) => !item.measured).map((item) => ({ t: item.name, k: `${ECOSYSTEMS[item.ecosystem].title}, not measured`, i: `eco-${item.ecosystem}`, u: catalogUrl(item), r: item.rank })),
+    ...Object.values(model.catalog.byEcosystem).flat().filter((item) => !item.measured).map((item) => ({ t: item.name, k: `${ECOSYSTEMS[item.ecosystem].title}, not measured`, i: `eco-${item.ecosystem}`, u: catalogUrl(item), r: item.rank ?? 100000 })),
   ]
 }

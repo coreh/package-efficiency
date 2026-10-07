@@ -104,7 +104,7 @@ function wrap(text, width, breakWords = false) {
 const SCALE_HEIGHT = 7 * ROW + 6 * GAP
 // The wrench that marks a tuned entry (Material Icons "build", Apache 2.0).
 const WRENCH_PATH = 'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z'
-function scale(rankingId, pointerClass, top, ghostClass, ghostWords = ['PREVIOUS', 'VERSION'], tuned = false) {
+function scale(rankingId, pointerClass, top, ghostClass, ghostWords = ['PREVIOUS', 'VERSION'], tuned = false, reference = null) {
   const rows = CLASSES.map((letter, i) => {
     const y = top + i * (ROW + GAP)
     const length = 74 + i * 21
@@ -122,6 +122,21 @@ function scale(rankingId, pointerClass, top, ghostClass, ghostWords = ['PREVIOUS
       `<polygon points="${WIDTH - 17},${y + 1} ${WIDTH - 69.5},${y + 1} ${WIDTH - 86.5},${y + h / 2} ${WIDTH - 69.5},${y + h - 1} ${WIDTH - 17},${y + h - 1}" fill="#fff" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="4 3" stroke-linejoin="round"/>`,
       `<text x="${WIDTH - 45.5}" y="${y + h / 2 - 2.5}" class="l-ghost" text-anchor="middle">${ghostWords[0]}</text><text x="${WIDTH - 45.5}" y="${y + h / 2 + 8.5}" class="l-ghost" text-anchor="middle">${ghostWords[1]}</text>`,
     )
+  }
+  // No class (nothing to compare the entry with): no pointer. A box with a
+  // stroke through it stands where the pointer would be, beside the middle
+  // of the scale.
+  // A reference entry is not graded: no pointer. A box like the one for no
+  // class stands beside the middle of the scale, with an R for reference.
+  if (!pointerClass && reference !== null) {
+    const side = 34, x = WIDTH - 16 - side, y = top + 3 * (ROW + GAP) + ROW / 2 - side / 2
+    rows.push(`<rect x="${x}" y="${y}" width="${side}" height="${side}" fill="#fff" stroke="#000" stroke-width="2"/><text x="${x + side / 2}" y="${y + 25}" class="l-pointer" style="fill:#000;font-size:23px" text-anchor="middle">R</text>`)
+    return rows.join('')
+  }
+  if (!pointerClass) {
+    const side = 34, x = WIDTH - 16 - side, y = top + 3 * (ROW + GAP) + ROW / 2 - side / 2
+    rows.push(`<rect x="${x}" y="${y}" width="${side}" height="${side}" fill="#fff" stroke="#000" stroke-width="2"/><path d="M${x + 9} ${y + side - 9}L${x + side - 9} ${y + 9}" stroke="#000" stroke-width="2.500" stroke-linecap="round"/>`)
+    return rows.join('')
   }
   const y = top + CLASSES.indexOf(pointerClass) * (ROW + GAP) - 3
   rows.push(
@@ -258,9 +273,13 @@ function figureRow(figures, top) {
   return figures.map(({ caption, text, rankingId, grade }, i) => {
     const x = starts[i]
     let chip = ''
-    if (grade) {
+    if (grade?.class) {
       const color = classColor(rankingId, grade.class)
       chip = `<rect x="${x.toFixed(1)}" y="${top + (20 - k.box) / 2}" width="${k.box}" height="${k.box}" fill="${color}"/><text x="${(x + k.box / 2).toFixed(1)}" y="${top + 15.5 - (20 - k.box) / 8}" class="l-chip" style="font-size:${k.box * 0.7}px" text-anchor="middle" fill="${inkOn(color)}">${grade.class}</text>`
+    }
+    // A reference entry: an outlined box with an R, as beside the scale.
+    if (grade?.reference) {
+      chip = `<rect x="${(x + 0.75).toFixed(2)}" y="${top + (20 - k.box) / 2 + 0.75}" width="${k.box - 1.5}" height="${k.box - 1.5}" fill="#fff" stroke="#000" stroke-width="1.500"/><text x="${(x + k.box / 2).toFixed(1)}" y="${top + 15.5 - (20 - k.box) / 8}" class="l-chip" style="font-size:${k.box * 0.7}px" text-anchor="middle" fill="#000">R</text>`
     }
     return `${chip}<text x="${(x + (grade ? k.box + k.inner : 0)).toFixed(1)}" y="${top + 16}" class="l-figure" style="font-size:${k.size}px${k.narrow ? ';font-stretch:86%' : ''}">${esc(text)}</text><text x="${x.toFixed(1)}" y="${top + FIGURES_HEIGHT}" class="l-caption" style="font-size:${k.small}px">${esc(caption)}</text>`
   }).join('')
@@ -320,7 +339,7 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   const markId = rankingId === 'types' ? (entry.types?.icon ?? (entry.ecosystem === 'cargo' ? 'rust' : 'typescript')) : runtime.id
   const top = 2 + PAD
   const mark = labelIcon(markId, WIDTH - SIDE - 30, top, 30)
-  const titleLines = wrap(entry.title, (line) => (line === 0 ? (markId === 'ruby-yjit' ? 17 : 19) : 22), true)
+  const titleLines = wrap(entry.title, (line) => (line === 0 ? (markId === 'ruby-yjit' || markId === 'go' ? 17 : 19) : 22), true)
   const subtitleLines = wrap(subtitle, 43, true)
   // A reviewed benchmark carries its mark after the name. The last line of the
   // name is given its measured width, so the mark sits right whatever face a
@@ -328,6 +347,9 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   const reviewMark = contextLine || !entry.adapter?.review || entry.adapter.review === 'unreviewed' ? null : REVIEW_MARKS[entry.adapter.review === 'maintainer' ? 'maintainer' : 'human']
   const badge = reviewMark && { ...reviewMark, width: Math.min(nameWidth(titleLines.at(-1)), (titleLines.length === 1 ? 230 : 280) - 26) }
   const contextLines = wrap(context, 43, true)
+  // The task's name leads the line, in bold, where the label is for a task.
+  const taskName = !contextLine && rankingId !== 'types' ? data.task.title : null
+  const boldTask = (line, i) => i === 0 && taskName && line.startsWith(taskName) ? `<tspan font-weight="700">${esc(taskName)}</tspan>${esc(line.slice(taskName.length))}` : esc(line)
   const titleBase = top + CAP * 25
   const subtitleBase = titleBase + (titleLines.length - 1) * 28 + 22
   const contextBase = subtitleBase + (subtitleLines.length - 1) * 17 + 19
@@ -379,20 +401,22 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   // How the figure moved since the previous measured version, if there is one.
   // A tuned variant is compared with the package as installed; anything else
   // with its previous measured version.
-  const installed = contextLine ? null : asInstalled(entry, runtime, rankingId)
-  const previous = contextLine ? null : installed ?? previousVersion(entry, runtime, rankingId)
+  // An entry with no class is compared with nothing.
+  const installed = contextLine || !grade.class ? null : asInstalled(entry, runtime, rankingId)
+  const previous = contextLine || !grade.class ? null : installed ?? previousVersion(entry, runtime, rankingId)
   const than = installed ? 'default settings' : `version ${previous?.version}`
   const moved = previous && previous.grades[rankingId].value > 0 ? grade.value / previous.grades[rankingId].value - 1 : null
   const change = moved === null ? null : Math.abs(moved) < 0.005 ? { text: installed ? 'Tuned: same as default settings' : `Unchanged from ${than}` } : { text: `${installed ? 'Tuned: ' : ''}${Math.round(Math.abs(moved) * 100)}% ${moved < 0 ? 'lower' : 'higher'} than ${than}`, down: moved < 0 }
   // A type-check cost is a product: the CPU time and the memory it is made
   // of are said in small text under it.
-  const cost = rankingId === 'types' && !contextLine ? (entry.types?.compilers?.[data.typesCompiler] ?? entry.types) : null
-  const parts = cost?.cpuMs != null && cost?.memoryMb != null ? `${cost.cpuMs < 10 ? '< 10' : formatNumber(cost.cpuMs)} ms CPU × ${formatAtLeast(cost.memoryMb, LEAST.memory)} MB` : null
+  const cost = rankingId === 'types' ? (entry.types?.compilers?.[data.typesCompiler] ?? entry.types) : null
+  const parts = cost?.cpuMs != null && cost?.memoryMb != null ? `${cost.cpuMs < 10 ? '< 10' : formatNumber(cost.cpuMs)} ms CPU × ${formatAtLeast(cost.memoryMb, LEAST.memory)} MB${cost.community ? ' *' : ''}` : null
   const partsBase = unitBase + 16
   const changeBase = (parts ? partsBase : unitBase) + 19
   const bigEnd = (change ? changeBase : parts ? partsBase : unitBase) + PAD
   const figuresTop = bigEnd + PAD
-  const figuresEnd = figuresTop + FIGURES_HEIGHT + PAD
+  // A label with no secondary figures has no row for them.
+  const figuresEnd = figures.length ? figuresTop + FIGURES_HEIGHT + PAD : bigEnd
   const notesBase = figuresEnd + PAD + CAP * 11.5
   const cautionBase = notes.length ? notesBase + notes.length * NOTE_LINE + 2 : figuresEnd + PAD + CAP * 10.5
   const notesEnd = !notes.length && !cautionLines.length ? figuresEnd
@@ -408,7 +432,7 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   const rest = unitLed ? metric.headline.slice(metric.unit.length + 1) : metric.headline
   const bigCaption = !unitLed ? rest : rest.startsWith('of ') ? rest.slice(3) : rankingId === 'memory' ? `memory ${rest}` : rest
   const rule = (y) => `<line x1="0" y1="${y.toFixed(1)}" x2="${WIDTH}" y2="${y.toFixed(1)}" stroke="#000" stroke-width="1.5"/>`
-  const summary = `${entry.title}: class ${grade.class} for ${RANKINGS[rankingId].title}, ${formatNumber(grade.value)} ${metric.headline}${parts ? ` (${parts})` : ''}. ${context}.${change ? ` ${change.text}${previous.grades[rankingId].class !== grade.class ? `, which was class ${previous.grades[rankingId].class}` : ''}.` : ''}`
+  const summary = `${entry.title}: ${grade.class ? `class ${grade.class}` : grade.reference ? `reference, not graded (${grade.ratio}× the best graded entry)` : 'no class'} for ${RANKINGS[rankingId].title}, ${formatNumber(grade.value)} ${metric.headline}${parts ? ` (${parts})` : ''}. ${context}.${change ? ` ${change.text}${previous.grades[rankingId].class !== grade.class ? `, which was class ${previous.grades[rankingId].class}` : ''}.` : ''}`
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${height}" role="img" aria-label="${esc(summary)}"${standalone ? ` width="${WIDTH}" height="${height}"` : ''}>
 <style>${standalone ? FONT_IMPORT : ''}${STYLE}</style>
@@ -417,9 +441,9 @@ ${titleLines.map((line, i) => `<text x="${SIDE}" y="${(titleBase + i * 28).toFix
 ${badge ? `<g transform="translate(${(SIDE + badge.width + 6).toFixed(1)} ${(titleBase + (titleLines.length - 1) * 28 - 17.5).toFixed(1)}) scale(1.19)"><path d="${badge.shape}" fill="${badge.color}"/><path d="${badge.tick}" fill="#fff"/>${badge.arm ? `<path class="wave-arm" d="${badge.arm}" fill="#fff"/>` : ''}</g>` : ''}
 ${mark}
 ${subtitleLines.map((line, i) => `<text x="${SIDE}" y="${(subtitleBase + i * 17).toFixed(1)}" class="l-meta">${esc(line)}</text>`).join('')}
-${contextLines.map((line, i) => `<text x="${SIDE}" y="${(contextBase + i * 17).toFixed(1)}" class="l-meta">${esc(line)}</text>`).join('')}
+${contextLines.map((line, i) => `<text x="${SIDE}" y="${(contextBase + i * 17).toFixed(1)}" class="l-meta">${boldTask(line, i)}</text>`).join('')}
 ${rule(headerEnd)}
-${scale(rankingId, grade.class, scaleTop, previous?.grades[rankingId].class, installed ? ['DEFAULT', 'SETTINGS'] : undefined, !contextLine && (entry.adapter?.tags ?? []).includes('non-default-options'))}
+${scale(rankingId, grade.class, scaleTop, previous?.grades[rankingId].class, installed ? ['DEFAULT', 'SETTINGS'] : undefined, !contextLine && (entry.adapter?.tags ?? []).includes('non-default-options'), grade.reference ? grade.ratio : null)}
 ${rule(scaleEnd)}
 <text x="${WIDTH / 2}" y="${bigBase.toFixed(1)}" class="l-big" text-anchor="middle">${esc(formatAtLeast(grade.value, metric.unit === '×' ? 0 : LEAST[rankingId]))}${bigUnit ? BIG_UNIT(esc(metric.unit)) : ''}</text>
 <text x="${WIDTH / 2}" y="${unitBase.toFixed(1)}" class="l-unit" text-anchor="middle">${esc(rankingId === 'types' ? (entry.typeCaption ?? (entry.ecosystem === 'cargo' ? 'cargo check cost' : 'type-check cost')) : bigCaption)}</text>

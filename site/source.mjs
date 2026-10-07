@@ -6,11 +6,14 @@ import path from 'node:path'
 import hljs from 'highlight.js/lib/common'
 
 const ROOT = new URL('..', import.meta.url).pathname
-const LANGUAGES = { js: 'javascript', mjs: 'javascript', ts: 'typescript', json: 'json', py: 'python', rb: 'ruby', go: 'go', rs: 'rust', toml: 'ini', md: 'markdown', mod: 'go' }
+const LANGUAGES = { js: 'javascript', mjs: 'javascript', jsx: 'javascript', ts: 'typescript', tsx: 'typescript', json: 'json', py: 'python', rb: 'ruby', ru: 'ruby', go: 'go', rs: 'rust', toml: 'ini', md: 'markdown', mod: 'go', html: 'xml', erb: 'xml', svg: 'xml', css: 'css', yml: 'yaml', yaml: 'yaml' }
+// Files of a shared application that are not worth reading: locks with
+// checksums, placeholders, and anything that is not text.
+const APP_SKIP = /(^|\/)(gems\.lock\.json|Gemfile\.lock|lock\.json|\.keep|.*\.(png|ico|jpg|gif|woff2?|sum|lock))$/
 // Generated or installed files: checksums, lockfiles, dependencies, build output.
 const SKIP = new Set(['node_modules', 'target', '.DS_Store', 'go.sum', 'Cargo.lock', 'package-lock.json', '__pycache__'])
 // What a reader wants first: the code, then its settings.
-const ORDER = ['task.md', 'task.json', 'scenario.mjs', 'adapter.js', 'adapter.mjs', 'adapter.ts', 'adapter.py', 'adapter.rb', 'adapter.go', 'src/main.rs', 'runner.go', 'adapter.json', 'package.json', 'Cargo.toml', 'go.mod']
+const ORDER = ['task.md', 'task.json', 'scenario.mjs', 'prepare.mjs', 'adapter.js', 'adapter.mjs', 'adapter.ts', 'adapter.py', 'adapter.rb', 'adapter.go', 'src/main.rs', 'runner.go', 'adapter.json', 'package.json', 'Cargo.toml', 'go.mod']
 
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
@@ -55,11 +58,15 @@ export const taskSource = (taskId) => sorted(walk(`benchmarks/${taskId}`, { deep
 export function adapterSource(taskId, adapterId) {
   const dir = `benchmarks/${taskId}/${adapterId}`
   const files = sorted(walk(dir).map((file) => load(file, dir)))
-  const { variantOf } = JSON.parse(readFileSync(path.join(ROOT, dir, 'adapter.json'), 'utf8'))
-  if (!variantOf) return { dir, files, variantOf: null, shared: [] }
+  const { variantOf, app } = JSON.parse(readFileSync(path.join(ROOT, dir, 'adapter.json'), 'utf8'))
+  // An entry that runs a shared application (adapter.json `app`) has only a
+  // record of its own; `app` holds the application's files.
+  const appDir = app ? path.posix.normalize(`${dir}/${app}`) : null
+  const appFiles = appDir ? { dir: appDir, files: sorted(walk(appDir).filter((file) => !APP_SKIP.test(file)).map((file) => load(file, appDir))) } : null
+  if (!variantOf) return { dir, files, variantOf: null, shared: [], app: appFiles }
   const siblingId = `${adapterId.slice(0, adapterId.lastIndexOf('/'))}/${variantOf}`
   const sibling = `benchmarks/${taskId}/${siblingId}`
-  return { dir, files, variantOf: siblingId, shared: sorted(walk(sibling).map((file) => load(file, sibling))).filter((f) => f.name !== 'adapter.json') }
+  return { dir, files, variantOf: siblingId, shared: sorted(walk(sibling).map((file) => load(file, sibling))).filter((f) => f.name !== 'adapter.json'), app: appFiles }
 }
 
 // The adapter folder an entry was measured from. Entries for an earlier

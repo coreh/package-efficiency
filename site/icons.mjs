@@ -34,7 +34,10 @@ export function labelIcon(id, x, y, size) {
   for (const [, id] of mark.body.matchAll(/id="([^"]+)"/g)) body = body.replaceAll(id, prefix + id)
   const width = mark.width ?? logos.width
   const height = mark.height ?? logos.height
-  return `<svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="0 0 ${width} ${height}" aria-hidden="true">${body}</svg>`
+  // A wide wordmark (Go's) gets a slot wider than the square, kept against
+  // its right edge, so it is as tall as the others look.
+  const wide = width / height > 1.8 ? 1.6 : 1
+  return `<svg x="${x - size * (wide - 1)}" y="${y}" width="${size * wide}" height="${size}" viewBox="0 0 ${width} ${height}"${wide > 1 ? ' preserveAspectRatio="xMaxYMid meet"' : ''} aria-hidden="true">${body}</svg>`
 }
 
 // The marks fill their square very differently: a solid block, a wide flat

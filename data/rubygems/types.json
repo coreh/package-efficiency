@@ -1,0 +1,853 @@
+{
+  "checker": {
+    "tool": "rbs validate",
+    "version": "3.10.0"
+  },
+  "checkers": {
+    "rbs": {
+      "tool": "rbs validate",
+      "version": "3.10.0"
+    },
+    "sorbet": {
+      "tool": "Sorbet",
+      "version": "0.6.13508"
+    }
+  },
+  "method": {
+    "graded": "rbs",
+    "ruby": "4.0.1",
+    "rbsSources": [
+      "bundled sig/",
+      "ruby/gem_rbs_collection",
+      "rbs stdlib"
+    ],
+    "rbsDependencies": "runtime closure: rbs stdlib, bundled sig/, collection",
+    "sorbetSources": [
+      "bundled rbi/",
+      "inline sigs"
+    ],
+    "sorbetFlags": [
+      "--no-config",
+      "--no-error-sections"
+    ]
+  },
+  "communityTypes": {
+    "ruby/gem_rbs_collection": "aa277106e7cbbabd01ff57ee6988271e19000f34"
+  },
+  "minReleaseAgeDays": 7,
+  "memoryKind": "peak RSS of the checker process",
+  "scoreBasis": "added process CPU ms * added peak RSS MB",
+  "runs": 11,
+  "baseline": {
+    "cpuMs": 380.47,
+    "timeMs": 386.35,
+    "peakRssMb": 59.61,
+    "runs": [
+      {
+        "status": 0,
+        "cpuMs": 371.56,
+        "timeMs": 374.73,
+        "peakRssMb": 59.67
+      },
+      {
+        "status": 0,
+        "cpuMs": 372.59,
+        "timeMs": 375.65,
+        "peakRssMb": 59.61
+      },
+      {
+        "status": 0,
+        "cpuMs": 385.73,
+        "timeMs": 391.79,
+        "peakRssMb": 59.58
+      },
+      {
+        "status": 0,
+        "cpuMs": 422.7,
+        "timeMs": 435.7,
+        "peakRssMb": 59.64
+      },
+      {
+        "status": 0,
+        "cpuMs": 392.73,
+        "timeMs": 396,
+        "peakRssMb": 59.55
+      },
+      {
+        "status": 0,
+        "cpuMs": 394.25,
+        "timeMs": 397.73,
+        "peakRssMb": 59.53
+      },
+      {
+        "status": 0,
+        "cpuMs": 402.34,
+        "timeMs": 406.76,
+        "peakRssMb": 59.72
+      },
+      {
+        "status": 0,
+        "cpuMs": 380.1,
+        "timeMs": 383.17,
+        "peakRssMb": 59.72
+      },
+      {
+        "status": 0,
+        "cpuMs": 375.3,
+        "timeMs": 378.62,
+        "peakRssMb": 59.56
+      },
+      {
+        "status": 0,
+        "cpuMs": 371.8,
+        "timeMs": 374.65,
+        "peakRssMb": 59.84
+      },
+      {
+        "status": 0,
+        "cpuMs": 380.47,
+        "timeMs": 386.35,
+        "peakRssMb": 59.61
+      }
+    ]
+  },
+  "baselines": {
+    "rbs": {
+      "cpuMs": 380.47,
+      "timeMs": 386.35,
+      "peakRssMb": 59.61,
+      "runs": [
+        {
+          "status": 0,
+          "cpuMs": 371.56,
+          "timeMs": 374.73,
+          "peakRssMb": 59.67
+        },
+        {
+          "status": 0,
+          "cpuMs": 372.59,
+          "timeMs": 375.65,
+          "peakRssMb": 59.61
+        },
+        {
+          "status": 0,
+          "cpuMs": 385.73,
+          "timeMs": 391.79,
+          "peakRssMb": 59.58
+        },
+        {
+          "status": 0,
+          "cpuMs": 422.7,
+          "timeMs": 435.7,
+          "peakRssMb": 59.64
+        },
+        {
+          "status": 0,
+          "cpuMs": 392.73,
+          "timeMs": 396,
+          "peakRssMb": 59.55
+        },
+        {
+          "status": 0,
+          "cpuMs": 394.25,
+          "timeMs": 397.73,
+          "peakRssMb": 59.53
+        },
+        {
+          "status": 0,
+          "cpuMs": 402.34,
+          "timeMs": 406.76,
+          "peakRssMb": 59.72
+        },
+        {
+          "status": 0,
+          "cpuMs": 380.1,
+          "timeMs": 383.17,
+          "peakRssMb": 59.72
+        },
+        {
+          "status": 0,
+          "cpuMs": 375.3,
+          "timeMs": 378.62,
+          "peakRssMb": 59.56
+        },
+        {
+          "status": 0,
+          "cpuMs": 371.8,
+          "timeMs": 374.65,
+          "peakRssMb": 59.84
+        },
+        {
+          "status": 0,
+          "cpuMs": 380.47,
+          "timeMs": 386.35,
+          "peakRssMb": 59.61
+        }
+      ]
+    },
+    "sorbet": {
+      "cpuMs": 15.04,
+      "timeMs": 16.75,
+      "peakRssMb": 29.8,
+      "runs": [
+        {
+          "status": 0,
+          "cpuMs": 14.83,
+          "timeMs": 16.75,
+          "peakRssMb": 30.44
+        },
+        {
+          "status": 0,
+          "cpuMs": 17.27,
+          "timeMs": 19.04,
+          "peakRssMb": 29.64
+        },
+        {
+          "status": 0,
+          "cpuMs": 15.96,
+          "timeMs": 17.65,
+          "peakRssMb": 29.69
+        },
+        {
+          "status": 0,
+          "cpuMs": 15.1,
+          "timeMs": 17.11,
+          "peakRssMb": 30.41
+        },
+        {
+          "status": 0,
+          "cpuMs": 14.84,
+          "timeMs": 16.62,
+          "peakRssMb": 29.86
+        },
+        {
+          "status": 0,
+          "cpuMs": 15.38,
+          "timeMs": 16.83,
+          "peakRssMb": 30.53
+        },
+        {
+          "status": 0,
+          "cpuMs": 15.04,
+          "timeMs": 16.75,
+          "peakRssMb": 29.8
+        },
+        {
+          "status": 0,
+          "cpuMs": 14.72,
+          "timeMs": 16.43,
+          "peakRssMb": 29.8
+        },
+        {
+          "status": 0,
+          "cpuMs": 17.34,
+          "timeMs": 21.7,
+          "peakRssMb": 30.92
+        },
+        {
+          "status": 0,
+          "cpuMs": 15.01,
+          "timeMs": 16.66,
+          "peakRssMb": 29.47
+        },
+        {
+          "status": 0,
+          "cpuMs": 14.95,
+          "timeMs": 16.49,
+          "peakRssMb": 29.5
+        }
+      ]
+    }
+  },
+  "packages": {
+    "bundler": {
+      "status": "untyped",
+      "version": "4.0.21",
+      "listedVersion": "4.0.22",
+      "gradedBy": "rbs",
+      "nativeExtension": false,
+      "dependencies": 0,
+      "unpackedMb": 2.6,
+      "checks": {
+        "rbs": {
+          "status": "untyped"
+        },
+        "sorbet": {
+          "status": "untyped",
+          "rbiFiles": 0,
+          "typedSigilFiles": 0,
+          "filesWithSigs": 0,
+          "libFiles": 224
+        }
+      },
+      "load": 5.9,
+      "measuredAt": "2026-10-07T06:30:18.437Z",
+      "harnessSeconds": 1.3
+    },
+    "json": {
+      "status": "ok",
+      "version": "3.0.2",
+      "listedVersion": "3.0.2",
+      "gradedBy": "rbs",
+      "typesFrom": "rbs-stdlib",
+      "communityTypes": true,
+      "added": {
+        "cpuMs": 42.9,
+        "memoryMb": 2.2
+      },
+      "nativeExtension": true,
+      "dependencies": 0,
+      "unpackedMb": 0.4,
+      "checks": {
+        "rbs": {
+          "status": "ok",
+          "typesFrom": "rbs-stdlib",
+          "communityTypes": true,
+          "dependencySignatures": {},
+          "added": {
+            "cpuMs": 42.9,
+            "memoryMb": 2.2
+          },
+          "cpuMs": 42.9,
+          "memoryMb": 2.2,
+          "timeMs": 40.2,
+          "cpuSpreadMs": 45.3,
+          "baseline": {
+            "cpuMs": 380.47,
+            "peakRssMb": 59.61
+          },
+          "runs": [
+            {
+              "status": 0,
+              "cpuMs": 428.26,
+              "timeMs": 434.17,
+              "peakRssMb": 62.08
+            },
+            {
+              "status": 0,
+              "cpuMs": 427.14,
+              "timeMs": 431.11,
+              "peakRssMb": 61.66
+            },
+            {
+              "status": 0,
+              "cpuMs": 423.33,
+              "timeMs": 426.56,
+              "peakRssMb": 61.73
+            },
+            {
+              "status": 0,
+              "cpuMs": 419.91,
+              "timeMs": 423.22,
+              "peakRssMb": 61.78
+            },
+            {
+              "status": 0,
+              "cpuMs": 422.76,
+              "timeMs": 426.46,
+              "peakRssMb": 61.86
+            },
+            {
+              "status": 0,
+              "cpuMs": 419.48,
+              "timeMs": 423.61,
+              "peakRssMb": 61.84
+            },
+            {
+              "status": 0,
+              "cpuMs": 433.4,
+              "timeMs": 443.02,
+              "peakRssMb": 61.75
+            },
+            {
+              "status": 0,
+              "cpuMs": 436.02,
+              "timeMs": 440.71,
+              "peakRssMb": 62.05
+            },
+            {
+              "status": 0,
+              "cpuMs": 457.44,
+              "timeMs": 461.3,
+              "peakRssMb": 61.61
+            },
+            {
+              "status": 0,
+              "cpuMs": 420.08,
+              "timeMs": 423.45,
+              "peakRssMb": 61.69
+            },
+            {
+              "status": 0,
+              "cpuMs": 412.19,
+              "timeMs": 421.38,
+              "peakRssMb": 61.94
+            }
+          ]
+        },
+        "sorbet": {
+          "status": "untyped",
+          "rbiFiles": 0,
+          "typedSigilFiles": 0,
+          "filesWithSigs": 0,
+          "libFiles": 6
+        }
+      },
+      "load": 6.07,
+      "measuredAt": "2026-10-07T06:30:24.697Z",
+      "harnessSeconds": 6.3
+    },
+    "prism": {
+      "status": "ok",
+      "version": "1.9.0",
+      "listedVersion": "1.9.0",
+      "gradedBy": "rbs",
+      "typesFrom": "bundled",
+      "added": {
+        "cpuMs": 289.1,
+        "memoryMb": 28.6
+      },
+      "nativeExtension": true,
+      "dependencies": 0,
+      "unpackedMb": 5.8,
+      "checks": {
+        "rbs": {
+          "status": "ok",
+          "typesFrom": "bundled",
+          "dependencySignatures": {},
+          "added": {
+            "cpuMs": 289.1,
+            "memoryMb": 28.6
+          },
+          "cpuMs": 289.1,
+          "memoryMb": 28.6,
+          "timeMs": 286.7,
+          "cpuSpreadMs": 46.9,
+          "baseline": {
+            "cpuMs": 380.47,
+            "peakRssMb": 59.61
+          },
+          "runs": [
+            {
+              "status": 0,
+              "cpuMs": 672.74,
+              "timeMs": 676.83,
+              "peakRssMb": 88.47
+            },
+            {
+              "status": 0,
+              "cpuMs": 669.56,
+              "timeMs": 673.09,
+              "peakRssMb": 88.27
+            },
+            {
+              "status": 0,
+              "cpuMs": 643.06,
+              "timeMs": 646.59,
+              "peakRssMb": 88.14
+            },
+            {
+              "status": 0,
+              "cpuMs": 632.41,
+              "timeMs": 635.14,
+              "peakRssMb": 88.19
+            },
+            {
+              "status": 0,
+              "cpuMs": 650.02,
+              "timeMs": 653.59,
+              "peakRssMb": 86.78
+            },
+            {
+              "status": 0,
+              "cpuMs": 671.76,
+              "timeMs": 676.4,
+              "peakRssMb": 88.55
+            },
+            {
+              "status": 0,
+              "cpuMs": 674.99,
+              "timeMs": 679.07,
+              "peakRssMb": 86.69
+            },
+            {
+              "status": 0,
+              "cpuMs": 667.53,
+              "timeMs": 671.49,
+              "peakRssMb": 88.3
+            },
+            {
+              "status": 0,
+              "cpuMs": 679.32,
+              "timeMs": 686.81,
+              "peakRssMb": 86.78
+            },
+            {
+              "status": 0,
+              "cpuMs": 667.7,
+              "timeMs": 671.81,
+              "peakRssMb": 88.53
+            },
+            {
+              "status": 0,
+              "cpuMs": 671.1,
+              "timeMs": 674.55,
+              "peakRssMb": 86.72
+            }
+          ]
+        },
+        "sorbet": {
+          "status": "ok",
+          "typesFrom": "bundled-rbi",
+          "rbiFiles": 13,
+          "typedSigilFiles": 0,
+          "filesWithSigs": 0,
+          "libFiles": 41,
+          "errorsInUntypedSource": 22,
+          "added": {
+            "cpuMs": 143.4,
+            "memoryMb": 48.8
+          },
+          "cpuMs": 143.4,
+          "memoryMb": 48.8,
+          "timeMs": 31.7,
+          "cpuSpreadMs": 12.7,
+          "baseline": {
+            "cpuMs": 15.04,
+            "peakRssMb": 29.8
+          },
+          "runs": [
+            {
+              "status": 100,
+              "cpuMs": 159.22,
+              "timeMs": 49.81,
+              "peakRssMb": 78.56
+            },
+            {
+              "status": 100,
+              "cpuMs": 165.09,
+              "timeMs": 48.01,
+              "peakRssMb": 80.25
+            },
+            {
+              "status": 100,
+              "cpuMs": 153.99,
+              "timeMs": 48.85,
+              "peakRssMb": 76.22
+            },
+            {
+              "status": 100,
+              "cpuMs": 162.09,
+              "timeMs": 49.02,
+              "peakRssMb": 78.31
+            },
+            {
+              "status": 100,
+              "cpuMs": 158.45,
+              "timeMs": 48.41,
+              "peakRssMb": 78.77
+            },
+            {
+              "status": 100,
+              "cpuMs": 158.68,
+              "timeMs": 47.83,
+              "peakRssMb": 80.25
+            },
+            {
+              "status": 100,
+              "cpuMs": 157.81,
+              "timeMs": 51.06,
+              "peakRssMb": 78.34
+            },
+            {
+              "status": 100,
+              "cpuMs": 152.38,
+              "timeMs": 46.95,
+              "peakRssMb": 78.89
+            },
+            {
+              "status": 100,
+              "cpuMs": 157.2,
+              "timeMs": 48.19,
+              "peakRssMb": 78.48
+            },
+            {
+              "status": 100,
+              "cpuMs": 157.27,
+              "timeMs": 47.89,
+              "peakRssMb": 77.84
+            },
+            {
+              "status": 100,
+              "cpuMs": 158.45,
+              "timeMs": 48.41,
+              "peakRssMb": 78.59
+            }
+          ]
+        }
+      },
+      "load": 3.69,
+      "measuredAt": "2026-10-07T06:30:07.137Z",
+      "harnessSeconds": 10.2
+    },
+    "rack": {
+      "status": "ok",
+      "version": "3.2.7",
+      "listedVersion": "3.2.7",
+      "gradedBy": "rbs",
+      "typesFrom": "gem_rbs_collection/2.2",
+      "communityTypes": true,
+      "added": {
+        "cpuMs": 122.7,
+        "memoryMb": 12.9
+      },
+      "nativeExtension": false,
+      "dependencies": 0,
+      "unpackedMb": 0.5,
+      "checks": {
+        "rbs": {
+          "status": "ok",
+          "typesFrom": "gem_rbs_collection/2.2",
+          "communityTypes": true,
+          "dependencySignatures": {
+            "cgi": "rbs-stdlib",
+            "uri": "rbs-stdlib"
+          },
+          "added": {
+            "cpuMs": 122.7,
+            "memoryMb": 12.9
+          },
+          "cpuMs": 122.7,
+          "memoryMb": 12.9,
+          "timeMs": 120.2,
+          "cpuSpreadMs": 41.5,
+          "baseline": {
+            "cpuMs": 380.47,
+            "peakRssMb": 59.61
+          },
+          "runs": [
+            {
+              "status": 0,
+              "cpuMs": 493.24,
+              "timeMs": 496.09,
+              "peakRssMb": 72.58
+            },
+            {
+              "status": 0,
+              "cpuMs": 497.51,
+              "timeMs": 500.56,
+              "peakRssMb": 72.53
+            },
+            {
+              "status": 0,
+              "cpuMs": 501.84,
+              "timeMs": 504.94,
+              "peakRssMb": 72.44
+            },
+            {
+              "status": 0,
+              "cpuMs": 509.81,
+              "timeMs": 512.65,
+              "peakRssMb": 72.58
+            },
+            {
+              "status": 0,
+              "cpuMs": 513.4,
+              "timeMs": 516.29,
+              "peakRssMb": 72.52
+            },
+            {
+              "status": 0,
+              "cpuMs": 510.48,
+              "timeMs": 513.38,
+              "peakRssMb": 72.39
+            },
+            {
+              "status": 0,
+              "cpuMs": 503.14,
+              "timeMs": 506.53,
+              "peakRssMb": 72.55
+            },
+            {
+              "status": 0,
+              "cpuMs": 534.72,
+              "timeMs": 539.05,
+              "peakRssMb": 72.78
+            },
+            {
+              "status": 0,
+              "cpuMs": 499.01,
+              "timeMs": 502.11,
+              "peakRssMb": 72.2
+            },
+            {
+              "status": 0,
+              "cpuMs": 498.55,
+              "timeMs": 501.51,
+              "peakRssMb": 72.72
+            },
+            {
+              "status": 0,
+              "cpuMs": 510.47,
+              "timeMs": 515.64,
+              "peakRssMb": 72.34
+            }
+          ]
+        },
+        "sorbet": {
+          "status": "untyped",
+          "rbiFiles": 0,
+          "typedSigilFiles": 0,
+          "filesWithSigs": 0,
+          "libFiles": 49
+        }
+      },
+      "load": 3.71,
+      "measuredAt": "2026-10-07T06:29:56.962Z",
+      "harnessSeconds": 7.9
+    },
+    "sorbet-runtime": {
+      "status": "untyped",
+      "version": "0.6.13511",
+      "listedVersion": "0.6.13532",
+      "gradedBy": "rbs",
+      "nativeExtension": false,
+      "dependencies": 0,
+      "unpackedMb": 0.6,
+      "checks": {
+        "rbs": {
+          "status": "untyped"
+        },
+        "sorbet": {
+          "status": "check-failed",
+          "typesFrom": "inline-sigs",
+          "rbiFiles": 0,
+          "typedSigilFiles": 77,
+          "filesWithSigs": 16,
+          "libFiles": 88,
+          "errors": 24,
+          "detail": "/data/lib/types/private/methods/signature.rb:74: This code is unreachable https://srb.help/7006"
+        }
+      },
+      "load": 5.9,
+      "measuredAt": "2026-10-07T06:30:17.179Z",
+      "harnessSeconds": 1.1
+    },
+    "stripe": {
+      "status": "check-failed",
+      "version": "19.6.2",
+      "listedVersion": "20.0.0",
+      "gradedBy": "rbs",
+      "typesFrom": "gem_rbs_collection/13.0",
+      "communityTypes": true,
+      "detail": "/collection/stripe/stripe.rbs:117:30...117:35: Could not find ::Event (RBS::NoTypeFoundError)",
+      "nativeExtension": false,
+      "dependencies": 2,
+      "unpackedMb": 18.5,
+      "checks": {
+        "rbs": {
+          "status": "check-failed",
+          "typesFrom": "gem_rbs_collection/13.0",
+          "communityTypes": true,
+          "dependencySignatures": {
+            "bigdecimal": "rbs-stdlib",
+            "logger": "rbs-stdlib"
+          },
+          "errors": 1,
+          "detail": "/collection/stripe/stripe.rbs:117:30...117:35: Could not find ::Event (RBS::NoTypeFoundError)"
+        },
+        "sorbet": {
+          "status": "ok",
+          "typesFrom": "bundled-rbi",
+          "rbiFiles": 3,
+          "typedSigilFiles": 4,
+          "filesWithSigs": 0,
+          "libFiles": 1049,
+          "added": {
+            "cpuMs": 880.3,
+            "memoryMb": 217.9
+          },
+          "cpuMs": 880.3,
+          "memoryMb": 217.9,
+          "timeMs": 539,
+          "cpuSpreadMs": 201.8,
+          "baseline": {
+            "cpuMs": 15.04,
+            "peakRssMb": 29.8
+          },
+          "runs": [
+            {
+              "status": 0,
+              "cpuMs": 892.18,
+              "timeMs": 552.02,
+              "peakRssMb": 256.89
+            },
+            {
+              "status": 0,
+              "cpuMs": 826.65,
+              "timeMs": 494.02,
+              "peakRssMb": 245.16
+            },
+            {
+              "status": 0,
+              "cpuMs": 895.07,
+              "timeMs": 538.74,
+              "peakRssMb": 245.77
+            },
+            {
+              "status": 0,
+              "cpuMs": 915.35,
+              "timeMs": 535.04,
+              "peakRssMb": 242.19
+            },
+            {
+              "status": 0,
+              "cpuMs": 875.81,
+              "timeMs": 505.55,
+              "peakRssMb": 247.72
+            },
+            {
+              "status": 0,
+              "cpuMs": 918.75,
+              "timeMs": 576.52,
+              "peakRssMb": 244.2
+            },
+            {
+              "status": 0,
+              "cpuMs": 984.22,
+              "timeMs": 555.74,
+              "peakRssMb": 262.13
+            },
+            {
+              "status": 0,
+              "cpuMs": 1028.43,
+              "timeMs": 632.74,
+              "peakRssMb": 251.27
+            },
+            {
+              "status": 0,
+              "cpuMs": 928.39,
+              "timeMs": 606.72,
+              "peakRssMb": 265.31
+            },
+            {
+              "status": 0,
+              "cpuMs": 892.75,
+              "timeMs": 561.69,
+              "peakRssMb": 263.83
+            },
+            {
+              "status": 0,
+              "cpuMs": 895.3,
+              "timeMs": 559.4,
+              "peakRssMb": 246.58
+            }
+          ]
+        }
+      },
+      "load": 5.9,
+      "measuredAt": "2026-10-07T06:30:16.039Z",
+      "harnessSeconds": 8.9
+    }
+  }
+}

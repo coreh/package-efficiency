@@ -1,0 +1,712 @@
+{
+  "checker": {
+    "tool": "mypy",
+    "version": "2.3.1"
+  },
+  "method": {
+    "hostPython": "3.14",
+    "targetPython": "3.12",
+    "flags": [
+      "--strict",
+      "--no-incremental",
+      "--cache-dir=/dev/null",
+      "--python-version",
+      "3.12"
+    ],
+    "program": "import <each public top-level module>",
+    "stubs": "mypy hint, types-<name>, <name>-stubs; community ones marked"
+  },
+  "minReleaseAgeDays": 7,
+  "memoryKind": "peak RSS of the checker process",
+  "scoreBasis": "added process CPU ms * added peak RSS MB",
+  "runs": 11,
+  "baseline": {
+    "cpuMs": 391.9,
+    "timeMs": 396.83,
+    "peakRssMb": 85.23,
+    "runs": [
+      {
+        "status": 0,
+        "cpuMs": 400.76,
+        "timeMs": 406.35,
+        "peakRssMb": 85.16
+      },
+      {
+        "status": 0,
+        "cpuMs": 385.93,
+        "timeMs": 391.81,
+        "peakRssMb": 85.47
+      },
+      {
+        "status": 0,
+        "cpuMs": 387.43,
+        "timeMs": 393.11,
+        "peakRssMb": 85.14
+      },
+      {
+        "status": 0,
+        "cpuMs": 417.05,
+        "timeMs": 423.89,
+        "peakRssMb": 85.23
+      },
+      {
+        "status": 0,
+        "cpuMs": 414.36,
+        "timeMs": 419.9,
+        "peakRssMb": 85.22
+      },
+      {
+        "status": 0,
+        "cpuMs": 390.91,
+        "timeMs": 395.98,
+        "peakRssMb": 85.19
+      },
+      {
+        "status": 0,
+        "cpuMs": 384.31,
+        "timeMs": 390.1,
+        "peakRssMb": 85.34
+      },
+      {
+        "status": 0,
+        "cpuMs": 392.43,
+        "timeMs": 396.83,
+        "peakRssMb": 85.17
+      },
+      {
+        "status": 0,
+        "cpuMs": 389.61,
+        "timeMs": 394.18,
+        "peakRssMb": 85.25
+      },
+      {
+        "status": 0,
+        "cpuMs": 391.9,
+        "timeMs": 397.66,
+        "peakRssMb": 85.28
+      },
+      {
+        "status": 0,
+        "cpuMs": 425.96,
+        "timeMs": 440.39,
+        "peakRssMb": 85.47
+      }
+    ],
+    "files": 48
+  },
+  "packages": {
+    "attrs": {
+      "status": "ok",
+      "version": "26.1.0",
+      "listedVersion": "26.1.0",
+      "closure": 1,
+      "installMb": 0.3,
+      "typesFrom": "bundled",
+      "modules": [
+        "attrs",
+        "attr"
+      ],
+      "added": {
+        "cpuMs": 20.3,
+        "memoryMb": 1
+      },
+      "mypy": {
+        "cpuMs": 20.3,
+        "memoryMb": 1,
+        "timeMs": 21,
+        "files": 10,
+        "cpuSpreadMs": 18.1,
+        "runs": [
+          {
+            "status": 0,
+            "cpuMs": 403.35,
+            "timeMs": 409.82,
+            "peakRssMb": 86.36
+          },
+          {
+            "status": 0,
+            "cpuMs": 402.86,
+            "timeMs": 409.61,
+            "peakRssMb": 86.14
+          },
+          {
+            "status": 0,
+            "cpuMs": 417.64,
+            "timeMs": 423.35,
+            "peakRssMb": 86.28
+          },
+          {
+            "status": 0,
+            "cpuMs": 416.33,
+            "timeMs": 422.4,
+            "peakRssMb": 86.44
+          },
+          {
+            "status": 0,
+            "cpuMs": 403.54,
+            "timeMs": 409.52,
+            "peakRssMb": 86.2
+          },
+          {
+            "status": 0,
+            "cpuMs": 403.37,
+            "timeMs": 409.54,
+            "peakRssMb": 86.25
+          },
+          {
+            "status": 0,
+            "cpuMs": 413.44,
+            "timeMs": 419.53,
+            "peakRssMb": 86.25
+          },
+          {
+            "status": 0,
+            "cpuMs": 412.17,
+            "timeMs": 417.81,
+            "peakRssMb": 86.25
+          },
+          {
+            "status": 0,
+            "cpuMs": 410.49,
+            "timeMs": 416.68,
+            "peakRssMb": 86.38
+          },
+          {
+            "status": 0,
+            "cpuMs": 416.12,
+            "timeMs": 421.17,
+            "peakRssMb": 86.28
+          },
+          {
+            "status": 0,
+            "cpuMs": 420.97,
+            "timeMs": 426.36,
+            "peakRssMb": 86.25
+          }
+        ]
+      },
+      "baseline": {
+        "cpuMs": 391.9,
+        "peakRssMb": 85.23
+      },
+      "load": 4.18,
+      "measuredAt": "2026-10-07T06:12:55.652Z",
+      "harnessSeconds": 6.8
+    },
+    "boto3": {
+      "status": "ok",
+      "version": "1.43.105",
+      "listedVersion": "1.43.108",
+      "closure": 7,
+      "installMb": 27.6,
+      "stubsPublisher": "third-party",
+      "communityTypes": true,
+      "typesFrom": "types-boto3@1.43.105",
+      "modules": [
+        "boto3"
+      ],
+      "added": {
+        "cpuMs": 435.8,
+        "memoryMb": 60.5
+      },
+      "mypy": {
+        "cpuMs": 435.8,
+        "memoryMb": 60.5,
+        "timeMs": 436,
+        "files": 144,
+        "cpuSpreadMs": 30.9,
+        "runs": [
+          {
+            "status": 0,
+            "cpuMs": 855.13,
+            "timeMs": 860.83,
+            "peakRssMb": 146
+          },
+          {
+            "status": 0,
+            "cpuMs": 833.44,
+            "timeMs": 838.78,
+            "peakRssMb": 145.83
+          },
+          {
+            "status": 0,
+            "cpuMs": 824.27,
+            "timeMs": 829.13,
+            "peakRssMb": 145.86
+          },
+          {
+            "status": 0,
+            "cpuMs": 827.67,
+            "timeMs": 833.23,
+            "peakRssMb": 145.77
+          },
+          {
+            "status": 0,
+            "cpuMs": 828.1,
+            "timeMs": 832.87,
+            "peakRssMb": 145.7
+          },
+          {
+            "status": 0,
+            "cpuMs": 826.68,
+            "timeMs": 831.49,
+            "peakRssMb": 145.86
+          },
+          {
+            "status": 0,
+            "cpuMs": 824.79,
+            "timeMs": 829.82,
+            "peakRssMb": 145.77
+          },
+          {
+            "status": 0,
+            "cpuMs": 826.39,
+            "timeMs": 831.43,
+            "peakRssMb": 145.72
+          },
+          {
+            "status": 0,
+            "cpuMs": 841.36,
+            "timeMs": 846.73,
+            "peakRssMb": 145.75
+          },
+          {
+            "status": 0,
+            "cpuMs": 827.76,
+            "timeMs": 832.84,
+            "peakRssMb": 145.91
+          },
+          {
+            "status": 0,
+            "cpuMs": 826.35,
+            "timeMs": 831.39,
+            "peakRssMb": 145.75
+          }
+        ]
+      },
+      "baseline": {
+        "cpuMs": 391.9,
+        "peakRssMb": 85.23
+      },
+      "load": 2.86,
+      "measuredAt": "2026-10-07T06:14:08.446Z",
+      "harnessSeconds": 16.6
+    },
+    "django": {
+      "status": "ok",
+      "version": "6.1.1",
+      "listedVersion": "6.1.1",
+      "closure": 3,
+      "installMb": 31.2,
+      "stubsPublisher": "third-party",
+      "communityTypes": true,
+      "typesFrom": "django-stubs@6.1.1",
+      "modules": [
+        "django"
+      ],
+      "added": {
+        "cpuMs": 32.1,
+        "memoryMb": 0.1
+      },
+      "mypy": {
+        "cpuMs": 32.1,
+        "memoryMb": 0.1,
+        "timeMs": 31.2,
+        "files": 3,
+        "cpuSpreadMs": 45,
+        "runs": [
+          {
+            "status": 0,
+            "cpuMs": 417.7,
+            "timeMs": 423.4,
+            "peakRssMb": 85.34
+          },
+          {
+            "status": 0,
+            "cpuMs": 406.02,
+            "timeMs": 411.61,
+            "peakRssMb": 85.38
+          },
+          {
+            "status": 0,
+            "cpuMs": 425.71,
+            "timeMs": 430.37,
+            "peakRssMb": 85.33
+          },
+          {
+            "status": 0,
+            "cpuMs": 447.7,
+            "timeMs": 455.07,
+            "peakRssMb": 85.31
+          },
+          {
+            "status": 0,
+            "cpuMs": 425.39,
+            "timeMs": 431.9,
+            "peakRssMb": 85.42
+          },
+          {
+            "status": 0,
+            "cpuMs": 416.66,
+            "timeMs": 421.73,
+            "peakRssMb": 85.36
+          },
+          {
+            "status": 0,
+            "cpuMs": 423.98,
+            "timeMs": 427.99,
+            "peakRssMb": 85.47
+          },
+          {
+            "status": 0,
+            "cpuMs": 432.58,
+            "timeMs": 442.16,
+            "peakRssMb": 85.38
+          },
+          {
+            "status": 0,
+            "cpuMs": 432.7,
+            "timeMs": 444.76,
+            "peakRssMb": 85.45
+          },
+          {
+            "status": 0,
+            "cpuMs": 402.7,
+            "timeMs": 408.3,
+            "peakRssMb": 85.31
+          },
+          {
+            "status": 0,
+            "cpuMs": 412.67,
+            "timeMs": 418.61,
+            "peakRssMb": 85.39
+          }
+        ]
+      },
+      "baseline": {
+        "cpuMs": 391.9,
+        "peakRssMb": 85.23
+      },
+      "load": 3.57,
+      "measuredAt": "2026-10-07T06:13:20.380Z",
+      "harnessSeconds": 12.3
+    },
+    "google-cloud-storage": {
+      "status": "untyped",
+      "version": "3.15.1",
+      "listedVersion": "3.16.0",
+      "closure": 21,
+      "installMb": 25.2,
+      "modules": [
+        "google.cloud.storage"
+      ],
+      "load": 2.51,
+      "measuredAt": "2026-10-07T06:14:23.389Z",
+      "harnessSeconds": 5.9
+    },
+    "pandas": {
+      "status": "ok",
+      "version": "3.0.6",
+      "listedVersion": "3.0.6",
+      "closure": 4,
+      "installMb": 63.3,
+      "stubsPublisher": "same-project",
+      "typesFrom": "pandas-stubs@3.0.5.260914",
+      "modules": [
+        "pandas"
+      ],
+      "added": {
+        "cpuMs": 1691.1,
+        "memoryMb": 150
+      },
+      "mypy": {
+        "cpuMs": 1691.1,
+        "memoryMb": 150,
+        "timeMs": 1691.7,
+        "files": 395,
+        "cpuSpreadMs": 80.6,
+        "runs": [
+          {
+            "status": 0,
+            "cpuMs": 2059.27,
+            "timeMs": 2065.56,
+            "peakRssMb": 235.05
+          },
+          {
+            "status": 0,
+            "cpuMs": 2082.96,
+            "timeMs": 2089.11,
+            "peakRssMb": 235.17
+          },
+          {
+            "status": 0,
+            "cpuMs": 2076.87,
+            "timeMs": 2081.99,
+            "peakRssMb": 235.41
+          },
+          {
+            "status": 0,
+            "cpuMs": 2061.24,
+            "timeMs": 2065.08,
+            "peakRssMb": 234.72
+          },
+          {
+            "status": 0,
+            "cpuMs": 2084.72,
+            "timeMs": 2088.52,
+            "peakRssMb": 235.2
+          },
+          {
+            "status": 0,
+            "cpuMs": 2058.11,
+            "timeMs": 2064.39,
+            "peakRssMb": 234.88
+          },
+          {
+            "status": 0,
+            "cpuMs": 2116.43,
+            "timeMs": 2122.58,
+            "peakRssMb": 235.23
+          },
+          {
+            "status": 0,
+            "cpuMs": 2067.43,
+            "timeMs": 2074.82,
+            "peakRssMb": 235.19
+          },
+          {
+            "status": 0,
+            "cpuMs": 2098.53,
+            "timeMs": 2104.13,
+            "peakRssMb": 235.27
+          },
+          {
+            "status": 0,
+            "cpuMs": 2133.96,
+            "timeMs": 2140.7,
+            "peakRssMb": 234.97
+          },
+          {
+            "status": 0,
+            "cpuMs": 2138.7,
+            "timeMs": 2152.87,
+            "peakRssMb": 235.19
+          }
+        ]
+      },
+      "baseline": {
+        "cpuMs": 391.9,
+        "peakRssMb": 85.23
+      },
+      "load": 3.29,
+      "measuredAt": "2026-10-07T06:13:51.850Z",
+      "harnessSeconds": 31.5
+    },
+    "pycparser": {
+      "status": "ok",
+      "version": "3.0",
+      "listedVersion": "3.0",
+      "closure": 1,
+      "installMb": 0.2,
+      "stubsPublisher": "third-party",
+      "communityTypes": true,
+      "typesFrom": "pycparser-stubs@0.0.1",
+      "modules": [
+        "pycparser"
+      ],
+      "added": {
+        "cpuMs": 11.1,
+        "memoryMb": 0.6
+      },
+      "mypy": {
+        "cpuMs": 11.1,
+        "memoryMb": 0.6,
+        "timeMs": 9.4,
+        "files": 2,
+        "cpuSpreadMs": 55.9,
+        "runs": [
+          {
+            "status": 0,
+            "cpuMs": 412.4,
+            "timeMs": 417.59,
+            "peakRssMb": 85.89
+          },
+          {
+            "status": 0,
+            "cpuMs": 388.95,
+            "timeMs": 393.67,
+            "peakRssMb": 85.78
+          },
+          {
+            "status": 0,
+            "cpuMs": 403.01,
+            "timeMs": 406.26,
+            "peakRssMb": 85.78
+          },
+          {
+            "status": 0,
+            "cpuMs": 395.26,
+            "timeMs": 400.07,
+            "peakRssMb": 85.88
+          },
+          {
+            "status": 0,
+            "cpuMs": 407.88,
+            "timeMs": 412.81,
+            "peakRssMb": 85.72
+          },
+          {
+            "status": 0,
+            "cpuMs": 399.76,
+            "timeMs": 404.54,
+            "peakRssMb": 85.78
+          },
+          {
+            "status": 0,
+            "cpuMs": 394.28,
+            "timeMs": 398.79,
+            "peakRssMb": 85.8
+          },
+          {
+            "status": 0,
+            "cpuMs": 396.39,
+            "timeMs": 401.34,
+            "peakRssMb": 85.92
+          },
+          {
+            "status": 0,
+            "cpuMs": 436.13,
+            "timeMs": 442.48,
+            "peakRssMb": 85.75
+          },
+          {
+            "status": 0,
+            "cpuMs": 444.89,
+            "timeMs": 450.42,
+            "peakRssMb": 85.84
+          },
+          {
+            "status": 0,
+            "cpuMs": 430.84,
+            "timeMs": 435.46,
+            "peakRssMb": 85.84
+          }
+        ]
+      },
+      "baseline": {
+        "cpuMs": 391.9,
+        "peakRssMb": 85.23
+      },
+      "load": 2.73,
+      "measuredAt": "2026-10-07T06:14:17.504Z",
+      "harnessSeconds": 8.4
+    },
+    "pyspark": {
+      "status": "install-failed",
+      "listedVersion": "4.2.0",
+      "detail": "ERROR: Could not find a version that satisfies the requirement pyspark==4.2.0 (from versions: none) | ERROR: No matching distribution found for pyspark==4.2.0",
+      "load": 2.79,
+      "measuredAt": "2026-10-07T06:14:09.069Z",
+      "harnessSeconds": 0.6
+    },
+    "six": {
+      "status": "ok",
+      "version": "1.17.0",
+      "listedVersion": "1.17.0",
+      "closure": 1,
+      "installMb": 0.1,
+      "stubsPublisher": "typeshed",
+      "communityTypes": true,
+      "typesFrom": "types-six@1.17.0.20260724",
+      "modules": [
+        "six"
+      ],
+      "added": {
+        "cpuMs": 350.3,
+        "memoryMb": 44.8
+      },
+      "mypy": {
+        "cpuMs": 350.3,
+        "memoryMb": 44.8,
+        "timeMs": 350.4,
+        "files": 167,
+        "cpuSpreadMs": 43.1,
+        "runs": [
+          {
+            "status": 0,
+            "cpuMs": 743.63,
+            "timeMs": 750.01,
+            "peakRssMb": 130.09
+          },
+          {
+            "status": 0,
+            "cpuMs": 737.75,
+            "timeMs": 742.95,
+            "peakRssMb": 130.08
+          },
+          {
+            "status": 0,
+            "cpuMs": 732.84,
+            "timeMs": 735.95,
+            "peakRssMb": 130.06
+          },
+          {
+            "status": 0,
+            "cpuMs": 755.15,
+            "timeMs": 760.69,
+            "peakRssMb": 130.28
+          },
+          {
+            "status": 0,
+            "cpuMs": 742.58,
+            "timeMs": 747.96,
+            "peakRssMb": 129.98
+          },
+          {
+            "status": 0,
+            "cpuMs": 742.19,
+            "timeMs": 747.2,
+            "peakRssMb": 130.06
+          },
+          {
+            "status": 0,
+            "cpuMs": 734.89,
+            "timeMs": 739.2,
+            "peakRssMb": 130.02
+          },
+          {
+            "status": 0,
+            "cpuMs": 740.77,
+            "timeMs": 745.98,
+            "peakRssMb": 130.06
+          },
+          {
+            "status": 0,
+            "cpuMs": 738.54,
+            "timeMs": 743.36,
+            "peakRssMb": 130
+          },
+          {
+            "status": 0,
+            "cpuMs": 761.35,
+            "timeMs": 766.42,
+            "peakRssMb": 130.09
+          },
+          {
+            "status": 0,
+            "cpuMs": 775.94,
+            "timeMs": 781.29,
+            "peakRssMb": 130.22
+          }
+        ]
+      },
+      "baseline": {
+        "cpuMs": 391.9,
+        "peakRssMb": 85.23
+      },
+      "load": 3.62,
+      "measuredAt": "2026-10-07T06:13:08.117Z",
+      "harnessSeconds": 12.5
+    }
+  }
+}

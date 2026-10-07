@@ -261,6 +261,13 @@ for (const name of new Set(switches.map((s) => s.name))) {
   const target = switches.find((s) => s.name === name && s.value === wanted)
   if (target) target.checked = true
 }
+// A page can have one "Reference items" switch above each of its tables. They
+// are kept in step, so the choice holds on every tab.
+const referenceSwitches = switches.filter((s) => s.name.startsWith('reference-'))
+if (referenceSwitches.some((s) => s.value === 'hidden' && s.checked)) for (const s of referenceSwitches) if (s.value === 'hidden') s.checked = true
+for (const control of referenceSwitches) control.addEventListener('change', () => {
+  for (const other of referenceSwitches) if (other.value === control.value) other.checked = true
+})
 // Keep runtime choices short while preserving the complete no-JavaScript view.
 const languageTitles = { all: 'All', javascript: 'JavaScript', python: 'Python', ruby: 'Ruby', go: 'Go', rust: 'Rust' }
 for (const runtimeSwitch of document.querySelectorAll('.switch:has(input[name="runtime"])')) {

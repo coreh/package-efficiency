@@ -3,8 +3,9 @@
 import { CLASSES, formatBytes, formatNumber } from './label.mjs'
 import { adapterIdOf, adapterSource, taskSource } from './source.mjs'
 
-const cpuOf = (m) => m.cpuPerOperationUs ?? m.cpuPerRequestUs
-const unitOf = (data) => (data.task.kind === 'sync-operation' ? 'operation' : 'request')
+const cpuOf = (m) => m.startupCpuMs ?? m.cpuPerOperationUs ?? m.cpuPerRequestUs
+const cpuUnit = (m) => (m.startupCpuMs != null ? ' ms' : ' µs')
+const unitOf = (data) => (data.task.kind === 'sync-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request')
 const isTuned = (entry) => (entry.adapter.tags ?? []).includes('non-default-options')
 
 // One row per entry per runtime. The same columns for every task, so tasks
@@ -30,7 +31,7 @@ export function resultRows(data, ctx) {
       language: runtime.language,
       runtime: runtime.title,
       runtime_version: runtime.version,
-      cpu_unit: `µs per ${unitOf(data)}`,
+      cpu_unit: `${cpuUnit(e.metrics).trim()} per ${unitOf(data)}`,
       cpu: cpuOf(e.metrics),
       cpu_class: e.grades.cpu?.class ?? '',
       cpu_times_best: e.grades.cpu?.ratio ?? '',
@@ -81,7 +82,7 @@ const graded = (value, grade, unit) => (grade ? `${cellText(value, unit)} (${gra
 const mdTable = (head, rows) => [`| ${head.join(' | ')} |`, `| ${head.map(() => '---').join(' | ')} |`, ...rows.map((r) => `| ${r.map((c) => String(c).replace(/\|/g, '\\|')).join(' | ')} |`)].join('\n')
 const byCpu = (a, b) => CLASSES.indexOf(a.grades.cpu?.class ?? 'G') - CLASSES.indexOf(b.grades.cpu?.class ?? 'G') || (a.grades.cpu?.ratio ?? Infinity) - (b.grades.cpu?.ratio ?? Infinity)
 
-const READING = (data) => `Classes go from A (best) to G. A class shows how many times the best result in the task an entry costs, in any language or runtime. CPU is CPU time per ${unitOf(data)} (user and system, all threads). Memory is what the process holds after the task and a garbage collection (its physical footprint, not its resident size). The same runtime with a do-nothing adapter on the same inputs is subtracted. Type-check cost is added compiler CPU time multiplied by added compiler memory, in MB·s. Each of its class boundaries is the CPU boundary multiplied by the memory boundary. The memory scale is narrower than the CPU scale (G is above 16 times the best, compared with 50 for CPU), because memory results are closer together. No class uses elapsed time. A "tuned" entry uses documented settings that are not the default. A "default" entry is the package as installed.`
+const READING = (data) => `Classes go from A (best) to G. A class shows how many times the best result in the task an entry costs, in any language or runtime. CPU is CPU time per ${unitOf(data)} (user and system, all threads). Memory is what the process holds after the task and a garbage collection (its physical footprint, not its resident size). The same runtime with a do-nothing adapter on the same inputs is subtracted. Type-check cost is added compiler CPU time multiplied by added compiler memory, in MB·s. Each of its class boundaries is the CPU boundary multiplied by the memory boundary. Its class compares a package with the lowest-cost package in its category, not only in the task. The memory scale is narrower than the CPU scale (G is above 16 times the best, compared with 50 for CPU), because memory results are closer together. No class uses elapsed time. A "tuned" entry uses documented settings that are not the default. A "default" entry is the package as installed.`
 
 const scaleLine = (name, metric) => (metric?.scale ? `- ${name}: class boundaries at ${metric.scale.join(', ')} times the best${metric.anchor ? `, which is ${metric.anchor.title}${metric.anchor.runtime ? ` on ${metric.anchor.runtime}` : ''} at ${formatNumber(metric.anchor.value)} ${metric.unit}` : ''}.` : null)
 
@@ -94,7 +95,7 @@ const MEDALS_NOTE = 'Medals: each task has three events (CPU, memory, type check
 // Size once installed, with how many packages that is; for Rust, what the
 // crate adds to the compiled binary.
 const installText = (m) => m.installBytes == null ? '' : `${formatBytes(m.installBytes)}${m.installKind === 'binary' ? ' added to the binary' : m.installPackages ? ` in ${m.installPackages} ${m.installPackages === 1 ? 'package' : 'packages'}` : ''}`
-const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : ''), e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', graded(cpuOf(e.metrics), e.grades.cpu, ' µs'), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), cellText(e.metrics.importMs, ' ms'), installText(e.metrics), cellText(e.metrics.latencyP99Ms, ' ms')]
+const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : ''), e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', graded(cpuOf(e.metrics), e.grades.cpu, cpuUnit(e.metrics)), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), cellText(e.metrics.importMs, ' ms'), installText(e.metrics), cellText(e.metrics.latencyP99Ms, ' ms')]
 const ENTRY_HEAD = (data) => ['Entry', 'Version', 'Settings', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Import time', 'Size on disk', 'Latency p99']
 
 export function taskMarkdown(data, ctx) {
@@ -128,7 +129,8 @@ One per entry: the code that runs the package in this task.
 
 ${(() => {
   const adapters = new Map(data.runtimes.flatMap((r) => r.entries).map((e) => [adapterIdOf(e), e]))
-  return [...adapters.entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###', new Set(adapters.keys()))).join('\n\n')
+  const listed = new Set(adapters.keys())
+      return [...adapters.entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###', listed)).join('\n\n')
 })()}
 
 ## More
@@ -144,6 +146,7 @@ export function packageMarkdown(pkg, ecosystemTitle, ctx) {
   const registry = ctx.ecosystems?.[pkg.ecosystem]?.registry?.(pkg.name)
   const tasks = [...new Set(pkg.appearances.map((a) => a.data))]
   const path = `/${pkg.ecosystem}/${pkg.name}/`
+  const shownApps = new Set()
   return `# ${pkg.title}${pkg.version ? ` ${pkg.version}` : ''}: Package Efficiency Labels
 
 ${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${ecosystemTitle} package`}, measured in ${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}.${registry ? ` Registry: ${registry}` : ''}${pkg.listed?.repository ? ` Repository: ${pkg.listed.repository}` : ''}${pkg.listed ? ` Number ${pkg.listed.rank} on ${ecosystemTitle} by ${pkg.listed.popularity.label} (${pkg.listed.popularity.value.toLocaleString('en-US')}).` : ''}
@@ -158,7 +161,12 @@ ${tasks
     const notes = [...new Map(rows.filter((a) => a.entry.adapter.notes).map((a) => [a.entry.id, `- ${a.entry.title}: ${a.entry.adapter.notes}`])).values()]
     return `## ${data.task.title}\n\n${data.task.summary}\n\n${mdTable(['Runtime', ...ENTRY_HEAD(data), 'Medals'], rows.map(({ runtime, entry }) => [`${runtime.title} ${runtime.version}`, ...entryRow(data, entry), medalText(ctx, data, runtime, entry)]))}${notes.length ? `\n\n${notes.join('\n')}` : ''}\n\nAll entries in this task: ${url(`/${data.task.id}/index.md`)}\n\n${(() => {
       const adapters = new Map(rows.map((a) => [adapterIdOf(a.entry), a.entry]))
-      return [...adapters.entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###', new Set(adapters.keys()))).join('\n\n')
+      // A shared application is listed once for the whole document.
+      const listed = new Set([...adapters.keys(), ...shownApps])
+      const remember = () => { for (const key of listed) if (key.startsWith('app:')) shownApps.add(key) }
+      const text = [...adapters.entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###', listed)).join('\n\n')
+      remember()
+      return text
     })()}`
   })
   .join('\n\n')}
@@ -179,6 +187,15 @@ const fenced = (file, ctx, name = file.name) => `**${name}**${ctx.model ? ` (${g
 // One adapter: who wrote it, its notes, and its files. A variant has only
 // settings of its own, so the code it runs (another adapter's) follows them,
 // unless that adapter is in the same document (`listed`).
+// The shared application an entry runs: its files once in a document (`listed`
+// remembers it), and after that only its name.
+function appMarkdown(source, ctx, listed) {
+  if (!source.app) return ''
+  const name = source.app.dir.split('/_shared/')[1], key = `app:${source.app.dir}`
+  if (listed.has(key)) return `\n\nIt runs the same application as above, \`${name}\`.`
+  listed.add(key)
+  return `\n\nThe application it runs, shared by every task of this category${ctx.model ? ` (${gh(ctx, source.app.dir)})` : ''}:\n\n${source.app.files.map((f) => fenced(f, ctx, `${name}/${f.name}`)).join('\n\n')}`
+}
 function adapterMarkdown(data, adapterId, entry, ctx, heading, listed = new Set()) {
   const source = adapterSource(data.task.id, adapterId)
   const a = entry.adapter
@@ -187,7 +204,7 @@ function adapterMarkdown(data, adapterId, entry, ctx, heading, listed = new Set(
 
 Written by ${who} on ${a.author.date}, ${a.review === 'unreviewed' ? 'not reviewed by a human' : 'reviewed'}.${a.notes ? ` ${a.notes}` : ''}${ctx.model ? ` Folder: ${gh(ctx, source.dir)}` : ''}${source.variantOf ? `\n\nA variant: it runs the code of ${source.variantOf.split('/').at(-1)} with the settings below.` : ''}
 
-${source.files.map((f) => fenced(f, ctx)).join('\n\n')}${source.variantOf && !listed.has(source.variantOf) ? `\n\nThe code it runs:\n\n${source.shared.map((f) => fenced(f, ctx, `${source.variantOf.split('/').at(-1)}/${f.name}`)).join('\n\n')}` : ''}`
+${source.files.map((f) => fenced(f, ctx)).join('\n\n')}${source.variantOf && !listed.has(source.variantOf) ? `\n\nThe code it runs:\n\n${source.shared.map((f) => fenced(f, ctx, `${source.variantOf.split('/').at(-1)}/${f.name}`)).join('\n\n')}` : ''}${appMarkdown(source, ctx, listed)}`
 }
 const header = (title, ctx) => `# ${title}: Package Efficiency Labels`
 const footer = (ctx, path, hasRows) => `## More\n\n- Page: ${ctx.url(path)}${hasRows ? `\n- This list as CSV: ${ctx.url(`${path}results.csv`)}\n- This list as JSON: ${ctx.url(`${path}results.json`)}` : ''}\n- Everything: ${ctx.url('/llms.txt')}\n`
@@ -291,7 +308,7 @@ ${READING(category.tasks[0])}
 ${PROVISIONAL(ctx)}
 
 ${category.tasks
-  .map((data) => `## ${data.task.title}\n\n${data.task.summary} Each package on the runtime where it uses the least CPU; every runtime is in ${ctx.url(`/${data.task.id}/index.md`)}.\n\n${mdTable(['Entry', 'Version', 'Settings', 'Best on', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Medals'], bestPerPackage(data).map(({ entry: e, runtime }) => [e.title, e.version ?? '', e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', runtime.title, graded(cpuOf(e.metrics), e.grades.cpu, ' µs'), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), medalText(ctx, data, runtime, e)]))}`)
+  .map((data) => `## ${data.task.title}\n\n${data.task.summary} Each package on the runtime where it uses the least CPU; every runtime is in ${ctx.url(`/${data.task.id}/index.md`)}.\n\n${mdTable(['Entry', 'Version', 'Settings', 'Best on', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Medals'], bestPerPackage(data).map(({ entry: e, runtime }) => [e.title, e.version ?? '', e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', runtime.title, graded(cpuOf(e.metrics), e.grades.cpu, cpuUnit(e.metrics)), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), medalText(ctx, data, runtime, e)]))}`)
   .join('\n\n')}
 
 ## Packages

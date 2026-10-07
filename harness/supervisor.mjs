@@ -253,6 +253,43 @@ export async function measureServer({ command, args, cwd, env, phases, requests,
   }
 }
 
+// How long a server takes to come up: a new process each time, from launch to
+// its first verified response. A "round" here is one launch: its CPU time is
+// all the process has used by then, its wall time runs from the launch. The
+// shape of the result is that of measureServer, so the rest of the pipeline
+// reads it the same way.
+export async function measureStartup({ command, args, cwd, env, phases, requests, load }) {
+  const rounds = []
+  let last = null
+  for (let i = 0; i < (load.launches ?? 5); i++) {
+    const startedAt = performance.now()
+    const child = launch(command, args, cwd, env)
+    try {
+      const boot = await child.expect('boot')
+      const loaded = phases.includes('loaded') ? await child.expect('loaded') : null
+      const ready = await child.expect('ready')
+      const first = await timedLoad({ port: ready.port, requests: requests.slice(0, 1), total: 1, workers: 1, connections: 1, verify: true })
+      const wallMs = performance.now() - startedAt
+      const cpuMs = cpuSeconds(boot.pid) * 1000
+      if (first.errors > 0) {
+        await child.kill()
+        return { status: 'verify-failed', error: first.firstError }
+      }
+      await rest()
+      const rssAfterLoadBytes = rssBytes(boot.pid), footprintAfterLoadBytes = footprintBytes(boot.pid)
+      child.command('settle')
+      const settled = await child.expect('settled')
+      const report = await child.finish()
+      rounds.push({ requests: 1, cpuMs, wallMs, latencyP50Ms: null, latencyP99Ms: null, heapUsedBytes: settled.memory.heapUsed })
+      last = { importMs: loaded?.importMs ?? null, importCpuMs: loaded?.importCpuMs ?? null, heap: { bootBytes: boot.memory.heapUsed, loadedBytes: loaded?.memory.heapUsed ?? null, readyBytes: ready.memory.heapUsed, warmBytes: settled.memory.heapUsed, peakBytes: null }, rssAfterLoadBytes, footprintAfterLoadBytes, ...report }
+    } catch (error) {
+      await child.kill()
+      return { status: 'failed', error: error.message }
+    }
+  }
+  return { status: 'ok', ...last, rounds, warmupRounds: [] }
+}
+
 // CPU comes from the child around the synchronous batch, at microsecond
 // resolution. IPC, fixture creation, validation and settled GC are excluded.
 export async function measureOperation({ command, args, cwd, env, load, verifyResults, phases = ['boot', 'loaded', 'ready'] }) {

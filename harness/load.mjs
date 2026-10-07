@@ -3,14 +3,18 @@
 // request, waits for the whole response, checks it, and sends the next.
 import net from 'node:net'
 import { isDeepStrictEqual } from 'node:util'
+import { brotliDecompressSync, gunzipSync, inflateSync } from 'node:zlib'
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads'
+import { fragmentOf, normalizeHtml } from './html.mjs'
 
 const HEADER_END = Buffer.from('\r\n\r\n')
 
-function encodeRequest({ method, path, body }) {
+// `headers` adds request headers, such as the Accept-Encoding a browser sends.
+function encodeRequest({ method, path, body, headers }) {
   const payload = body === undefined ? null : Buffer.from(JSON.stringify(body))
   const head =
     `${method} ${path} HTTP/1.1\r\nHost: 127.0.0.1\r\n` +
+    Object.entries(headers ?? {}).map(([name, value]) => `${name}: ${value}\r\n`).join('') +
     (payload ? `Content-Type: application/json\r\nContent-Length: ${payload.length}\r\n` : '') +
     '\r\n'
   return payload ? Buffer.concat([Buffer.from(head), payload]) : Buffer.from(head)
@@ -53,7 +57,19 @@ function check({ head, body }, expect, verify) {
   if (!verify) return null
   const type = /\r\ncontent-type:\s*([^\r;]+)/i.exec(head)?.[1].trim().toLowerCase()
   if (type !== expect.type) return `expected content-type ${expect.type}, got ${type}`
-  const text = body.toString()
+  // A compressed body is read as a browser would read it. Only here, when
+  // verifying: the measured rounds do not decompress.
+  const encoding = /\r\ncontent-encoding:\s*([^\r]+)/i.exec(head)?.[1].trim().toLowerCase()
+  let plain = body
+  try {
+    if (encoding === 'gzip') plain = gunzipSync(body)
+    else if (encoding === 'br') plain = brotliDecompressSync(body)
+    else if (encoding === 'deflate') plain = inflateSync(body)
+    else if (encoding && encoding !== 'identity') return `unknown content-encoding ${encoding}`
+  } catch (error) {
+    return `could not decompress the ${encoding} body: ${error.message}`
+  }
+  const text = plain.toString()
   if ('json' in expect) {
     let value
     try {
@@ -62,6 +78,17 @@ function check({ head, body }, expect, verify) {
       return `body is not JSON: ${text.slice(0, 80)}`
     }
     if (!isDeepStrictEqual(value, expect.json)) return `unexpected JSON body: ${text.slice(0, 120)}`
+  } else if ('fragment' in expect) {
+    // One element of an HTML page, compared after both are brought to one
+    // spelling (see html.mjs). `html` is already normalized.
+    const found = fragmentOf(text, expect.fragment.open, expect.fragment.close)
+    if (found === null) return `no ${expect.fragment.open}…${expect.fragment.close} in the page: ${text.slice(0, 80)}`
+    const got = normalizeHtml(found)
+    if (got !== expect.fragment.html) {
+      let at = 0
+      while (at < got.length && got[at] === expect.fragment.html[at]) at++
+      return `page differs at character ${at}: got "${got.slice(Math.max(0, at - 30), at + 50)}", expected "${expect.fragment.html.slice(Math.max(0, at - 30), at + 50)}"`
+    }
   } else if (text !== expect.text) {
     return `unexpected body: ${text.slice(0, 80)}`
   }

@@ -34,7 +34,14 @@ export function adapterFingerprint(taskId, adapterId) {
       hash.update(`${file}\0`).update(readFileSync(path.join(dir, file))).update('\0')
     }
     const settings = JSON.parse(readFileSync(path.join(dir, 'adapter.json'), 'utf8'))
-    hash.update(JSON.stringify({ env: settings.env ?? null, variantOf: settings.variantOf ?? null, package: settings.package ?? null }))
+    hash.update(JSON.stringify({ env: settings.env ?? null, variantOf: settings.variantOf ?? null, package: settings.package ?? null, ...(settings.variant ? { variant: settings.variant } : {}) }))
+    // An application shared by several tasks is part of each of them.
+    if (settings.app) {
+      const app = path.resolve(dir, settings.app)
+      for (const file of globSync('**/*', { cwd: app, withFileTypes: true, exclude: (entry) => ['node_modules', 'target', '.DS_Store', '.next', '.output', 'dist', 'tmp', 'log', '__pycache__', 'vendor'].includes(entry.name) }).filter((entry) => entry.isFile()).map((entry) => path.relative(app, path.join(entry.parentPath, entry.name))).sort()) {
+        hash.update(`app/${file}\0`).update(readFileSync(path.join(app, file))).update('\0')
+      }
+    }
     return settings
   }
   const settings = add(adapterId)

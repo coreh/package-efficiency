@@ -1,0 +1,26 @@
+{
+  "package": "rails",
+  "title": "Rails, minimal stack",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "app": "../../../_shared/rubygems/rails",
+  "variant": "minimal",
+  "tags": [
+    "non-default-options"
+  ],
+  "dependencies": [
+    "puma"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "Rails with only Action Controller and Action View: no sessions, cookies, forgery protection, cache store or asset tags, and 14 middleware removed.",
+  "details": "The Rails entry with everything this application does not use taken out, each by a documented setting. Only Action Controller and Action View are loaded (their railties in place of rails/all), and the Gemfile is rails, propshaft, puma and bootsnap: no Active Record or SQLite, no Solid Cache, Queue or Cable, no importmap, Turbo or Stimulus, no jbuilder or image_processing. config.session_store :disabled and config.action_controller.allow_forgery_protection = false, so no session, cookies or flash; config.cache_store = :null_store. config.middleware.delete takes out Rack::Sendfile, Rack::Runtime, Rack::MethodOverride, ActionDispatch::RequestId, ActionDispatch::RemoteIp, Rails::Rack::SilenceRequest, Rails::Rack::Logger, ActionDispatch::Callbacks, ActionDispatch::Cookies, ActionDispatch::Flash, the content security policy middleware, Rack::ConditionalGet, Rack::ETag and Rack::TempfileReaper; the static file server, the executor, the exception pages and Rack::Head stay. ApplicationController has no allow_browser and no importmap etag, and the layout has no csrf_meta_tags, csp_meta_tag or javascript_importmap_tags; stylesheet_link_tag stays. Responses carry no ETag, request id or cookie. The controllers of the three routes, the views, the routes, Puma with 3 threads and the build are those of the Rails entry, and so is everything its notes say about the runner, logging and secret key. The files that differ are in variants/minimal of the shared application. Gems are installed one at a time from gems.lock.json after their age and sha256 are checked, and loaded through Bundler with a frozen Gemfile.lock; seven of them (bigdecimal, bootsnap, msgpack, nio4r, puma, racc, websocket-driver) compile native extensions at install."
+}

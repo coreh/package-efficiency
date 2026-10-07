@@ -1,0 +1,18 @@
+[package]
+name = "web-application-frameworks-leptos"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# leptos and leptos_router are held at the newest releases that were at least
+# seven days old when this was written (2026-10-07); 0.8.22 and 0.8.17 were
+# two days old. Loosen both to "0.8" once those have aged.
+[dependencies]
+bench-harness = { path = "../../../../../harness/rust" }
+leptos = { version = "=0.8.21", features = ["ssr"] }
+leptos_axum = "0.8"
+leptos_meta = { version = "0.8", features = ["ssr"] }
+leptos_router = { version = "=0.8.16", features = ["ssr"] }
+axum = "0.8"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }

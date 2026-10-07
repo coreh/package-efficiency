@@ -1,0 +1,32 @@
+{
+  "category": "web-application-frameworks",
+  "task": "dynamic-page",
+  "title": "Dynamic page",
+  "summary": "Render one item's page on the server for each request: a template with conditional sections, a list, a table of twelve rows and escaped text.",
+  "kind": "http-server",
+  "ecosystems": [
+    "npm",
+    "pypi",
+    "rubygems"
+  ],
+  "load": {
+    "workers": 2,
+    "connections": 8,
+    "warmup": 2000,
+    "rounds": 3,
+    "requestsPerRound": 6000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerRequestUs",
+      "unit": "µs",
+      "headline": "µs of CPU per request"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  }
+}

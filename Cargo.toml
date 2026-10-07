@@ -1,6 +1,28 @@
 [workspace]
 resolver = "3"
 members = ["harness/rust", "benchmarks/*/*/cargo/*"]
+# A shared application (benchmarks/<category>/_shared/cargo/<name>) is a member
+# through the pattern above. Its entry in each task is only an adapter.json
+# that points at it, which the pattern also matches, so those are left out.
+# Cargo takes no pattern here, so each is listed.
+exclude = [
+  "benchmarks/web-application-frameworks/api-route/cargo/actix-web",
+  "benchmarks/web-application-frameworks/dynamic-page/cargo/actix-web",
+  "benchmarks/web-application-frameworks/startup/cargo/actix-web",
+  "benchmarks/web-application-frameworks/static-page/cargo/actix-web",
+  "benchmarks/web-application-frameworks/api-route/cargo/axum",
+  "benchmarks/web-application-frameworks/dynamic-page/cargo/axum",
+  "benchmarks/web-application-frameworks/startup/cargo/axum",
+  "benchmarks/web-application-frameworks/static-page/cargo/axum",
+  "benchmarks/web-application-frameworks/api-route/cargo/hyper",
+  "benchmarks/web-application-frameworks/dynamic-page/cargo/hyper",
+  "benchmarks/web-application-frameworks/startup/cargo/hyper",
+  "benchmarks/web-application-frameworks/static-page/cargo/hyper",
+  "benchmarks/web-application-frameworks/api-route/cargo/leptos",
+  "benchmarks/web-application-frameworks/dynamic-page/cargo/leptos",
+  "benchmarks/web-application-frameworks/startup/cargo/leptos",
+  "benchmarks/web-application-frameworks/static-page/cargo/leptos",
+]
 
 # Release-only, no debug info, no incremental state: keeps the build directory
 # small. Optimization settings are left at Cargo's defaults on purpose, since

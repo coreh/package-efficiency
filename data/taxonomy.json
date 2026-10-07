@@ -626,12 +626,11 @@
     {
       "id": "frameworks",
       "title": "Frameworks and broad libraries",
-      "description": "Application frameworks, UI runtimes, DOM implementations and general-purpose standard libraries that span many tasks and cannot be reduced to one comparable benchmark.",
+      "description": "UI runtimes, DOM implementations and general-purpose standard libraries that span many tasks and cannot be reduced to one comparable benchmark. Full-stack web application frameworks have a category of their own.",
       "benchmarkable": false,
       "examples": [
         "react",
         "react-dom",
-        "next",
         "lodash",
         "rxjs",
         "jsdom",
@@ -1439,6 +1438,39 @@
         "unicorn",
         "thin",
         "webrick"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "web-application-frameworks",
+      "title": "Web application frameworks",
+      "description": "Full-stack frameworks that build and serve an application: file or code routing, pages rendered on the server or compiled for a device, data loading and the build that goes with them. Routers on their own, servers on their own and UI runtimes are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Serve the server-rendered HTML of a dynamic route of one small sample application. Further tasks would use the same application: a static page, a data-loading page, the production build, and the first request after start.",
+      "examples": [
+        "next",
+        "@tanstack/react-start",
+        "expo",
+        "nuxt",
+        "astro",
+        "@sveltejs/kit",
+        "django",
+        "rails",
+        "@fresh/core"
+      ],
+      "group": "web"
+    },
+    {
+      "id": "client-side-routing",
+      "title": "Client-side routing",
+      "description": "Match a URL against a tree of routes in the browser or app and resolve the nested routes, parameters and loaders to show; server request routing and full application frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Define a fixed tree of a hundred nested routes with parameters and match a fixed list of URLs against it, returning the matched branch and its parameters.",
+      "examples": [
+        "react-router",
+        "@tanstack/react-router",
+        "wouter",
+        "vue-router"
       ],
       "group": "web"
     },

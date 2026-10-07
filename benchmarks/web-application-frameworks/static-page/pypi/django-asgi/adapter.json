@@ -1,0 +1,26 @@
+{
+  "package": "django",
+  "title": "Django, ASGI server",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "app": "../../../_shared/pypi/django",
+  "variant": "asgi",
+  "dependencies": [
+    "uvicorn"
+  ],
+  "tags": [
+    "non-default-options"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "The generated Django project with synchronous views on Uvicorn (ASGI) in place of a WSGI server. Django's documentation says synchronous views are slower this way.",
+  "details": "The Django entry with one change: the server. Served through the generated config/asgi.py by Uvicorn (one process, loop=asyncio, http=h11, lifespan off, access log off) on a thread inside the one measured process, in place of WSGI on Waitress. Settings, middleware and the synchronous views are the same, so Django runs each view on a thread through sync_to_async, which its documentation describes as a performance penalty."
+}

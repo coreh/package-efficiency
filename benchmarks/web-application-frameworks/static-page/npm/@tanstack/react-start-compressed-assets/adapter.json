@@ -1,0 +1,34 @@
+{
+  "package": "@tanstack/react-start",
+  "variant": "compressed-assets",
+  "title": "TanStack Start, compressPublicAssets",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../../_shared/npm/@tanstack/react-start",
+  "dependencies": [
+    "@tanstack/react-router",
+    "react",
+    "react-dom",
+    "vite",
+    "@vitejs/plugin-react",
+    "nitro",
+    "h3",
+    "srvx"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "TanStack Start with Nitro's compressPublicAssets on: the prerendered /about and the client files are also sent compressed. The dynamic page and the API are as in the default entry.",
+  "details": "TanStack Start with Nitro's compressPublicAssets option on: the build also writes gzip, brotli and zstd copies of the public files of 1 KB or more, the prerendered /about among them, and the server sends the copy a request accepts instead of the file. Nothing else changes, so the dynamic page and the API route are still sent uncompressed. Built into its own folder (.output-compressed-assets). Built with vite build and the Nitro plugin, as the hosting guide says for Node.js; the Nitro node-server output (.output/server/index.mjs) is imported into the measured process, on Bun and Deno as on Node. The server underneath is a pre-release: Nitro 3 is a beta and its h3 a release candidate, the versions the framework's guide installs. The port is passed through NITRO_PORT (0, for a free one) and the host through NITRO_HOST, and the port is read from the line the server prints when it listens. Not a default: /about is prerendered by Nitro's prerender option, because the page TanStack Start's own prerender option writes is not served by this server.",
+  "tags": [
+    "non-default-options"
+  ]
+}

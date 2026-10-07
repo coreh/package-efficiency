@@ -1,0 +1,24 @@
+{
+  "package": "actix-web",
+  "title": "Actix Web",
+  "language": "rust",
+  "runtimes": [
+    "rust"
+  ],
+  "app": "../../../_shared/cargo/actix-web",
+  "dependencies": [
+    "tera"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "multi-threaded"
+  ],
+  "notes": "Actix Web's router and JSON helper with Tera templates, on its default worker threads. Release build, no middleware.",
+  "details": "Actix Web's router, web::Path and web::Data extractors and web::Json responder; pages are Tera templates (with inheritance and a price filter) parsed once at start and shared as application data, as in the templating example of actix/examples, and escaped by Tera (built with its recommended `fast` feature). /about is rendered from its template on each request: Actix Web has no build-time prerendering. No middleware is added (no Logger, no Compress, as in a new application). Actix's default server: one process, one single-threaded worker per core. Built with cargo build --release at Cargo's default optimization settings and run as one process with Actix's default worker count, so idle workers cost some CPU under a light load. Cargo cannot skip build scripts or procedural macros, so those of the locked crates run at build time, as for every Rust entry here."
+}

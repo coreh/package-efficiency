@@ -1,0 +1,32 @@
+{
+  "category": "web-application-frameworks",
+  "task": "api-route",
+  "title": "API route",
+  "summary": "Answer an API route with one item's data as JSON.",
+  "kind": "http-server",
+  "ecosystems": [
+    "npm",
+    "pypi",
+    "rubygems"
+  ],
+  "load": {
+    "workers": 2,
+    "connections": 8,
+    "warmup": 2000,
+    "rounds": 3,
+    "requestsPerRound": 6000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerRequestUs",
+      "unit": "µs",
+      "headline": "µs of CPU per request"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  }
+}
