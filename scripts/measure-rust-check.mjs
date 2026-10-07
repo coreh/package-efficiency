@@ -10,6 +10,9 @@ import { readFile, rm, utimes } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { ROOT, fromRoot, loadConfig, median, readJson, writeJson } from './lib/util.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const exec = promisify(execFile)
 const WARM_RUNS = 3

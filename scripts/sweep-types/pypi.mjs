@@ -50,6 +50,9 @@
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, round, spread, sweep, timed } from './lib.mjs'
+import { raisePriority } from '../lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const { names, value, has } = args('Usage: node scripts/sweep-types/pypi.mjs <pkg>... | --top=N [--force] [--retry-failed] [--runs=11] [--keep] [--infer-untyped] [--out=file]')
 const RUNS = Number(value('runs', 11))

@@ -396,7 +396,11 @@ await write(dist('llms.txt'), llmsText(model, ECOSYSTEMS, ctx))
 // Each group's categories, for the menu on a phone to open a group in place.
 await write(dist('data/menu.json'), JSON.stringify(Object.fromEntries(groups.map((group) => [group.id, taxonomy.filter((c) => c.group === group.id).map((c) => {
   const measured = model.categories.find((m) => m.taxonomy === c.id)
-  return [measured?.title ?? c.title, categoryHref(c.id, model), measured ? 1 : 0]
+  // The same count as in the menu of a page: packages, and how many are measured.
+  const listed = catalog.byCategory.get(c.id)?.length ?? 0
+  const done = measured ? model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id && !a.entry.reference)).length : 0
+  const total = Math.max(listed, done)
+  return [measured?.title ?? c.title, categoryHref(c.id, model), measured ? 1 : 0, total ? (done ? `${done} of ${total}` : String(total)) : '']
 }).sort((a, b) => b[2] - a[2] || a[0].localeCompare(b[0]))]))))
 // The packages without results, compactly, for the package table to add to
 // its rows in the browser: [registry, name, version, use, share, category,

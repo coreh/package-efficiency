@@ -34,6 +34,9 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 import { installPinned, installedVersion, MIN_RELEASE_AGE_DAYS } from './lib/npm.mjs'
 import { fromRoot, loadConfig, median, readJson, writeJson } from './lib/util.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const exec = promisify(execFile)
 

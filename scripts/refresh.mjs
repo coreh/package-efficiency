@@ -16,6 +16,9 @@
 import { execFileSync } from 'node:child_process'
 import os from 'node:os'
 import { duration, runStep } from './lib/tasks.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const argv = process.argv.slice(2)
 const list = (name) => argv.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3).split(',')

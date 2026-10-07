@@ -57,6 +57,9 @@
 import { mkdir, readFile, rm, utimes, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { MIN_RELEASE_AGE_DAYS, args, duMb, exec, fromRoot, loadTargets, median, oldEnough, round, spread, sweep, timed } from './lib.mjs'
+import { raisePriority } from '../lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const { names, value, has } = args('Usage: node scripts/sweep-types/cargo.mjs <crate>... | --top=N [--force] [--retry-failed] [--runs=11] [--cold-runs=3] [--keep] [--out=file]')
 const RUNS = Number(value('runs', 11))

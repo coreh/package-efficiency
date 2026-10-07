@@ -3,6 +3,9 @@
 // Flags are passed on to scripts/measure.mjs (--force, --reps=3, --runtimes=…).
 // Usage: node scripts/measure-all.mjs [--tasks=<category>/<task>,…] [measure.mjs flags]
 import { duration, runStep, taskIds } from './lib/tasks.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const argv = process.argv.slice(2)
 const wanted = argv.find((a) => a.startsWith('--tasks='))?.slice('--tasks='.length).split(',')

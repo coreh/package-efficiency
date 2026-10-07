@@ -60,3 +60,22 @@ export const machine = () => ({
   cpu: os.cpus()[0]?.model ?? 'unknown',
   cores: os.cpus().length,
 })
+
+// Measurements run above the usual priority, so that other work on the
+// machine disturbs them less. Raising a priority needs root: it works when
+// the script runs as root, or when sudo lets this user run renice without a
+// password (see benchmarks/README.md, "Priority"). The processes a script
+// starts take its priority, so one call at the start covers a whole run.
+// BENCH_PRIORITY sets the nice value (default -15); 0 turns this off.
+export function raisePriority() {
+  const wanted = Number(process.env.BENCH_PRIORITY ?? -15)
+  if (!Number.isFinite(wanted) || wanted >= 0 || process.platform === 'win32') return false
+  if (os.getPriority() <= wanted) return true
+  for (const [command, args] of [['renice', ['-n', String(wanted), '-p', String(process.pid)]], ['sudo', ['-n', 'renice', '-n', String(wanted), '-p', String(process.pid)]]]) {
+    try { execFileSync(command, args, { stdio: 'ignore' }) } catch {}
+    if (os.getPriority() <= wanted) return true
+  }
+  if (!process.env.BENCH_PRIORITY_SAID) console.error('priority: not raised (renice needs root; see "Priority" in benchmarks/README.md). Measuring at the usual priority.')
+  process.env.BENCH_PRIORITY_SAID = '1'
+  return false
+}

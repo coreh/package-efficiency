@@ -11,6 +11,9 @@
 import {spawnSync} from 'node:child_process'
 import {readJson,fromRoot} from './lib/util.mjs'
 import {adaptersOf,taskIds} from './lib/tasks.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 // Every package that already has a check, and every npm or JSR package that
 // has a benchmark adapter, so a newly added package is measured too.
 const adapted=[]

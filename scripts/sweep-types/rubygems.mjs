@@ -78,6 +78,9 @@ import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { raisePriority } from '../lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, round, spread, sweep, timed, writeJson } from './lib.mjs'
 
 const { names, value, has } = args('Usage: node scripts/sweep-types/rubygems.mjs <gem>... | --top=N [--force] [--retry-failed] [--runs=11] [--keep] [--sorbet] [--source] [--out=file]')

@@ -18,6 +18,9 @@ import { binaryInstall, nodeInstall } from './lib/install-size.mjs'
 import { prepareApp } from './lib/apps.mjs'
 import { adapterFingerprint, staleReason, taskInputs } from './lib/tasks.mjs'
 import { ROOT, fromRoot, loadConfig, machine, median, readJson, writeJson } from './lib/util.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 
 const argv = process.argv.slice(2)
 const taskId = argv.find((a) => !a.startsWith('--'))

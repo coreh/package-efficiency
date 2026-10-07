@@ -808,12 +808,16 @@ document.querySelector('.side-categories')?.addEventListener('click', async (eve
   menuData ??= fetch('/data/menu.json').then((r) => r.json())
   const group = head.getAttribute('href').split('/').filter(Boolean).at(-1)
   list = document.createElement('ul')
-  const line = (text, href) => {
+  const line = (text, href, count) => {
     const li = document.createElement('li')
-    li.append(Object.assign(document.createElement('a'), { href, textContent: text }))
+    const a = Object.assign(document.createElement('a'), { href, textContent: text })
+    if (count) a.append(' ', Object.assign(document.createElement('span'), { className: 'count', textContent: count }))
+    li.append(a)
     return li
   }
-  list.append(line(`All of ${head.firstChild.textContent.trim()}`, head.href), ...((await menuData)[group] ?? []).map(([title, href]) => line(title, href)))
+  // The group's name is the text of the heading, apart from its icon and count.
+  const name = [...head.childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join('').trim()
+  list.append(line(`All of ${name}`, head.href), ...((await menuData)[group] ?? []).map(([title, href, , count]) => line(title, href, count)))
   item.append(list)
   item.classList.add('open')
 })

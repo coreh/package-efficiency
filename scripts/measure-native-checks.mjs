@@ -7,6 +7,9 @@ import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {fromRoot,readJson,writeJson,median,loadConfig,machine} from './lib/util.mjs'
 import {wrapPython,wrapRuby,goImports} from './lib/native-wrappers.mjs'
+import { raisePriority } from './lib/util.mjs'
+// Above the usual priority where the machine allows it (see raisePriority).
+raisePriority()
 // --verify runs each adapter through its checker once and says which are
 // rejected, without timing or recording anything.
 const verify=process.argv.includes('--verify');let rejected=0

@@ -287,6 +287,23 @@ URL opens the default full release. `--version` alone never promotes a release.
 TypeScript checks accept `--version` too and keep version-specific measurements.
 
 
+## Priority
+
+The measuring scripts ask for a higher priority than other work on the
+machine (`nice -15`), so that background activity disturbs a measurement
+less. The processes they start take that priority. Raising a priority needs
+root. Either run as root, or let your user run `renice` without a password:
+
+```
+sudo visudo -f /etc/sudoers.d/renice
+# add this line, with your user name:
+# yourname ALL=(root) NOPASSWD: /usr/bin/renice
+```
+
+Without it the scripts print one line that says the priority was not raised,
+and measure as before. `BENCH_PRIORITY=-10` sets another value; `0` turns it
+off.
+
 ## Running things
 
 | Command | What it does |
