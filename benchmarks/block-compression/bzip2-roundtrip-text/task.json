@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "bzip2-roundtrip-text",
+  "title": "bzip2 compress and decompress text",
+  "summary": "Compress a buffer of text with bzip2 (level 9, set explicitly) and decompress it again, returning the original text.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "One operation is a full bzip2 compress-then-decompress round trip of an in-memory buffer. Compressed bytes differ between implementations, so only the restored text is compared; the compressed size, reported outside timing, must also be smaller than the input for the fixtures the format can shrink."
+}

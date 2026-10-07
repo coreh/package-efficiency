@@ -1,0 +1,31 @@
+{
+  "category": "jwt-signing",
+  "task": "hs256-roundtrip",
+  "title": "HS256 sign and verify round trip",
+  "summary": "Sign a claims object with HS256 into a compact JWT, then verify that token and return the verified claims.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

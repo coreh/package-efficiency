@@ -8,10 +8,13 @@
   --soft: #595959;
   --mark: #ffd200;
   --focus: #0b57d0;
+  /* The second colour: for what a reader can do about a benchmark. */
+  --accent: #0b57d0;
+  --accent-ink: #fff;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #161616; --band: #222; --rule: #3d3d3d; --ink: #f2f2f2; --soft: #a8a8a8; --focus: #8ab4f8; }
+  :root { --bg: #161616; --band: #222; --rule: #3d3d3d; --ink: #f2f2f2; --soft: #a8a8a8; --focus: #8ab4f8; --accent: #8ab4f8; --accent-ink: #0b1b33; }
 }
 
 * { box-sizing: border-box; }
@@ -38,27 +41,48 @@ code { font: inherit; font-weight: 600; }
 #q-results {
   position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 2px); margin: 0; padding: 4px; list-style: none;
   background: #fff; color: #000; border: 1px solid #000;
+  max-height: min(70vh, 34rem); overflow-y: auto; overscroll-behavior: contain;
 }
 #q-results li { padding: 4px 8px; }
-#q-results a { display: flex; justify-content: space-between; gap: 12px; margin: -4px -8px; padding: 4px 8px; text-decoration: none; font-weight: 600; }
+#q-results a { display: flex; align-items: center; gap: 0; margin: -4px -8px; padding: 4px 8px; text-decoration: none; font-weight: 600; }
 #q-results a:hover, #q-results a:focus { background: var(--mark); }
-#q-results small { font-weight: 400; color: #595959; }
+#q-results small { font-weight: 400; color: #595959; margin-left: auto; padding-left: 12px; white-space: nowrap; }
+#q-results a > span:not(.ico) { min-width: 0; overflow-wrap: anywhere; }
+#q-results .ico { margin: 0 11px 0 4px; }
+#q-results img.cat { width: 1.5em; height: 1.5em; margin: -0.2em 8px -0.2em 1px; }
+/* A category found by another of its names: that name, an arrow, its own. */
+#q-results .alias { font-weight: 400; color: #595959; }
+#q-results .alias-arrow { margin: 0 7px; font-weight: 400; color: #8a8a8a; }
+#q-results .search-note { position: sticky; bottom: -4px; background: #fff; }
 
 /* The catalog menu is always shown on wide screens. On narrow ones it is
    opened and closed by a checkbox, so it works without JavaScript. */
 .menu-toggle { position: absolute; opacity: 0; pointer-events: none; }
 .menu-button { display: none; }
-.frame { display: grid; grid-template-columns: 216px minmax(0, 1fr); align-items: start; }
+.frame { display: grid; grid-template-columns: 258px minmax(0, 1fr); align-items: start; }
 
 /* The catalog tree. */
 .side { position: sticky; top: 45px; max-height: calc(100vh - 45px); overflow-y: auto; padding: 12px 0 32px; border-right: 1px solid var(--rule); font-size: 0.8125rem; }
 .side h2 { font-size: 0.8125rem; font-weight: 800; margin: 14px 0 2px; padding: 0; border: 0; }
 .side h2:first-child { margin-top: 0; }
 .side ul { list-style: none; margin: 0; padding: 0; }
-.side a { display: block; padding: 2px 12px 2px 16px; text-decoration: none; }
+.side a { display: flex; align-items: baseline; padding: 2px 12px 2px 16px; text-decoration: none; }
 .side ul ul a { padding-left: 28px; }
 .side a[aria-current] { background: var(--mark); color: #000; font-weight: 700; }
-.side .count { color: var(--soft); font-weight: 400; }
+/* Icons sit on the first line of a name that wraps. */
+.side a > svg, .side a > span:not(.count) { flex: none; align-self: flex-start; margin-top: 0.18em; }
+/* Medal tallies beside the runtimes: a small disc in the medal's colour, then
+   how many. */
+.side .side-medals { flex: none; margin-left: auto; padding-left: 8px; display: inline-flex; gap: 6px; align-self: center; margin-top: 0; font-size: 0.75rem; line-height: 1; font-weight: 400; color: var(--soft); font-variant-numeric: tabular-nums; }
+/* Each count is a fixed-width cell with the disc and then the number at its
+   left, so the discs line up down the list and each number follows its own. */
+.side-medals i { font-style: normal; display: inline-flex; align-items: center; justify-content: flex-start; gap: 3px; min-width: calc(10px + 2ch); }
+.side-medals i::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #d4a017; box-shadow: 0 0 0 1px rgb(0 0 0 / 35%); }
+.side-medals i.s::before { background: #b9bcc2; }
+.side-medals i.b::before { background: #b06a2c; }
+.side-medals i.none { opacity: 0.35; }
+.side a:hover .side-medals, .side a[aria-current] .side-medals { color: #000; }
+.side .count { flex: none; margin-left: auto; padding-left: 10px; color: var(--soft); font-weight: 400; font-variant-numeric: tabular-nums; }
 .side a:hover .count, .side a[aria-current] .count { color: #000; }
 .side h3 { font-size: 0.75rem; font-weight: 700; color: var(--soft); margin: 8px 0 2px; padding-left: 28px; }
 .side details { margin-top: 14px; }
@@ -113,10 +137,15 @@ caption { text-align: left; color: var(--soft); padding-bottom: 4px; caption-sid
 .tablefig .scroll { margin-bottom: 4px; }
 .tablefig figcaption { color: var(--soft); font-size: 0.8125rem; max-width: 110ch; }
 .tablefig + .key { margin-top: -8px; }
+.notes { display: grid; gap: 5px; margin-top: 2px; }
+.fn { display: grid; grid-template-columns: 1.5em 1fr; }
+.fn .n { color: var(--ink); }
 th, td { text-align: right; padding: 4px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
 th:first-child, td:first-child, .l { text-align: left; }
 thead th { background: var(--band); font-weight: 700; vertical-align: bottom; border-bottom: 1px solid var(--soft); }
 tbody tr:hover { background: var(--band); }
+/* The task-by-runtime table on a runtime's page marks that runtime's column. */
+table.matrix th.here, table.matrix td.here { background: color-mix(in srgb, var(--mark) 16%, transparent); }
 tbody tr.here td:first-child { box-shadow: inset 3px 0 0 var(--mark); font-weight: 700; }
 .matrix th.group, .matrix td.group { border-left: 1px solid var(--soft); }
 .matrix thead tr:first-child th { text-align: left; }
@@ -129,7 +158,6 @@ td .ver, h1 .ver { color: var(--soft); margin-left: 6px; font-weight: 400; }
 .versions a[aria-current] { background: var(--mark); color: #000; border-color: #000; position: relative; }
 .versions small { font-weight: 400; margin-left: 5px; }
 td.wrap { white-space: normal; min-width: 20rem; max-width: 34rem; }
-td.categories { white-space: normal; max-width: 14rem; }
 .cls { display: inline-block; width: 1.45em; line-height: 1.45em; text-align: center; font-weight: 800; margin-left: 6px; }
 .matrix td { padding-left: 8px; padding-right: 8px; }
 th button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; }
@@ -145,7 +173,10 @@ th[aria-sort='descending'] button::after { mask-image: url("data:image/svg+xml,%
 
 table.legend th[scope^='row'] { text-align: left; background: none; vertical-align: top; font-weight: 700; }
 table.legend td { vertical-align: top; }
-table.legend td[style] { text-align: center; font-weight: 700; vertical-align: middle; min-width: 4.6rem; border-bottom-color: var(--bg); }
+/* The boundaries sit at the top of their cell, half a line down: level with
+   the middle of a two-line description beside them, and at the same height in
+   a taller cell that spans several rows. */
+table.legend td[style] { text-align: center; font-weight: 700; vertical-align: top; padding-top: calc(4px + 0.725em); min-width: 4.6rem; border-bottom-color: var(--bg); }
 table.legend thead th { text-align: center; }
 table.legend thead th:first-child { text-align: left; }
 
@@ -213,9 +244,10 @@ table.legend thead th.l { text-align: left; }
 .switch[hidden], .switch label[hidden] { display: none; }
 
 /* Fixed subcolumns keep checker figures and grades aligned across rows. */
-.type-cost { display: inline-grid; grid-template-columns: 7ch 8ch 5ch 1.45em; gap: 8px; align-items: center; text-align: right; }
+.type-cost { display: inline-grid; grid-template-columns: 7ch 8ch 11ch 1.45em; gap: 8px; align-items: center; text-align: right; }
 .type-cost-grade { text-align: center; }
-.type-cost-score { font-weight: 700; }
+.type-cost-score { font-weight: 700; white-space: nowrap; }
+.type-cost-score .unit { font-weight: 400; }
 /* The radical is drawn from a mathematical font; the letters under it keep the page's font. */
 math.unit { font-family: math; font-size: 0.92em; }
 math.unit mi, math.unit mo { font-family: Archivo, 'Archivo Narrow', 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif; }
@@ -247,10 +279,19 @@ math.unit mi, math.unit mo { font-family: Archivo, 'Archivo Narrow', 'Helvetica 
 .sort-field { display: inline-block; width: 3.6em; margin-right: 6px; text-align: right; font-size: 0.75rem; font-weight: 500; color: var(--soft); white-space: nowrap; }
 
 /* A long row of labels is one strip that scrolls sideways. */
-.shelf.strip { display: flex; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 10px; }
+.shelf.strip { display: flex; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-left: 0; padding-bottom: 10px; }
 .shelf.strip > li { flex: 0 0 236px; scroll-snap-align: start; }
+/* Where a long row of labels is cut: a strip with torn edges between the two
+   ends, level with the labels and about as tall as one (a whole number of
+   teeth). It says how many are left out. */
+.shelf.strip > li.shelf-cut { flex: 0 0 104px; align-self: flex-start; padding-top: 25px; }
+.shelf-cut a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: 476px; padding: 0 14px; color: var(--soft); text-align: center; text-decoration: none; font-size: 0.8125rem; line-height: 1.25; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='14'%3E%3Cpath d='M1 0l6 7-6 7' fill='none' stroke='%238a8a8a' stroke-width='1.25'/%3E%3C/svg%3E") left top / 8px 14px repeat-y, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='14'%3E%3Cpath d='M1 0l6 7-6 7' fill='none' stroke='%238a8a8a' stroke-width='1.25'/%3E%3C/svg%3E") right top / 8px 14px repeat-y; }
+.shelf-cut b { font-size: 1.75rem; font-weight: 800; line-height: 1; color: var(--ink); }
+.shelf-cut b::before { content: '+'; }
+.shelf-cut u { margin-top: 8px; color: var(--ink); text-underline-offset: 2px; }
+.shelf-cut a:hover u, .shelf-cut a:focus-visible u { background: var(--mark); color: #000; }
 .ranked-panel { display: none; }
-@media (max-width: 760px) { .shelf.strip > li { flex-basis: 170px; } }
+@media (max-width: 760px) { .shelf.strip > li { flex-basis: 212px; } }
 
 .nowrap { white-space: nowrap; }
 
@@ -293,7 +334,7 @@ details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; tex
 
 /* The site's mark beside its name. */
 .top .name { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-.top .name .logo { width: 22px; height: 20px; flex: none; }
+.top .name .logo { width: 26px; height: 20px; flex: none; }
 .top .name:hover { background: none; color: inherit; text-decoration: underline; }
 
 /* Search: shortcut hint, results, the active result and matched letters. */
@@ -324,7 +365,7 @@ details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; tex
 details.menu { position: relative; }
 details.menu > summary { list-style: none; cursor: pointer; }
 details.menu > summary::-webkit-details-marker { display: none; }
-details.menu > ul { position: absolute; z-index: 20; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; min-width: 15rem; background: var(--bg); border: 1px solid var(--soft); box-shadow: 0 6px 18px rgb(0 0 0 / 0.18); }
+details.menu > ul { position: absolute; z-index: 8; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; min-width: 15rem; background: var(--bg); border: 1px solid var(--soft); box-shadow: 0 6px 18px rgb(0 0 0 / 0.18); }
 details.menu > ul a, details.menu > ul button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px; border: 0; background: none; text-align: left; text-decoration: none; }
 details.menu > ul a:hover, details.menu > ul button:hover, details.menu > ul a:focus-visible, details.menu > ul button:focus-visible { background: var(--mark); color: #000; }
 details.menu > ul a span { display: flex; flex-direction: column; line-height: 1.25; }
@@ -343,14 +384,16 @@ details.menu > ul .ico { width: 16px; height: 16px; flex: none; }
 .page-menu .ico { width: 14px; height: 14px; margin: 0; }
 
 /* The label menu: a button at the label's corner, shown on hover or focus. */
-.has-label-menu { position: relative; }
-details.label-menu { position: absolute; top: 9px; right: 17%; }
-.label-menu > summary { display: grid; place-items: center; width: 26px; height: 22px; background: #fff; color: #000; border: 1px solid #000; border-radius: 3px; opacity: 0; }
+/* The label menu: a small square button in the strip above the label,
+   always there, on the side away from the place tag. */
+.label-actions { flex: none; display: flex; gap: 6px; margin-left: auto; }
+.label-embed { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px 0 5px; background: var(--bg); color: var(--ink); border: 1px solid var(--soft); font: inherit; font-size: 0.75rem; font-weight: 600; line-height: 18px; white-space: nowrap; cursor: pointer; }
+.label-embed .ico { width: 13px; height: 13px; margin: 0; }
+.label-embed:hover { background: var(--mark); color: #000; }
+details.label-menu { flex: none; }
+.label-menu > summary { display: grid; place-items: center; width: 28px; height: 20px; background: var(--bg); color: var(--ink); border: 1px solid var(--soft); }
 .label-menu > summary svg { width: 14px; height: 14px; fill: currentColor; }
-.has-label-menu:hover .label-menu > summary, .label-menu > summary:focus-visible, .label-menu[open] > summary { opacity: 1; }
-.label-menu > summary:hover, .label-menu[open] > summary { background: var(--mark); }
-details.label-menu > ul { min-width: 9rem; }
-@media (hover: none) { .label-menu > summary { opacity: 1; } }
+.label-menu > summary:hover, .label-menu[open] > summary { background: var(--mark); color: #000; }
 .js .svg-link { display: none; }
 
 .toast { position: fixed; z-index: 40; max-width: min(24rem, calc(100vw - 16px)); padding: 8px 14px; background: var(--ink); color: var(--bg); font-weight: 600; box-shadow: 0 6px 18px rgb(0 0 0 / 0.25); }
@@ -402,16 +445,21 @@ details.menu > ul li.assistants .ico { width: 18px; height: 18px; margin: 0; }
 details.menu > ul li.assistants small { font-size: 0.625rem; line-height: 1; white-space: nowrap; }
 
 /* First and last place in a ranking of runtimes. */
-.shelf .over { height: 20px; margin: 0 0 5px; }
-.shelf li:has(> .over) .label-menu { top: 34px; }
-.place { display: inline-flex; align-items: center; gap: 4px; margin: 0; padding: 0 6px 0 3px; border: 1px solid var(--soft); font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; line-height: 18px; }
+.shelf .over { display: flex; align-items: center; height: 20px; margin: 0 0 5px; }
+.place { display: inline-flex; align-items: center; gap: 4px; margin: 0; padding: 0; font-size: 0.75rem; font-weight: 600; vertical-align: middle; line-height: 18px; }
 .shelf svg.place-mark { display: block; flex: none; width: auto; height: 16px; }
+/* A tag says something about the label; it is not a control, so it has no
+   box. The Embed and menu buttons beside it keep theirs. */
 .place { white-space: nowrap; }
+.place + .place { margin-left: 10px; }
 .toast a { color: inherit; }
 .toast[hidden] { display: none; }
 details.menu > ul { min-width: 18.5rem; }
-details.label-menu > ul { min-width: 9rem; }
+details.label-menu > ul { min-width: 9rem; width: max-content; }
+details.label-menu > ul button { white-space: nowrap; }
 .place.worst, .place.second-worst { color: var(--soft); }
+.place.variant { color: var(--soft); }
+.place.variant .ico { width: 11px; height: 11px; }
 svg.medal { display: inline-block; width: auto; height: 14px; vertical-align: -2px; }
 .row-marks { display: inline-flex; gap: 6px; vertical-align: -2px; }
 td:first-child .row-marks { margin-left: 8px; }
@@ -424,18 +472,18 @@ td.medals { white-space: nowrap; }
 .row-marks svg.medal { vertical-align: 0; }
 /* The faces are line drawings in the muted text colour. */
 svg.medal, .place-mark { color: var(--soft); }
-/* Tags on the labels at the far end of a row sit at the right, so the two
-   ends of a ranking mirror each other. Whichever labels are there get it,
-   so it follows the "Best first / Worst first" switch. */
-.shelf li:last-child:not(:first-child) .over, .shelf li:nth-last-child(2):nth-child(n+3) .over { text-align: right; }
 svg.medal.empty { color: var(--ink); opacity: 0.09; }
 tr.unmeasured td { color: var(--soft); }
 tr.unmeasured td a { color: var(--ink); }
-/* Table headings stay in view. A table scrolls sideways inside its box, and a
-   heading can only stick to the box it scrolls in, so a table taller than the
-   window scrolls inside that box too; shorter tables are unaffected. */
-.scroll:has(> table.sortable) { max-height: calc(100vh - 64px); overflow: auto; }
-table.sortable thead th { position: sticky; top: 0; z-index: 2; }
+/* Table headings stay in view under the site's top bar as the page scrolls:
+   a copy of the heading row, kept just above the table's scroll box and laid
+   over the real one, is what sticks. See `stickHead` in app.js. */
+.sticky-head { position: sticky; top: var(--bar, 45px); z-index: 4; overflow: hidden; }
+.sticky-head[hidden] { display: none; }
+/* The copy takes over the scroll box's top margin, so it lies exactly on the real heading. */
+.sticky-head:not([hidden]) { margin-top: 6px; }
+.sticky-head:not([hidden]) + .scroll { margin-top: 0; }
+table.head-copy { table-layout: fixed; border-collapse: collapse; }
 /* In the table of every package, a very long name (Go module paths run to
    sixty characters) is cut short, so one row does not widen the name column
    for all the others. */
@@ -443,4 +491,89 @@ table.sortable thead th { position: sticky; top: 0; z-index: 2; }
 .pick[data-catalog] td:first-child .ver { display: inline-block; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 /* A package without results has one category: keep it on one line, so its
    row is no taller than the others. */
-tr.unmeasured td.categories { white-space: nowrap; }
+/* In the menu on a phone each line is a comfortable target for a finger. */
+@media (max-width: 760px) {
+  .side { font-size: 1rem; }
+  .side h2 { font-size: 1rem; }
+  .side h3 { font-size: 0.875rem; padding-top: 8px; padding-bottom: 6px; }
+  .side a { padding-top: 10px; padding-bottom: 10px; }
+}
+
+/* Statistics: results per class as columns, and as one strip per table row. */
+.histogram { display: flex; align-items: flex-end; gap: 6px; height: 220px; margin: 10px 0 6px; padding: 0; list-style: none; max-width: 460px; }
+.histogram li { flex: 1; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; height: 100%; text-align: center; }
+.histogram .count { font-weight: 700; font-size: 0.8125rem; font-variant-numeric: tabular-nums; line-height: 1.2; padding-bottom: 3px; }
+.histogram .count small { display: block; font-weight: 400; color: var(--soft); }
+.histogram .bar { display: block; min-height: 2px; flex: none; }
+.histogram li { --labels: 4.2em; }
+.histogram .bar { max-height: calc(100% - var(--labels)); }
+.histogram .cls { margin: 4px 0 0; width: auto; }
+.class-table td small { color: var(--soft); margin-left: 5px; }
+.class-strip { display: flex; width: 220px; height: 14px; }
+.stats h2 .ico { margin-right: 8px; }
+/* By element, not table class: the sticky copy of a heading row is another table. */
+thead th .cls { margin-left: 0; }
+th[data-fields^="mean"] .sort-field { width: auto; margin: 0 0 0 8px; text-align: left; }
+/* A package page with tuned variants: the Settings switch shows one view. */
+main:has(#settings-installed:checked) .settings-view[data-settings="tuned"], main:has(#settings-tuned:checked) .settings-view[data-settings="installed"] { display: none; }
+.package-settings { margin: 10px 0 4px; }
+/* The Embed dialog: one label in every shape, with the text that embeds each. */
+dialog.sheet { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 0; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); box-shadow: 0 18px 48px rgb(0 0 0 / 0.35); overflow: hidden; }
+dialog.sheet[open] { display: flex; flex-direction: column; }
+.sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+dialog.sheet::backdrop { background: rgb(0 0 0 / 0.5); }
+.sheet-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px 14px 24px; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.sheet-head h2 { flex: 1; margin: 0; padding: 0; border: 0; font-size: 1.125rem; }
+.sheet-head button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; background: none; color: var(--soft); cursor: pointer; }
+.sheet-head button svg { width: 16px; height: 16px; }
+.sheet-head button:hover { background: var(--mark); color: #000; }
+.embed-code button { flex: none; display: grid; place-items: center; width: 28px; align-self: stretch; padding: 0; color: inherit; background: var(--bg); border: 1px solid var(--ink); cursor: pointer; }
+.embed-code button .ico { width: 14px; height: 14px; margin: 0; vertical-align: 0; transform: translateY(0.5px); }
+.embed-code button:hover { background: var(--mark); color: #000; border-color: #000; }
+.sheet-body > p { margin: 0; padding: 18px 24px 4px; }
+.embed-shape { margin: 0 24px; padding: 18px 0 20px; }
+.embed-shape + .embed-shape { border-top: 1px solid var(--rule); }
+.embed-shape h3 { margin: 4px 0 0; font-size: 0.9375rem; }
+.embed-shape p { margin: 4px 0; }
+.embed-size { margin-left: 10px; color: var(--soft); font-weight: 400; font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.embed-shape img { display: block; max-width: 100%; max-height: 300px; width: auto; height: auto; margin: 8px 0; }
+@media (min-width: 720px) {
+  /* Two equal halves: the shape under its name in the left, its fields in
+     the right, starting level with the name. */
+  .embed-shape.beside { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .embed-shape.beside .embed-main img { margin: 12px auto 0; }
+  .embed-shape.beside .embed-codes { min-width: 0; margin-top: 4px; }
+  .embed-shape.beside .embed-code { flex-wrap: wrap; gap: 2px 8px; margin: 0 0 10px; }
+  .embed-shape.beside .embed-code b { width: 100%; line-height: 1.3; margin-bottom: 2px; }
+}
+/* A shape with its fields underneath (the wide one, and every one on a
+   narrow screen) is centred, with room before the fields. */
+.embed-main img { margin: 12px auto 18px; }
+.embed-code { max-width: none; display: flex; gap: 8px; align-items: center; font-size: 0.8125rem; }
+.embed-code b { flex: none; width: 5.5em; }
+.embed-code code { flex: 1; min-width: 0; padding: 4px 6px; border: 1px solid var(--rule); color: var(--soft); font: 0.75rem/1.4 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; background: var(--band); overflow-x: auto; white-space: nowrap; scrollbar-width: none; user-select: all; -webkit-user-select: all; }
+
+/* Answering back: report a problem, or vouch for a benchmark. In the second
+   colour, so they stand apart from the yellow of what is selected. */
+.feedback { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; max-width: none; }
+a.act { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 9px; border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700; font-size: 0.875rem; text-decoration: none; background: var(--bg); }
+a.act .ico { width: 15px; height: 15px; margin: 0; }
+a.act:hover, a.act:focus-visible { background: var(--accent); color: var(--accent-ink); }
+.adapter .feedback { margin: 6px 0 10px; }
+.adapter a.act { font-size: 0.8125rem; padding: 2px 9px 2px 7px; }
+/* The checks: blue for the package's authors, grey for another person. */
+.verified { display: inline-block; width: 15px; height: 15px; margin: 0 4px; vertical-align: -2px; }
+.verified svg { display: block; width: 100%; height: 100%; }
+.verified.maintainer { color: var(--accent); }
+.verified.human { color: var(--soft); }
+/* The choices in the report and review dialogs. */
+.sheet-body > .choices { list-style: none; margin: 0; padding: 6px 24px 18px; max-width: none; }
+.choices li { border-top: 1px solid var(--rule); }
+.choices li:first-child { border-top: 0; }
+.choices a { display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; align-items: center; padding: 12px 8px; margin: 0 -8px; text-decoration: none; }
+.choices a b { grid-column: 1; }
+.choices a small { grid-column: 1; color: var(--soft); font-size: 0.8125rem; }
+.choices a .go { grid-column: 2; grid-row: 1 / span 2; color: var(--accent); font-weight: 700; font-size: 0.8125rem; white-space: nowrap; }
+.choices a:hover, .choices a:focus-visible { background: var(--band); }
+.choices a .verified { margin-left: 0; }
+.sheet-body > p.sheet-note { padding: 0 24px 18px; color: var(--soft); font-size: 0.8125rem; }

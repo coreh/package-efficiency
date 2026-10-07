@@ -1,4 +1,5 @@
-//! Synchronous string- and boolean-producing operations on fixtures exported by scenario.mjs.
+//! Synchronous operations on fixtures exported by scenario.mjs. Results are
+//! strings, booleans, or (through `run_value`) any value the library returns.
 //! Parsing and validation occur before warm-up. No input mutation
 //! is possible through the operation's shared reference.
 use serde_json::{Value, json};
@@ -101,6 +102,94 @@ fn run_impl(operation: impl for<'a> Operation<'a>, external: bool) {
         }
     }
     emit(json!({"phase":"ready"}));
+    let inputs: Vec<&Value> = cases.iter().map(|case| &case["input"]).collect();
+    rounds(&inputs, commands, |input| {
+        let output = operation.call(input).unwrap();
+        black_box(&output).checksum()
+    });
+}
+
+/// For operations whose result is a structured value: a parsed document, a
+/// list, a library's own type. The measured call is the operation plus
+/// `consume`, which reads something cheap from the result (a length, a field)
+/// so the work is observable, and then drops it. `describe` turns a result
+/// into JSON for the scenario's verifier; it runs once per fixture before any
+/// measured work, so serializing is never part of a figure.
+pub fn run_value<T, E: std::fmt::Display>(
+    operation: impl Fn(&Value) -> Result<T, E>,
+    consume: impl Fn(&T) -> u32,
+    describe: impl Fn(&T) -> Value,
+) {
+    run_value_with_input(operation, consume, |_, output| describe(output));
+}
+
+/// Like `run_value`, for libraries whose result borrows from the input (a
+/// zero-copy parser). The operation returns only what it can own cheaply,
+/// such as counts or offsets, and `describe` is also given the fixture input,
+/// so it can resolve offsets or parse again to build the JSON the verifier
+/// needs. Nothing is copied out of the input inside measured work.
+pub fn run_value_with_input<T, E: std::fmt::Display>(
+    operation: impl Fn(&Value) -> Result<T, E>,
+    consume: impl Fn(&T) -> u32,
+    describe: impl Fn(&Value, &T) -> Value,
+) {
+    serve(|input| input, |input: &&Value| operation(*input), consume, describe);
+}
+
+/// Like `run_value_with_input`, with a `prepare` step that runs once per
+/// fixture, outside measured work: it turns the fixture's JSON into what the
+/// library takes (bytes, a typed record), and the operation is given that. Use
+/// it whenever reading the input out of JSON is not part of the task.
+pub fn run_prepared<I, T, E: std::fmt::Display>(
+    prepare: impl Fn(&Value) -> I,
+    operation: impl Fn(&I) -> Result<T, E>,
+    consume: impl Fn(&T) -> u32,
+    describe: impl Fn(&Value, &T) -> Value,
+) {
+    serve(|input| prepare(input), operation, consume, describe);
+}
+
+// The fixtures live for the whole process, so a prepared input may simply be
+// a reference to the fixture's own JSON.
+fn serve<I, T, E: std::fmt::Display>(
+    prepare: impl Fn(&'static Value) -> I,
+    operation: impl Fn(&I) -> Result<T, E>,
+    consume: impl Fn(&T) -> u32,
+    describe: impl Fn(&Value, &T) -> Value,
+) {
+    super::boot();
+    let file = std::env::args().nth(1).expect("fixture file argument required");
+    let fixture: &'static Value = Box::leak(Box::new(serde_json::from_slice(&std::fs::read(file).unwrap()).unwrap()));
+    let cases = fixture["cases"].as_array().expect("cases array");
+    assert!(!cases.is_empty());
+    let stdin = std::io::stdin();
+    let mut commands = stdin.lock().lines();
+    let inputs: Vec<I> = cases.iter().map(|case| prepare(&case["input"])).collect();
+    let outputs: Result<Vec<Value>, E> = cases.iter().zip(&inputs).map(|(case, input)| operation(input).map(|output| describe(&case["input"], &output))).collect();
+    match outputs {
+        Ok(outputs) => emit(json!({"phase":"verification", "outputs":outputs})),
+        Err(error) => {
+            emit(json!({"phase":"verify-failed", "error":error.to_string()}));
+            std::process::exit(1);
+        }
+    }
+    if !matches!(commands.next(), Some(Ok(line)) if line == "verified") {
+        std::process::exit(1);
+    }
+    emit(json!({"phase":"ready"}));
+    let inputs: Vec<&I> = inputs.iter().collect();
+    rounds(&inputs, commands, |input| {
+        let output = match operation(input) {
+            Ok(output) => output,
+            Err(error) => panic!("operation failed after verification: {error}"),
+        };
+        consume(black_box(&output))
+    });
+}
+
+/// Serve the supervisor's commands: each round calls `step` on the fixtures in
+/// turn and reports the CPU time, wall time and checksum of the batch.
+fn rounds<I>(inputs: &[&I], commands: impl Iterator<Item = std::io::Result<String>>, step: impl Fn(&I) -> u32) {
     for line in commands {
         let line = line.unwrap();
         match line.as_str() {
@@ -117,9 +206,8 @@ fn run_impl(operation: impl for<'a> Operation<'a>, external: bool) {
         let start = Instant::now();
         loop {
             for i in 0..count {
-                let input = &cases[(operations + i) % cases.len()]["input"];
-                let output = operation.call(black_box(input)).unwrap();
-                checksum = checksum.wrapping_add(black_box(&output).checksum());
+                let input = inputs[(operations + i) % inputs.len()];
+                checksum = checksum.wrapping_add(step(black_box(input)));
             }
             operations += count;
             if start.elapsed().as_secs_f64() * 1000.0 >= min_ms { break; }

@@ -1,0 +1,31 @@
+{
+  "category": "javascript-parsing",
+  "task": "source-files",
+  "title": "Plain JavaScript source files",
+  "summary": "Parse plain JavaScript source files of 7 to 35 kilobytes into an ESTree-style syntax tree.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Each package returns its own syntax tree. The verifier walks the trees once per fixture, before any measured work."
+}

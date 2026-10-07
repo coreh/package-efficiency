@@ -1,0 +1,47 @@
+name: The benchmark does not use the package correctly
+description: The adapter calls the wrong API, misses a setting, or does work that other entries do not.
+title: "Benchmark not correct: "
+labels: ["fairness"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Each entry has an adapter: the code that runs the package in the task. The Source link under a label shows it. Tell us what it does wrong and what it must do.
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: The registry and the name, as in the address of its page. For example npm/elysia.
+    validations:
+      required: true
+  - type: input
+    id: task
+    attributes:
+      label: Task
+      description: The task, as in the address of its page. For example http-server/json-api. Leave empty if it is about every task.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The address of the page you were on.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What the adapter does wrong
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: What it must do
+      description: Code is welcome. A pull request is also welcome.
+      render: text
+  - type: dropdown
+    id: maintainer
+    attributes:
+      label: Do you maintain this package?
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true

@@ -1,0 +1,15 @@
+{
+  "category": "media-type-parsing",
+  "task": "header-values",
+  "title": "Content-Type header values",
+  "summary": "Parse Content-Type header values into the media type and its parameters.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 48,
+  "notes": "Each library's own parsed type is mapped to one shape ({ type, parameters }) inside the measured call."
+}

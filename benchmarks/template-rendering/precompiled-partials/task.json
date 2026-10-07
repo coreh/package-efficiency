@@ -1,0 +1,31 @@
+{
+  "category": "template-rendering",
+  "task": "precompiled-partials",
+  "title": "Render a precompiled template with partials",
+  "summary": "Render an already compiled invoice template, with a partial per row, nested lookups and if/else, from a data object.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "brotli-large-buffer-compress",
+  "title": "Brotli compress large buffers",
+  "summary": "Compress 4 to 214 KB buffers of text and mixed content with Brotli (quality 11 with a 22-bit window); compression only, no decompression.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 33,
+  "notes": "One operation compresses one in-memory buffer with Brotli and returns the compressed bytes. Decompression is left out of the timed call and used only by the verifier."
+}

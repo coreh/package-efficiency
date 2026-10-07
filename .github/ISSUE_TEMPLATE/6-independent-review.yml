@@ -1,0 +1,55 @@
+name: I reviewed a benchmark (not a maintainer)
+description: You read an adapter and can say if it is correct. A reviewed benchmark gets a grey check.
+title: "Review: "
+labels: ["review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A grey check on a benchmark means that a person other than its author read the adapter and found it correct. Please read the adapter and the scenario of the task first.
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: The registry and the name, as in the address of its page. For example npm/elysia.
+    validations:
+      required: true
+  - type: input
+    id: task
+    attributes:
+      label: Task
+      description: The task, as in the address of its page. For example http-server/json-api. Leave empty if it is about every task.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The address of the page you were on.
+  - type: dropdown
+    id: verdict
+    attributes:
+      label: Your verdict
+      options:
+        - The benchmark is correct as it is
+        - It is correct after the changes below
+        - It is not correct
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: What you checked, and changes that it needs
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: affiliation
+    attributes:
+      label: Affiliation
+      description: Say if you work on any package in this task. It does not disqualify a review; it is recorded with it.
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I read the adapter and the scenario of the task.
+          required: true

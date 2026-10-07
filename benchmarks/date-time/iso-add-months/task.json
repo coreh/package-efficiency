@@ -1,0 +1,32 @@
+{
+  "category": "date-time",
+  "task": "iso-add-months",
+  "title": "Parse, add calendar months and days, format",
+  "summary": "Parse an ISO 8601 date-time, add calendar months (clamping to month end) and days, and format it back.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "The JavaScript entries (date-fns, dayjs) parse into a Date and do the arithmetic in the process's local time zone; the Rust entries (chrono, jiff) use civil date-times with no zone. The fixtures are chosen so both give the same answer. Every entry returns a newly formatted string in the one required format, compared exactly."
+}

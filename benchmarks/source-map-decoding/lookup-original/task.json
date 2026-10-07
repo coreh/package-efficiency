@@ -1,0 +1,30 @@
+{
+  "category": "source-map-decoding",
+  "task": "lookup-original",
+  "title": "Looking up original positions",
+  "summary": "Trace generated positions back to the original source, line, column and name through an already loaded source map.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

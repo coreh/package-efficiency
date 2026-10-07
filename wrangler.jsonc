@@ -1,7 +1,16 @@
 {
-  // Static site on Cloudflare Workers static assets. Build with `npm run build`,
-  // then deploy with `npx wrangler deploy`.
-  "name": "npm-efficiency",
+  // The site on Cloudflare: the built files in dist/ are served as they are,
+  // and site/worker.mjs answers for the pages that have no file of their own
+  // (packages listed but not measured yet, and addresses that do not exist).
+  // Build with `npm run build`, then deploy with `npm run deploy`. The address
+  // below must match "url" in site.json; its zone has to be on the Cloudflare
+  // account that deploys.
+  "name": "package-efficiency",
+  "main": "site/worker.mjs",
   "compatibility_date": "2026-09-01",
-  "assets": { "directory": "./dist" }
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "routes": [{ "pattern": "package-efficiency.prelude.ltda", "custom_domain": true, "zone_name": "prelude.ltda" }],
+  // No *.workers.dev copy and no preview URLs: one public address only.
+  "workers_dev": false,
+  "preview_urls": false
 }

@@ -1,0 +1,31 @@
+{
+  "category": "template-rendering",
+  "task": "loop-escaped",
+  "title": "Loop, conditional and escaped interpolation",
+  "summary": "Compile an HTML list template with a loop, a nested loop, conditionals and escaped values, then render it with a list of records.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

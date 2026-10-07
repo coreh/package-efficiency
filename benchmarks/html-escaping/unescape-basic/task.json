@@ -1,0 +1,33 @@
+{
+  "category": "html-escaping",
+  "task": "unescape-basic",
+  "title": "Basic entity unescaping",
+  "summary": "Decode the five basic HTML entities and numeric apostrophe/quote references in text.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 65,
+  "notes": "Single-pass decoding of &amp; &lt; &gt; &quot; &apos; &#39; &#34;. Rust returns owned strings or Cow as the crate does; verification runs outside timing."
+}

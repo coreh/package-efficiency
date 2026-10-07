@@ -1,0 +1,34 @@
+name: A package is in the wrong category
+description: The package does a different job from the others in its category.
+title: "Wrong category: "
+labels: ["category"]
+body:
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: The registry and the name, as in the address of its page. For example npm/elysia.
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The address of the page you were on.
+  - type: input
+    id: current
+    attributes:
+      label: Category now
+  - type: input
+    id: better
+    attributes:
+      label: Category it belongs in
+      description: The name of a category on the site, or a new one.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+    validations:
+      required: true

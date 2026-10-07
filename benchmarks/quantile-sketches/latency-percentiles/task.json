@@ -1,0 +1,30 @@
+{
+  "category": "quantile-sketches",
+  "task": "latency-percentiles",
+  "title": "Latency percentiles from a sample stream",
+  "summary": "Record 20,000 latency samples into a fresh histogram or sketch and read the 50th, 90th, 99th and 99.9th percentiles.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 24
+}

@@ -1,0 +1,31 @@
+{
+  "category": "percent-encoding",
+  "task": "component-encoding",
+  "title": "Component encoding",
+  "summary": "Percent-encode a string for use as one URL component: everything except the RFC 3986 unreferenced characters becomes UTF-8 %XX.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 60,
+  "notes": "Rust returns the crate's own result (a Cow or String). Spelling differences (hex case, space as +, unescaped !'()*) are normalized in the verifier only."
+}

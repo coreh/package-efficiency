@@ -1,0 +1,30 @@
+{
+  "category": "deep-cloning",
+  "task": "json-documents",
+  "title": "Deep clone of JSON-shaped documents",
+  "summary": "Deep-copy nested maps, lists and records of 1 to about 2,000 values.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

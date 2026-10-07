@@ -1,0 +1,33 @@
+{
+  "category": "text-table-rendering",
+  "task": "wide-character-grid",
+  "title": "Wide and combining characters",
+  "summary": "Render a table whose cells hold CJK, fullwidth and combining characters so that columns align by display width.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36,
+  "notes": "Cells are converted to text inside the measured call. Verification measures display width (wide characters count 2, combining marks 0) and checks column alignment."
+}

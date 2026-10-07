@@ -1,0 +1,10 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-06"
+  },
+  "review": "unreviewed",
+  "notes": "Builds an Hmac<Sha256> key from the secret (hmac and sha2 crates) in each call, signs the claims, a serde_json::Value, with SignWithKey into a compact token string, and verifies that string with VerifyWithKey, which checks the signature and returns the claims as a serde_json::Value. The crate has no claims validation, so exp is not checked."
+}

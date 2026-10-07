@@ -1,0 +1,32 @@
+{
+  "category": "csv-parsing",
+  "task": "writing-records",
+  "title": "Writing CSV records",
+  "summary": "Serialize rows of string fields into CSV text, quoting fields that contain commas, quotes or line breaks.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36,
+  "notes": "Each adapter returns the CSV text its library produces. The verifier parses it with a strict reference parser, so the quoting style and line terminator may differ between libraries."
+}

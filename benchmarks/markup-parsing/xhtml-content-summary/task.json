@@ -1,0 +1,33 @@
+{
+  "category": "markup-parsing",
+  "task": "xhtml-content-summary",
+  "title": "XHTML content summary",
+  "summary": "Parse a well-formed XHTML document, valid as both HTML and XML, and read every element, decoded attribute value and decoded piece of text in it.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Every adapter returns { elements, attributes, text }: the element count, the total length of all decoded attribute values in Unicode code points, and the number of code points of decoded character data other than space, tab, line feed and carriage return. Event parsers add these up in their handlers; tree parsers build their tree and the adapter walks it. Reading every attribute value and text node through the library's own API is part of the measured call in every language, so a parser that decodes on demand does the decoding too."
+}

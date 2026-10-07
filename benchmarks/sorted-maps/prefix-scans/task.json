@@ -1,0 +1,30 @@
+{
+  "category": "sorted-maps",
+  "task": "prefix-scans",
+  "title": "Sorted map prefix scans",
+  "summary": "Build a sorted string-keyed map, look keys up and list the values under key prefixes in key order.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

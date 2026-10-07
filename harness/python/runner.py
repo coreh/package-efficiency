@@ -1,4 +1,12 @@
-"""Native operation protocol. CPU is process-wide; verification lives in JS."""
+"""Native operation protocol. CPU is process-wide; verification lives in JS.
+
+An operation may return a string, a boolean, or a structured value (list,
+dict, a library's own object). The measured loop reads only its length. The
+verifier needs JSON, so an adapter whose result is not plain JSON data defines
+describe(output); that runs once per fixture, before any measured work. An
+adapter may also define prepare(input), which runs once per fixture, outside
+measured work, to turn the fixture's JSON into what the library takes (bytes,
+typed records); the operation is then given its result."""
 import gc, importlib.util, json, os, sys, time
 
 def memory():
@@ -20,8 +28,10 @@ if sys.argv[1] != '-':
     send('loaded', importMs=(time.perf_counter()-start)*1000, importCpuMs=(time.process_time()-cpu)*1000, memory=memory())
     with open(sys.argv[2]) as f:
         cases = json.load(f)['cases']
-    inputs = [c['input'] for c in cases]
-    send('verification', outputs=[adapter.operation(x) for x in inputs])
+    prepare = getattr(adapter, 'prepare', None)
+    inputs = [prepare(c['input']) if prepare else c['input'] for c in cases]
+    describe = getattr(adapter, 'describe', lambda output: output)
+    send('verification', outputs=[describe(adapter.operation(x)) for x in inputs])
     if sys.stdin.readline().strip() != 'verified':
         sys.exit(1)
     send('ready', memory=memory())
@@ -40,7 +50,11 @@ for line in sys.stdin:
     while True:
         for i in range(count):
             output = adapter.operation(inputs[(operations+i)%len(inputs)])
-            checksum = (checksum + (int(output) if isinstance(output,bool) else len(output))) & 0xffffffff
+            try:
+                value = int(output) if isinstance(output,bool) else len(output)
+            except TypeError:
+                value = 0 if output is None else 1
+            checksum = (checksum + value) & 0xffffffff
         operations += count
         if time.perf_counter()-start >= minimum: break
     wall_ms = (time.perf_counter()-start)*1000

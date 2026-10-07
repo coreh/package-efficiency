@@ -1,0 +1,30 @@
+{
+  "category": "stable-json-stringify",
+  "task": "wide-dictionaries",
+  "title": "Wide dictionaries with toJSON values",
+  "summary": "Serialize wide, shuffled-key dictionaries holding Dates, toJSON objects and undefined into sorted-key JSON.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 41
+}

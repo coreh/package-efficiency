@@ -1,0 +1,32 @@
+{
+  "category": "lru-cache",
+  "task": "replay-trace",
+  "title": "Replay an access trace",
+  "summary": "Replay a short trace of key lookups against a fresh capacity-bounded LRU cache, filling it on each miss, and count the hits.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36
+}

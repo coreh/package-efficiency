@@ -10,12 +10,20 @@
     "measure-types": "node scripts/measure-types.mjs",
     "build": "node scripts/build-data.mjs && node scripts/build-site.mjs",
     "measure-all": "node scripts/measure-all.mjs",
-    "update-popularity": "node scripts/update-popularity.mjs"
+    "update-popularity": "node scripts/update-popularity.mjs",
+    "setup": "node scripts/setup.mjs",
+    "status": "node scripts/status.mjs",
+    "refresh": "node scripts/refresh.mjs",
+    "measure-checks": "node scripts/refresh-checks.mjs",
+    "test": "node --test harness/tests/*.test.mjs site/tests/*.test.mjs",
+    "preview": "node scripts/preview.mjs",
+    "deploy": "npm run build && wrangler deploy && wrangler deploy -c wrangler.short.jsonc"
   },
   "devDependencies": {
     "@iconify-json/logos": "1.2.15",
     "highlight.js": "11.12.0",
     "simple-icons": "16.33.0",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "wrangler": "^4.143.1"
   }
 }

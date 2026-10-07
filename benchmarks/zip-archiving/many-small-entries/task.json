@@ -1,0 +1,31 @@
+{
+  "category": "zip-archiving",
+  "task": "many-small-entries",
+  "title": "Pack and unpack an archive of many small files",
+  "summary": "Pack tens to hundreds of small in-memory text files (config, source, locale and data files, 100 bytes to 3 KB each) into one deflate-compressed ZIP archive, then list and extract every entry.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36,
+  "notes": "Unlike deflate-roundtrip, where a few large entries make deflate throughput the figure, each archive here holds 40 to 400 small entries, so the per-entry cost (local header, central directory record, compressor and decompressor setup, name handling) is a large share. The JavaScript packages in the category (zip.js, @quentinadam/zip, @deno-library/compress) only offer asynchronous or file-system APIs and are not part of this synchronous task."
+}

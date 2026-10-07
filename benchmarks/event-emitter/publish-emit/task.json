@@ -1,0 +1,31 @@
+{
+  "category": "event-emitter",
+  "task": "publish-emit",
+  "title": "Register listeners and emit events",
+  "summary": "Create an emitter, register 10 listeners on each of several event names, emit a stream of events with two arguments, remove some listeners midway and emit more.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36
+}

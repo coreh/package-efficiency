@@ -33,7 +33,10 @@ func main() {
   var fixtures struct{Cases []struct{Input any `json:"input"`} `json:"cases"`}
   if err:=json.Unmarshal(b,&fixtures);err!=nil {panic(err)}
   outputs:=make([]any,len(fixtures.Cases))
-  for i,c:=range fixtures.Cases {inputs=append(inputs,c.Input);outputs[i]=operation(c.Input)}
+  // prepare runs once per fixture, outside measured work: an adapter defines
+  // it to turn the fixture's JSON into what the library takes. Adapters
+  // without one are built with an identity prepare.
+  for i,c:=range fixtures.Cases {inputs=append(inputs,prepare(c.Input));outputs[i]=operation(inputs[i])}
   send("verification",map[string]any{"outputs":outputs})
   if !scanner.Scan() || scanner.Text()!="verified" {os.Exit(1)}
  }
@@ -50,7 +53,9 @@ func main() {
   for {
    for i:=0;i<command.Count;i++ {
     output:=operation(inputs[(operations+i)%len(inputs)])
-    switch value:=output.(type) {case string:checksum+=uint32(len(value));case bool:if value {checksum++};default:panic("invalid output")}
+    // A structured result counts its length; any other value counts as one.
+    // Verification marshals results to JSON once, before measured work.
+    switch value:=output.(type) {case string:checksum+=uint32(len(value));case bool:if value {checksum++};case nil:;case []any:checksum+=uint32(len(value));case map[string]any:checksum+=uint32(len(value));default:checksum++}
    }
    operations+=command.Count
    if float64(time.Since(start).Nanoseconds())/1e6>=command.MinMs {break}

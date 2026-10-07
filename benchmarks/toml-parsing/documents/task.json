@@ -1,0 +1,32 @@
+{
+  "category": "toml-parsing",
+  "task": "documents",
+  "title": "Configuration and lockfile documents",
+  "summary": "Parse TOML documents (manifests, settings and a 5,000-line lockfile) into values.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Every adapter returns the parsed tree of its library. Rust adapters return the crate's own tree; converting it to JSON for the check happens outside measured work."
+}

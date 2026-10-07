@@ -1,0 +1,31 @@
+{
+  "category": "deep-equality",
+  "task": "rich-types",
+  "title": "Maps, Sets, Dates and typed arrays equality",
+  "summary": "Compare equal and unequal values containing Map, Set, Date, RegExp, typed arrays and NaN.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 72
+}

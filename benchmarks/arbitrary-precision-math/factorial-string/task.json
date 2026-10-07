@@ -1,0 +1,32 @@
+{
+  "category": "arbitrary-precision-math",
+  "task": "factorial-string",
+  "title": "Factorial as a decimal string",
+  "summary": "Compute n! by repeated multiplication and convert the exact result to a decimal string.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

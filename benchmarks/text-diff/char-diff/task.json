@@ -1,0 +1,32 @@
+{
+  "category": "text-diff",
+  "task": "char-diff",
+  "title": "Character diff of two short strings",
+  "summary": "Diff two in-memory strings of 20 to 200 characters that differ by a few edited, inserted or removed characters or words.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 57
+}

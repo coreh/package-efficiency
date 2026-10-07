@@ -1,0 +1,31 @@
+{
+  "category": "substring-search",
+  "task": "literal-counts",
+  "title": "Literal occurrence counts",
+  "summary": "Count the occurrences of one byte, one 12-byte literal or a set of literals in an ASCII text.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "No npm or JSR package in the category offers this operation; only crates and standard-library baselines are measured. Building a multi-pattern automaton is part of each call, as the crate's documented plain usage."
+}

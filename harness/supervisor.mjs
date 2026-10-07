@@ -6,12 +6,16 @@ import { readFileSync } from 'node:fs'
 import { createInterface } from 'node:readline'
 import { runLoad } from './load.mjs'
 
-export const HARNESS_VERSION = 2
+export const HARNESS_VERSION = 6
 
 const REPO_ROOT = new URL('..', import.meta.url).pathname
 const PHASE_TIMEOUT_MS = 30_000
 // A server that stops answering under load would otherwise hang the run forever.
 const LOAD_TIMEOUT_MS = 300_000
+// Sizing of operation runs: see measureOperation.
+const PROBE_CALLS = 5
+const WARMUP_LIMIT_MS = 2_000
+const BATCHES_PER_ROUND = 10
 
 function timedLoad(options) {
   let timer
@@ -34,6 +38,34 @@ function cpuSeconds(pid) {
 }
 
 const rssBytes = (pid) => Number(execFileSync('ps', ['-o', 'rss=', '-p', String(pid)], { encoding: 'utf8' })) * 1024
+
+// The memory a process is charged with: what it has written to and still
+// holds. Resident size is not that. It also counts the pages of the runtime's
+// own binary, and on macOS pages the process has already handed back that the
+// system has not yet taken (a runtime that frees eagerly then looks as if it
+// held its high-water mark). macOS calls this the physical footprint, the
+// figure Activity Monitor shows; on Linux it is the anonymous and shared-memory
+// part of the resident size. null where neither can be read.
+// A runtime hands freed pages back a moment after its collection returns
+// (Bun read up to 9 MB high at once and settled within 100 ms), so memory is
+// read after a short rest.
+const MEMORY_REST_MS = 250
+const rest = () => new Promise((resolve) => setTimeout(resolve, MEMORY_REST_MS))
+function footprintBytes(pid) {
+  try {
+    if (process.platform === 'darwin') {
+      const found = /phys_footprint: (\d+) B/.exec(execFileSync('/usr/bin/footprint', ['-f', 'bytes', '-p', String(pid)], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }))
+      return found ? Number(found[1]) : null
+    }
+    if (process.platform === 'linux') {
+      const status = readFileSync(`/proc/${pid}/status`, 'utf8')
+      const kb = (name) => Number(new RegExp(`^${name}:\\s+(\\d+) kB`, 'm').exec(status)?.[1] ?? NaN)
+      const total = kb('RssAnon') + kb('RssShmem')
+      return Number.isFinite(total) ? total * 1024 : null
+    }
+  } catch {}
+  return null
+}
 
 // What the OS recorded for the whole life of the process.
 function parseTimeReport(stderr) {
@@ -128,9 +160,10 @@ export async function measureBaseline({ command, args, cwd, env }) {
   try {
     const boot = await child.expect('boot')
     const ready = await child.expect('ready')
-    const rss = rssBytes(boot.pid)
+    await rest()
+    const rss = rssBytes(boot.pid), footprint = footprintBytes(boot.pid)
     const report = await child.finish()
-    return { heapUsedBytes: ready.memory.heapUsed, rssBytes: rss, ...report }
+    return { heapUsedBytes: ready.memory.heapUsed, rssBytes: rss, footprintBytes: footprint, ...report }
   } catch (error) {
     await child.kill()
     throw error
@@ -192,7 +225,8 @@ export async function measureServer({ command, args, cwd, env, phases, requests,
       })
     }
 
-    const rssAfterLoadBytes = rssBytes(pid)
+    await rest()
+    const rssAfterLoadBytes = rssBytes(pid), footprintAfterLoadBytes = footprintBytes(pid)
     // Only harnesses with an exact allocator count (Rust) report a heap peak.
     child.command('settle')
     const heapPeakBytes = (await child.expect('settled')).memory.heapPeak ?? null
@@ -210,7 +244,7 @@ export async function measureServer({ command, args, cwd, env, phases, requests,
       },
       rounds,
       warmupRounds,
-      rssAfterLoadBytes,
+      rssAfterLoadBytes, footprintAfterLoadBytes,
       ...report,
     }
   } catch (error) {
@@ -238,13 +272,34 @@ export async function measureOperation({ command, args, cwd, env, load, verifyRe
       child.command('verified')
     }
     const ready = await child.expect('ready')
-    child.command(JSON.stringify({ count: load.warmup }))
+    // Every adapter gets the same time, whatever one call costs, so a run's
+    // length is predictable: a warm-up of the task's call count or
+    // WARMUP_LIMIT_MS, whichever comes first, then rounds of minRoundMs. A few
+    // probe calls give the rough cost of a call; batches are sized from it so
+    // that a round is about BATCHES_PER_ROUND batches (never more calls per
+    // batch than the task's operationsPerRound), and the runner stops at the
+    // first batch boundary past minRoundMs. Each round records how many calls
+    // it made, and costs are per call.
+    // The first calls of all pay for lazy start-up, so they are not the probe.
+    child.command(JSON.stringify({ count: Math.min(PROBE_CALLS, load.warmup) }))
     await child.expect('round')
+    child.command(JSON.stringify({ count: Math.min(PROBE_CALLS, load.warmup) }))
+    const probe = await child.expect('round')
+    const perCallMs = Math.max(probe.wallMs / probe.operations, 1e-6)
+    const warmup = Math.min(load.warmup, Math.max(PROBE_CALLS, Math.floor(WARMUP_LIMIT_MS / perCallMs)))
+    child.command(JSON.stringify({ count: warmup }))
+    const warmed = await child.expect('round')
+    const warmCallMs = Math.max(warmed.wallMs / warmed.operations, 1e-6)
+    // A batch is a whole number of passes over the fixtures (load.cycle of
+    // them), so every round of every adapter covers the same mix of inputs,
+    // however fast the adapter is.
+    const cycle = load.cycle ?? 1
+    const batch = Math.ceil(Math.min(load.operationsPerRound, Math.max(1, Math.ceil(load.minRoundMs / BATCHES_PER_ROUND / warmCallMs))) / cycle) * cycle
     child.command('settle')
     await child.expect('settled')
     const warmupRounds = []
     for (let i = 0; i < load.rounds; i++) {
-      child.command(JSON.stringify({ count: load.operationsPerRound, minMs: load.minRoundMs }))
+      child.command(JSON.stringify({ count: batch, minMs: load.minRoundMs }))
       const { phase, ...round } = await child.expect('round')
       warmupRounds.push(round)
       child.command('settle')
@@ -254,18 +309,19 @@ export async function measureOperation({ command, args, cwd, env, load, verifyRe
     const warm = await child.expect('settled')
     const rounds = []
     for (let i = 0; i < load.rounds; i++) {
-      child.command(JSON.stringify({ count: load.operationsPerRound, minMs: load.minRoundMs }))
+      child.command(JSON.stringify({ count: batch, minMs: load.minRoundMs }))
       const { phase, ...round } = await child.expect('round')
       child.command('settle')
       rounds.push({ ...round, heapUsedBytes: (await child.expect('settled')).memory.heapUsed })
     }
-    const rssAfterLoadBytes = rssBytes(boot.pid)
+    await rest()
+    const rssAfterLoadBytes = rssBytes(boot.pid), footprintAfterLoadBytes = footprintBytes(boot.pid)
     child.command('settle')
     const heapPeak = (await child.expect('settled')).memory.heapPeak ?? null
     const report = await child.finish()
     return { status: 'ok', importMs: loaded?.importMs ?? null, importCpuMs: loaded?.importCpuMs ?? null,
       heap: { bootBytes: boot.memory.heapUsed, loadedBytes: loaded?.memory.heapUsed ?? null, readyBytes: ready.memory.heapUsed, warmBytes: warm.memory.heapUsed, peakBytes: heapPeak },
-      rounds, warmupRounds, rssAfterLoadBytes, ...report }
+      rounds, warmupRounds, rssAfterLoadBytes, footprintAfterLoadBytes, ...report }
   } catch (error) {
     await child.kill()
     return { status: error.message.includes('verify-failed') ? 'verify-failed' : 'failed', error: error.message }

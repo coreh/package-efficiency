@@ -1,6 +1,6 @@
 // The results in forms that are easy to take elsewhere: flat rows for CSV and
 // JSON, and Markdown that reads well when pasted into a language model.
-import { CLASSES, formatNumber } from './label.mjs'
+import { CLASSES, formatBytes, formatNumber } from './label.mjs'
 import { adapterIdOf, adapterSource, taskSource } from './source.mjs'
 
 const cpuOf = (m) => m.cpuPerOperationUs ?? m.cpuPerRequestUs
@@ -44,6 +44,9 @@ export function resultRows(data, ctx) {
       peak_memory_mb: e.metrics.peakRssMb,
       heap_retained_kb: e.metrics.retainedKb,
       import_ms: e.metrics.importMs,
+      install_bytes: e.metrics.installBytes ?? null,
+      install_packages: e.metrics.installPackages ?? null,
+      install_kind: e.metrics.installKind ?? null,
       per_cpu_second: e.metrics.operationsPerCpuSecond ?? e.metrics.requestsPerCpuSecond,
       throughput_per_second: e.metrics.throughputOps ?? e.metrics.throughputRps,
       latency_p99_ms: e.metrics.latencyP99Ms,
@@ -78,7 +81,7 @@ const graded = (value, grade, unit) => (grade ? `${cellText(value, unit)} (${gra
 const mdTable = (head, rows) => [`| ${head.join(' | ')} |`, `| ${head.map(() => '---').join(' | ')} |`, ...rows.map((r) => `| ${r.map((c) => String(c).replace(/\|/g, '\\|')).join(' | ')} |`)].join('\n')
 const byCpu = (a, b) => CLASSES.indexOf(a.grades.cpu?.class ?? 'G') - CLASSES.indexOf(b.grades.cpu?.class ?? 'G') || (a.grades.cpu?.ratio ?? Infinity) - (b.grades.cpu?.ratio ?? Infinity)
 
-const READING = (data) => `Classes run from A (best) to G. A class is set by how many times the best result in the task an entry costs, in any language or runtime. CPU is CPU time per ${unitOf(data)} (user and system, all threads). Memory is what the process holds after the task and a garbage collection, above an empty process of the same runtime. Type-check cost is the square root of added compiler CPU time times added compiler memory. Nothing graded uses elapsed time. "Tuned" entries use documented non-default settings; "default" is the package as installed.`
+const READING = (data) => `Classes go from A (best) to G. A class shows how many times the best result in the task an entry costs, in any language or runtime. CPU is CPU time per ${unitOf(data)} (user and system, all threads). Memory is what the process holds after the task and a garbage collection (its physical footprint, not its resident size). The same runtime with a do-nothing adapter on the same inputs is subtracted. Type-check cost is added compiler CPU time multiplied by added compiler memory, in MB·s. Each of its class boundaries is the CPU boundary multiplied by the memory boundary. The memory scale is narrower than the CPU scale (G is above 16 times the best, compared with 50 for CPU), because memory results are closer together. No class uses elapsed time. A "tuned" entry uses documented settings that are not the default. A "default" entry is the package as installed.`
 
 const scaleLine = (name, metric) => (metric?.scale ? `- ${name}: class boundaries at ${metric.scale.join(', ')} times the best${metric.anchor ? `, which is ${metric.anchor.title}${metric.anchor.runtime ? ` on ${metric.anchor.runtime}` : ''} at ${formatNumber(metric.anchor.value)} ${metric.unit}` : ''}.` : null)
 
@@ -87,13 +90,16 @@ const medalText = (ctx, data, runtime, e) => {
   const won = ctx?.eventMedals?.(data).get(`${runtime.id}/${e.id}`) ?? {}
   return Object.entries({ cpu: 'CPU', memory: 'memory', types: 'type check' }).filter(([key]) => won[key]).map(([key, name]) => `${MEDAL_NAMES[won[key]]} ${name}`).join(', ')
 }
-const MEDALS_NOTE = 'Medals: each task has three events (CPU, memory, type check); among the entries on every runtime the best three figures take gold, silver and bronze, shared when equal, and fewer are given when few entries compete.'
-const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : ''), e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', graded(cpuOf(e.metrics), e.grades.cpu, ' µs'), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), cellText(e.metrics.importMs, ' ms'), cellText(e.metrics.latencyP99Ms, ' ms')]
-const ENTRY_HEAD = (data) => ['Entry', 'Version', 'Settings', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Import time', 'Latency p99']
+const MEDALS_NOTE = 'Medals: each task has three events (CPU, memory, type check). In each event, the best three figures among the entries on all runtimes get gold, silver and bronze. Equal figures share a medal. Fewer medals are given when few entries compete.'
+// Size once installed, with how many packages that is; for Rust, what the
+// crate adds to the compiled binary.
+const installText = (m) => m.installBytes == null ? '' : `${formatBytes(m.installBytes)}${m.installKind === 'binary' ? ' added to the binary' : m.installPackages ? ` in ${m.installPackages} ${m.installPackages === 1 ? 'package' : 'packages'}` : ''}`
+const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : ''), e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', graded(cpuOf(e.metrics), e.grades.cpu, ' µs'), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), cellText(e.metrics.importMs, ' ms'), installText(e.metrics), cellText(e.metrics.latencyP99Ms, ' ms')]
+const ENTRY_HEAD = (data) => ['Entry', 'Version', 'Settings', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Import time', 'Size on disk', 'Latency p99']
 
 export function taskMarkdown(data, ctx) {
   const { url = (path) => path, edition } = ctx
-  return `# ${data.task.title}: package efficiency labels
+  return `# ${data.task.title}: Package Efficiency Labels
 
 ${data.task.summary}
 
@@ -103,7 +109,7 @@ ${[scaleLine('CPU', data.metrics.cpu), scaleLine('Memory', data.metrics.memory)]
 
 ${MEDALS_NOTE}
 
-Measured on ${data.machine.cpu}, ${data.machine.cores} cores, ${data.machine.os}. Edition ${edition}, provisional: one laptop, not a reference machine, and the benchmark adapters were written by an AI coding agent and not reviewed by a person.
+Measured on ${data.machine.cpu}, ${data.machine.cores} cores, ${data.machine.os}. Edition ${edition}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them.
 
 ${data.runtimes
   .filter((r) => r.entries.length)
@@ -112,7 +118,7 @@ ${data.runtimes
 
 ## Benchmark source
 
-The task's rules, load settings and the scenario every adapter is checked against${ctx.model ? `, from ${gh(ctx, `benchmarks/${data.task.id}`)}. The harness that launches and measures the adapters: ${gh(ctx, 'harness')}` : ''}.
+The rules of the task, its load settings, and the scenario that checks every adapter${ctx.model ? `, from ${gh(ctx, `benchmarks/${data.task.id}`)}. The harness that starts and measures the adapters: ${gh(ctx, 'harness')}` : ''}.
 
 ${taskSource(data.task.id).map((f) => fenced(f, ctx)).join('\n\n')}
 
@@ -120,7 +126,10 @@ ${taskSource(data.task.id).map((f) => fenced(f, ctx)).join('\n\n')}
 
 One per entry: the code that runs the package in this task.
 
-${[...new Map(data.runtimes.flatMap((r) => r.entries).map((e) => [adapterIdOf(e), e])).entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###')).join('\n\n')}
+${(() => {
+  const adapters = new Map(data.runtimes.flatMap((r) => r.entries).map((e) => [adapterIdOf(e), e]))
+  return [...adapters.entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###', new Set(adapters.keys()))).join('\n\n')
+})()}
 
 ## More
 
@@ -135,19 +144,22 @@ export function packageMarkdown(pkg, ecosystemTitle, ctx) {
   const registry = ctx.ecosystems?.[pkg.ecosystem]?.registry?.(pkg.name)
   const tasks = [...new Set(pkg.appearances.map((a) => a.data))]
   const path = `/${pkg.ecosystem}/${pkg.name}/`
-  return `# ${pkg.title}${pkg.version ? ` ${pkg.version}` : ''}: package efficiency labels
+  return `# ${pkg.title}${pkg.version ? ` ${pkg.version}` : ''}: Package Efficiency Labels
 
 ${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${ecosystemTitle} package`}, measured in ${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}.${registry ? ` Registry: ${registry}` : ''}${pkg.listed?.repository ? ` Repository: ${pkg.listed.repository}` : ''}${pkg.listed ? ` Number ${pkg.listed.rank} on ${ecosystemTitle} by ${pkg.listed.popularity.label} (${pkg.listed.popularity.value.toLocaleString('en-US')}).` : ''}
 
 ${READING(tasks[0])}
 
-Edition ${edition}, provisional: one laptop, not a reference machine, and the benchmark adapters were written by an AI coding agent and not reviewed by a person.
+Edition ${edition}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them.
 
 ${tasks
   .map((data) => {
     const rows = pkg.appearances.filter((a) => a.data === data)
     const notes = [...new Map(rows.filter((a) => a.entry.adapter.notes).map((a) => [a.entry.id, `- ${a.entry.title}: ${a.entry.adapter.notes}`])).values()]
-    return `## ${data.task.title}\n\n${data.task.summary}\n\n${mdTable(['Runtime', ...ENTRY_HEAD(data), 'Medals'], rows.map(({ runtime, entry }) => [`${runtime.title} ${runtime.version}`, ...entryRow(data, entry), medalText(ctx, data, runtime, entry)]))}${notes.length ? `\n\n${notes.join('\n')}` : ''}\n\nAll entries in this task: ${url(`/${data.task.id}/index.md`)}\n\n${[...new Map(rows.map((a) => [adapterIdOf(a.entry), a.entry])).entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###')).join('\n\n')}`
+    return `## ${data.task.title}\n\n${data.task.summary}\n\n${mdTable(['Runtime', ...ENTRY_HEAD(data), 'Medals'], rows.map(({ runtime, entry }) => [`${runtime.title} ${runtime.version}`, ...entryRow(data, entry), medalText(ctx, data, runtime, entry)]))}${notes.length ? `\n\n${notes.join('\n')}` : ''}\n\nAll entries in this task: ${url(`/${data.task.id}/index.md`)}\n\n${(() => {
+      const adapters = new Map(rows.map((a) => [adapterIdOf(a.entry), a.entry]))
+      return [...adapters.entries()].map(([id, e]) => adapterMarkdown(data, id, e, ctx, '###', new Set(adapters.keys()))).join('\n\n')
+    })()}`
   })
   .join('\n\n')}
 
@@ -164,21 +176,22 @@ ${tasks
 const gh = (ctx, file, kind = 'tree') => `${ctx.model.repository.url}/${kind}/${ctx.model.repository.branch}/${file.split('/').map(encodeURIComponent).join('/')}`
 // A file as a fenced block, under its name and its address in the repository.
 const fenced = (file, ctx, name = file.name) => `**${name}**${ctx.model ? ` (${gh(ctx, file.path, 'blob')})` : ''}\n\n\`\`\`\`${file.language}\n${file.text}\n\`\`\`\``
-// One adapter: who wrote it, its notes, and its files. A variant shows its
-// settings and names the adapter whose code it runs.
-function adapterMarkdown(data, adapterId, entry, ctx, heading) {
+// One adapter: who wrote it, its notes, and its files. A variant has only
+// settings of its own, so the code it runs (another adapter's) follows them,
+// unless that adapter is in the same document (`listed`).
+function adapterMarkdown(data, adapterId, entry, ctx, heading, listed = new Set()) {
   const source = adapterSource(data.task.id, adapterId)
   const a = entry.adapter
-  const who = a.author.kind === 'human' ? 'a person' : `${a.author.agent} (${a.author.model})`
+  const who = a.author.kind === 'human' ? 'a human' : `${a.author.agent} (${a.author.model})`
   return `${heading} ${entry.title}
 
-Written by ${who} on ${a.author.date}, ${a.review === 'unreviewed' ? 'not reviewed by a person' : 'reviewed'}.${a.notes ? ` ${a.notes}` : ''}${ctx.model ? ` Folder: ${gh(ctx, source.dir)}` : ''}${source.variantOf ? `\n\nA variant: it runs the code of ${source.variantOf.split('/').at(-1)} with the settings below.` : ''}
+Written by ${who} on ${a.author.date}, ${a.review === 'unreviewed' ? 'not reviewed by a human' : 'reviewed'}.${a.notes ? ` ${a.notes}` : ''}${ctx.model ? ` Folder: ${gh(ctx, source.dir)}` : ''}${source.variantOf ? `\n\nA variant: it runs the code of ${source.variantOf.split('/').at(-1)} with the settings below.` : ''}
 
-${source.files.map((f) => fenced(f, ctx)).join('\n\n')}`
+${source.files.map((f) => fenced(f, ctx)).join('\n\n')}${source.variantOf && !listed.has(source.variantOf) ? `\n\nThe code it runs:\n\n${source.shared.map((f) => fenced(f, ctx, `${source.variantOf.split('/').at(-1)}/${f.name}`)).join('\n\n')}` : ''}`
 }
-const header = (title, ctx) => `# ${title}: package efficiency labels`
+const header = (title, ctx) => `# ${title}: Package Efficiency Labels`
 const footer = (ctx, path, hasRows) => `## More\n\n- Page: ${ctx.url(path)}${hasRows ? `\n- This list as CSV: ${ctx.url(`${path}results.csv`)}\n- This list as JSON: ${ctx.url(`${path}results.json`)}` : ''}\n- Everything: ${ctx.url('/llms.txt')}\n`
-const PROVISIONAL = (ctx) => `Edition ${ctx.edition}, provisional: measured on one laptop, not a reference machine, and the benchmark adapters were written by an AI coding agent and not reviewed by a person.`
+const PROVISIONAL = (ctx) => `Edition ${ctx.edition}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them.`
 const pct = (v) => `${(v * 100).toFixed(v >= 0.0995 ? 0 : v >= 0.00995 ? 1 : 2)}%`
 
 // A measured package's best class in a ranking, on any runtime and in any task.
@@ -208,7 +221,7 @@ export const catalogRows = (items, ctx) =>
 const marked = (key, table) => `<!-- table:${key} -->\n${table}\n<!-- /table -->`
 const catalogTableMd = (rows) => marked('catalog', catalogTableMdPlain(rows))
 const catalogTableMdPlain = (rows) => mdTable(['Package', 'Ecosystem', 'Rank', 'Use', 'Category', 'Status', 'Best CPU class', 'Best memory class', 'Registry'], rows.map((r) => [`[${r.package}](${r.page})`, r.ecosystem, r.rank || 'n/a', r.use === '' ? 'n/a' : r.use.toLocaleString('en-US'), r.category, r.status, r.best_cpu_class, r.best_memory_class, r.registry]))
-const USE = 'Use is the figure each registry is ranked by: downloads per month for npm and PyPI, in total for crates.io and RubyGems, in the last 90 days for JSR, and repositories that depend on it for Go modules.'
+const USE = 'Use is downloads per month for npm and PyPI, total downloads for crates.io and RubyGems, downloads in the last 90 days for JSR, and dependent repositories for Go modules.'
 
 // Categories as rows, for the index and for one group.
 export function categoryRows(ctx, groupId) {
@@ -241,11 +254,11 @@ export function categoriesExport(ctx, group) {
   const path = group ? `/categories/${group.id}/` : '/categories/'
   const markdown = `${header(group ? group.title : 'Categories', ctx)}
 
-A category groups packages that can do the same job, so they can run the same task and be compared. ${rows.length} categories${group ? '' : ` in ${ctx.model.catalog.groups.length} groups`}, ${rows.filter((r) => r.status === 'Measured').length} measured so far. Share of use is the part of each registry's listed downloads that goes to the category's packages, averaged over the six registries.
+A category is a group of packages that can do the same job. They can run the same task, so they can be compared. ${rows.length} categories${group ? '' : ` in ${ctx.model.catalog.groups.length} groups`}, ${rows.filter((r) => r.status === 'Measured').length} are measured. Share of use is the part of the listed downloads of each registry that goes to the packages of the category. It is the mean of the six registries.
 
 ## ${group ? 'Categories and tasks' : 'All categories and tasks'}
 
-${marked('tasks', mdTable(['Category', 'Group', 'Status', 'Listed packages', 'Share of use', 'Task or candidate task'], rows.map((r) => [`[${r.category}](${r.page})`, r.group, r.status, r.listed_packages, pct(r.share_of_use), r.tasks || r.candidate_task || r.description])))}
+${marked('tasks', mdTable(['Task or candidate task', 'Category', 'Group', 'Status', 'Listed packages', 'Share of use'], rows.map((r) => [r.tasks || r.candidate_task || r.description, `[${r.category}](${r.page})`, r.group, r.status, r.listed_packages, pct(r.share_of_use)])))}
 
 ${footer(ctx, path, true)}`
   return { markdown, rows }
@@ -296,7 +309,7 @@ export function listedCategoryExport(ctx, category) {
 
 ${category.description}
 
-${category.benchmarkable ? `Not measured yet. Candidate task: ${category.benchmarkIdea ?? 'not written yet'}` : 'No comparable task: the packages in this group do not share one job that could be run the same way for all of them, so they are listed but not compared.'}
+${category.benchmarkable ? `Not measured yet. Candidate task: ${category.benchmarkIdea ?? 'not written yet'}` : 'No comparable task. The packages in this group have no one job that all of them can run the same way. They are listed, but not compared.'}
 
 ## Packages
 
@@ -336,13 +349,13 @@ ${model.packages.length} packages measured. ${PROVISIONAL(ctx)}
 
 ## All packages
 
-Every known package, measured or not, most used first. ${USE} The measured ones, with their figures, are in ${ctx.url('/results.csv')}.
+Every listed package, measured or not, most used first. ${USE} The measured packages, with their figures, are in ${ctx.url('/results.csv')}.
 
 ${marked('measured', catalogTableMdPlain(rows))}
 
 ## By registry
 
-${mdTable(['Ecosystem', 'Listed', 'Measured', 'Can be benchmarked', 'No comparable task'], Object.entries(model.catalog.byEcosystem).map(([id, items]) => [`[${ctx.ecosystems[id].title}](${ctx.url(`/${id}/index.md`)})`, items.length, ...['Measured', 'Not benchmarked yet', 'No comparable task'].map((status) => items.filter((item) => ctx.statusOf(item) === status).length)]))}
+${mdTable(['Ecosystem', 'Listed', 'Measured', 'Can be measured', 'No comparable task'], Object.entries(model.catalog.byEcosystem).map(([id, items]) => [`[${ctx.ecosystems[id].title}](${ctx.url(`/${id}/index.md`)})`, items.length, ...['Measured', 'Not benchmarked yet', 'No comparable task'].map((status) => items.filter((item) => ctx.statusOf(item) === status).length)]))}
 
 ${footer(ctx, '/packages/', true)}`
   return { markdown, rows }
@@ -363,7 +376,7 @@ export function tasksExport(ctx) {
   }))
   const markdown = `${header('Tasks', ctx)}
 
-A task is one job that every package in a category can do, run the same way for all of them.
+A task is one job that every package in a category can do. All of them run it the same way.
 
 ${mdTable(['Task', 'Category', 'Entries', 'Runs on', 'What it does'], rows.map((r) => [`[${r.task}](${r.markdown})`, r.category, r.entries, r.runtimes, r.summary]))}
 
@@ -396,7 +409,7 @@ const scoreRows = (ctx, tasks, scope) => {
   })).sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze)
 }
 const scoreTableMd = (rows) => mdTable(['Runtime', 'Version', 'Gold', 'Silver', 'Bronze', 'Entries', 'CPU, best', 'CPU, typical', 'Memory, best', 'Memory, typical', 'Type check, best'], rows.map((r) => [r.runtime, r.version, r.gold, r.silver, r.bronze, r.entries, r.cpu_best_times === '' ? 'n/a' : `${formatNumber(r.cpu_best_times)}× (${r.cpu_best_class})`, r.cpu_typical_times === '' ? 'n/a' : `${formatNumber(r.cpu_typical_times)}×`, r.memory_best_times === '' ? 'n/a' : `${formatNumber(r.memory_best_times)}× (${r.memory_best_class})`, r.memory_typical_times === '' ? 'n/a' : `${formatNumber(r.memory_typical_times)}×`, r.type_check_best_times === '' ? 'n/a' : `${formatNumber(r.type_check_best_times)}× (${r.type_check_best_class})`]))
-const SCORES = 'Runtimes are listed by medals, most golds first: every task has three events (CPU, memory, type check), the best three figures among the entries on every runtime take gold, silver and bronze, shared when equal, and a runtime is credited with each medal an entry won on it. Figures are multiples of the best result in any language. Best is the most efficient entry on the runtime; typical is the geometric mean of all its entries. Runtime memory is total memory after the task and a garbage collection.'
+const SCORES = 'Runtimes are sorted by medals, most golds first. Each task has three events (CPU, memory, type check). In each event, the best three figures among the entries on all runtimes get gold, silver and bronze, and equal figures share a medal. A runtime gets each medal that an entry won on it. Each figure is a multiple of the best result in any language. Best is the best entry on the runtime. Typical is the geometric mean of all its entries. Runtime memory is all that the process holds after the task and a garbage collection.'
 
 export function runtimesExport(ctx) {
   const { model } = ctx
@@ -448,16 +461,32 @@ ${eco.title} package${item.version ? `, latest version ${item.version}` : ''}. N
 
 **${status}.** ${item.category ? `Category: [${item.category.title}](${ctx.url(ctx.categoryHref(item.category.id, ctx.model))}).` : 'No category yet.'}${item.category?.benchmarkIdea ? ` Candidate task: ${item.category.benchmarkIdea}` : ''}
 
-- Registry: ${eco.registry(item.name)}${item.repository ? `\n- Repository: ${item.repository}` : ''}${item.typeCheck ? `\n- Type check: adds ${formatNumber(item.typeCheck.cpuMs)} ms of compiler CPU time and ${formatNumber(item.typeCheck.memoryMb)} MB of compiler memory with ${item.typeCheck.tool}, a cost of ${formatNumber(item.typeCheck.cost)} (ungraded: a class needs a shared task)` : ''}
+- Registry: ${eco.registry(item.name)}${item.repository ? `\n- Repository: ${item.repository}` : ''}${item.typeCheck ? `\n- Type check: adds ${formatNumber(item.typeCheck.cpuMs)} ms of compiler CPU time and ${formatNumber(item.typeCheck.memoryMb)} MB of compiler memory with ${item.typeCheck.tool}, a cost of ${formatNumber(item.typeCheck.cost)} MB·s (ungraded: a class needs a shared task)` : ''}
 
 ${footer(ctx, ctx.catalogUrl(item), false)}`
   return { markdown, rows: null }
 }
 
+// One result, the Markdown of its permalink page.
+export function resultExport(ctx, data, runtime, entry, path) {
+  const markdown = `${header(`${entry.title}${entry.version ? ` ${entry.version}` : ''} on ${runtime.title} ${runtime.version}, ${data.task.title}`, ctx)}
+
+One result. ${data.task.summary} A class compares it with the best result in the task, in any language or runtime; every entry is in ${ctx.url(`/${data.task.id}/index.md`)}.
+
+${mdTable([...ENTRY_HEAD(data), 'Medals'], [[...entryRow(data, entry), medalText(ctx, data, runtime, entry)]])}
+
+Measured on ${data.machine.cpu}, ${data.machine.cores} cores, ${data.machine.os}.
+
+${adapterMarkdown(data, adapterIdOf(entry), entry, ctx, '##')}
+
+${footer(ctx, path, false)}`
+  return { markdown }
+}
+
 export function taskSourceExport(ctx, data) {
   const markdown = `${header(`${data.task.title}, benchmark source`, ctx)}
 
-What every entry in this task is asked to do. Folder: ${gh(ctx, `benchmarks/${data.task.id}`)}. Harness: ${gh(ctx, 'harness')}.
+What each entry in this task must do. Folder: ${gh(ctx, `benchmarks/${data.task.id}`)}. Harness: ${gh(ctx, 'harness')}.
 
 ${taskSource(data.task.id).map((f) => fenced(f, ctx)).join('\n\n')}
 
@@ -475,7 +504,7 @@ export function adapterSourceExport(ctx, data, adapterId) {
   const markdown = `${header(`${entry.title}, ${data.task.title} benchmark source`, ctx)}
 
 ${adapterMarkdown(data, adapterId, entry, ctx, '##')}
-${source.shared.length ? `\n## Code it runs\n\n${source.shared.map((f) => fenced(f, ctx, `${source.variantOf.split('/').at(-1)}/${f.name}`)).join('\n\n')}\n` : ''}
+
 The task and its scenario: ${ctx.url(`/source/${data.task.id}/index.md`)}
 
 ${footer(ctx, `/source/${data.task.id}/${adapterId}/`, false)}`
@@ -491,7 +520,7 @@ export const creditsExport = (ctx) => ({
   rows: null,
   markdown: `${header('Credits', ctx)}
 
-This site uses other people's artwork to identify runtimes, languages and package registries. The names and logos belong to their projects; showing them does not mean those projects endorse or are affiliated with this site.
+This site uses the artwork of other people to identify runtimes, languages and package registries. The names and logos belong to their projects. Their use here does not mean that those projects endorse this site or are affiliated with it.
 
 - One-colour marks beside names: Simple Icons (https://simpleicons.org), CC0 1.0.
 - Colour marks on labels, and the Bun, PyPI and assistant marks: SVG Logos by Gil Barbara (https://github.com/gilbarbara/logos), CC0 1.0.
@@ -509,11 +538,11 @@ ${footer(ctx, '/credits/', false)}`,
 
 // The llms.txt convention: a short description and a list of Markdown pages.
 export function llmsText(model, ecosystems, { url = (path) => path }) {
-  return `# Package efficiency labels
+  return `# Package Efficiency Labels
 
-> Efficiency classes from A to G for software packages across npm, JSR, PyPI, RubyGems, Go modules and crates.io: CPU time, memory and type-check cost, measured per task and graded against the best implementation in any language or runtime. Edition ${model.index.edition}, provisional.
+> Efficiency classes from A to G for software packages across npm, JSR, PyPI, RubyGems, Go modules and crates.io: CPU time, memory and type-check cost, measured per task and compared with the best result in any language or runtime. Edition ${model.index.edition}, provisional.
 
-Every page has a Markdown version at the same address with index.md added. Pages that list something also have results.csv and results.json there. Task and package pages include the benchmark's source code.
+Each page has a Markdown version at the same address with index.md added. A page with a list also has results.csv and results.json there. Task and package pages include the benchmark source code.
 
 ## Indexes
 

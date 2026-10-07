@@ -1,0 +1,32 @@
+{
+  "category": "password-hashing",
+  "task": "scrypt-verify",
+  "title": "scrypt hash and verify",
+  "summary": "Hash a password with scrypt and a fresh random salt, then check the right and a wrong password against the hash.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 30,
+    "rounds": 3,
+    "operationsPerRound": 300,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 32,
+  "notes": "Each operation runs scrypt three times at N=4096, r=8, p=1, so the load is far smaller than in the fast string tasks."
+}

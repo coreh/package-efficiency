@@ -1,0 +1,31 @@
+{
+  "category": "digital-signatures",
+  "task": "ed25519-sign-verify",
+  "title": "Ed25519 sign and verify",
+  "summary": "Sign a message with an Ed25519 key and verify the signature.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

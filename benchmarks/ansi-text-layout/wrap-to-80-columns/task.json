@@ -1,0 +1,31 @@
+{
+  "category": "ansi-text-layout",
+  "task": "wrap-to-80-columns",
+  "title": "Word-wrapping styled text to 80 columns",
+  "summary": "Word-wrap paragraphs of terminal text that contain ANSI color codes to 80 visible columns.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

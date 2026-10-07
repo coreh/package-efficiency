@@ -13,31 +13,21 @@ import { ROOT, fromRoot, loadConfig, median, readJson, writeJson } from './lib/u
 
 const exec = promisify(execFile)
 const WARM_RUNS = 3
-const TIME = process.platform === 'darwin' ? ['/usr/bin/time', '-l'] : ['/usr/bin/time', '-v']
-
-// Peak memory is the largest single process in the tree, which is rustc.
-function parseTime(stderr) {
-  if (process.platform === 'darwin') {
-    const [, real, user, sys] = /([\d.]+) real\s+([\d.]+) user\s+([\d.]+) sys/.exec(stderr)
-    return { wallS: Number(real), cpuS: Number(user) + Number(sys), peakRssMb: Number(/(\d+)\s+maximum resident set size/.exec(stderr)[1]) / 2 ** 20 }
-  }
-  const seconds = (label) => Number(new RegExp(`${label} \\(seconds\\): ([\\d.]+)`).exec(stderr)[1])
-  const [, m, s] = /Elapsed \(wall clock\) time.*: (?:\d+:)?(\d+):([\d.]+)/.exec(stderr)
-  return {
-    wallS: Number(m) * 60 + Number(s),
-    cpuS: seconds('User time') + seconds('System time'),
-    peakRssMb: Number(/Maximum resident set size \(kbytes\): (\d+)/.exec(stderr)[1]) / 1024,
-  }
-}
+// Timed with harness/checkers/time.py: wait4 on the child, which reports CPU
+// to the microsecond and the peak memory of the largest process in the tree
+// (rustc). /usr/bin/time prints CPU only to 10 ms, too coarse for a small crate.
+const TIMER = ['/opt/homebrew/bin/python3', fromRoot('harness/checkers/time.py')]
 
 async function check(crate, bin, targetDir) {
-  const { stderr } = await exec(TIME[0], [TIME[1], 'cargo', 'check', '--locked', '--quiet', '-p', crate, ...(bin ? ['--bin', bin] : [])], {
+  const { stdout } = await exec(TIMER[0], [TIMER[1], 'cargo', 'check', '--locked', '--quiet', '-p', crate, ...(bin ? ['--bin', bin] : [])], {
     cwd: ROOT,
     // Incremental state would make the warm check depend on what ran before.
     env: { ...process.env, CARGO_TARGET_DIR: targetDir, CARGO_INCREMENTAL: '0' },
-    maxBuffer: 16 << 20,
+    maxBuffer: 64 << 20,
   })
-  return parseTime(stderr)
+  const run = JSON.parse(stdout)
+  if (run.status !== 0) throw new Error(`cargo check failed for ${crate}: ${run.stderr.trim().split('\n')[0]}`)
+  return { wallS: run.timeMs / 1000, cpuS: run.cpuMs / 1000, peakRssMb: run.peakRssMb }
 }
 
 // Each crate gets its own empty target directory so its cold check pays for

@@ -1,0 +1,30 @@
+{
+  "category": "message-authentication-codes",
+  "task": "hmac-sha256-messages",
+  "title": "HMAC-SHA-256 over messages",
+  "summary": "Compute the 32-byte HMAC-SHA-256 tag of a message under a key, for messages from 16 bytes to 16 KB.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

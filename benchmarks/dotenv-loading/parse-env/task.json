@@ -1,0 +1,33 @@
+{
+  "category": "dotenv-loading",
+  "task": "parse-env",
+  "title": "Parse .env text into a map",
+  "summary": "Parse .env text of KEY=value assignments with quotes and comments into a key-value map.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Each adapter returns the library's own parsed map; the verifier compares its entries with the expected pairs."
+}

@@ -1,0 +1,30 @@
+{
+  "category": "iterator-combinators",
+  "task": "map-filter-take-sum",
+  "title": "Lazy map, filter, take and sum",
+  "summary": "Push an array of integers through a lazy map, filter and take chain and sum what comes out.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 49
+}

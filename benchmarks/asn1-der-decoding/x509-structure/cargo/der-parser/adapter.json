@@ -1,0 +1,10 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-06"
+  },
+  "review": "unreviewed",
+  "notes": "Deep, mostly borrowed: parse_der builds the whole tree in one call. Strings are checked and borrowed as &str and UTCTime/GeneralizedTime are parsed into date-times; integers, OIDs and byte strings stay as borrowed bytes. The context-specific [0] and [3] wrappers come back undecoded, so the adapter calls parse_der again on their contents."
+}

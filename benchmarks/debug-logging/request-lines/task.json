@@ -1,0 +1,32 @@
+{
+  "category": "debug-logging",
+  "task": "request-lines",
+  "title": "Namespaced request lines",
+  "summary": "Log one formatted message through a named logger, where half of 100 namespaces are enabled by a pattern.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 100,
+  "notes": "The sink is an in-memory capture, not stderr, so no system call is timed. Each call returns the line the library produced (empty when the namespace is disabled)."
+}

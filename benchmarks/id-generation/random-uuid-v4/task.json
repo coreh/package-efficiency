@@ -1,0 +1,32 @@
+{
+  "category": "id-generation",
+  "task": "random-uuid-v4",
+  "title": "Random UUID v4",
+  "summary": "Generate one random version 4 UUID string per call with the default secure generator.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 64,
+  "notes": "The task and its adapters add no cache or pre-generated pool: each call asks the library for a new ID. A runtime may still buffer entropy internally; Node's crypto.randomUUID fills a batch of random bytes ahead of time by default, which also applies to the uuid package there. Rust verifies its native outputs with the same scenario verifier as JavaScript before timing."
+}

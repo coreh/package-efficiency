@@ -1,0 +1,33 @@
+{
+  "category": "config-format-parsing",
+  "task": "yaml-documents",
+  "title": "YAML configuration documents",
+  "summary": "Parse block-style YAML configuration documents (nested mappings, sequences, quoted and multi-line strings, comments) into plain data.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Only YAML parsers take part. JavaScript adapters return the parsed value, which is checked for deep equality with the data the document was written from. Rust adapters return the crate's own parsed tree; converting it to JSON for the same check happens outside measured work."
+}

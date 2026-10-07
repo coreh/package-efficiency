@@ -1,0 +1,33 @@
+{
+  "category": "text-table-rendering",
+  "task": "aligned-grid",
+  "title": "Aligned text grid",
+  "summary": "Render a header and rows of mixed-type values as an aligned plain-text table string.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Cells are converted to text inside the measured call in every language. Output spelling (borders, padding) is not standardized; verification compares cell text in order."
+}

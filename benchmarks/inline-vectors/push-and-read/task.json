@@ -1,0 +1,31 @@
+{
+  "category": "inline-vectors",
+  "task": "push-and-read",
+  "title": "Build and read many small vectors",
+  "summary": "Build a few hundred vectors of 1 to 8 integers each, pushing one at a time into an inline-capacity vector and reading every element back.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Cargo only: no npm or JSR package in this category. Each call builds 64 to 512 fresh vectors with inline capacity 8 from generated integers and reads every element back. Rust allocation-counting overhead is included in CPU figures."
+}

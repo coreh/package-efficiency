@@ -1,0 +1,31 @@
+{
+  "category": "float-formatting",
+  "task": "shortest-f64",
+  "title": "Shortest round-trip f64 formatting",
+  "summary": "Format finite 64-bit floats as the shortest decimal string that reads back as the same number.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 20000,
+  "notes": "Every operation returns what its library produces: a fresh string, or for the Rust crates the stack buffer they format into and the written length. Output spelling (exponent style, trailing .0) is normalized during verification only."
+}

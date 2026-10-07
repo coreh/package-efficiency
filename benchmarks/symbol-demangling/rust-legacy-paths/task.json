@@ -1,0 +1,30 @@
+{
+  "category": "symbol-demangling",
+  "task": "rust-legacy-paths",
+  "title": "Legacy Rust symbol paths",
+  "summary": "Demangle Rust legacy-mangled (_ZN...E) symbol names: paths with generics, trait impls, closures, $LT$-style escapes and a trailing hash.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 64
+}

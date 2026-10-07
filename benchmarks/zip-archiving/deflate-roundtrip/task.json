@@ -1,0 +1,31 @@
+{
+  "category": "zip-archiving",
+  "task": "deflate-roundtrip",
+  "title": "Pack and unpack a ZIP archive",
+  "summary": "Pack in-memory text files, from a few bytes to several hundred kilobytes, into a deflate-compressed ZIP archive, then list and extract every entry from it.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 47,
+  "notes": "Each operation builds the archive in memory and reads every entry back from the resulting bytes; the result is the list of extracted entries and the archive's byte length. Six of the 47 fixtures are archives of 100 KB or more of compressible text, and those must come out smaller than their input. The JavaScript packages in the category (zip.js, @quentinadam/zip, @deno-library/compress) only offer asynchronous or file-system APIs and are not part of this synchronous task."
+}

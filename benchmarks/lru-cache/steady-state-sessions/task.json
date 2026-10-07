@@ -1,0 +1,32 @@
+{
+  "category": "lru-cache",
+  "task": "steady-state-sessions",
+  "title": "Session cache with invalidation",
+  "summary": "Run a long mixed trace of string-keyed reads, fills and explicit removals against a fresh cache of a few hundred to a few thousand entries, and report hits, summed values, removals and final size.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 24
+}

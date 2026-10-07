@@ -1,0 +1,31 @@
+{
+  "category": "small-strings",
+  "task": "short-ascii",
+  "title": "Build, clone and compare short strings",
+  "summary": "Build a string value from a slice (mostly short ASCII, with some longer and some non-ASCII strings), clone it and compare the clone with a second value built from another slice.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 76,
+  "notes": "Rust only. Each call builds the library's string type from the text, clones it, builds a second value from the fixture's second string (equal in half the cases), compares the clone with it, and returns the clone and the comparison result."
+}

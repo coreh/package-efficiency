@@ -1,0 +1,32 @@
+{
+  "category": "asn1-der-decoding",
+  "task": "x509-structure",
+  "title": "X.509 certificate structure",
+  "summary": "Decode DER-encoded X.509 certificates into their tree of ASN.1 elements.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Each call decodes the whole DER element tree with the library, from bytes decoded from hex before timing, and maps it to a flat list of element identifiers (class*100+tag, pre-order), in every language. Not a typed X.509 field extraction."
+}

@@ -1,0 +1,30 @@
+{
+  "category": "image-decoding",
+  "task": "png-rgba",
+  "title": "PNG to RGBA pixels",
+  "summary": "Decode an in-memory 8-bit RGBA PNG file to a width, a height and a buffer of RGBA pixel bytes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 38
+}

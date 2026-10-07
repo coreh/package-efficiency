@@ -1,0 +1,31 @@
+{
+  "category": "javascript-parsing",
+  "task": "es2020-modules",
+  "title": "ES2020 modules",
+  "summary": "Parse small to medium ES module files that use import/export and ES2020 syntax (optional chaining, nullish coalescing, BigInt, dynamic import, import.meta) into an ESTree-style syntax tree.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Each package returns its own syntax tree. The verifier walks the trees once per fixture, before any measured work. Several parsers treat input as a classic script unless told it is a module; those keep a default entry that fails verification and a variant with the module setting."
+}

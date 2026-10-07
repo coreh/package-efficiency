@@ -1,0 +1,32 @@
+{
+  "category": "idna-punycode",
+  "task": "domain-round-trip",
+  "title": "Domain name round trip",
+  "summary": "Convert a Unicode domain name to its ASCII Punycode form and convert that ASCII form back to Unicode.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 59,
+  "notes": "Each operation returns both directions as a two-element list: [ascii, unicode]."
+}

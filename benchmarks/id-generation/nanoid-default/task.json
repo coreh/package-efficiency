@@ -1,0 +1,33 @@
+{
+  "category": "id-generation",
+  "task": "nanoid-default",
+  "title": "Default 21-character URL-safe ID",
+  "summary": "Generate one random 21-character URL-friendly ID (the Nano ID default) per call with the package's default secure generator.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 64,
+  "notes": "No cache or pre-generated pool is added: each call asks the library for a new ID. The packages may buffer entropy internally (npm nanoid fills a pool of random bytes and slices it). @sitnik/nanoid on JSR ships the browser build, which asks crypto.getRandomValues for 21 bytes on every call, and the Rust crate seeds a new StdRng from the operating system's random source on every call. All three are the libraries' defaults."
+}

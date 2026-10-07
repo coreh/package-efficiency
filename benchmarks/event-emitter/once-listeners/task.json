@@ -1,0 +1,31 @@
+{
+  "category": "event-emitter",
+  "task": "once-listeners",
+  "title": "One-shot listeners that re-arm",
+  "summary": "Register a mix of persistent and one-shot listeners per event name, emit events so one-shot listeners fire once and drop themselves, re-arm them midway and emit more.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 32
+}

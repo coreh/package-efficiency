@@ -1,0 +1,43 @@
+name: A result looks wrong
+description: A figure or a class does not match what you measure or expect.
+title: "Result looks wrong: "
+labels: ["result"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Figures here come from one machine, so a difference of a few percent is normal. Say what you expected and how you know.
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: The registry and the name, as in the address of its page. For example npm/elysia.
+    validations:
+      required: true
+  - type: input
+    id: task
+    attributes:
+      label: Task
+      description: The task, as in the address of its page. For example http-server/json-api. Leave empty if it is about every task.
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime
+      description: The runtime the result is for, if it is about one. For example Bun.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The address of the page you were on.
+  - type: textarea
+    id: expected
+    attributes:
+      label: What looks wrong
+      description: The figure on the site, the figure you expected, and how you measured it or where it comes from.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Your measurement
+      description: If you measured it, the machine, the runtime version and the command.

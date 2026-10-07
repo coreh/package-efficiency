@@ -1,0 +1,10 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-06"
+  },
+  "review": "unreviewed",
+  "notes": "Logger built once from filter directives (as RUST_LOG would give them). Each call builds a Metadata with the namespace as target and calls Logger::enabled; there is no logger per namespace. The namespace is read out of the fixture before timing. Logger::enabled only delegates to the env_filter crate (2.0, a dependency of env_logger), so this entry and the env_filter one time the same matching code. The match is a few prefix comparisons, so the figure is close to the cost of the harness loop."
+}

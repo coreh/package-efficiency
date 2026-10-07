@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "lzw-roundtrip-text",
+  "title": "LZW compress and decompress text",
+  "summary": "Compress a buffer of text with LZW (least significant bit first, 8-bit literals) and decompress it again, returning the original text.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "One operation is a full LZW compress-then-decompress round trip of an in-memory buffer. Both entries write the same variant, so only the restored text and the compressed size, reported outside timing, are checked."
+}

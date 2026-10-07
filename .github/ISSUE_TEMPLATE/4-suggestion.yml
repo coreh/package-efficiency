@@ -1,0 +1,39 @@
+name: Suggest a package, version, setting or task
+description: Something to add or to measure differently.
+title: "Suggestion: "
+labels: ["suggestion"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What do you suggest?
+      options:
+        - Add a package
+        - Measure a newer version
+        - Add a tuned variant (a setting that is not the default)
+        - Add or change a task
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: The registry and the name. For example npm/elysia.
+  - type: input
+    id: task
+    attributes:
+      label: Task
+      description: For example http-server/json-api.
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The address of the page you were on.
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: For a new version, note that only releases at least seven days old are measured.
+    validations:
+      required: true

@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "lzw-large-buffer-compress",
+  "title": "LZW compress large buffers",
+  "summary": "Compress 4 to 214 KB buffers of text and mixed content with LZW (least significant bit first, 8-bit literals); compression only, no decompression.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 33,
+  "notes": "One operation compresses one in-memory buffer with LZW and returns the compressed bytes. Decompression is left out of the timed call and used only by the verifier."
+}

@@ -1,0 +1,31 @@
+{
+  "category": "binary-serialization",
+  "task": "typed-schema",
+  "title": "Schema-typed round trip",
+  "summary": "Encode a record of a known schema to bytes and decode it back into the typed record.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

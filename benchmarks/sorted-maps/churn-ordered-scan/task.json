@@ -1,0 +1,31 @@
+{
+  "category": "sorted-maps",
+  "task": "churn-ordered-scan",
+  "title": "Sorted map deletes and full ordered scan",
+  "summary": "Build a sorted string-keyed map, delete a share of the keys, then read every remaining value in key order.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36
+}

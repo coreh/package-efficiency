@@ -1,0 +1,32 @@
+{
+  "category": "base64-encoding",
+  "task": "base64-to-bytes",
+  "title": "Base64 to bytes",
+  "summary": "Decode standard, padded base64 text into the bytes it encodes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 59
+}

@@ -1,0 +1,33 @@
+{
+  "category": "terminal-styling",
+  "task": "ansi-styles",
+  "title": "ANSI color and style wrapping",
+  "summary": "Wrap short strings in single, chained and nested ANSI colors, bold and underline.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 62,
+  "notes": "Color output is forced on in every adapter, since the benchmark does not run in a terminal. Rust returns fresh owned strings. Outputs are verified by interpreting the escape codes, not by their exact spelling."
+}

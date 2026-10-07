@@ -1,0 +1,19 @@
+{
+  "title": "Ruby File.fnmatch?",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-06"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "non-default-options"
+  ],
+  "notes": "No compile step, unlike every other entry: each of the ten patterns is interpreted per path, in every call, with FNM_PATHNAME | FNM_EXTGLOB until one matches. Those two flags are not the default (no flags): without them * crosses / and braces are literal, which gives wrong answers for these patterns, so there is no entry without flags."
+}

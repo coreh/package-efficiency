@@ -1,0 +1,32 @@
+{
+  "category": "date-time",
+  "task": "elapsed-between",
+  "title": "Parse two timestamps, whole hours, minutes and seconds between",
+  "summary": "Parse two RFC 3339 timestamps with zone offsets and return the whole hours, minutes and seconds from the first to the second.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Two parses of an instant with an offset and a signed elapsed-time breakdown. No calendar arithmetic and no formatting, so the cost is dominated by parsing and by the library's duration type."
+}

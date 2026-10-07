@@ -1,0 +1,31 @@
+{
+  "category": "bit-sets",
+  "task": "set-and-combine",
+  "title": "Set bits, union, intersect and count",
+  "summary": "Build two bit sets from lists of bit positions, then count each set, their union and their intersection.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Cargo only: no npm or JSR package in this category, and no Python, Ruby, Go or JavaScript standard library ships a bit set. Each call builds both sets, forms the union and the intersection in fresh copies of the first set, and returns the four counts as a Rust array that is converted to JSON outside the timed call. Rust allocation-counting overhead is included in CPU figures. 36 fixtures are small and dense (up to 4,096 bits and 4,096 listed positions); 12 are large and sparse (65,536 to 1,000,000 bits, at most 512 listed positions) so that the union, intersection and counts over many words are measured as well as setting bits."
+}

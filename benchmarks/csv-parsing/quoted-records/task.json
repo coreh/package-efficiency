@@ -1,0 +1,32 @@
+{
+  "category": "csv-parsing",
+  "task": "quoted-records",
+  "title": "Quoted CSV records",
+  "summary": "Parse comma-separated text with quoted fields, escaped quotes and embedded line breaks into rows of string fields.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36,
+  "notes": "Every adapter returns the rows as its library produces them; Rust adapters return the crate's own records and convert them to JSON for the check outside measured work."
+}

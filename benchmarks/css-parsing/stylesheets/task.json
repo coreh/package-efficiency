@@ -1,0 +1,31 @@
+{
+  "category": "css-parsing",
+  "task": "stylesheets",
+  "title": "Component stylesheets",
+  "summary": "Parse generated component stylesheets (rules, media queries, keyframes, font faces, custom properties, comments) into each package's own syntax tree.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36,
+  "notes": "Each adapter returns the package's own tree. The verifier reads the top-level rule count and searches the tree for every class name, keyframes name, custom property and string literal of the fixture; that check runs outside measured work."
+}

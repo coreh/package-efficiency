@@ -1,0 +1,31 @@
+{
+  "category": "object-merging",
+  "task": "nested-options",
+  "title": "Nested option objects",
+  "summary": "Recursively merge a sequence of nested plain option objects into one new object.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36
+}

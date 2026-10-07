@@ -1,0 +1,31 @@
+{
+  "category": "classname-composition",
+  "task": "mixed-arguments",
+  "title": "Mixed-argument class composition",
+  "summary": "Compose one class string from ten arguments mixing strings, nested arrays, condition objects and falsy values.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

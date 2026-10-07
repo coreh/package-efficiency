@@ -1,0 +1,32 @@
+{
+  "category": "deflate-compression",
+  "task": "gzip-roundtrip-text",
+  "title": "Gzip and gunzip text",
+  "summary": "Compress a buffer of text with gzip (deflate) at the library's default level and decompress it again, returning the original text.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "One operation is a full compress-then-decompress round trip of an in-memory buffer. Compressed bytes differ between implementations and framings, so only the restored text is comparable. Where an adapter can report it outside timing, the compressed size must also be smaller than the input for compressible fixtures above 300 bytes."
+}

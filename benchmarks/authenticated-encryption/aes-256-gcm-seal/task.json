@@ -1,0 +1,31 @@
+{
+  "category": "authenticated-encryption",
+  "task": "aes-256-gcm-seal",
+  "title": "AES-256-GCM seal",
+  "summary": "Encrypt a message with AES-256-GCM, a 96-bit nonce and associated data; return the ciphertext with its 16-byte tag.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

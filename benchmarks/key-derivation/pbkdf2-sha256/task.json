@@ -1,0 +1,32 @@
+{
+  "category": "key-derivation",
+  "task": "pbkdf2-sha256",
+  "title": "PBKDF2-HMAC-SHA-256 key derivation",
+  "summary": "Derive a 16, 32 or 64 byte key from a password and salt with PBKDF2-HMAC-SHA-256 at 10,000 iterations.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36
+}

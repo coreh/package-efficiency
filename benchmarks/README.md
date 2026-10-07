@@ -23,13 +23,55 @@ created once and reused. Correctness checks run before warm-up; their work is
 excluded from timing. The timed loop invokes the adapter and folds every output
 into a checksum. This includes a shared loop, indexing and consumption overhead.
 
-After 10,000 initial calls and a full three-round unmeasured rehearsal, each of three measured rounds runs batches of 100,000 calls
-until at least 250 ms has elapsed. Counts are recorded per round, so costs use
+Every adapter gets the same time, whatever one call costs, so the length of
+a run is predictable. A few probe calls give the rough cost of a call. The
+warm-up is then the task's `warmup` calls (10,000) or two seconds, whichever
+comes first, followed by a full three-round unmeasured rehearsal and three
+measured rounds. A round runs batches until `minRoundMs` (250 ms) has elapsed;
+a batch is about a tenth of that, never more than `operationsPerRound`
+calls, and always a whole number of passes over the fixtures, so every round
+of every adapter covers the same mix of inputs. Counts are recorded per round, so costs use
 the actual count rather than assuming every adapter did equal work. CPU is child
 user plus system CPU from `process.cpuUsage()`. GC can occur naturally inside a
 batch; forced settled GC runs outside timing. Heap includes external memory.
 Peak RSS covers the whole process, including fixture construction and validation;
 it is not solely package allocation. No individual-call latency is measured.
+
+A result may be a string, a boolean or a structured value (a parsed document, a
+list, a library's own type), in every language. What a library returns is what
+the adapter returns: an adapter never serializes, hashes or walks a result just
+to hand it to the harness, because that work would be timed. The measured loop
+reads only something cheap from each result, such as its length:
+
+- JavaScript: the scenario's `consume(result)`.
+- Python, Ruby, Go: the runner counts the length of a string, list or map, and
+  one for anything else. The verifier needs JSON, so a Python or Ruby adapter
+  whose result is not plain JSON data also defines `describe(result)`; a Go
+  result is marshalled with `encoding/json`. Both happen once per fixture,
+  before any measured work.
+- Rust: `operation::run_value(operation, consume, describe)`, with the same
+  split: `consume` is measured, `describe` (result to `serde_json::Value`) is
+  not.
+  A zero-copy parser, whose result borrows from the input, uses
+  `run_value_with_input`: the operation keeps only counts or offsets, and
+  `describe` is also given the input so it can parse again for the verifier.
+
+Reading the input is not timed either, unless reading it is the task. A
+fixture's input is JSON; where the library takes something else (bytes from
+hex or base64, a typed record, a compiled pattern), the adapter defines
+`prepare(input)`, which runs once per fixture before any measured work, and
+the operation is given what it returned:
+
+- JavaScript: an exported `prepare`. The scenario's verifier still calls the
+  operation with the raw input; the runner prepares it first.
+- Python, Ruby, Go: a `prepare` function next to `operation`.
+- Rust: `operation::run_prepared(prepare, operation, consume, describe)`.
+
+A prepared input is shared by every call, so the operation must not change it.
+
+Where packages return different shapes for the same answer, each adapter maps
+its result to the task's common shape inside the measured call, in every
+language alike, and the task says so.
 
 The site reports the median of round costs, then the median across fresh
 processes. These are repeated, cache-hot microbenchmarks of deliberately narrow
@@ -40,6 +82,29 @@ four decimal places for microsecond operation costs to avoid zero anchors.
 New adapter versions use the existing seven-day release-age filter, disabled
 install scripts, and shared `versions.json`. Raw results include runtime and
 machine versions. Adapter metadata records authorship and unreviewed status.
+
+## Reviews
+
+Every adapter starts as `"review": "unreviewed"`. Readers ask for a review, or
+give one, through the issue forms in `.github/ISSUE_TEMPLATE/`; the buttons on
+the site open them filled in. When a review is accepted, record it in the
+adapter's `adapter.json`:
+
+```json
+"review": "maintainer",
+"reviewed": { "by": "their-github-name", "date": "2026-10-06", "issue": "https://github.com/…/issues/12" }
+```
+
+- `"maintainer"`: a maintainer of the package read the adapter and agrees that
+  it uses the package correctly. Confirm that the account is a maintainer (its
+  commits in the package's repository, or its registry page) before recording
+  it. Shown as a blue check.
+- `"human"`: a person other than the adapter's author read it and found it
+  correct. Shown as a grey check.
+
+A review is of the adapter as it was then: when an adapter changes in a way
+that matters, set it back to `"unreviewed"`. Another version of a package
+under `versions` in `adapter.json` has its own `review`.
 
 
 ## Adapter notes
@@ -86,13 +151,27 @@ run does not prove complete JIT convergence; its rounds are retained as
 policy. Cached results from an older harness are automatically refreshed.
 `npm run measure-all` runs all tasks sequentially.
 
-Each raw result embeds its empty-process baseline, preventing a later baseline
-refresh from changing its interpretation. Package memory grades use RSS after the final task round and settled GC
-above the settled empty-process baseline. Runtime comparison
-labels and tables instead use total after-task RSS, including the runtime itself.
-Lifetime peak RSS remains an ungraded diagnostic: it includes startup and warm-up
-and is not a task-only peak. After-GC RSS includes retained allocator pages and
-JIT code, not only live objects. We do not claim to measure peak task demand.
+Memory is the process's physical footprint: what it has written to and still
+holds (macOS `phys_footprint`, the figure Activity Monitor shows; on Linux the
+anonymous and shared-memory part of the resident size). Resident size is
+recorded too but not graded: it also counts the runtime's own binary, and on
+macOS pages a runtime has already released that the system has not yet taken
+back, which made runtimes that free eagerly look as if they held their
+high-water mark.
+
+Each raw result embeds its baseline, preventing a later baseline refresh from
+changing its interpretation. For operation tasks that is a warm baseline: the
+same runtime running the harness over the task's own fixtures and rounds with
+a do-nothing adapter, measured once per task and runtime
+(`results/_baseline/<task>/<runtime>.json`). What a runtime holds after that
+(its warmed-up machinery, the fixtures, the harness) is not the package's.
+Server tasks still use the runtime's idle process. Package memory grades use
+the footprint after the final task round and settled GC, above that baseline.
+Runtime comparison labels and tables instead use the total footprint after
+the task, including the runtime itself. Lifetime peak RSS remains an ungraded
+diagnostic: it includes startup and warm-up and is not a task-only peak. The
+footprint after GC includes retained allocator pages and JIT code, not only
+live objects. We do not claim to measure peak task demand.
 The detailed table shows both. `memoryAboveBaselineMb` retains the signed
 incremental difference, while negative package deltas are clamped for grading.
 `heapAboveBaselineKb` is an additional ungraded
@@ -103,7 +182,10 @@ ObjectSpace.memsize_of_all; PyPy uses GC bytes (the pinned runtime's raw stats).
 CPython's field is unavailable: allocation tracing would distort its timed CPU
 work. None of these should be presented as universally exact process memory.
 
-Type-check scoring uses sqrt(added process CPU milliseconds × added memory MB).
+Type-check cost is added process CPU seconds × added memory MB, in MB·s.
+Each of its class boundaries is the CPU boundary times the memory boundary.
+Memory has its own scale (1.5, 2.5, 4, 6.5, 10, 16 times the best) because
+memory results sit closer together than CPU results (1.5, 3, 6, 12, 25, 50).
 User + system CPU already accounts for work across threads, so there is NO
 additional thread-count multiplier. Elapsed time is retained separately.
 Refresh existing compiler measurements with `node scripts/refresh-checks.mjs`.
@@ -203,3 +285,45 @@ Active lines share one canonical package page and catalog identity, but receive
 separate version rows, scores, labels and version links. The unversioned package
 URL opens the default full release. `--version` alone never promotes a release.
 TypeScript checks accept `--version` too and keep version-specific measurements.
+
+
+## Running things
+
+| Command | What it does |
+| --- | --- |
+| `npm run setup` | Gets a machine ready: installs the pinned tools and packages under the seven-day rule, and says which language toolchains are missing. Safe to run again. |
+| `npm run status` | Reports what is measured and what is not, without measuring: missing adapters, failures, results from an older harness, adapters changed since they were measured, packages without a type check. |
+| `npm run refresh` | Runs everything in order: setup, every task, the type checks, the site build, the tests. Stops at the first failure. `--only=measure,build` and `--skip=setup` choose steps; other flags (`--force`, `--reps=5`, `--runtimes=node,bun`, `--tasks=…`) go to the measurements. |
+| `npm run measure-all` | Measures every task found under `benchmarks/`, one after another. |
+| `npm run measure -- <category>/<task>` | Measures one task. |
+| `npm run measure-checks` | Re-measures the type checks: TypeScript, `cargo check` and the native checkers. |
+| `npm run build` | Builds the site into `dist/`. `npm run preview` serves it on port 4173. |
+| `npm test` | Runs the harness and site tests. |
+| `npm run update-popularity` | Refreshes downloads, versions and ranks of the listed packages. |
+
+Everything graded is CPU time, so measure on an otherwise idle machine.
+With `--incremental` the type-check step measures only what has no result
+yet, instead of every package again (which takes over an hour). `--retry-failed`
+measures failed results again.
+
+`npm run refresh` refuses to start while another measurement is running or the
+machine is busy, unless given `--anyway`. Measurements already on disk are kept
+and skipped unless `--force` is given, so an interrupted run can be resumed.
+
+### What is measured again
+
+A result is kept and skipped on the next run only while everything it depended
+on is unchanged. Entries in a task are graded against each other, so when any
+of the following changes, the whole task is measured again, not just the part
+that changed: the harness, the task's load settings or fixtures, the source of
+any adapter in the task, the version of any runtime or toolchain, the machine,
+or the pinned version of any package the task uses. The run says why, for
+example `measuring again: an adapter in the task changed`. A result that
+failed (a crash or a timeout) is kept as failed; pass `--retry-failed` to try
+those again.
+
+Two flags override this. `--force` measures everything again, whatever is
+already there. `--keep-existing` does the reverse: it keeps every result that
+is already there and measures only what is missing, without checking whether
+anything changed. Use it to finish a run without redoing work, knowing that
+kept results may no longer match the code.

@@ -4,7 +4,7 @@
 import { ecosystem, ecosystemIds } from './lib/ecosystems.mjs'
 import { releaseState, releaseEntryId } from './lib/releases.mjs'
 import { globSync } from 'node:fs'
-import { mkdir, readdir, rm } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fromRoot, median, readJson, writeJson } from './lib/util.mjs'
 
@@ -21,24 +21,31 @@ const MIB_TO_MB = 2 ** 20 / MB
 // appliance group has its own label thresholds. Boundaries closer than about
 // 1.25x apart are below the current run-to-run noise.
 const DEFAULT_RATIO_SCALE = [1.5, 3, 6, 12, 25, 50]
+// Memory results sit closer together than CPU results (on the default scale
+// almost nothing reached F or G), so memory has a tighter scale of its own:
+// about 1.6x a class instead of 2x, and G is more than 16x the best.
+const MEMORY_RATIO_SCALE = [1.5, 2.5, 4, 6.5, 10, 16]
 // Type-check memory applies to every package, not to a task, so it uses
 // absolute boundaries in MB. Provisional: set from a small sample.
-// Type-check cost is the geometric mean of time added and memory added: the
-// square root of ms × MB. A plain product would square the spread, since the
-// two rise together. Like CPU and memory it is graded as a multiple of the
-// best entry in the task, separately for each compiler. Time below `timeFloorMs` is run-to-run noise
-// and counts as the floor.
+// Type-check cost is the time added times the memory added, in MB·s: CPU
+// seconds × MB, the unit serverless platforms bill in. Being the product of a
+// time and a memory figure, its class boundaries are the products of theirs:
+// each class's CPU boundary times its memory boundary. Like CPU and memory it
+// is graded as a multiple of the best entry in the task, separately for each
+// compiler. Time below `timeFloorMs` is run-to-run noise and counts as the
+// floor.
+const TYPE_RATIO_SCALE = DEFAULT_RATIO_SCALE.map((times, i) => times * MEMORY_RATIO_SCALE[i])
 const TYPES_METRIC = {
-  unit: '',
-  headline: 'type-check cost, √(CPU ms × MB)',
+  unit: 'MB·s',
+  headline: 'MB·s of type-check cost (CPU seconds × MB)',
   absolute: false,
-  scale: DEFAULT_RATIO_SCALE,
-  floor: 1,
+  scale: TYPE_RATIO_SCALE,
+  floor: 0.001,
   timeFloorMs: { tsc: 10, tsgo: 10 },
 }
 // Rust type checking is a different tool with different costs, so crates are
 // graded only against each other: multiples of the best crate in the task.
-const CARGO_CHECK_METRIC = { unit: '', headline: 'cargo check cost, √(CPU ms × MB)', scale: DEFAULT_RATIO_SCALE, absolute: false, floor: 1 }
+const CARGO_CHECK_METRIC = { unit: 'MB·s', headline: 'MB·s of cargo check cost (CPU seconds × MB)', scale: TYPE_RATIO_SCALE, absolute: false, floor: 0.001 }
 // The compiler the type-check class is based on.
 const TYPES_COMPILER = 'tsgo'
 // Retained heap growing faster than this per request is flagged as a leak.
@@ -54,7 +61,12 @@ function summarize(result, baseline) {
   const perRun = (fn) => median(result.runs.map(fn))
   const perRound = (fn) => perRun((run) => median(run.rounds.map(fn)))
   const baseHeap = median(baseline.runs.map(r => r.heapUsedBytes))
-  const baseRss = median(baseline.runs.map((r) => r.rssBytes))
+  // Memory is the physical footprint where both the result and its baseline
+  // have it (see `footprintBytes` in the supervisor); older results have only
+  // the resident size.
+  const footprint = result.runs.every((r) => r.footprintAfterLoadBytes != null) && baseline.runs.every((r) => r.footprintBytes != null)
+  const held = (r) => (footprint ? r.footprintAfterLoadBytes : r.rssAfterLoadBytes)
+  const baseRss = median(baseline.runs.map((r) => (footprint ? r.footprintBytes : r.rssBytes)))
 
   const operations = result.runs[0].rounds[0].operations !== undefined
   const count = (r) => r.operations ?? r.requests
@@ -70,15 +82,20 @@ function summarize(result, baseline) {
     metrics: {
       [operations ? 'cpuPerOperationUs' : 'cpuPerRequestUs']: round(cpuPerRequestUs, operations ? 4 : 1),
       [operations ? 'operationsPerCpuSecond' : 'requestsPerCpuSecond']: Math.round(1e6 / cpuPerRequestUs),
-      memoryMb: round(Math.max(0, (perRun((r) => r.rssAfterLoadBytes) - baseRss) / MB)),
-      memoryAboveBaselineMb: round((perRun((r) => r.rssAfterLoadBytes) - baseRss) / MB),
-      settledRssMb: round(perRun((r) => r.rssAfterLoadBytes) / MB),
+      memoryMb: round(Math.max(0, (perRun(held) - baseRss) / MB)),
+      memoryAboveBaselineMb: round((perRun(held) - baseRss) / MB),
+      settledRssMb: round(perRun(held) / MB),
+      memoryKind: footprint ? 'footprint' : 'rss',
       peakRssMb: round(perRun((r) => r.peakRssBytes) / MB),
       heapPeakMb: round(heapPeak === null ? null : heapPeak / MB, 2),
       retainedKb: round(perRun((r) => r.rounds.at(-1).heapUsedBytes == null || r.heap.readyBytes == null ? null : (r.rounds.at(-1).heapUsedBytes - r.heap.readyBytes) / KB), 0),
       heapAboveBaselineKb: baseHeap === null ? null : round(perRun(r => r.rounds.at(-1).heapUsedBytes == null ? null : (r.rounds.at(-1).heapUsedBytes - baseHeap) / KB), 1),
       [operations ? 'leakBytesPerOperation' : 'leakBytesPerRequest']: round(leak, 2),
       importMs: round(perRun((r) => r.importMs)),
+      // Size on disk once installed (or added to a Rust binary); see scripts/lib/install-size.mjs.
+      installBytes: result.install?.bytes ?? null,
+      installPackages: result.install?.packages ?? null,
+      installKind: result.install?.kind ?? null,
       [operations ? 'throughputOps' : 'throughputRps']: Math.round(perRound((r) => (count(r) * 1000) / r.wallMs)),
       latencyP50Ms: round(perRound((r) => r.latencyP50Ms), 2),
       latencyP99Ms: round(perRound((r) => r.latencyP99Ms), 2),
@@ -112,7 +129,7 @@ function typeCheck(typesPackage, version) {
     const memoryMb = round(Math.max(0, typed[id].memoryKb) / 1000, 2)
     const timeMs = round(Math.max(0, typed[id].timeMs), 1)
     const cpuMs = round(Math.max(0, typed[id].cpuMs ?? 0), 1)
-    const score = typed[id].cpuMs === undefined ? null : round(Math.sqrt(memoryMb * Math.max(cpuMs, TYPES_METRIC.timeFloorMs[id] ?? 10)), 1)
+    const score = typed[id].cpuMs === undefined ? null : round((memoryMb * Math.max(cpuMs, TYPES_METRIC.timeFloorMs[id] ?? 10)) / 1000, 5)
     compilers[id] = { timeMs, cpuMs, memoryMb, score, symbols: typed[id].symbols, files: typed[id].files }
   }
   return {
@@ -129,17 +146,18 @@ function cargoCheck(stored) {
   const checked = { ...stored, addedMb: round(stored.addedMb * MIB_TO_MB, 1) }
   const timeMs = Math.max(0, checked.warmWallMs - rustCheck.baseline.warmWallMs)
   const cpuMs = Math.max(0, (checked.warmCpuMs ?? 0) - (rustCheck.baseline.warmCpuMs ?? 0))
-  return { tool: 'cargo', value: checked.warmCpuMs === undefined ? null : round(Math.sqrt(checked.addedMb * Math.max(cpuMs, 10)), 1), timeMs, cpuMs, memoryMb: checked.addedMb, coldCpuS: checked.coldCpuS }
+  return { tool: 'cargo', value: checked.warmCpuMs === undefined ? null : round((checked.addedMb * Math.max(cpuMs, 10)) / 1000, 5), timeMs, cpuMs, memoryMb: checked.addedMb, coldCpuS: checked.coldCpuS }
 }
 
-// Every build starts from an empty dist/, so nothing stale is ever deployed.
-// The folder itself is kept, so a preview server running in it keeps working.
+// dist/ is updated in place: the site build writes only the files that
+// changed and then removes the ones it no longer produces, so nothing stale
+// is deployed and a page being viewed never disappears mid-build.
 await mkdir(fromRoot('dist'), { recursive: true })
-for (const name of await readdir(fromRoot('dist'))) await rm(fromRoot('dist', name), { recursive: true, force: true })
 
 const generatedAt = new Date().toISOString()
 const index = { edition: config.edition, generatedAt, compilers: types.compilers, categories: [], tasks: [], planned: [] }
 
+const unmeasured = []
 for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() }).sort()) {
   const task = await readJson(fromRoot(taskFile))
   const taskId = `${task.category}/${task.task}`
@@ -147,7 +165,12 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   const runtimes = {}
   let machine = null
 
-  for (const file of globSync('**/*.json', { cwd: fromRoot('results', taskId) })) {
+  // A task with nothing measured yet (a benchmark still being written) has
+  // no figures to grade, so it stays out of the site until its first results.
+  const resultFiles = globSync('**/*.json', { cwd: fromRoot('results', taskId) })
+  if (!resultFiles.length) { unmeasured.push(taskId); continue }
+
+  for (const file of resultFiles) {
     const result = await readJson(fromRoot('results', taskId, file))
     const baseline = result.baseline ?? await readJson(fromRoot('results/_baseline', `${result.runtime}.json`))
     const sharedAdapter = await readJson(path.join(taskDir, result.ecosystem, result.package, 'adapter.json'))
@@ -185,7 +208,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       icon: { python: 'cpython', ruby: 'ruby', go: 'go' }[native.language],
       version: native.version, notes: nativeChecks.checkers[native.language].notes,
       cpuMs: round(native.cpuMs, 2), timeMs: round(native.timeMs, 2), memoryMb: round(native.memoryMb, 3),
-      value: round(Math.sqrt(native.memoryMb * Math.max(native.cpuMs, 10)), 2),
+      value: round((native.memoryMb * Math.max(native.cpuMs, 10)) / 1000, 5),
     }
     const typeInfo =
       nativeInfo ? nativeInfo
@@ -210,6 +233,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       adapter: {
         author: adapter.author,
         review: adapter.review,
+        reviewed: adapter.reviewed ?? null,
         tags: adapter.tags ?? [],
         notes: [adapter.notes, result.harness < 2 ? 'Historical measurement: predates the full same-process warm-up; not directly comparable with current measurements.' : null].filter(Boolean).join(' ') || null,
         runtimeNotes: adapter.runtimeNotes ?? {},
@@ -226,7 +250,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   const metrics = {}
   for (const [metricId, spec] of Object.entries(task.metrics)) {
     const floor = spec.floor ?? 0
-    const scale = spec.scale ?? DEFAULT_RATIO_SCALE
+    const scale = spec.scale ?? (metricId === 'memory' ? MEMORY_RATIO_SCALE : DEFAULT_RATIO_SCALE)
     const value = (entry) => Math.max(entry.metrics[spec.key], floor)
     const all = Object.values(runtimes).flatMap((runtime) => runtime.entries.map((entry) => ({ entry, runtime })))
     if (all.length === 0) continue
@@ -333,3 +357,4 @@ index.planned = taxonomy.categories
   .sort((a, b) => b.packages - a.packages || a.title.localeCompare(b.title))
 
 await writeJson(fromRoot('dist/data/index.json'), index)
+if (unmeasured.length) console.log(`not measured yet, left out: ${unmeasured.join(', ')}`)

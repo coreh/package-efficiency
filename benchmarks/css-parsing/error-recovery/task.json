@@ -1,0 +1,31 @@
+{
+  "category": "css-parsing",
+  "task": "error-recovery",
+  "title": "Stylesheets with errors",
+  "summary": "Parse hand-edited stylesheets that contain mistakes (old-IE hacks, missing colons, empty values, IE expressions, unknown at-rules) and keep every rule that is still valid.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 32,
+  "notes": "Each adapter returns the package's own tree. The verifier reads the top-level rule count, checks that no text of the source survives as an unparsed block, and searches the tree for every class name, string literal and unique number belonging to the valid parts of the fixture; that check runs outside measured work."
+}

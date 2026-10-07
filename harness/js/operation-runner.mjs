@@ -13,11 +13,23 @@ async function memory() {
 }
 send({ phase: 'boot', pid: process.pid, memory: await memory() })
 const before = process.cpuUsage(), started = performance.now()
-const { operation } = await import(pathToFileURL(process.argv[2]).href)
+const { operation: timed, prepare } = await import(pathToFileURL(process.argv[2]).href)
+// An adapter may export prepare(input): it runs once per fixture, outside
+// measured work, to turn the fixture's JSON into what the library takes
+// (bytes, typed records). The verifier still hands over the raw input.
+// Anything the adapter attached to its operation for the verifier (a decode
+// helper, say) stays reachable.
+const operation = prepare ? Object.assign((input) => timed(prepare(input)), timed) : timed
 const importMs = performance.now() - started, cpu = process.cpuUsage(before)
 send({ phase: 'loaded', importMs, importCpuMs: (cpu.user + cpu.system) / 1000, memory: await memory() })
-const { cases, verify, consume } = await import(pathToFileURL(process.argv[3]).href)
-try { verify(operation) } catch (error) { send({ phase: 'verify-failed', error: error.message }); process.exit(1) }
+const scenario = await import(pathToFileURL(process.argv[3]).href)
+const { cases, verify } = scenario
+// The warm baseline: the same fixtures and rounds with a do-nothing adapter,
+// whose results are not the task's, so nothing is verified or read.
+const baseline = process.env.BENCH_BASELINE === '1'
+const consume = baseline ? () => 1 : scenario.consume
+if (!baseline) try { verify(operation) } catch (error) { send({ phase: 'verify-failed', error: error.message }); process.exit(1) }
+const inputs = cases.map((c) => (prepare ? prepare(c.input) : c.input))
 send({ phase: 'ready', memory: await memory() })
 for await (const line of createInterface({ input: process.stdin })) {
   if (line === 'exit') break
@@ -26,7 +38,7 @@ for await (const line of createInterface({ input: process.stdin })) {
   let checksum = 0, operations = 0
   const cpuBefore = process.cpuUsage(), start = performance.now()
   do {
-    for (let i = 0; i < count; i++) checksum = (checksum + consume(operation(cases[(operations + i) % cases.length].input))) >>> 0
+    for (let i = 0; i < count; i++) checksum = (checksum + consume(timed(inputs[(operations + i) % inputs.length]))) >>> 0
     operations += count
   } while (performance.now() - start < minMs)
   const wallMs = performance.now() - start, used = process.cpuUsage(cpuBefore)

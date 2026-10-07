@@ -1,0 +1,32 @@
+{
+  "category": "regex-matching",
+  "task": "capture-groups",
+  "title": "Extract capture groups of every match",
+  "summary": "Return the capture groups of every non-overlapping match of a regular expression in an ASCII text of a few kilobytes, with each pattern compiled once and reused.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Each pattern is compiled the first time it is used and reused after, in every entry; the figures are matching and group extraction, not compiling. Results are lists with one list of groups per match: strings, or in Rust the byte span of each group in the text."
+}

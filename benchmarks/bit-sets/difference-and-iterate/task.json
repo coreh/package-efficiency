@@ -1,0 +1,31 @@
+{
+  "category": "bit-sets",
+  "task": "difference-and-iterate",
+  "title": "Difference, symmetric difference and listing set bits",
+  "summary": "Build two bit sets from lists of positions, then list the positions in their difference and in their symmetric difference by iterating the set bits.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Cargo only: no npm or JSR package in this category, and no Python, Ruby, Go or JavaScript standard library ships a bit set. Unlike set-and-combine, which only counts, this task extracts the set positions of each result with the package's own iterator, so iteration speed over dense and sparse words is measured, along with the difference operations. bit-vec is left out: it has no iterator over set bits, so an adapter would have to scan bit by bit itself."
+}

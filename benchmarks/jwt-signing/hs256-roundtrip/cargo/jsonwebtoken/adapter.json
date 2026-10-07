@@ -1,0 +1,10 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-06"
+  },
+  "review": "unreviewed",
+  "notes": "Not the default feature set: built with default-features = false and the rust_crypto feature. The crate ships no crypto backend by default and needs one of rust_crypto or aws_lc_rs chosen; rust_crypto (pure-Rust hmac and sha2) is used here, and aws_lc_rs may perform differently. Turning default features off drops only use_pem, PEM key loading, which an HMAC secret does not use. Validation::new(HS256) checks the signature, the algorithm and exp."
+}

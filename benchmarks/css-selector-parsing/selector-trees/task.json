@@ -1,0 +1,31 @@
+{
+  "category": "css-selector-parsing",
+  "task": "selector-trees",
+  "title": "Selector strings to syntax trees",
+  "summary": "Parse selectors mixing compounds, combinators, attribute selectors and pseudo-classes into a tree.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 60,
+  "notes": "Parse only; serializing a tree back is not part of this task. Each library's tree is mapped to a common list of token strings inside the measured call."
+}

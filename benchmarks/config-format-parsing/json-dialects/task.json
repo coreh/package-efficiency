@@ -1,0 +1,33 @@
+{
+  "category": "config-format-parsing",
+  "task": "json-dialects",
+  "title": "JSON with comments and trailing commas",
+  "summary": "Parse configuration documents written as JSON with comments and trailing commas, the syntax JSONC and JSON5 parsers both accept.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Only JSONC and JSON5 parsers take part. JavaScript adapters return the parsed value, which is checked for deep equality with the data the document was written from. The Rust adapter returns the crate's parsed tree; handing it to the verifier happens outside measured work."
+}

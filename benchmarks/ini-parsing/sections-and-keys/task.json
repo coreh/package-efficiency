@@ -1,0 +1,33 @@
+{
+  "category": "ini-parsing",
+  "task": "sections-and-keys",
+  "title": "Sections and name=value pairs",
+  "summary": "Parse INI documents of sections, comments and name=value pairs into a nested structure of strings.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo",
+    "builtin"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 36,
+  "notes": "Results are objects of section name to object of key to string value. Rust adapters return the crate's own Ini type; converting it to JSON for the check happens outside measured work."
+}

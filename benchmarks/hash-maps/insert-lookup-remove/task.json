@@ -1,0 +1,30 @@
+{
+  "category": "hash-maps",
+  "task": "insert-lookup-remove",
+  "title": "Insert, look up, iterate, remove",
+  "summary": "Build a map from integer keys and one from string keys, look keys up, iterate it, remove half and check what is left.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

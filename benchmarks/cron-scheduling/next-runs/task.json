@@ -1,0 +1,30 @@
+{
+  "category": "cron-scheduling",
+  "task": "next-runs",
+  "title": "Next run times of cron expressions",
+  "summary": "Parse a five-field cron expression and compute its next 50 run times after a start instant.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

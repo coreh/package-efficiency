@@ -1,0 +1,32 @@
+{
+  "category": "non-cryptographic-hashing",
+  "task": "murmur3-short-keys",
+  "title": "MurmurHash3 of short keys",
+  "summary": "Hash short ASCII keys with 32-bit MurmurHash3 (x86, seed 0) to an unsigned 32-bit value.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 80,
+  "notes": "Only MurmurHash3 x86 32-bit is common to the listed packages that can run here, so the task fixes that algorithm and seed 0. Inputs are ASCII so that byte and UTF-16 code unit views agree."
+}

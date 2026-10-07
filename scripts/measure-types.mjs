@@ -3,8 +3,22 @@
 // are loaded, relative to an empty project. Runs every compiler in runtimes.json
 // and writes data/types.json.
 // Usage: node scripts/measure-types.mjs <pkg>... | --top=N [--force]
-import { execFile } from 'node:child_process'
-import { mkdir, writeFile } from 'node:fs/promises'
+//        node scripts/measure-types.mjs <pkg> --version=<x.y.z>   (one other version)
+// A package's other release lines (versions.json `activeVersions`) are checked
+// along with it.
+//
+// A long run (--top=1000 takes hours) can be stopped and started again:
+//   - the results file is written after every package, so nothing is lost;
+//   - packages already in it are skipped, including the ones that could not
+//     be measured (pass --retry-failed to try those again);
+//   - Ctrl-C finishes the package in hand, saves and exits.
+// --top measures packages outside the edition, so it does not pin their
+// versions in versions.json and deletes each one's files when it is done.
+// --rebuild-every=N rebuilds the site after every N packages, between
+// measurements, never during one.
+import { execFile, spawnSync } from 'node:child_process'
+import os from 'node:os'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { installPinned, installedVersion, MIN_RELEASE_AGE_DAYS } from './lib/npm.mjs'
@@ -24,6 +38,10 @@ const flags = process.argv.slice(2).filter((a) => a.startsWith('--'))
 const names = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const top = Number(flags.find((f) => f.startsWith('--top='))?.split('=')[1] ?? 0)
 const force = flags.includes('--force')
+const retryFailed = flags.includes('--retry-failed')
+const rebuildEvery = Number(flags.find((f) => f.startsWith('--rebuild-every='))?.split('=')[1] ?? 0)
+// A sweep of the most used packages: look, record, leave no trace.
+const sweep = top > 0
 const versionOverride = flags.find(f => f.startsWith('--version='))?.slice('--version='.length)
 if (versionOverride && names.length !== 1) throw new Error('--version requires one package')
 
@@ -62,16 +80,15 @@ async function writeProject(dir, source, types = []) {
 }
 
 async function diagnose(compiler, dir) {
-  // The compilers round their own timings to 1 or 10 ms, which is coarser than
-  // what a small package adds, so the whole run is timed from outside instead.
-  const startedAt = performance.now()
-  const { stdout, stderr = '' } = await exec('/usr/bin/time', [process.platform === 'darwin' ? '-l' : '-v', compiler.bin, '-p', dir, '--extendedDiagnostics'], { maxBuffer: 64 << 20 }).catch((e) => e)
-  const cpuMatch = /[\d.]+ real\s+([\d.]+) user\s+([\d.]+) sys/.exec(stderr)
-  const cpuMs = process.platform === 'darwin'
-    ? (cpuMatch ? (Number(cpuMatch[1]) + Number(cpuMatch[2])) * 1000 : NaN)
-    : (Number(/User time \(seconds\): ([\d.]+)/.exec(stderr)?.[1]) + Number(/System time \(seconds\): ([\d.]+)/.exec(stderr)?.[1])) * 1000
+  // The compilers round their own timings to 1 or 10 ms, and /usr/bin/time
+  // prints CPU only to 10 ms, both coarser than what a small package adds. So
+  // the run is timed with harness/checkers/time.py, which waits on the child
+  // and reads its CPU time to the microsecond.
+  const timed = await exec('/opt/homebrew/bin/python3', [fromRoot('harness/checkers/time.py'), compiler.bin, '-p', dir, '--extendedDiagnostics'], { maxBuffer: 64 << 20 }).catch((e) => e)
+  let run
+  try { run = JSON.parse(timed.stdout) } catch { throw new Error(`CPU timing unavailable for ${compiler.title}`) }
+  const { stdout, cpuMs, timeMs: wallMs } = run
   if (!Number.isFinite(cpuMs)) throw new Error(`CPU timing unavailable for ${compiler.title}`)
-  const wallMs = performance.now() - startedAt
   const num = (label) => Number(new RegExp(`^${label}:\\s+([\\d.]+)`, 'm').exec(stdout ?? '')?.[1] ?? NaN)
   return {
     files: num('Files'),
@@ -127,7 +144,7 @@ async function measurePackage(name) {
       await writeProject(dir, importSource)
       typesFrom = 'bundled'
     }
-    version = (await installPinned(dir, [...new Set([...RUNTIME_PACKAGES, name])], versionOverride ? {[name]: versionOverride} : {}))[name]
+    version = (await installPinned(dir, [...new Set([...RUNTIME_PACKAGES, name])], versionOverride ? {[name]: versionOverride} : {}, { pin: !sweep }))[name]
   } catch (err) {
     return { status: 'install-failed', detail: String(err.stderr ?? err.message).trim().split('\n')[0] }
   }
@@ -139,7 +156,7 @@ async function measurePackage(name) {
     try {
       // An earlier version of a package needs the DefinitelyTyped line for its
       // own major version, not the one pinned for the default version.
-      await installPinned(dir, [typesPackage], versionOverride ? { [typesPackage]: versionOverride.split('.')[0] } : {})
+      await installPinned(dir, [typesPackage], versionOverride ? { [typesPackage]: versionOverride.split('.')[0] } : {}, { pin: !sweep })
     } catch {
       return { status: 'untyped', version }
     }
@@ -149,7 +166,9 @@ async function measurePackage(name) {
   if (probed.errors.includes('TS2307')) return { status: 'no-entry', version }
   if (probed.errors.length) return {status:'typecheck-failed',version,errors:probed.errors}
 
-  const result = { status: 'ok', version, typesFrom, baselines, runtimeTypeVersions }
+  // The machine's load when measured: a figure taken on a busy machine can be
+  // found and measured again later.
+  const result = { status: 'ok', version, typesFrom, baselines, runtimeTypeVersions, load: Number(os.loadavg()[0].toFixed(2)), measuredAt: new Date().toISOString() }
   for (const [id, compiler] of Object.entries(compilers)) {
     const measured = await measure(compiler, dir)
     if (measured.errors.length) return {status:'typecheck-failed',version,compiler:id,errors:measured.errors}
@@ -185,24 +204,58 @@ for (const measured of Object.values(packages)) {
 
 const versions = reusable ? (previous.versions ?? {}) : {}
 if (versionOverride && !reusable) throw new Error('Refresh the pinned package checks before measuring another version')
-const queue = [...new Set([...targets, ...(!reusable ? Object.keys(previous?.packages ?? {}) : [])])].filter((name) => versionOverride || force || !packages[name] || (packages[name].status === 'ok' && !Number.isFinite(packages[name].tsgo?.cpuMs)))
+const queue = [...new Set([...targets, ...(!reusable ? Object.keys(previous?.packages ?? {}) : [])])].filter((name) => versionOverride || force || !packages[name] || (retryFailed && packages[name].status !== 'ok') || (packages[name].status === 'ok' && !Number.isFinite(packages[name].tsgo?.cpuMs)))
 const total = queue.length
 let done = 0
-await Promise.all(
-  Array.from({ length: CONCURRENCY }, async () => {
-    for (let name; (name = queue.shift()); ) {
-      const r = await measurePackage(name)
-      if (versionOverride) (versions[name] ??= {})[versionOverride] = r
-      else packages[name] = r
-      const summary =
-        r.status === 'ok'
-          ? Object.keys(compilers).map((id) => `${id} +${r[id]?.memoryKb ?? '?'}K +${r[id]?.timeMs ?? '?'}ms`).join(', ') + ` (${r.typesFrom})`
-          : r.status
-      console.error(`[${++done}/${total}] ${name}: ${summary}`)
-    }
-  }),
-)
+const save = async () => {
+  const ordered = Object.fromEntries(Object.entries(packages).sort(([a], [b]) => a.localeCompare(b)))
+  await writeJson(OUT, { compilers: compilerVersions, minReleaseAgeDays: MIN_RELEASE_AGE_DAYS, runtimeTypeVersions, runtimeTypes: RUNTIME_TYPES, scoreBasis: 'added CPU ms * added heap MB', baselines, packages: ordered, versions })
+}
+let stopping = false
+process.on('SIGINT', () => {
+  if (stopping) process.exit(130)
+  stopping = true
+  console.error('\nStopping after the package in hand. Run the same command again to carry on.')
+})
+const started = Date.now()
+const left = () => {
+  const perPackage = (Date.now() - started) / Math.max(done, 1)
+  const minutes = Math.round((perPackage * (total - done)) / 60_000)
+  return minutes >= 90 ? `${(minutes / 60).toFixed(1)} h left` : `${minutes} min left`
+}
+for (let name; !stopping && (name = queue.shift()); ) {
+  const r = await measurePackage(name)
+  if (versionOverride) (versions[name] ??= {})[versionOverride] = r
+  else packages[name] = r
+  await save()
+  if (sweep) await rm(path.join(CACHE, name.replace('/', '__')), { recursive: true, force: true })
+  const summary =
+    r.status === 'ok'
+      ? Object.keys(compilers).map((id) => `${id} +${r[id]?.memoryKb ?? '?'}K +${r[id]?.timeMs ?? '?'}ms`).join(', ') + ` (${r.typesFrom})`
+      : r.status
+  console.error(`[${++done}/${total}] ${name}: ${summary}${total > 20 ? `  (${left()})` : ''}`)
+  if (rebuildEvery && done % rebuildEvery === 0 && !stopping) {
+    // Between packages, so the build never runs beside a measurement.
+    const build = spawnSync('npm', ['run', 'build', '--silent'], { cwd: fromRoot(), stdio: ['ignore', 'ignore', 'inherit'] })
+    console.error(build.status === 0 ? `site rebuilt with ${Object.keys(packages).length} packages checked` : 'site rebuild failed; carrying on')
+  }
+}
 
-const sorted = Object.fromEntries(Object.entries(packages).sort(([a], [b]) => a.localeCompare(b)))
-await writeJson(OUT, { compilers: compilerVersions, minReleaseAgeDays: MIN_RELEASE_AGE_DAYS, runtimeTypeVersions, runtimeTypes: RUNTIME_TYPES, scoreBasis: 'sqrt(added CPU ms * added heap MB)', baselines, packages: sorted, versions })
-console.log(`wrote data/types.json (${Object.keys(sorted).length} packages)`)
+await save()
+console.log(`wrote data/types.json (${Object.keys(packages).length} packages)${stopping || queue.length ? `, ${queue.length} still to do` : ''}`)
+
+// The other release lines listed for a package under `activeVersions` in
+// versions.json (a pre-release, an older major) are checked with it: each by
+// a run of this script for that one version. One that already has a result
+// is skipped unless --force is given.
+if (!versionOverride && !sweep && !stopping) {
+  const active = (await readJson(fromRoot('versions.json'), {})).activeVersions?.npm ?? {}
+  for (const name of targets) {
+    for (const version of active[name] ?? []) {
+      const stored = versions[name]?.[version]
+      if (!force && stored && !(retryFailed && stored.status !== 'ok')) continue
+      console.error(`\n${name} ${version}, also current:`)
+      spawnSync(process.execPath, [fromRoot('scripts/measure-types.mjs'), name, `--version=${version}`], { cwd: fromRoot(), stdio: 'inherit', env: process.env })
+    }
+  }
+}

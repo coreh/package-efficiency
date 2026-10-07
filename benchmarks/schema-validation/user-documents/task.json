@@ -1,0 +1,33 @@
+{
+  "category": "schema-validation",
+  "task": "user-documents",
+  "title": "Nested user documents",
+  "summary": "Validate valid and invalid nested JSON user documents against one equivalent object schema.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 72,
+  "notes": "Each operation validates one document against a schema that was built or compiled once, outside the measured call, and returns a boolean."
+}

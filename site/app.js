@@ -24,7 +24,7 @@ try {
 const input = document.getElementById('q')
 const results = document.getElementById('q-results')
 const keyHint = document.querySelector('.search-key')
-const RESULT_LIMIT = 12
+const RESULT_LIMIT = 40
 let entries = null
 let active = -1
 
@@ -66,23 +66,44 @@ export function matchWord(word, text) {
   return { score: 400 - (span - word.length) * 8 - indices[0] + bonus, indices }
 }
 
+// How well every word of the query matches `text`: null unless all do.
+function matchAll(words, text, kind) {
+  let score = 0
+  const indices = new Set()
+  for (const word of words) {
+    const inText = matchWord(word, text)
+    // The kind ("npm", "Task") narrows a search but never outranks a name.
+    const inKind = inText ? null : matchWord(word, kind)
+    if (!inText && !(inKind && inKind.score >= 700)) return null
+    score += inText ? inText.score : 100
+    for (const index of inText?.indices ?? []) indices.add(index)
+  }
+  return { score, indices }
+}
+
+const band = (score) => (score >= 1000 ? 5 : score >= 800 ? 4 : score >= 700 ? 3 : score >= 600 ? 2 : score >= 350 ? 1 : 0)
+
 function rank(query) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean)
   const found = []
   entries.forEach((entry, order) => {
-    let score = 0
-    const indices = new Set()
-    for (const word of words) {
-      const inTitle = matchWord(word, entry.t)
-      // The kind ("npm", "Task") narrows a search but never outranks a name.
-      const inKind = inTitle ? null : matchWord(word, entry.k)
-      if (!inTitle && !(inKind && inKind.score >= 700)) return
-      score += inTitle ? inTitle.score : 100
-      for (const index of inTitle?.indices ?? []) indices.add(index)
+    let best = matchAll(words, entry.t, entry.k)
+    // A category is also found by its other names. One of those wins only
+    // when it matches a whole band better than the title does, and then
+    // ranks just behind a title that matches as well.
+    for (const alias of entry.a ?? []) {
+      const match = matchAll(words, alias, entry.k)
+      const score = match && match.score - words.length
+      if (match && (!best || (best.alias ? score > best.score : band(score / words.length) > band(best.score / words.length)))) best = { score, indices: match.indices, alias }
     }
-    found.push({ entry, score, indices, order })
+    if (best) found.push({ entry, order, ...best })
   })
-  return found.sort((a, b) => b.score - a.score || a.entry.t.length - b.entry.t.length || a.order - b.order)
+  // How well the words match comes first, in broad bands (exact, start of the
+  // name, start of a word, inside a word, letters in order); within a band the
+  // more used package leads, so the likelier one is nearer the top. Pages that
+  // are not packages (tasks, categories, runtimes) count as most used.
+  const used = (entry) => entry.r ?? 0
+  return found.sort((a, b) => band(b.score / words.length) - band(a.score / words.length) || used(a.entry) - used(b.entry) || b.score - a.score || a.entry.t.length - b.entry.t.length || a.order - b.order)
 }
 
 function marked(text, indices) {
@@ -125,7 +146,7 @@ async function search() {
   results.replaceChildren()
   if (!query) return closeSearch()
   const found = rank(query)
-  found.slice(0, RESULT_LIMIT).forEach(({ entry, indices }, i) => {
+  found.slice(0, RESULT_LIMIT).forEach(({ entry, indices, alias }, i) => {
     const item = document.createElement('li')
     const link = document.createElement('a')
     const kind = document.createElement('small')
@@ -133,8 +154,25 @@ async function search() {
     link.id = `q-result-${i}`
     link.setAttribute('role', 'option')
     link.href = entry.u
+    if (entry.i) {
+      // Images, not masks: the list is white in both colour schemes, and a
+      // mask is drawn through a bitmap, which blurs the finer marks.
+      const category = entry.i.startsWith('cat/')
+      const icon = Object.assign(document.createElement('img'), { src: `/icons/${category ? '' : 's/'}${entry.i}.svg`, alt: '', className: category ? 'ico cat' : 'ico' })
+      link.append(icon)
+    }
     const name = document.createElement('span')
-    name.append(...marked(entry.t, indices))
+    if (alias) {
+      // Found by another name: that name, an arrow, then the category's own.
+      const other = document.createElement('span')
+      other.className = 'alias'
+      other.append(...marked(alias, indices))
+      const arrow = document.createElement('span')
+      arrow.className = 'alias-arrow'
+      arrow.setAttribute('aria-label', 'is under')
+      arrow.textContent = '→'
+      name.append(other, arrow, entry.t)
+    } else name.append(...marked(entry.t, indices))
     link.append(name)
     kind.textContent = entry.k
     link.append(kind)
@@ -145,8 +183,8 @@ async function search() {
   const note = document.createElement('li')
   note.className = 'search-note'
   note.setAttribute('role', 'presentation')
-  if (found.length === 0) note.textContent = 'Nothing matches. Try a package, task or category name, or its initials.'
-  else if (found.length > RESULT_LIMIT) note.textContent = `${found.length - RESULT_LIMIT} more. Keep typing to narrow them down.`
+  if (found.length === 0) note.textContent = 'No result. Try the name of a package, task or category, or its initials.'
+  else if (found.length > RESULT_LIMIT) note.textContent = `${found.length - RESULT_LIMIT} more. Type more letters to see fewer results.`
   else note.textContent = '↑ ↓ to move, Enter to open, Esc to close'
   results.append(note)
   results.hidden = false
@@ -195,6 +233,9 @@ if (input) {
     input.focus()
     input.select()
   })
+  // Pressing on a result must not take focus from the field: Safari does not
+  // focus a clicked link, so the list would be dismissed before the click.
+  results.addEventListener('mousedown', (event) => event.preventDefault())
   // A click or a tap anywhere else, or focus moving on, dismisses the list.
   document.addEventListener('pointerdown', (event) => {
     if (!event.target.closest('.search')) closeSearch()
@@ -331,8 +372,9 @@ applySettings()
 // All panels are rendered up front, so switching tabs reveals the same order.
 // A graded heading steps through several orders with one control: by class,
 // then by figure, and for type checks by cost, CPU time and memory too. Each
-// press goes ascending, then descending, then on to the next field.
-const FIELD_LABELS = { grade: 'label', value: 'value', score: 'cost', time: 'CPU', memory: 'memory' }
+// press goes ascending, then descending, then on to the next field. A column
+// marked data-cycle="fields" goes through its fields first, then turns round.
+const FIELD_LABELS = { grade: 'label', value: 'value', score: 'cost', time: 'CPU', memory: 'memory', mean: 'mean', median: 'median', spread: 'std dev' }
 const columnKey = (heading) => sortColumnKey(heading.dataset.col ?? heading.querySelector('[data-sort]')?.textContent ?? heading.textContent)
 function sortTable(table, key, descending, field) {
   const headings = [...table.querySelectorAll('thead tr:last-child th')]
@@ -376,6 +418,13 @@ for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
     // A column can ask to start from its largest values (data-first).
     if (fields.length === 0) descending = sorted ? sorted === 'ascending' : heading.dataset.first === 'descending'
     else if (!sorted) field = fields[0]
+    else if (heading.dataset.cycle === 'fields') {
+      // Through the fields first, in the same direction; back at the first
+      // one, the direction turns.
+      const next = fields.indexOf(heading.dataset.field) + 1
+      field = fields[next % fields.length]
+      descending = (sorted === 'descending') !== (next >= fields.length)
+    }
     else if (sorted === 'ascending') [field, descending] = [heading.dataset.field, true]
     else field = fields[(fields.indexOf(heading.dataset.field) + 1) % fields.length]
     const group = table.closest('.explorer, .pick')
@@ -388,7 +437,7 @@ for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
 // built from the values their rows carry (data-status, data-ecosystem, ...).
 // A filter with only one value to choose from is left out.
 const FILTER_TITLES = { status: 'Show', ecosystem: 'Ecosystem', group: 'Group' }
-const STATUS_ORDER = ['Measured', 'Not benchmarked yet', 'Not measured yet', 'No comparable task']
+const STATUS_ORDER = ['Measured', 'Not measured yet', 'No comparable task']
 let filterCount = 0
 function buildFilters(table) {
   if (table.dataset.filtered) return
@@ -444,7 +493,7 @@ function buildFilters(table) {
   const row = document.createElement('div')
   row.className = 'switches filters'
   row.append(...groups)
-  ;(table.closest('.scroll') ?? table).before(row)
+  ;(table.headHolder ?? table.closest('.scroll') ?? table).before(row)
 }
 for (const table of document.querySelectorAll('table[data-filters]')) {
   buildFilters(table)
@@ -481,7 +530,7 @@ function paginate(table) {
         show()
         // Paging from the bottom would otherwise leave the reader below a
         // table that just got shorter.
-        if (place === 'below') wrapper.previousElementSibling.scrollIntoView({ block: 'nearest' })
+        if (place === 'below') bar.scrollIntoView({ block: 'nearest' })
       })
       nav.append(button)
       return button
@@ -501,11 +550,13 @@ function paginate(table) {
   // The upper pager shares a row with the switches that belong to the table
   // (its filters, or its group's runtime and settings switches) and keeps the
   // top right corner of it; the switches wrap in the space to its left.
-  let bar = wrapper.previousElementSibling?.classList.contains('switches') ? wrapper.previousElementSibling : table.closest('.pick')?.querySelector(':scope > .switches')
+  // (The sticky copy of the headings, if there is one, sits between the two.)
+  const lead = table.headHolder ?? wrapper
+  let bar = lead.previousElementSibling?.classList.contains('switches') ? lead.previousElementSibling : table.closest('.pick')?.querySelector(':scope > .switches')
   if (!bar) {
     bar = document.createElement('div')
     bar.className = 'switches'
-    wrapper.before(bar)
+    lead.before(bar)
   }
   if (!bar.classList.contains('has-pager')) {
     const groups = document.createElement('div')
@@ -614,7 +665,7 @@ async function fillPanel(host, panel) {
   const { registries, packages } = await catalog
   const language = host.querySelector(`input[name="runtime"][value="${panel.dataset.runtime}"]`)?.dataset.language
   const wanted = language && language !== 'all' ? (REGISTRIES_OF[language] ?? []) : Object.keys(registries)
-  const table = panel.querySelector('table')
+  const table = panel.querySelector('table.sortable')
   const heads = [...table.querySelectorAll('thead tr:last-child th')].map((th) => (th.querySelector('[data-sort]') ?? th).textContent.trim())
   const rows = []
   for (const [registry, name, version, use, share, category, categoryUrl, rank, status] of packages) {
@@ -673,6 +724,86 @@ for (const host of document.querySelectorAll('.pick[data-catalog]')) {
   shown()
 }
 
+// Table headings stay in view under the site's top bar while their table
+// scrolls past. A heading cannot be "sticky" itself: its table sits in a box
+// that scrolls sideways, and it would stick to that box, not the page. So a
+// copy of the heading row sits just above the box, laid over the real one,
+// and the browser keeps that copy stuck under the bar (plain CSS, so it moves
+// with the scroll without any script running). The script only keeps the
+// copy the same as the original: its widths, its sort arrows, and how far
+// the table has been scrolled sideways. Clicks on it go to the real headings.
+const topBar = document.querySelector('header.top')
+if (topBar) new ResizeObserver(() => document.documentElement.style.setProperty('--bar', `${Math.round(topBar.getBoundingClientRect().height)}px`)).observe(topBar)
+function stickHead(table) {
+  const scroll = table.closest('.scroll')
+  if (!scroll || !table.tHead || table.headHolder) return
+  const holder = document.createElement('div')
+  holder.className = 'sticky-head'
+  holder.setAttribute('aria-hidden', 'true')
+  const copy = document.createElement('table')
+  copy.className = 'head-copy'
+  holder.append(copy)
+  table.headHolder = holder
+  scroll.before(holder)
+  const sync = () => {
+    const height = table.tHead.getBoundingClientRect().height
+    holder.hidden = height === 0
+    if (height === 0) return
+    const head = table.tHead.cloneNode(true)
+    const originals = [...table.tHead.querySelectorAll('th')]
+    ;[...head.querySelectorAll('th')].forEach((th, i) => {
+      const width = originals[i].getBoundingClientRect().width
+      th.style.width = th.style.minWidth = th.style.maxWidth = `${width}px`
+      const button = th.querySelector('[data-sort]')
+      // The copy is for the eye and the mouse; keyboards and screen readers use the real heading.
+      if (button) {
+        button.tabIndex = -1
+        button.addEventListener('click', () => originals[i].querySelector('[data-sort]')?.click())
+      }
+    })
+    copy.replaceChildren(head)
+    copy.style.width = `${table.getBoundingClientRect().width}px`
+    holder.style.height = `${height}px`
+    holder.style.marginBottom = `${-height}px`
+    holder.scrollLeft = scroll.scrollLeft
+  }
+  scroll.addEventListener('scroll', () => (holder.scrollLeft = scroll.scrollLeft), { passive: true })
+  new ResizeObserver(sync).observe(table)
+  for (const event of ['sorted', 'filtered', 'grown']) table.addEventListener(event, () => requestAnimationFrame(sync))
+  sync()
+}
+for (const table of document.querySelectorAll('table.sortable')) stickHead(table)
+
+// In the menu on a phone, tapping a group opens it in place instead of
+// leaving for the group's page: a finger cannot hover to see what is inside,
+// and a page load for every look is slow. The group's own page is the first
+// line of the opened list.
+const phone = matchMedia('(max-width: 760px)')
+let menuData = null
+document.querySelector('.side-categories')?.addEventListener('click', async (event) => {
+  const head = event.target.closest('.side-categories > li > a')
+  if (!head || !phone.matches) return
+  event.preventDefault()
+  const item = head.parentElement
+  let list = item.querySelector(':scope > ul')
+  if (list) {
+    list.hidden = !list.hidden
+    item.classList.toggle('open', !list.hidden)
+    return
+  }
+  menuData ??= fetch('/data/menu.json').then((r) => r.json())
+  const group = head.getAttribute('href').split('/').filter(Boolean).at(-1)
+  list = document.createElement('ul')
+  const line = (text, href) => {
+    const li = document.createElement('li')
+    li.append(Object.assign(document.createElement('a'), { href, textContent: text }))
+    return li
+  }
+  list.append(line(`All of ${head.firstChild.textContent.trim()}`, head.href), ...((await menuData)[group] ?? []).map(([title, href]) => line(title, href)))
+  item.append(list)
+  item.classList.add('open')
+})
+
 // --- Menus --------------------------------------------------------------------
 
 // A short message that confirms a copy or reports why it failed. It appears
@@ -724,7 +855,7 @@ async function copy(type, content, done) {
     await navigator.clipboard.write([new ClipboardItem({ [type]: blob })])
     toast(done)
   } catch {
-    toast('Copying was blocked by the browser.')
+    toast('The browser blocked the copy.')
   }
 }
 
@@ -767,7 +898,7 @@ function tableOnScreen(table, fullUrl) {
   // Which rows, and the switches and sort order that chose them.
   const first = kept.indexOf(shown[0]) + 1
   const state = [shown.length === kept.length ? `All ${kept.length.toLocaleString('en-US')} rows` : `Rows ${first.toLocaleString('en-US')}–${(first + shown.length - 1).toLocaleString('en-US')} of ${kept.length.toLocaleString('en-US')}`]
-  const bars = new Set([table.closest('.scroll')?.previousElementSibling, table.closest('.pick')?.querySelector(':scope > .switches')].filter((bar) => bar?.classList.contains('switches')))
+  const bars = new Set([(table.headHolder ?? table.closest('.scroll'))?.previousElementSibling, table.closest('.pick')?.querySelector(':scope > .switches')].filter((bar) => bar?.classList.contains('switches')))
   for (const bar of bars) {
     for (const group of bar.querySelectorAll('.switch:not([hidden])')) {
       const checked = [...group.querySelectorAll('input')].find((input) => input.checked && !input.hidden)
@@ -826,7 +957,7 @@ for (const menu of document.querySelectorAll('.page-menu')) {
       try {
         await navigator.clipboard.writeText(decodeURIComponent(question))
       } catch {
-        return toast('Copying was blocked by the browser.')
+        return toast('The browser blocked the copy.')
       }
       for (let seconds = 3; seconds > 0; seconds--) {
         toast(`Question copied. Paste it into ${name}, opening in ${seconds}…`, { hold: true })
@@ -901,6 +1032,209 @@ async function labelPng(svg) {
 
 const labelName = (svg) => (svg.getAttribute('aria-label') ?? 'label').split('.')[0].toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80)
 
+const ACTION_ICONS = {
+  copy: 'M5 1h9v10h-3v3H2V4h3zm1.500 3H11v5.500h1.500v-7h-6zM3.500 5.500v7h6v-7z',
+  save: 'M7.250 1.500h1.500v6.700l2.200-2.200 1.050 1.050L8 11.050 4 7.050 5.050 6l2.200 2.200zM2.500 12.500h11V14h-11z',
+  link: 'M6.500 4.500H4a3.500 3.500 0 0 0 0 7h2.500V10H4a2 2 0 0 1 0-4h2.500zM9.500 4.500H12a3.500 3.500 0 0 1 0 7H9.500V10H12a2 2 0 0 0 0-4H9.500zM5 7.250h6v1.500H5z',
+  open: 'M3 3h5v1.500H4.500v7h7V8H13v5H3zM9.500 2H14v4.500h-1.500V4.560L8.530 8.530 7.470 7.470 11.440 3.500H9.500z',
+  embed: 'M5.500 4l1.060 1.060L3.620 8l2.940 2.940L5.500 12l-4-4zM10.500 4l4 4-4 4-1.060-1.060L12.380 8 9.440 5.060z',
+}
+const actionIcon = (id) => {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.setAttribute('viewBox', '0 0 16 16')
+  svg.setAttribute('class', 'ico')
+  svg.setAttribute('aria-hidden', 'true')
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  path.setAttribute('d', ACTION_ICONS[id])
+  path.setAttribute('fill', 'currentColor')
+  path.setAttribute('fill-rule', 'evenodd')
+  svg.append(path)
+  return svg
+}
+// The site's one dialog: a title bar with a close button, and a body that
+// scrolls. Opens it empty and returns the body to fill.
+function sheet(title, kind) {
+  let dialog = document.querySelector('dialog.sheet')
+  if (!dialog) {
+    dialog = document.createElement('dialog')
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog || event.target.closest('[data-close]')) dialog.close()
+      const button = event.target.closest('[data-copy]')
+      if (button) copy('text/plain', button.previousElementSibling.textContent, `${button.dataset.copy} copied`)
+    })
+    document.body.append(dialog)
+  }
+  dialog.className = `sheet sheet-${kind}`
+  dialog.replaceChildren()
+  const head = document.createElement('div')
+  head.className = 'sheet-head'
+  const heading = document.createElement('h2')
+  heading.textContent = title
+  const close = document.createElement('button')
+  close.type = 'button'
+  close.dataset.close = ''
+  close.setAttribute('aria-label', 'Close')
+  close.title = 'Close'
+  close.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.500 3.500l9 9M12.500 3.500l-9 9" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>'
+  head.append(heading, close)
+  const body = document.createElement('div')
+  body.className = 'sheet-body'
+  dialog.append(head, body)
+  dialog.showModal()
+  body.scrollTop = 0
+  return body
+}
+
+// Reporting a problem or reviewing a benchmark happens on GitHub, in an issue
+// form. The dialog asks what the reader wants to say and opens the right
+// form, filled in with what the page is about.
+const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.700 4.800L7.100 10.900 4.300 8.100l1.100-1.100 1.600 1.600 3.500-3.900z" fill="currentColor" fill-rule="evenodd"/></svg>'
+function issueUrl(template, title, fields) {
+  const query = new URLSearchParams(template ? { template } : {})
+  query.set('title', title)
+  for (const [id, value] of Object.entries(fields)) if (value) query.set(id, value)
+  return `${document.body.dataset.repo}/issues/new?${query}`
+}
+function feedbackDialog(holder, act) {
+  const d = holder.dataset
+  const common = { package: d.fbPackage, task: d.fbTask, page: d.fbPage }
+  // What each form has a field for, besides those.
+  const extra = { '1-result-looks-wrong.yml': { runtime: d.fbRuntime }, '3-wrong-category.yml': { current: d.fbCategory, task: '' } }
+  const about = d.fbAbout
+  const choices = act === 'vouch'
+    ? [
+        ['5-maintainer-review.yml', `Maintainer review: ${about}`, 'I maintain this package', 'Confirm that the benchmark uses it correctly, or say what must change. A confirmed benchmark gets a blue check.', 'maintainer'],
+        ['6-independent-review.yml', `Review: ${about}`, 'I do not maintain it, but I reviewed the benchmark', 'Say if it is correct. A reviewed benchmark gets a grey check.', 'human'],
+      ]
+    : [
+        d.fbScope !== 'listed' && ['1-result-looks-wrong.yml', `Result looks wrong: ${about}`, 'A result looks wrong', 'A figure or a class does not match what you measure or expect.'],
+        d.fbScope !== 'listed' && ['2-benchmark-not-correct.yml', `Benchmark not correct: ${about}`, 'The benchmark does not use the package correctly', 'The wrong API, a missing setting, or work that other entries do not do.'],
+        d.fbPackage && ['3-wrong-category.yml', `Wrong category: ${about}`, 'It is in the wrong category', 'The package does a different job from the others beside it.'],
+        ['4-suggestion.yml', `Suggestion: ${about}`, 'Suggest a package, version, setting or task', 'Something to add, or to measure differently.'],
+        [null, `${about}: `, 'Something else', 'A comment or a question, in an empty issue.'],
+      ].filter(Boolean)
+  const body = sheet(act === 'vouch' ? 'Is this package yours?' : 'Report a problem or suggest a change', 'feedback')
+  const intro = document.createElement('p')
+  intro.className = 'soft'
+  intro.append(act === 'vouch'
+    ? `About ${about}. First read the code that runs the package`
+    : `About ${about}. Each choice opens a form on GitHub, filled in with this page. You need a GitHub account.`)
+  if (act === 'vouch') {
+    if (d.fbCode) {
+      const code = Object.assign(document.createElement('a'), { href: d.fbCode, textContent: 'the benchmark code' })
+      intro.append(': ', code)
+    }
+    intro.append('. Then tell us on GitHub what you found.')
+  }
+  const list = document.createElement('ul')
+  list.className = 'choices'
+  for (const [template, title, name, detail, check] of choices) {
+    const item = document.createElement('li')
+    const link = Object.assign(document.createElement('a'), { href: issueUrl(template, title, { ...common, ...extra[template] }), target: '_blank', rel: 'noopener' })
+    const strong = document.createElement('b')
+    if (check) {
+      const mark = document.createElement('span')
+      mark.className = `verified ${check}`
+      mark.innerHTML = CHECK
+      strong.append(mark)
+    }
+    strong.append(name)
+    const small = document.createElement('small')
+    small.textContent = detail
+    const go = document.createElement('span')
+    go.className = 'go'
+    go.textContent = 'Open on GitHub'
+    link.append(strong, small, go)
+    item.append(link)
+    list.append(item)
+  }
+  body.append(intro, list)
+  if (act === 'vouch') {
+    const note = document.createElement('p')
+    note.className = 'sheet-note'
+    note.textContent = 'We confirm that a maintainer review comes from a maintainer before a blue check appears.'
+    body.append(note)
+  }
+}
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a.act[data-act]')
+  const holder = link?.closest('.feedback')
+  if (!holder || !document.body.dataset.repo || event.metaKey || event.ctrlKey || event.shiftKey) return
+  event.preventDefault()
+  feedbackDialog(holder, link.dataset.act)
+})
+
+// One label in every shape it comes in, each with the text that embeds it:
+// Markdown for a README, HTML for a page. The shapes are files whose
+// addresses stay put, so an embedded label follows new measurements.
+function embedDialog(holder) {
+  const { label, embed, embedPage, embedAlt, ranking } = holder.dataset
+  const site = document.body.dataset.site || location.origin
+  const shapes = [
+    ['Label', label, 'The full label, as on this page.'],
+    ['Compact', `${embed}compact.${ranking}.svg`, 'A small label: name, scale and figure.'],
+    ['Wide', `${embed}wide.${ranking}.svg`, 'A label lying down, for a header or a slide.'],
+    ['Button', `${embed}button.${ranking}.svg`, '88 by 31, like the buttons of old web pages.'],
+    ['Badge', `${embed}badge.svg`, 'One line for a README, with the CPU, memory and type-check classes together.'],
+    ['Badge, flat', `${embed}badge.flat.svg`, 'The same line with square corners and no shading.'],
+  ].filter(([, file]) => file)
+  const body = sheet('Embed this label', 'embed')
+  const about = document.createElement('p')
+  about.className = 'soft'
+  about.textContent = `${embedAlt}. Each address stays the same and shows the newest measurement.`
+  body.append(about)
+  const page = new URL(embedPage, site).href
+  for (const [name, file, note] of shapes) {
+    // A badge carries every class, so it is not described by one of them.
+    const alt = name.startsWith('Badge') ? embedAlt.replace(/: [^:]*$/, '') : embedAlt
+    const src = new URL(file, site).href
+    const shape = document.createElement('div')
+    shape.className = 'embed-shape'
+    const heading = document.createElement('h3')
+    heading.textContent = name
+    const says = document.createElement('p')
+    says.className = 'soft'
+    says.textContent = note
+    const image = document.createElement('img')
+    image.src = file
+    image.alt = alt
+    // Its size in pixels, said beside its name once the file has arrived.
+    image.addEventListener('load', () => {
+      if (!image.naturalWidth) return
+      const size = document.createElement('span')
+      size.className = 'embed-size'
+      size.textContent = `${image.naturalWidth} × ${image.naturalHeight} px`
+      heading.append(size)
+    })
+    // The fields sit beside the shape where there is room, level with its
+    // name; the wide one keeps the whole row and has them underneath.
+    if (name !== 'Wide') shape.classList.add('beside')
+    const main = document.createElement('div')
+    main.className = 'embed-main'
+    const codes = document.createElement('div')
+    codes.className = 'embed-codes'
+    main.append(heading, says, image)
+    shape.append(main, codes)
+    for (const [kind, text] of [['Markdown', `[![${alt}](${src})](${page})`], ['HTML', `<a href="${page}"><img src="${src}" alt="${alt}"></a>`]]) {
+      const row = document.createElement('p')
+      row.className = 'embed-code'
+      const tag = document.createElement('b')
+      tag.textContent = kind
+      const code = document.createElement('code')
+      code.textContent = text
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.dataset.copy = kind
+      button.setAttribute('aria-label', `Copy ${kind}`)
+      button.title = `Copy ${kind}`
+      button.append(actionIcon('copy'))
+      row.append(tag, code, button)
+      codes.append(row)
+    }
+    body.append(shape)
+  }
+}
+const LABEL_ICONS = { 'Copy as PNG': 'copy', 'Copy as SVG': 'copy', 'Save PNG': 'save', 'Save SVG': 'save', 'Copy link': 'link', 'Open SVG': 'open' }
 const LABEL_ACTIONS = [
   ['Copy as PNG', (svg) => copy('image/png', labelPng(svg), 'Label copied as an image')],
   ['Copy as SVG', (svg) => copy('text/plain', labelSvg(svg, `@import url('${FONT_CSS.replace(/&/g, '&amp;')}');`).text, 'Label copied as SVG code')],
@@ -929,13 +1263,35 @@ for (const holder of document.querySelectorAll('[data-label]')) {
       const item = document.createElement('li')
       const control = document.createElement('button')
       control.type = 'button'
-      control.textContent = text
+      control.append(actionIcon(LABEL_ICONS[text]), text)
       control.addEventListener('click', () => action(svg, holder.dataset.label))
       item.append(control)
       list.append(item)
     }
     menu.append(list)
   })
-  holder.classList.add('has-label-menu')
-  svg.after(menu)
+  // The menu sits in the strip above the label, on the side away from any
+  // place tag; a label without that strip gets one.
+  let over = holder.querySelector(':scope > .over')
+  if (!over) {
+    over = document.createElement('p')
+    over.className = 'over'
+    holder.prepend(over)
+  }
+  // What can be done with the label sits together at the right of that
+  // strip: embedding it elsewhere, then the menu. Tags about the label are
+  // on the left, and links to other pages are below it.
+  const actions = document.createElement('span')
+  actions.className = 'label-actions'
+  if (holder.dataset.embed) {
+    const embed = document.createElement('button')
+    embed.type = 'button'
+    embed.className = 'label-embed'
+    embed.title = 'Embed this label'
+    embed.append(actionIcon('embed'), 'Embed')
+    embed.addEventListener('click', () => embedDialog(holder))
+    actions.append(embed)
+  }
+  actions.append(menu)
+  over.append(actions)
 }

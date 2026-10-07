@@ -1,0 +1,31 @@
+{
+  "category": "parser-combinators",
+  "task": "arithmetic-expressions",
+  "title": "Arithmetic expression evaluation",
+  "summary": "Parse arithmetic expressions with operator precedence, unary minus and parentheses using a grammar written in each library, and evaluate them to a number.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 44,
+  "notes": "Rust adapters return an f64 computed while parsing (pest: by folding the parse tree); the harness converts it for the check outside measured work."
+}

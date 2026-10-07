@@ -1,0 +1,30 @@
+{
+  "category": "hash-maps",
+  "task": "count-and-retract",
+  "title": "Count occurrences, then retract",
+  "summary": "Tally a stream of repeated integer and string keys with read-modify-write updates, then decrement keys and drop the ones that reach zero.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}
