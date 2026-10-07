@@ -174,6 +174,13 @@ async function search() {
       name.append(other, arrow, entry.t)
     } else name.append(...marked(entry.t, indices))
     link.append(name)
+    if (entry.v) {
+      const mark = document.createElement('span')
+      mark.className = `verified ${entry.v === 'm' ? 'maintainer' : 'human'}`
+      mark.title = entry.v === 'm' ? 'Verified by the package authors' : 'Reviewed by a human'
+      mark.innerHTML = entry.v === 'm' ? CHECK : ROUND_CHECK
+      link.append(mark)
+    }
     kind.textContent = entry.k
     link.append(kind)
     link.addEventListener('pointermove', () => i !== active && setActive(i))
@@ -1088,7 +1095,21 @@ function sheet(title, kind) {
 // Reporting a problem or reviewing a benchmark happens on GitHub, in an issue
 // form. The dialog asks what the reader wants to say and opens the right
 // form, filled in with what the page is about.
-const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.700 4.800L7.100 10.900 4.300 8.100l1.100-1.100 1.600 1.600 3.500-3.900z" fill="currentColor" fill-rule="evenodd"/></svg>'
+const CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.65 2.32Q8.00 -0.05 10.35 2.32Q13.69 2.31 13.68 5.65Q16.05 8.00 13.68 10.35Q13.69 13.69 10.35 13.68Q8.00 16.05 5.65 13.68Q2.31 13.69 2.32 10.35Q-0.05 8.00 2.32 5.65Q2.31 2.31 5.65 2.32zM11.500 5.900L7.100 10.800 4.500 8.200l1.050-1.050 1.500 1.500 3.350-3.750z" fill="currentColor" fill-rule="evenodd"/><path d="M11.500 5.900L7.100 10.800 4.500 8.200l1.050-1.050 1.500 1.500 3.350-3.750z" fill="#fff"/></svg>'
+const ROUND_CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1z" fill="currentColor"/><path d="M7.500 3.300a1.400 1.400 0 1 0 0 2.800 1.400 1.400 0 0 0 0-2.800zM6.100 6.500h2.650v6.600H7.900v-3.100h-.550v3.100H6.500V7.900h-.250v2.300H5.200V7.400a.900.900 0 0 1 .900-.900z" fill="#fff"/><path d="M8.750 6.500h1.880a.550.550 0 0 1 0 1.100H8.750z" fill="#fff"/><path class="wave-arm" d="M10.080 7.050V4.600h1.100v2.450a.550.550 0 0 1-1.100 0z" fill="#fff"/></svg>'
+const PENCIL = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.300 1.700a1 1 0 0 1 1.400 0l1.600 1.600a1 1 0 0 1 0 1.400L6 13H3v-3zM2 14.500h12V16H2z" fill="currentColor"/></svg>'
+// The icon before each choice: the two checks, or a plain mark for the rest.
+const plainIcon = (d) => `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d}" fill="currentColor" fill-rule="evenodd"/></svg>`
+const CHOICE_ICONS = {
+  maintainer: () => CHECK,
+  human: () => ROUND_CHECK,
+  edit: () => PENCIL,
+  wrong: () => plainIcon('M8 1.500l7 12.500H1zM7.250 6v4h1.500V6zm0 5v1.500h1.500V11z'),
+  code: () => plainIcon('M5.500 4l1.060 1.060L3.620 8l2.940 2.940L5.500 12l-4-4zM10.500 4l4 4-4 4-1.060-1.060L12.380 8 9.440 5.060z'),
+  category: () => plainIcon('M1.500 3h5L8 4.500h6.500V13h-13z'),
+  add: () => plainIcon('M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.750 3.500h1.500v2.750h2.750v1.500H8.750v2.750h-1.500V8.750H4.500v-1.500h2.750z'),
+  comment: () => plainIcon('M2 2h12v9H8.500L5 14v-3H2z'),
+}
 function issueUrl(template, title, fields) {
   const query = new URLSearchParams(template ? { template } : {})
   query.set('title', title)
@@ -1101,23 +1122,26 @@ function feedbackDialog(holder, act) {
   // What each form has a field for, besides those.
   const extra = { '1-result-looks-wrong.yml': { runtime: d.fbRuntime }, '3-wrong-category.yml': { current: d.fbCategory, task: '' } }
   const about = d.fbAbout
+  // For a maintainer, both choices open the same form with the verdict set.
+  // A review by anyone else is one of the things a reader can report.
   const choices = act === 'vouch'
     ? [
-        ['5-maintainer-review.yml', `Maintainer review: ${about}`, 'I maintain this package', 'Confirm that the benchmark uses it correctly, or say what must change. A confirmed benchmark gets a blue check.', 'maintainer'],
-        ['6-independent-review.yml', `Review: ${about}`, 'I do not maintain it, but I reviewed the benchmark', 'Say if it is correct. A reviewed benchmark gets a grey check.', 'human'],
+        ['5-maintainer-review.yml', `Maintainer review: ${about}`, 'Yes, and the benchmark uses it correctly', 'Confirm it. A benchmark that its authors confirm gets a blue check.', 'maintainer', { verdict: 'The benchmark is correct as it is' }],
+        ['5-maintainer-review.yml', `Maintainer review: ${about}`, 'Yes, and the benchmark needs changes', 'Say what it must do differently. It gets the blue check when they are in.', 'edit', { verdict: 'It is correct after the changes below' }],
       ]
     : [
-        d.fbScope !== 'listed' && ['1-result-looks-wrong.yml', `Result looks wrong: ${about}`, 'A result looks wrong', 'A figure or a class does not match what you measure or expect.'],
-        d.fbScope !== 'listed' && ['2-benchmark-not-correct.yml', `Benchmark not correct: ${about}`, 'The benchmark does not use the package correctly', 'The wrong API, a missing setting, or work that other entries do not do.'],
-        d.fbPackage && ['3-wrong-category.yml', `Wrong category: ${about}`, 'It is in the wrong category', 'The package does a different job from the others beside it.'],
-        ['4-suggestion.yml', `Suggestion: ${about}`, 'Suggest a package, version, setting or task', 'Something to add, or to measure differently.'],
-        [null, `${about}: `, 'Something else', 'A comment or a question, in an empty issue.'],
+        d.fbScope !== 'listed' && ['1-result-looks-wrong.yml', `Result looks wrong: ${about}`, 'A result looks wrong', 'A figure or a class does not match what you measure or expect.', 'wrong'],
+        d.fbScope !== 'listed' && ['2-benchmark-not-correct.yml', `Benchmark not correct: ${about}`, 'The benchmark does not use the package correctly', 'The wrong API, a missing setting, or work that other entries do not do.', 'code'],
+        d.fbPackage && ['3-wrong-category.yml', `Wrong category: ${about}`, 'It is in the wrong category', 'The package does a different job from the others beside it.', 'category'],
+        ['4-suggestion.yml', `Suggestion: ${about}`, 'Suggest a package, version, setting or task', 'Something to add, or to measure differently.', 'add'],
+        d.fbScope !== 'listed' && d.fbScope !== 'task' && ['6-independent-review.yml', `Review: ${about}`, 'I read the benchmark code and reviewed it', 'Say if it is correct. A benchmark that a person other than its author reviewed gets a grey reviewer mark.', 'human'],
+        [null, `${about}: `, 'Something else', 'A comment or a question, in an empty issue.', 'comment'],
       ].filter(Boolean)
   const body = sheet(act === 'vouch' ? 'Is this package yours?' : 'Report a problem or suggest a change', 'feedback')
   const intro = document.createElement('p')
   intro.className = 'soft'
   intro.append(act === 'vouch'
-    ? `About ${about}. First read the code that runs the package`
+    ? `For the maintainers of ${about}. First read the code that runs the package`
     : `About ${about}. Each choice opens a form on GitHub, filled in with this page. You need a GitHub account.`)
   if (act === 'vouch') {
     if (d.fbCode) {
@@ -1128,14 +1152,15 @@ function feedbackDialog(holder, act) {
   }
   const list = document.createElement('ul')
   list.className = 'choices'
-  for (const [template, title, name, detail, check] of choices) {
+  for (const [template, title, name, detail, check, preset] of choices) {
     const item = document.createElement('li')
-    const link = Object.assign(document.createElement('a'), { href: issueUrl(template, title, { ...common, ...extra[template] }), target: '_blank', rel: 'noopener' })
+    const link = Object.assign(document.createElement('a'), { href: issueUrl(template, title, { ...common, ...extra[template], ...preset }), target: '_blank', rel: 'noopener' })
     const strong = document.createElement('b')
     if (check) {
       const mark = document.createElement('span')
-      mark.className = `verified ${check}`
-      mark.innerHTML = CHECK
+      // The pencil goes with the blue badge above it; the report icons are grey, like the review check among them.
+      mark.className = `verified ${check === 'maintainer' || check === 'human' ? check : check === 'edit' ? 'plain blue' : 'plain'}`
+      mark.innerHTML = CHOICE_ICONS[check]()
       strong.append(mark)
     }
     strong.append(name)
@@ -1143,7 +1168,7 @@ function feedbackDialog(holder, act) {
     small.textContent = detail
     const go = document.createElement('span')
     go.className = 'go'
-    go.textContent = 'Open on GitHub'
+    go.append('Open on GitHub', actionIcon('open'))
     link.append(strong, small, go)
     item.append(link)
     list.append(item)
@@ -1152,8 +1177,17 @@ function feedbackDialog(holder, act) {
   if (act === 'vouch') {
     const note = document.createElement('p')
     note.className = 'sheet-note'
-    note.textContent = 'We confirm that a maintainer review comes from a maintainer before a blue check appears.'
-    body.append(note)
+    note.textContent = 'We confirm that the review comes from a maintainer before a blue check appears.'
+    // Anyone else is sent to the other dialog, about the same thing.
+    const other = document.createElement('p')
+    other.className = 'sheet-note'
+    const link = Object.assign(document.createElement('a'), { href: `${document.body.dataset.repo}/issues/new/choose`, textContent: 'Send feedback anyway' })
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      feedbackDialog(holder, 'report')
+    })
+    other.append('Not a maintainer or author? ', link, '.')
+    body.append(note, other)
   }
 }
 document.addEventListener('click', (event) => {

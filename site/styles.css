@@ -560,12 +560,40 @@ a.act { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4
 a.act .ico { width: 15px; height: 15px; margin: 0; }
 a.act:hover, a.act:focus-visible { background: var(--accent); color: var(--accent-ink); }
 .adapter .feedback { margin: 6px 0 10px; }
+/* At the top of a page: beside the Copy page button, to its left. */
+.feedback.beside-menu { float: right; margin: 0 0 8px 16px; gap: 8px; }
+.feedback.beside-menu a.act { padding: 3.500px 11px 3.500px 9px; }
+/* On a narrow screen the title and its introduction come first, then these
+   buttons, then the Copy page button, each on a row of its own. */
+@media (max-width: 760px) {
+  main:has(> .feedback.beside-menu) { display: flex; flex-direction: column; }
+  main:has(> .feedback.beside-menu) > * { min-width: 0; }
+  main:has(> .feedback.beside-menu) > h1 { order: -4; }
+  main:has(> .feedback.beside-menu) > .intro { order: -3; }
+  main > .feedback.beside-menu { order: -2; float: none; margin: 4px 0 8px; }
+  main:has(> .feedback.beside-menu) > .page-menu { order: -1; float: none; align-self: flex-start; margin: 0 0 12px; }
+}
 .adapter a.act { font-size: 0.8125rem; padding: 2px 9px 2px 7px; }
 /* The checks: blue for the package's authors, grey for another person. */
 .verified { display: inline-block; width: 15px; height: 15px; margin: 0 4px; vertical-align: -2px; }
+#q-results .verified { flex: none; margin: 0 0 0 6px; }
+/* Beside a page's title: large, as part of the name. */
+h1 .verified { width: 0.95em; height: 0.95em; margin: 0 0 0 0.3em; vertical-align: -0.14em; }
+/* After a name in a table: close to the name, before its version. */
+td > a + .verified { width: 14px; height: 14px; margin: 0 0 0 5px; vertical-align: -2.5px; }
 .verified svg { display: block; width: 100%; height: 100%; }
-.verified.maintainer { color: var(--accent); }
-.verified.human { color: var(--soft); }
+/* One blue in both colour schemes, so the white tick inside it stays clear. */
+.verified.maintainer { color: #1a73e8; }
+.verified.human { color: #6b7075; }
+/* Pointed at, the reviewer waves: the forearm unfolds at the elbow, out to
+   45 degrees, and swings there before it comes back. */
+.wave-arm { transform-box: view-box; transform-origin: 10.630px 7.050px; }
+@media (prefers-reduced-motion: no-preference) {
+  .verified.human:hover .wave-arm, svg:hover > g > .wave-arm { animation: wave 1.1s ease-in-out; }
+}
+@keyframes wave { 0%, 100% { transform: rotate(0); } 22% { transform: rotate(45deg); } 42% { transform: rotate(18deg); } 62% { transform: rotate(45deg); } 80% { transform: rotate(18deg); } }
+.verified.plain { color: #6b7075; }
+.verified.plain.blue { color: #1a73e8; }
 /* The choices in the report and review dialogs. */
 .sheet-body > .choices { list-style: none; margin: 0; padding: 6px 24px 18px; max-width: none; }
 .choices li { border-top: 1px solid var(--rule); }
@@ -573,7 +601,11 @@ a.act:hover, a.act:focus-visible { background: var(--accent); color: var(--accen
 .choices a { display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; align-items: center; padding: 12px 8px; margin: 0 -8px; text-decoration: none; }
 .choices a b { grid-column: 1; }
 .choices a small { grid-column: 1; color: var(--soft); font-size: 0.8125rem; }
-.choices a .go { grid-column: 2; grid-row: 1 / span 2; color: var(--accent); font-weight: 700; font-size: 0.8125rem; white-space: nowrap; }
+.choices a .go { grid-column: 2; grid-row: 1 / span 2; display: inline-flex; align-items: center; gap: 5px; color: var(--accent); font-weight: 700; font-size: 0.8125rem; white-space: nowrap; }
+.choices a .go .ico { width: 13px; height: 13px; margin: 0; }
+.choices a, .choices a:hover, .choices a:focus-visible { color: var(--ink); }
 .choices a:hover, .choices a:focus-visible { background: var(--band); }
 .choices a .verified { margin-left: 0; }
 .sheet-body > p.sheet-note { padding: 0 24px 18px; color: var(--soft); font-size: 0.8125rem; }
+.sheet-body > p.sheet-note + p.sheet-note { margin-top: -8px; }
+.sheet-body > p.sheet-note a { color: var(--accent); font-weight: 700; }

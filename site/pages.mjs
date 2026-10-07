@@ -174,9 +174,10 @@ const SIDE_LIMIT = 24
 // results.json for pages that list something. null leaves the menu out.
 // `at` is the page's own address where `path` names another page (a version
 // page keeps its package highlighted in the catalog).
-function layout({ title, description, path, crumbs = [], context = {}, model, body, formats = { data: false } }) {
+function layout({ title, description, path, crumbs = [], context = {}, model, body, formats = { data: false }, actions = '' }) {
   const own = formats?.at ?? path
-  if (formats) body = body.replace('<main>', `<main>\n${pageMenu({ markdown: `${own}index.md`, csv: formats.data ? `${own}results.csv` : null, json: formats.data ? (formats.json ?? `${own}results.json`) : null })}`)
+  if (formats) body = body.replace('<main>', `<main>\n${pageMenu({ markdown: `${own}index.md`, csv: formats.data ? `${own}results.csv` : null, json: formats.data ? (formats.json ?? `${own}results.json`) : null })}${actions}`)
+  else if (actions) body = body.replace('<main>', `<main>\n${actions}`)
   body = captionsBelow(body)
   const trail = crumbs.length
     ? `<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li>${crumbs.map(([text, href]) => `<li>${href ? `<a href="${href}">${esc(text)}</a>` : `<span aria-current="page">${esc(text)}</span>`}</li>`).join('')}</ol></nav>`
@@ -221,16 +222,34 @@ ${body}
 // --- Shared pieces ----------------------------------------------------------
 
 // A check beside a benchmark that someone other than its author has read and
-// found correct: blue when a maintainer of the package did, grey when another
-// person did. Nothing when it is not reviewed.
-const CHECK_PATH = 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.700 4.800L7.100 10.900 4.300 8.100l1.100-1.100 1.600 1.600 3.500-3.900z'
+// found correct: a blue badge when a maintainer of the package did, a grey
+// white figure raising a hand, in a grey circle, when another person did. Nothing when it is not reviewed.
+const CHECK_PATH = 'M5.65 2.32Q8.00 -0.05 10.35 2.32Q13.69 2.31 13.68 5.65Q16.05 8.00 13.68 10.35Q13.69 13.69 10.35 13.68Q8.00 16.05 5.65 13.68Q2.31 13.69 2.32 10.35Q-0.05 8.00 2.32 5.65Q2.31 2.31 5.65 2.32zM11.500 5.900L7.100 10.800 4.500 8.200l1.050-1.050 1.500 1.500 3.350-3.750z'
+// Another person's review has a different mark, not a tick: a figure raising
+// a hand, drawn in white over this solid disc (solid, so the waving arm leaves no hole).
+const ROUND_CHECK_PATH = 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1z'
 const REVIEWS = { maintainer: 'Verified by the package authors', human: 'Reviewed by a human' }
 const reviewOf = (adapter) => (adapter?.review === 'maintainer' ? 'maintainer' : adapter?.review && adapter.review !== 'unreviewed' ? 'human' : null)
+// The figure's forearm is a path of its own, so it can unfold at the elbow and wave when pointed at (see styles.css).
+const verifiedMark = (kind, title) => `<span class="verified ${kind}" title="${esc(title)}"><svg viewBox="0 0 16 16" role="img" aria-label="${esc(REVIEWS[kind])}"><path d="${kind === 'maintainer' ? CHECK_PATH : ROUND_CHECK_PATH}" fill="currentColor" fill-rule="evenodd"/>${kind === 'maintainer' ? `<path d="M11.500 5.900L7.100 10.800 4.500 8.200l1.050-1.050 1.500 1.500 3.350-3.750z" fill="#fff"/>` : `<path d="M7.500 3.300a1.400 1.400 0 1 0 0 2.800 1.400 1.400 0 0 0 0-2.800zM6.100 6.500h2.650v6.600H7.900v-3.100h-.550v3.100H6.500V7.900h-.250v2.300H5.200V7.400a.900.900 0 0 1 .900-.900z" fill="#fff"/><path d="M8.750 6.500h1.880a.550.550 0 0 1 0 1.100H8.750z" fill="#fff"/><path class="wave-arm" d="M10.080 7.050V4.600h1.100v2.450a.550.550 0 0 1-1.100 0z" fill="#fff"/>`}</svg></span>`
 function verified(adapter) {
   const kind = reviewOf(adapter)
   if (!kind) return ''
   const by = adapter.reviewed?.by ? ` (${adapter.reviewed.by}${adapter.reviewed.date ? `, ${adapter.reviewed.date}` : ''})` : ''
-  return `<span class="verified ${kind}" title="${esc(`${REVIEWS[kind]}${by}`)}"><svg viewBox="0 0 16 16" role="img" aria-label="${esc(REVIEWS[kind])}"><path d="${CHECK_PATH}" fill="currentColor" fill-rule="evenodd"/></svg></span>`
+  return verifiedMark(kind, `${REVIEWS[kind]}${by}`)
+}
+// The check a package's own page carries beside its name: the review that
+// every one of its benchmarks there has. One benchmark that is not reviewed
+// leaves the name without one.
+const reviewOfAll = (entries) => {
+  const kinds = [...new Map(entries.map((e) => [adapterIdOf(e), reviewOf(e.adapter)])).values()]
+  return kinds.length === 0 || kinds.some((kind) => !kind) ? null : kinds.every((k) => k === 'maintainer') ? 'maintainer' : 'human'
+}
+function verifiedAll(entries) {
+  const kind = reviewOfAll(entries)
+  if (!kind) return ''
+  const kinds = new Set(entries.map(adapterIdOf))
+  return verifiedMark(kind, kinds.size === 1 ? REVIEWS[kind] : `${REVIEWS[kind]}: all ${kinds.size} benchmarks`)
 }
 // The sentence that says who reviewed an adapter, with a link to the review.
 function reviewText(adapter) {
@@ -251,12 +270,13 @@ const FEEDBACK_ICONS = {
   report: 'M2 2h12v9H8.500L5 14v-3H2zm5.250 2v4h1.500V4zm0 5v1.500h1.500V9z',
   vouch: CHECK_PATH,
 }
-function feedback(model, { scope, about, pkg, task, runtime, category, source, code, page, vouch = true }) {
+function feedback(model, { scope, about, pkg, task, runtime, category, source, code, page, vouch = true, top = false }) {
   const forms = `${model.repository.url}/issues/new/choose`
   const data = { scope, about, package: pkg, task, runtime, category, source, code, page: `${model.site?.url ?? ''}${page}` }
   const attrs = Object.entries(data).filter(([, v]) => v).map(([k, v]) => ` data-fb-${k}="${esc(v)}"`).join('')
   const button = (act, text) => `<a class="act ${act}" data-act="${act}" href="${forms}"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${FEEDBACK_ICONS[act]}" fill="currentColor" fill-rule="evenodd"/></svg>${text}</a>`
-  return `<p class="feedback"${attrs}>${button('report', scope === 'listed' ? 'Report or suggest' : 'Report a problem or suggest a change')}${vouch ? button('vouch', 'Is this package yours?') : ''}</p>`
+  // At the top of a page they sit beside its Copy page button, with short names.
+  return `<p class="feedback${top ? ' beside-menu' : ''}"${attrs}>${button('report', top || scope === 'listed' ? 'Report or suggest' : 'Report a problem or suggest a change')}${vouch ? button('vouch', 'Is this package yours?') : ''}</p>`
 }
 
 const byRanking = (rankingId) => (a, b) => a.grades[rankingId].value - b.grades[rankingId].value || a.title.localeCompare(b.title)
@@ -425,7 +445,7 @@ function rankingTable(data, runtime, entries, model) {
       ? typeCost(e.types, e.grades.types) + cell(e.types?.coldCpuS, num(e.types?.coldCpuS, ' s'))
       : isAll ? typeCost(e.types?.compilers?.[data.typesCompiler] ?? e.types, e.grades.types) : isNative ? typeCost(e.types, e.grades.types) : compilers.map((id) => typeCost(e.types?.compilers[id])).join('')
     const marks = medalBadges(['cpu', 'memory', ...(isRust || isAll || isNative ? ['types'] : compilers)].map(mark))
-    return `<tr><td><a href="${urls.package(model.packageOf(e))}">${esc(e.title)}</a><span class="ver">${e.builtin ? 'built in' : esc(e.version ?? '')}</span>${verified(e.adapter)}${marks}</td>
+    return `<tr><td><a href="${urls.package(model.packageOf(e))}">${esc(e.title)}</a>${verified(e.adapter)}<span class="ver">${e.builtin ? 'built in' : esc(e.version ?? '')}</span>${marks}</td>
 ${isAll ? `<td class="l">${esc(languageTitle(languageOf(e.selectedRuntime.id)))}</td>` : ''}
 ${runtime.best ? `<td class="l">${inlineIcon(e.selectedRuntime.id)}${esc(e.selectedRuntime.title)}</td>` : ''}
 ${gradedCell(e.grades.cpu, `${num(cpuOf(m), ' µs', LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
@@ -543,7 +563,7 @@ ${data.task.notes ? `<li>${esc(data.task.notes)}</li>` : ""}
 ${notPassing(data)}
 ${data.task.kind === "http-server" ? "<li>By default, Rust and Go servers use every core and JavaScript servers use one. For this reason throughput has no class. The one-thread variants of the Rust and Go servers are listed beside them.</li><li>An entry with the name of a package runs that package as installed. A tuned variant changes one setting from a fixed list (worker threads, or one application thread), and its name says which.</li>" : ""}
 <li>Machine: ${esc(data.machine.cpu)}, ${data.machine.cores} cores, ${esc(data.machine.os)}.</li>
-<li>${esc([...authors].join(', '))} wrote the adapters. ${(() => { const all = data.runtimes.flatMap((r) => r.entries); const by = (kind) => new Set(all.filter((e) => reviewOf(e.adapter) === kind).map(adapterIdOf)).size; const m = by('maintainer'), h = by('human'); return m + h === 0 ? 'No human and no package maintainer has reviewed them.' : `${m ? `The authors of the package verified ${m}. ` : ''}${h ? `Another person reviewed ${h}. ` : ''}The others are not reviewed.` })()} A blue check marks a benchmark that the authors of the package verified, and a grey check one that another person reviewed.</li>
+<li>${esc([...authors].join(', '))} wrote the adapters. ${(() => { const all = data.runtimes.flatMap((r) => r.entries); const by = (kind) => new Set(all.filter((e) => reviewOf(e.adapter) === kind).map(adapterIdOf)).size; const m = by('maintainer'), h = by('human'); return m + h === 0 ? 'No human and no package maintainer has reviewed them.' : `${m ? `The authors of the package verified ${m}. ` : ''}${h ? `Another person reviewed ${h}. ` : ''}The others are not reviewed.` })()} A blue check marks a benchmark that the authors of the package verified, and a grey reviewer mark one that another person reviewed.</li>
 </ul>
 
 <h2>Benchmark source</h2>
@@ -718,10 +738,11 @@ ${adapterList}`
     context: { category: pkg.appearances[0].data.task.category, alternates: [...new Set(pkg.appearances.map((a) => a.data.task.category))].slice(1) },
     crumbs: [['Packages', '/packages/'], [eco.title, urls.ecosystem(pkg.ecosystem)], ...(older ? [[pkg.title, urls.package(pkg)], [version]] : [[pkg.title]])],
     model,
+    actions: feedback(model, { scope: 'package', about: pkg.title, pkg: `${pkg.ecosystem}/${pkg.name}`, category: pkg.appearances[0]?.data.task.category, page: urls.package(pkg, older ? version : null), vouch: pkg.ecosystem !== 'builtin' , top: true }),
     body: `<main>
-<h1>${esc(pkg.title)}${version ? ` <span class="ver">${esc(version)}</span>` : ''}</h1>
+<h1>${esc(pkg.title)}${verifiedAll(shown.map((a) => a.entry))}${version ? ` <span class="ver">${esc(version)}</span>` : ''}</h1>
 <p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.name)}">View on the registry</a>.` : ''}</p>
-${feedback(model, { scope: 'package', about: pkg.title, pkg: `${pkg.ecosystem}/${pkg.name}`, category: pkg.appearances[0]?.data.task.category, page: urls.package(pkg, older ? version : null), vouch: pkg.ecosystem !== 'builtin' })}
+
 ${versionNav}
 ${hasSettings ? `<div class="switches package-settings">${switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')}</div>` : ''}
 ${failures.length ? `<section class="compatibility" aria-label="Benchmark compatibility">${failures.map(({runtime,entry})=>`<div class="compatibility-item"><p><strong>${esc(runtime.title)} unavailable.</strong> ${esc(entry.notes ?? 'This version of the package did not complete the task on this runtime.')}</p><details><summary>Details</summary><pre>${esc(entry.error)}</pre></details></div>`).join('')}</section>` : ''}
@@ -1725,13 +1746,14 @@ export function resultPage(data, runtime, entry, model) {
     context: { category: data.task.category },
     crumbs: [['Categories', '/categories/'], ...groupCrumb(category.taxonomy, model), [category.title, urls.category(category.id)], [data.task.title, urls.task(data.task.id)], [title]],
     model,
+    actions: feedback(model, { scope: 'entry', about: `${entry.title} in ${data.task.title} on ${runtime.title}`, pkg: `${pkg.ecosystem}/${pkg.name}`, task: data.task.id, runtime: runtime.title, source: adapterSource(data.task.id, adapterIdOf(entry)).dir, code: urls.source(data.task.id, adapterIdOf(entry)), page: urls.result(data.task.id, runtime.id, entry), vouch: pkg.ecosystem !== 'builtin' , top: true }),
     body: `<main>
-<h1>${esc(entry.title)} <span class="ver">${esc(version)}</span></h1>
+<h1>${esc(entry.title)}${verified(entry.adapter)} <span class="ver">${esc(version)}</span></h1>
 <p class="intro">One result: ${esc(entry.title)}${entry.version ? ` ${esc(entry.version)}` : ''} on ${esc(runtime.title)} ${esc(runtime.version)}, in the task <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a>. The address of this page does not change when a newer version is measured, so you can link to it and cite it. Short link: <a href="${resultShort(data.task.id, runtime.id, entry)}"><code>${esc(resultShortLink(data.task.id, runtime.id, entry))}</code></a>.</p>
 <ul class="shelf">
 ${cards}
 </ul>
-${feedback(model, { scope: 'entry', about: `${entry.title} in ${data.task.title} on ${runtime.title}`, pkg: `${pkg.ecosystem}/${pkg.name}`, task: data.task.id, runtime: runtime.title, source: adapterSource(data.task.id, adapterIdOf(entry)).dir, code: urls.source(data.task.id, adapterIdOf(entry)), page: urls.result(data.task.id, runtime.id, entry), vouch: pkg.ecosystem !== 'builtin' })}
+
 <h2>Behind the figures</h2>
 <ul>
 <li>${esc(data.task.summary)}</li>
@@ -1993,11 +2015,12 @@ export function catalogPackagePage(item, model) {
     context: { listed: item.category?.id },
     crumbs: [['Packages', '/packages/'], [eco.title, urls.ecosystem(item.ecosystem)], [item.name]],
     model,
+    actions: feedback(model, { scope: 'listed', about: item.name, pkg: `${item.ecosystem}/${item.name}`, category: category?.id, page: catalogUrl(item), vouch: false , top: true }),
     body: `<main>
 <h1>${esc(item.name)}${item.version ? ` <span class="ver">${esc(item.version)}</span>` : ''}</h1>
 <p class="intro">${esc(eco.title)} package, number ${item.rank} by ${esc(item.popularity.label)} (${compact(item.popularity.value)}).${item.description ? ` ${esc(item.description)}` : ''}</p>
 <p class="note"><b>${status}.</b> ${why}</p>
-${feedback(model, { scope: 'listed', about: item.name, pkg: `${item.ecosystem}/${item.name}`, category: category?.id, page: catalogUrl(item), vouch: false })}
+
 <table class="narrow facts">
 <tbody>
 <tr><th scope="row">Category</th><td class="l">${category ? `<a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>` : NA}</td></tr>
@@ -2133,10 +2156,11 @@ ${source.shared.map((f) => sourceFile({ ...f, name: `${source.variantOf.split('/
     context: { category: data.task.category },
     crumbs: [['Categories', '/categories/'], ...groupCrumb(category.taxonomy, model), [category.title, urls.category(category.id)], [data.task.title, urls.task(data.task.id)], ['Source', urls.source(data.task.id)], [entry.title]],
     model,
+    actions: feedback(model, { scope: 'entry', about: `${entry.title} in ${data.task.title}`, pkg: pkg ? `${pkg.ecosystem}/${pkg.name}` : undefined, task: data.task.id, source: source.dir, code: urls.source(data.task.id, adapterId), page: urls.source(data.task.id, adapterId), vouch: Boolean(pkg) && pkg.ecosystem !== 'builtin' , top: true }),
     body: `<main>
-<h1>${esc(entry.title)} <span class="ver">benchmark source</span></h1>
+<h1>${esc(entry.title)}${verified(entry.adapter)} <span class="ver">benchmark source</span></h1>
 <p class="intro">The adapter that runs ${pkg ? `<a href="${urls.package(pkg)}">${esc(pkg.title)}</a>` : esc(entry.title)} in <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a>. <a href="${repoUrl(model, 'tree', source.dir)}">This folder on GitHub</a>. See also <a href="${urls.source(data.task.id)}">the task and its scenario</a>.</p>
-${feedback(model, { scope: 'entry', about: `${entry.title} in ${data.task.title}`, pkg: pkg ? `${pkg.ecosystem}/${pkg.name}` : undefined, task: data.task.id, source: source.dir, code: urls.source(data.task.id, adapterId), page: urls.source(data.task.id, adapterId), vouch: Boolean(pkg) && pkg.ecosystem !== 'builtin' })}
+
 ${fileIndex(source.files)}
 ${source.files.map((f) => sourceFile(f, model)).join('\n')}
 ${shared}
@@ -2151,7 +2175,8 @@ export function searchIndex(model) {
     // `r` is a package's rank in its registry, so that among matches of the
     // same quality the more used package comes first.
     // `i` names the icon file shown beside the result.
-    ...model.packages.map((p) => ({ t: p.title, k: ECOSYSTEMS[p.ecosystem].title, i: `eco-${p.ecosystem}`, u: urls.package(p), ...(p.listed ? { r: p.listed.rank } : {}) })),
+    // `v` is the check its page carries: m for the package's authors, h for another person.
+    ...model.packages.map((p) => ({ t: p.title, k: ECOSYSTEMS[p.ecosystem].title, i: `eco-${p.ecosystem}`, u: urls.package(p), ...(p.listed ? { r: p.listed.rank } : {}), ...(reviewOfAll(p.appearances.filter((a) => a.entry.version === p.version).map((a) => a.entry)) ? { v: reviewOfAll(p.appearances.filter((a) => a.entry.version === p.version).map((a) => a.entry))[0] } : {}) })),
     ...model.tasks.map((d) => ({ t: d.task.title, k: 'Task', i: categoryMark(d.task.category), u: urls.task(d.task.id) })),
     ...model.categories.map((c) => ({ t: c.title, k: 'Category', i: categoryMark(c.id), u: urls.category(c.id), ...also(c.taxonomy ?? c.id) })),
     ...Object.entries(ECOSYSTEMS).map(([id, e]) => ({ t: e.title, k: 'Ecosystem', i: `eco-${id}`, u: urls.ecosystem(id) })),

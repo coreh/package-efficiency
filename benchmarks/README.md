@@ -100,7 +100,7 @@ adapter's `adapter.json`:
   commits in the package's repository, or its registry page) before recording
   it. Shown as a blue check.
 - `"human"`: a person other than the adapter's author read it and found it
-  correct. Shown as a grey check.
+  correct. Shown as a grey reviewer mark.
 
 A review is of the adapter as it was then: when an adapter changes in a way
 that matters, set it back to `"unreviewed"`. Another version of a package

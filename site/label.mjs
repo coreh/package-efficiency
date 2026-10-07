@@ -75,6 +75,20 @@ export const formatBytes = (bytes) => (bytes >= 999_500 ? `${formatNumber(bytes 
 export const LEAST = { cpu: 0.0001, memory: 0.01, types: 0.001 }
 export const formatAtLeast = (value, least) => (value !== null && value !== undefined && least && value < least ? `< ${formatNumber(least)}` : formatNumber(value))
 
+// How wide a title is, to place the review badge after it: the advance of
+// each printable ASCII character in the title's face (Archivo 800 at 80%
+// width), in thousandths of the size, measured in a browser. Anything else
+// counts as an average letter.
+const NAME_ADVANCES = [151,285,416,549,472,837,668,230,369,369,387,575,262,284,262,286,521,486,516,520,515,521,521,496,515,521,275,275,575,575,575,506,833,617,607,622,622,569,511,666,638,284,522,629,511,789,640,669,579,669,617,569,561,632,594,834,605,599,567,359,286,359,575,442,219,516,522,502,522,511,306,508,518,248,247,514,248,774,519,521,522,522,337,472,321,518,472,719,508,470,447,378,229,378,575]
+const nameWidth = (text, size = 25) => ([...text].reduce((sum, ch) => sum + (NAME_ADVANCES[ch.charCodeAt(0) - 32] ?? 520), 0) * size) / 1000
+// The marks of a reviewed benchmark, 16 units square: the package authors'
+// badge with its white tick, and the mark of another person's review: a
+// white figure raising a hand, in a grey circle. Not a tick, so the two cannot be confused.
+const REVIEW_MARKS = {
+  maintainer: { color: '#1a73e8', shape: 'M5.65 2.32Q8.00 -0.05 10.35 2.32Q13.69 2.31 13.68 5.65Q16.05 8.00 13.68 10.35Q13.69 13.69 10.35 13.68Q8.00 16.05 5.65 13.68Q2.31 13.69 2.32 10.35Q-0.05 8.00 2.32 5.65Q2.31 2.31 5.65 2.32z', tick: 'M11.500 5.900L7.100 10.800 4.500 8.200l1.050-1.050 1.500 1.500 3.350-3.750z' },
+  human: { color: '#6b7075', shape: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1z', tick: 'M7.500 3.300a1.400 1.400 0 1 0 0 2.800 1.400 1.400 0 0 0 0-2.800zM6.100 6.500h2.650v6.600H7.900v-3.100h-.550v3.100H6.500V7.900h-.250v2.300H5.200V7.400a.900.900 0 0 1 .900-.900zM8.750 6.500h1.880a.550.550 0 0 1 0 1.100H8.750z', arm: 'M10.080 7.050V4.600h1.100v2.450a.550.550 0 0 1-1.100 0z' },
+}
+
 function wrap(text, width, breakWords = false) {
   const widthOf = typeof width === 'function' ? width : () => width
   const lines = ['']
@@ -308,6 +322,11 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   const mark = labelIcon(markId, WIDTH - SIDE - 30, top, 30)
   const titleLines = wrap(entry.title, (line) => (line === 0 ? (markId === 'ruby-yjit' ? 17 : 19) : 22), true)
   const subtitleLines = wrap(subtitle, 43, true)
+  // A reviewed benchmark carries its mark after the name. The last line of the
+  // name is given its measured width, so the mark sits right whatever face a
+  // viewer draws it in; a line too long for the mark is squeezed to leave room.
+  const reviewMark = contextLine || !entry.adapter?.review || entry.adapter.review === 'unreviewed' ? null : REVIEW_MARKS[entry.adapter.review === 'maintainer' ? 'maintainer' : 'human']
+  const badge = reviewMark && { ...reviewMark, width: Math.min(nameWidth(titleLines.at(-1)), (titleLines.length === 1 ? 230 : 280) - 26) }
   const contextLines = wrap(context, 43, true)
   const titleBase = top + CAP * 25
   const subtitleBase = titleBase + (titleLines.length - 1) * 28 + 22
@@ -339,7 +358,7 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
     : null
   // A reviewed benchmark says so in the same place, with a check: blue when
   // the authors of the package verified it, grey when another person did.
-  const seal = caution || !entry.adapter.review ? null : entry.adapter.review === 'maintainer' ? { text: 'Benchmark verified by the package authors.', color: '#0b57d0' } : { text: 'Benchmark reviewed by a human.', color: '#5f6368' }
+  const seal = caution || !entry.adapter.review ? null : entry.adapter.review === 'maintainer' ? { text: 'Benchmark verified by the package authors.', color: '#0b57d0', mark: 'M5.65 2.32Q8.00 -0.05 10.35 2.32Q13.69 2.31 13.68 5.65Q16.05 8.00 13.68 10.35Q13.69 13.69 10.35 13.68Q8.00 16.05 5.65 13.68Q2.31 13.69 2.32 10.35Q-0.05 8.00 2.32 5.65Q2.31 2.31 5.65 2.32zM11.500 5.900L7.100 10.800 4.500 8.200l1.050-1.050 1.500 1.500 3.350-3.750z' } : { text: 'Benchmark reviewed by a human.', color: '#5f6368', mark: 'M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7.500 3.300a1.400 1.400 0 1 0 0 2.800 1.400 1.400 0 0 0 0-2.800zM6.100 6.500h2.650v6.600H7.900v-3.100h-.550v3.100H6.500V7.900h-.250v2.300H5.200V7.400a.900.900 0 0 1 .900-.900zM8.750 6.500h1.150q.650 0 .650-.650V4.600h1.100v1.250q0 1.750-1.750 1.750H8.750z' }
   const cautionLines = caution ? wrap(caution, 58) : seal ? [seal.text] : []
   // Labels of one result link to its page; a summary label links to the site.
   // The address is printed in full, so it can be followed from a picture too.
@@ -394,7 +413,8 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${height}" role="img" aria-label="${esc(summary)}"${standalone ? ` width="${WIDTH}" height="${height}"` : ''}>
 <style>${standalone ? FONT_IMPORT : ''}${STYLE}</style>
 <rect x="1" y="1" width="${WIDTH - 2}" height="${height - 2}" rx="7" fill="#fff"/>
-${titleLines.map((line, i) => `<text x="${SIDE}" y="${(titleBase + i * 28).toFixed(1)}" class="l-name">${esc(line)}</text>`).join('')}
+${titleLines.map((line, i) => `<text x="${SIDE}" y="${(titleBase + i * 28).toFixed(1)}" class="l-name"${badge && i === titleLines.length - 1 ? ` textLength="${badge.width.toFixed(1)}" lengthAdjust="spacingAndGlyphs"` : ''}>${esc(line)}</text>`).join('')}
+${badge ? `<g transform="translate(${(SIDE + badge.width + 6).toFixed(1)} ${(titleBase + (titleLines.length - 1) * 28 - 17.5).toFixed(1)}) scale(1.19)"><path d="${badge.shape}" fill="${badge.color}"/><path d="${badge.tick}" fill="#fff"/>${badge.arm ? `<path class="wave-arm" d="${badge.arm}" fill="#fff"/>` : ''}</g>` : ''}
 ${mark}
 ${subtitleLines.map((line, i) => `<text x="${SIDE}" y="${(subtitleBase + i * 17).toFixed(1)}" class="l-meta">${esc(line)}</text>`).join('')}
 ${contextLines.map((line, i) => `<text x="${SIDE}" y="${(contextBase + i * 17).toFixed(1)}" class="l-meta">${esc(line)}</text>`).join('')}
@@ -414,7 +434,7 @@ ${rule(bigEnd)}
 ${figureRow(figures.slice(0, 4), figuresTop)}
 ${notes.length || cautionLines.length ? rule(figuresEnd) : ''}
 ${notes.map((line, i) => `<text x="${SIDE}" y="${(notesBase + i * NOTE_LINE).toFixed(1)}" class="l-note">${esc(line)}</text>`).join('')}
-${seal ? `<path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.700 4.800L7.100 10.900 4.300 8.100l1.100-1.100 1.600 1.600 3.500-3.900z" fill="${seal.color}" fill-rule="evenodd" transform="translate(${SIDE} ${(cautionBase - 9.5).toFixed(1)}) scale(0.72)"/><text x="${SIDE + 15}" y="${cautionBase.toFixed(1)}" class="l-seal" fill="${seal.color}">${esc(seal.text)}</text>` : cautionLines.map((line, i) => `<text x="${SIDE}" y="${(cautionBase + i * CAUTION_LINE).toFixed(1)}" class="l-caution">${esc(line)}</text>`).join('')}
+${seal ? `<path d="${seal.mark}" fill="${seal.color}" fill-rule="evenodd" transform="translate(${SIDE} ${(cautionBase - 9.5).toFixed(1)}) scale(0.72)"/><text x="${SIDE + 15}" y="${cautionBase.toFixed(1)}" class="l-seal" fill="${seal.color}">${esc(seal.text)}</text>` : cautionLines.map((line, i) => `<text x="${SIDE}" y="${(cautionBase + i * CAUTION_LINE).toFixed(1)}" class="l-caution">${esc(line)}</text>`).join('')}
 ${rule(notesEnd)}
 ${siteMark(SIDE, (notesEnd + PAD).toFixed(1), MARK_SCALE.toFixed(3))}
 <text x="${FOOT_TEXT}" y="${byBase.toFixed(1)}" class="l-by">${esc(labelSite.name)}</text>
