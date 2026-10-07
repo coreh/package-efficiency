@@ -1,17 +1,8 @@
 package main
 
-import (
-	"os"
+import "github.com/gobwas/glob"
 
-	"github.com/gobwas/glob"
-)
-
-var sep = func() []rune {
-	if os.Getenv("BENCH_GOBWAS") == "separator" {
-		return []rune{'/'}
-	}
-	return nil
-}()
+var sep []rune // as installed: no separators
 
 func operation(value any) any {
 	in := value.(map[string]any)

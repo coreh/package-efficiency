@@ -2,7 +2,7 @@ from starlette.routing import Route, Match
 
 RESOURCES = ['users', 'orders', 'products', 'invoices', 'carts', 'sessions', 'teams', 'projects', 'tickets', 'comments', 'posts', 'tags', 'files', 'folders', 'devices', 'alerts', 'reports', 'payments', 'coupons', 'reviews', 'regions', 'warehouses', 'shipments', 'accounts', 'webhooks']
 
-async def _h(request):
+async def _h(request: object) -> None:
     pass
 
 _routes = []

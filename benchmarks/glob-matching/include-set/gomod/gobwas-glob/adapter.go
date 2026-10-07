@@ -1,17 +1,10 @@
 package main
 
-import (
-	"os"
+import "github.com/gobwas/glob"
 
-	"github.com/gobwas/glob"
-)
-
-var globs = func() []glob.Glob {
-	var sep []rune
-	if os.Getenv("BENCH_GOBWAS") == "separator" {
-		sep = []rune{'/'}
-	}
-	var out []glob.Glob
+var globs = func() []*glob.Pattern {
+	var sep []rune // as installed: no separators
+	var out []*glob.Pattern
 	for _, p := range []string{"src/**/*.{ts,tsx}", "**/*.test.js", "docs/**/*.md", "packages/*/src/**/*.ts", "*.json", "assets/img/*.{png,jpg,svg}", "**/__tests__/**/*", "lib/**/index.js", "**/file-?.txt", "config/[a-c]*.yml"} {
 		out = append(out, glob.MustCompile(p, sep...))
 	}

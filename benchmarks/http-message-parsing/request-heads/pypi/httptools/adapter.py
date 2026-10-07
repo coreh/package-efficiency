@@ -1,7 +1,7 @@
 import httptools
 
 class Collector:
-    def __init__(self):
+    def __init__(self) -> None:
         self.url = b''
         self.headers = []
     def on_url(self, url):

@@ -1,1 +1,16 @@
-{ "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" }, "review": "unreviewed", "title": "gobwas/glob", "language": "go", "runtimes": ["go"], "module": "github.com/gobwas/glob", "notes": "glob.MustCompile(pattern) with no separators, then Match per path. Without '/' as separator * crosses /, so it fails; see the variant." }
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "title": "gobwas/glob",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "module": "github.com/gobwas/glob",
+  "notes": "glob.MustCompile(pattern) with defaults, Match per path. * crosses /, and with '/' as separator **/ still needs a slash, so top-level files like index.js miss **/*.js."
+}

@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.routing import APIRoute
 from starlette.routing import Match
 
 RESOURCES = ['users', 'orders', 'products', 'invoices', 'carts', 'sessions', 'teams', 'projects', 'tickets', 'comments', 'posts', 'tags', 'files', 'folders', 'devices', 'alerts', 'reports', 'payments', 'coupons', 'reviews', 'regions', 'warehouses', 'shipments', 'accounts', 'webhooks']
@@ -12,7 +13,7 @@ for _r in RESOURCES:
     _router.add_api_route(f'/api/{_r}', _h, methods=['POST'], name=f'POST /api/{_r}')
     _router.add_api_route(f'/api/{_r}/{{id}}', _h, methods=['GET'], name=f'GET /api/{_r}/:id')
     _router.add_api_route(f'/api/{_r}/{{id}}', _h, methods=['PUT'], name=f'PUT /api/{_r}/:id')
-_routes = _router.routes
+_routes = [r for r in _router.routes if isinstance(r, APIRoute)]
 
 # Not timed: runs once per fixture.
 def prepare(value):
