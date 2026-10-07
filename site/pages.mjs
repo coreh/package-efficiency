@@ -224,7 +224,7 @@ ${sidebar(model, path, context)}
 ${trail}
 ${body}
 <footer>
-<p>Edition ${esc(model.index.edition)}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them. This site is not affiliated with a package registry or a labelling authority. <a href="/credits/">Credits</a>.</p>
+<p>Provisional. All results come from one developer laptop, not a reference machine. AI coding agents wrote the benchmark adapters, and most are not yet reviewed by a human; those that are carry a mark. This site is independent. It is not affiliated with the packages, registries, runtimes or compilers that it measures, and its labels are not an official rating. <a href="/credits/">Credits</a>.</p>
 <p>All results: <a href="/data/results.csv">CSV</a>, <a href="/data/results.json">JSON</a>, <a href="/llms.txt">Markdown index for language models</a>.</p>
 </footer>
 </div>
@@ -2067,7 +2067,7 @@ ${marks.map(([icon, use, source, licence, changes]) => `<tr><td class="marks">${
 <h2>Package lists</h2>
 <p>The lists of most used packages, from which the categories were made, come from ${link('https://packages.ecosyste.ms', 'ecosyste.ms Packages')} (CC BY-SA 4.0) for npm, crates.io, PyPI, RubyGems and Go modules, and from the ${link('https://jsr.io', 'JSR')} registry for JSR.</p>
 <h2>Label design</h2>
-<p>The labels look like the European Union energy label. They are not energy labels. No labelling authority issued them or checked them.</p>
+<p>The labels look like the European Union energy label. They are not energy labels, and they are not an official rating: no regulator issued them or checked them.</p>
 <h2>Benchmarked software</h2>
 <p>Each package, runtime and compiler measured here is the work of its authors, and is used under its licence. Each package page has a link to its registry entry.</p>
 </main>`,

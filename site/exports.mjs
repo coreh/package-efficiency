@@ -110,7 +110,7 @@ ${[scaleLine('CPU', data.metrics.cpu), scaleLine('Memory', data.metrics.memory)]
 
 ${MEDALS_NOTE}
 
-Measured on ${data.machine.cpu}, ${data.machine.cores} cores, ${data.machine.os}. Edition ${edition}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them.
+Measured on ${data.machine.cpu}, ${data.machine.cores} cores, ${data.machine.os}. Provisional. All results come from one developer laptop, not a reference machine. AI coding agents wrote the benchmark adapters, and most are not yet reviewed by a human; those that are carry a mark.
 
 ${data.runtimes
   .filter((r) => r.entries.length)
@@ -153,7 +153,7 @@ ${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${ecosystemTitle} pa
 
 ${READING(tasks[0])}
 
-Edition ${edition}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them.
+Provisional. All results come from one developer laptop, not a reference machine. AI coding agents wrote the benchmark adapters, and most are not yet reviewed by a human; those that are carry a mark.
 
 ${tasks
   .map((data) => {
@@ -208,7 +208,7 @@ ${source.files.map((f) => fenced(f, ctx)).join('\n\n')}${source.variantOf && !li
 }
 const header = (title, ctx) => `# ${title}: Package Efficiency Labels`
 const footer = (ctx, path, hasRows) => `## More\n\n- Page: ${ctx.url(path)}${hasRows ? `\n- This list as CSV: ${ctx.url(`${path}results.csv`)}\n- This list as JSON: ${ctx.url(`${path}results.json`)}` : ''}\n- Everything: ${ctx.url('/llms.txt')}\n`
-const PROVISIONAL = (ctx) => `Edition ${ctx.edition}, provisional. All results come from one developer laptop, not a reference machine. An AI coding agent wrote every benchmark adapter, and no human has reviewed them.`
+const PROVISIONAL = (ctx) => `Provisional. All results come from one developer laptop, not a reference machine. AI coding agents wrote the benchmark adapters, and most are not yet reviewed by a human; those that are carry a mark.`
 const pct = (v) => `${(v * 100).toFixed(v >= 0.0995 ? 0 : v >= 0.00995 ? 1 : 2)}%`
 
 // A measured package's best class in a ranking, on any runtime and in any task.
@@ -557,7 +557,7 @@ ${footer(ctx, '/credits/', false)}`,
 export function llmsText(model, ecosystems, { url = (path) => path }) {
   return `# Package Efficiency Labels
 
-> Efficiency classes from A to G for software packages across npm, JSR, PyPI, RubyGems, Go modules and crates.io: CPU time, memory and type-check cost, measured per task and compared with the best result in any language or runtime. Edition ${model.index.edition}, provisional.
+> Efficiency classes from A to G for software packages across npm, JSR, PyPI, RubyGems, Go modules and crates.io: CPU time, memory and type-check cost, measured per task and compared with the best result in any language or runtime. Provisional, and updated as packages are measured.
 
 Each page has a Markdown version at the same address with index.md added. A page with a list also has results.csv and results.json there. Task and package pages include the benchmark source code.
 
