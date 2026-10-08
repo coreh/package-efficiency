@@ -116,21 +116,23 @@ function row({ item }) {
   name.append(link)
   if (item.d) name.append(el('small', item.d, 'adv-desc'))
   const kind = el('td', item.y === 'p' ? `${config.registries[item.e] ?? 'Package'}${item.m ? '' : ', not measured'}` : `${config.kinds[item.y]}${item.m || item.y === 'e' ? '' : ', not measured'}`, 'l')
-  const classes = el('td', null, 'l adv-classes')
-  for (const [id, measure] of Object.entries(config.measures)) {
+  // One narrow column for each measure: its best class, or nothing.
+  const classes = Object.entries(config.measures).map(([id, measure]) => {
+    const cell = el('td', null, 'adv-class')
     const letter = item.k?.[id]
-    if (!letter) continue
-    const color = measure.colors['ABCDEFG'.indexOf(letter)]
-    const chip = el('span', letter, 'cls')
-    chip.style.background = color
-    chip.style.color = ink(color)
-    const pair = el('span', `${measure.title} `, 'adv-class')
-    pair.append(chip)
-    classes.append(pair)
-  }
+    if (letter) {
+      const color = measure.colors['ABCDEFG'.indexOf(letter)]
+      const chip = el('span', letter, 'cls')
+      chip.style.background = color
+      chip.style.color = ink(color)
+      chip.title = `Best ${measure.title.toLowerCase()} class: ${letter}`
+      cell.append(chip)
+    }
+    return cell
+  })
   const license = el('td', item.l ?? '', 'l')
   if (item.lk) license.append(el('small', config.licenseKinds[item.lk], 'adv-desc'))
-  tr.append(name, kind, el('td', item.c ?? '', 'l wrap'), classes, license, el('td', item.f ?? '', 'l'))
+  tr.append(name, kind, el('td', item.c ?? '', 'l wrap'), ...classes, license, el('td', item.f ?? '', 'l'))
   return tr
 }
 

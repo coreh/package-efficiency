@@ -2655,7 +2655,7 @@ ${group('Release', `<label class="adv-field">Released on or after <input type="d
 <div class="switches adv-head"><p id="adv-count" class="adv-count" role="status" aria-live="polite">Loading the index.</p></div>
 <noscript><p class="note">This search runs in the browser and needs JavaScript. The <a href="/packages/">packages</a>, <a href="/tasks/">tasks</a> and <a href="/categories/">categories</a> pages list everything without it.</p></noscript>
 <div class="scroll"><table class="adv-results" id="adv-results" hidden>
-<thead><tr><th scope="col" class="l">Name</th><th scope="col" class="l">Kind</th><th scope="col" class="l">Category</th><th scope="col" class="l">Best classes</th><th scope="col" class="l">License</th><th scope="col" class="l">Released</th></tr></thead>
+<thead><tr><th scope="col" class="l">Name</th><th scope="col" class="l">Kind</th><th scope="col" class="l">Category</th><th scope="col" title="Best CPU class">CPU</th><th scope="col" title="Best memory class">Memory</th><th scope="col" title="Best type-check class">Types</th><th scope="col" class="l">License</th><th scope="col" class="l">Released</th></tr></thead>
 <tbody></tbody>
 </table></div>
 <script type="application/json" id="adv-config">${JSON.stringify({ kinds: { p: 'Package', t: 'Task', c: 'Category', r: 'Runtime', e: 'Registry' }, registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])), licenseKinds: LICENSE_KINDS, measures: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])) }).replace(/</g, '\\u003c')}</script>

@@ -948,7 +948,7 @@ ${entry.variants.length > 1 ? `<h4 class="api-format">${esc(variant.format)}</h4
 <form class="api-try" hidden>
 <h4>Try it</h4>
 ${facts.params.length ? `<div class="api-try-fields">${facts.params.map((p) => tryField(entry, variant.op, p)).join('\n')}</div>` : ''}
-<p class="api-try-send"><button type="submit" class="api-send" title="Ask this site for the address and show the answer below">Send</button><button type="button" data-copy="address" hidden title="Copy the address${entry.variants.length > 1 ? ' of the format that is shown' : ''}, with what is typed here">Copy address</button></p>
+<p class="api-try-send"><button type="submit" class="api-send" title="Ask this site for the address and show the answer below">Fetch</button><button type="button" data-copy="address" hidden title="Copy the address${entry.variants.length > 1 ? ' of the format that is shown' : ''}, with what is typed here">Copy address</button></p>
 </form>
 <div class="api-box">
 <div class="api-box-head"><span class="api-box-title">Request</span><button type="button" class="api-copy" hidden title="Copy the example that is shown">Copy</button></div>
