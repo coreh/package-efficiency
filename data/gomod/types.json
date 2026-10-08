@@ -1,0 +1,6928 @@
+{
+  "checker": {
+    "tool": "go/types",
+    "version": "1.25.3"
+  },
+  "method": {
+    "graded": "check",
+    "standardLibrary": "not counted: minus a probe importing the same standard-library packages",
+    "program": "blank imports of the module root, or of its importable packages",
+    "packageLimit": 20,
+    "cgo": "off",
+    "check": "go/types over the whole tree from source, standard library included",
+    "build": "go build of the probe package, empty GOCACHE, no link"
+  },
+  "minReleaseAgeDays": 7,
+  "memoryKind": "peak RSS of the checker process (build: of the largest process in the go build tree)",
+  "scoreBasis": "added process CPU ms * added peak RSS MB",
+  "runs": 11,
+  "coldRuns": 3,
+  "buildRuns": 1,
+  "baseline": {
+    "check": {
+      "cpuMs": 2.94,
+      "timeMs": 5.01,
+      "peakRssMb": 5.47,
+      "runs": [
+        {
+          "cpuMs": 4.51,
+          "timeMs": 72.75,
+          "peakRssMb": 5.28
+        },
+        {
+          "cpuMs": 2.83,
+          "timeMs": 4.56,
+          "peakRssMb": 5.28
+        },
+        {
+          "cpuMs": 2.89,
+          "timeMs": 4.73,
+          "peakRssMb": 5.52
+        },
+        {
+          "cpuMs": 3.17,
+          "timeMs": 5.06,
+          "peakRssMb": 5.47
+        },
+        {
+          "cpuMs": 2.9,
+          "timeMs": 5.08,
+          "peakRssMb": 5.52
+        },
+        {
+          "cpuMs": 3.07,
+          "timeMs": 5.15,
+          "peakRssMb": 5.47
+        },
+        {
+          "cpuMs": 2.94,
+          "timeMs": 4.89,
+          "peakRssMb": 5.47
+        },
+        {
+          "cpuMs": 2.98,
+          "timeMs": 4.92,
+          "peakRssMb": 5.47
+        },
+        {
+          "cpuMs": 2.9,
+          "timeMs": 5.01,
+          "peakRssMb": 5.47
+        },
+        {
+          "cpuMs": 2.91,
+          "timeMs": 5.23,
+          "peakRssMb": 5.47
+        },
+        {
+          "cpuMs": 2.99,
+          "timeMs": 4.93,
+          "peakRssMb": 5.28
+        }
+      ]
+    },
+    "build": {
+      "cpuMs": 38.6,
+      "timeMs": 42.3,
+      "peakRssMb": 15.7,
+      "runs": [
+        {
+          "cpuMs": 38.6,
+          "timeMs": 42.3,
+          "peakRssMb": 15.7
+        }
+      ]
+    }
+  },
+  "packages": {
+    "cloud.google.com/go": {
+      "status": "ok",
+      "listedVersion": "v0.123.0",
+      "version": "v0.123.0",
+      "packagesInModule": 85,
+      "packages": [
+        "cloud.google.com/go",
+        "cloud.google.com/go/auth",
+        "cloud.google.com/go/civil",
+        "cloud.google.com/go/httpreplay",
+        "cloud.google.com/go/iam",
+        "cloud.google.com/go/longrunning",
+        "cloud.google.com/go/rpcreplay",
+        "cloud.google.com/go/storage",
+        "cloud.google.com/go/auth/credentials",
+        "cloud.google.com/go/auth/grpctransport",
+        "cloud.google.com/go/auth/httptransport",
+        "cloud.google.com/go/auth/oauth2adapt",
+        "cloud.google.com/go/compute/metadata",
+        "cloud.google.com/go/iam/apiv1",
+        "cloud.google.com/go/iam/apiv2",
+        "cloud.google.com/go/iam/apiv3",
+        "cloud.google.com/go/iam/apiv3beta",
+        "cloud.google.com/go/longrunning/autogen",
+        "cloud.google.com/go/monitoring/apiv3",
+        "cloud.google.com/go/storage/dataflux"
+      ],
+      "modules": 196,
+      "treePackages": 659,
+      "standardLibraryPackages": 203,
+      "files": 2704,
+      "checkSplit": {
+        "standardLibraryMs": 574.5,
+        "modulesMs": 1083.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 1408.9,
+        "memoryMb": 114.2
+      },
+      "check": {
+        "cpuMs": 1408.9,
+        "memoryMb": 114.2,
+        "timeMs": 884.2,
+        "wholeTree": {
+          "cpuMs": 2273.9,
+          "memoryMb": 184.3
+        },
+        "standardLibrary": {
+          "cpuMs": 865.1,
+          "memoryMb": 70.1
+        },
+        "cpuSpreadMs": 275.8,
+        "runs": [
+          {
+            "cpuMs": 2276.89,
+            "timeMs": 1683.06,
+            "peakRssMb": 194.44
+          },
+          {
+            "cpuMs": 2181.64,
+            "timeMs": 1275.14,
+            "peakRssMb": 190.98
+          },
+          {
+            "cpuMs": 2274.97,
+            "timeMs": 1436.4,
+            "peakRssMb": 199.8
+          },
+          {
+            "cpuMs": 2303.02,
+            "timeMs": 1415.96,
+            "peakRssMb": 193.88
+          },
+          {
+            "cpuMs": 2418.48,
+            "timeMs": 1491.21,
+            "peakRssMb": 178.3
+          },
+          {
+            "cpuMs": 2457.48,
+            "timeMs": 1596.27,
+            "peakRssMb": 189.39
+          },
+          {
+            "cpuMs": 2212.56,
+            "timeMs": 1317.47,
+            "peakRssMb": 187.75
+          },
+          {
+            "cpuMs": 2255.72,
+            "timeMs": 1346.32,
+            "peakRssMb": 189.3
+          },
+          {
+            "cpuMs": 2277.67,
+            "timeMs": 1360.36,
+            "peakRssMb": 198
+          },
+          {
+            "cpuMs": 2211.03,
+            "timeMs": 1363.73,
+            "peakRssMb": 189.77
+          },
+          {
+            "cpuMs": 2362.8,
+            "timeMs": 1483.96,
+            "peakRssMb": 183.98
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 47781.1,
+        "memoryMb": -5.1,
+        "timeMs": 9063.8,
+        "wholeTree": {
+          "cpuMs": 70273.3,
+          "memoryMb": 210.1
+        },
+        "standardLibrary": {
+          "cpuMs": 22492.2,
+          "memoryMb": 215.2
+        },
+        "runs": [
+          {
+            "cpuMs": 70311.9,
+            "timeMs": 15055.3,
+            "peakRssMb": 225.8
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.04,
+      "measuredAt": "2026-10-08T04:10:26.656Z",
+      "harnessSeconds": 87.4
+    },
+    "github.com/BurntSushi/toml": {
+      "status": "ok",
+      "listedVersion": "v1.6.0",
+      "version": "v1.6.0",
+      "packagesInModule": 8,
+      "packages": [
+        "github.com/BurntSushi/toml"
+      ],
+      "modules": 1,
+      "treePackages": 68,
+      "standardLibraryPackages": 66,
+      "files": 580,
+      "checkSplit": {
+        "standardLibraryMs": 198.7,
+        "modulesMs": 5.1
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 7.3,
+        "memoryMb": 2.6
+      },
+      "check": {
+        "cpuMs": 7.3,
+        "memoryMb": 2.6,
+        "timeMs": -3.3,
+        "wholeTree": {
+          "cpuMs": 347.4,
+          "memoryMb": 42.5
+        },
+        "standardLibrary": {
+          "cpuMs": 340.1,
+          "memoryMb": 39.9
+        },
+        "cpuSpreadMs": 56.2,
+        "runs": [
+          {
+            "cpuMs": 362.83,
+            "timeMs": 211.8,
+            "peakRssMb": 49.23
+          },
+          {
+            "cpuMs": 340.38,
+            "timeMs": 198.82,
+            "peakRssMb": 48.58
+          },
+          {
+            "cpuMs": 370.78,
+            "timeMs": 240.96,
+            "peakRssMb": 47.97
+          },
+          {
+            "cpuMs": 377.68,
+            "timeMs": 226.12,
+            "peakRssMb": 49.94
+          },
+          {
+            "cpuMs": 361.4,
+            "timeMs": 202.11,
+            "peakRssMb": 49.88
+          },
+          {
+            "cpuMs": 358,
+            "timeMs": 201.3,
+            "peakRssMb": 42.52
+          },
+          {
+            "cpuMs": 335.17,
+            "timeMs": 190.65,
+            "peakRssMb": 41.38
+          },
+          {
+            "cpuMs": 349.26,
+            "timeMs": 192.25,
+            "peakRssMb": 48.72
+          },
+          {
+            "cpuMs": 336.66,
+            "timeMs": 190.83,
+            "peakRssMb": 41.88
+          },
+          {
+            "cpuMs": 350.29,
+            "timeMs": 186.45,
+            "peakRssMb": 47.38
+          },
+          {
+            "cpuMs": 321.44,
+            "timeMs": 175.79,
+            "peakRssMb": 41.89
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 801.2,
+        "memoryMb": 7.1,
+        "timeMs": 393.6,
+        "wholeTree": {
+          "cpuMs": 7242.2,
+          "memoryMb": 213
+        },
+        "standardLibrary": {
+          "cpuMs": 6441,
+          "memoryMb": 205.9
+        },
+        "runs": [
+          {
+            "cpuMs": 7280.8,
+            "timeMs": 2406.8,
+            "peakRssMb": 228.7
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.67,
+      "measuredAt": "2026-10-08T04:05:24.493Z",
+      "harnessSeconds": 12.6
+    },
+    "github.com/census-instrumentation/opencensus-proto": {
+      "status": "ok",
+      "listedVersion": "v0.4.1",
+      "version": "v0.4.1",
+      "packagesInModule": 7,
+      "packages": [
+        "github.com/census-instrumentation/opencensus-proto/gen-go/metrics/v1",
+        "github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1",
+        "github.com/census-instrumentation/opencensus-proto/gen-go/stats/v1",
+        "github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1",
+        "github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1",
+        "github.com/census-instrumentation/opencensus-proto/gen-go/agent/metrics/v1",
+        "github.com/census-instrumentation/opencensus-proto/gen-go/agent/trace/v1"
+      ],
+      "modules": 28,
+      "treePackages": 305,
+      "standardLibraryPackages": 192,
+      "files": 1421,
+      "checkSplit": {
+        "standardLibraryMs": 481.6,
+        "modulesMs": 171
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 296.8,
+        "memoryMb": 20.1
+      },
+      "check": {
+        "cpuMs": 296.8,
+        "memoryMb": 20.1,
+        "timeMs": 155.2,
+        "wholeTree": {
+          "cpuMs": 1097.6,
+          "memoryMb": 89.2
+        },
+        "standardLibrary": {
+          "cpuMs": 800.8,
+          "memoryMb": 69.1
+        },
+        "cpuSpreadMs": 116.8,
+        "runs": [
+          {
+            "cpuMs": 1123.9,
+            "timeMs": 676.98,
+            "peakRssMb": 89.22
+          },
+          {
+            "cpuMs": 1073.38,
+            "timeMs": 617.12,
+            "peakRssMb": 90.05
+          },
+          {
+            "cpuMs": 1063.29,
+            "timeMs": 608.12,
+            "peakRssMb": 88.88
+          },
+          {
+            "cpuMs": 1096.77,
+            "timeMs": 621.54,
+            "peakRssMb": 101.45
+          },
+          {
+            "cpuMs": 1100.57,
+            "timeMs": 619.18,
+            "peakRssMb": 95.11
+          },
+          {
+            "cpuMs": 1114.33,
+            "timeMs": 641.31,
+            "peakRssMb": 97.81
+          },
+          {
+            "cpuMs": 1041.49,
+            "timeMs": 600.46,
+            "peakRssMb": 98.02
+          },
+          {
+            "cpuMs": 1087.14,
+            "timeMs": 611.29,
+            "peakRssMb": 94.66
+          },
+          {
+            "cpuMs": 1158.31,
+            "timeMs": 660.27,
+            "peakRssMb": 95.33
+          },
+          {
+            "cpuMs": 1110.96,
+            "timeMs": 628.81,
+            "peakRssMb": 89.83
+          },
+          {
+            "cpuMs": 1104.16,
+            "timeMs": 619.07,
+            "peakRssMb": 93.41
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 7649,
+        "memoryMb": -6,
+        "timeMs": 2048.7,
+        "wholeTree": {
+          "cpuMs": 26550.3,
+          "memoryMb": 206.7
+        },
+        "standardLibrary": {
+          "cpuMs": 18901.3,
+          "memoryMb": 212.7
+        },
+        "runs": [
+          {
+            "cpuMs": 26588.9,
+            "timeMs": 6487.6,
+            "peakRssMb": 222.4
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.2,
+      "measuredAt": "2026-10-08T04:17:04.547Z",
+      "harnessSeconds": 39.3
+    },
+    "github.com/client9/misspell": {
+      "status": "ok",
+      "listedVersion": "v0.3.4",
+      "version": "v0.3.4",
+      "packagesInModule": 3,
+      "packages": [
+        "github.com/client9/misspell"
+      ],
+      "modules": 2,
+      "treePackages": 183,
+      "standardLibraryPackages": 182,
+      "files": 1033,
+      "checkSplit": {
+        "standardLibraryMs": 421.9,
+        "modulesMs": 24.9
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 39,
+        "memoryMb": 5.9
+      },
+      "check": {
+        "cpuMs": 39,
+        "memoryMb": 5.9,
+        "timeMs": 24.9,
+        "wholeTree": {
+          "cpuMs": 811.9,
+          "memoryMb": 68.3
+        },
+        "standardLibrary": {
+          "cpuMs": 772.8,
+          "memoryMb": 62.3
+        },
+        "cpuSpreadMs": 97,
+        "runs": [
+          {
+            "cpuMs": 788.17,
+            "timeMs": 454.45,
+            "peakRssMb": 72.3
+          },
+          {
+            "cpuMs": 797.7,
+            "timeMs": 436.98,
+            "peakRssMb": 73.72
+          },
+          {
+            "cpuMs": 814.8,
+            "timeMs": 460.44,
+            "peakRssMb": 78.95
+          },
+          {
+            "cpuMs": 820.02,
+            "timeMs": 451.59,
+            "peakRssMb": 77.98
+          },
+          {
+            "cpuMs": 851.88,
+            "timeMs": 492.13,
+            "peakRssMb": 72.39
+          },
+          {
+            "cpuMs": 793.57,
+            "timeMs": 447.48,
+            "peakRssMb": 71.75
+          },
+          {
+            "cpuMs": 863.12,
+            "timeMs": 489.85,
+            "peakRssMb": 71.19
+          },
+          {
+            "cpuMs": 836.53,
+            "timeMs": 457.4,
+            "peakRssMb": 77.03
+          },
+          {
+            "cpuMs": 885.12,
+            "timeMs": 523.38,
+            "peakRssMb": 78.64
+          },
+          {
+            "cpuMs": 790.57,
+            "timeMs": 439.6,
+            "peakRssMb": 72.11
+          },
+          {
+            "cpuMs": 797.42,
+            "timeMs": 438.24,
+            "peakRssMb": 78.5
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1230.9,
+        "memoryMb": -1.8,
+        "timeMs": 510.1,
+        "wholeTree": {
+          "cpuMs": 17976.2,
+          "memoryMb": 211.2
+        },
+        "standardLibrary": {
+          "cpuMs": 16745.3,
+          "memoryMb": 213
+        },
+        "runs": [
+          {
+            "cpuMs": 18014.8,
+            "timeMs": 4605.7,
+            "peakRssMb": 226.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.81,
+      "measuredAt": "2026-10-08T04:12:28.942Z",
+      "harnessSeconds": 26.3
+    },
+    "github.com/davecgh/go-spew": {
+      "status": "ok",
+      "listedVersion": "v1.1.1",
+      "version": "v1.1.1",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/davecgh/go-spew/spew"
+      ],
+      "modules": 1,
+      "treePackages": 65,
+      "standardLibraryPackages": 64,
+      "files": 576,
+      "checkSplit": {
+        "standardLibraryMs": 164.5,
+        "modulesMs": 2.6
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 10.7,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 10.7,
+        "memoryMb": -1.7,
+        "timeMs": 12.3,
+        "wholeTree": {
+          "cpuMs": 317.7,
+          "memoryMb": 38.7
+        },
+        "standardLibrary": {
+          "cpuMs": 307,
+          "memoryMb": 40.4
+        },
+        "cpuSpreadMs": 43.4,
+        "runs": [
+          {
+            "cpuMs": 328.81,
+            "timeMs": 173.32,
+            "peakRssMb": 41.58
+          },
+          {
+            "cpuMs": 336.49,
+            "timeMs": 174.14,
+            "peakRssMb": 42.13
+          },
+          {
+            "cpuMs": 304.12,
+            "timeMs": 176.74,
+            "peakRssMb": 45.86
+          },
+          {
+            "cpuMs": 293.1,
+            "timeMs": 182.16,
+            "peakRssMb": 48.58
+          },
+          {
+            "cpuMs": 313.64,
+            "timeMs": 177.66,
+            "peakRssMb": 44.14
+          },
+          {
+            "cpuMs": 324.56,
+            "timeMs": 178.31,
+            "peakRssMb": 49.83
+          },
+          {
+            "cpuMs": 334.12,
+            "timeMs": 180.07,
+            "peakRssMb": 45.52
+          },
+          {
+            "cpuMs": 321.48,
+            "timeMs": 179.2,
+            "peakRssMb": 41.61
+          },
+          {
+            "cpuMs": 319.13,
+            "timeMs": 175.14,
+            "peakRssMb": 41.56
+          },
+          {
+            "cpuMs": 318.03,
+            "timeMs": 168.65,
+            "peakRssMb": 41.5
+          },
+          {
+            "cpuMs": 320.6,
+            "timeMs": 180.97,
+            "peakRssMb": 45.86
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -146.2,
+        "memoryMb": -10.3,
+        "timeMs": -125.9,
+        "wholeTree": {
+          "cpuMs": 6248,
+          "memoryMb": 204.3
+        },
+        "standardLibrary": {
+          "cpuMs": 6394.2,
+          "memoryMb": 214.6
+        },
+        "runs": [
+          {
+            "cpuMs": 6286.6,
+            "timeMs": 1737.3,
+            "peakRssMb": 220
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 15.55,
+      "measuredAt": "2026-10-08T04:00:27.867Z",
+      "harnessSeconds": 9.5
+    },
+    "github.com/fsnotify/fsnotify": {
+      "status": "ok",
+      "listedVersion": "v1.10.1",
+      "version": "v1.10.1",
+      "packagesInModule": 4,
+      "packages": [
+        "github.com/fsnotify/fsnotify"
+      ],
+      "modules": 2,
+      "treePackages": 65,
+      "standardLibraryPackages": 62,
+      "files": 600,
+      "checkSplit": {
+        "standardLibraryMs": 159.7,
+        "modulesMs": 11.4
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 10.4,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 10.4,
+        "memoryMb": -3.3,
+        "timeMs": 2,
+        "wholeTree": {
+          "cpuMs": 332.8,
+          "memoryMb": 37.2
+        },
+        "standardLibrary": {
+          "cpuMs": 322.4,
+          "memoryMb": 40.5
+        },
+        "cpuSpreadMs": 36.1,
+        "runs": [
+          {
+            "cpuMs": 336.62,
+            "timeMs": 179.01,
+            "peakRssMb": 42.45
+          },
+          {
+            "cpuMs": 343.49,
+            "timeMs": 180.7,
+            "peakRssMb": 41.66
+          },
+          {
+            "cpuMs": 339.54,
+            "timeMs": 174.42,
+            "peakRssMb": 42.09
+          },
+          {
+            "cpuMs": 309.18,
+            "timeMs": 178.87,
+            "peakRssMb": 42.38
+          },
+          {
+            "cpuMs": 337.05,
+            "timeMs": 179.21,
+            "peakRssMb": 42.55
+          },
+          {
+            "cpuMs": 330.96,
+            "timeMs": 177.87,
+            "peakRssMb": 48.61
+          },
+          {
+            "cpuMs": 317.94,
+            "timeMs": 173.04,
+            "peakRssMb": 49.52
+          },
+          {
+            "cpuMs": 335.76,
+            "timeMs": 175.37,
+            "peakRssMb": 46.28
+          },
+          {
+            "cpuMs": 334.67,
+            "timeMs": 176.24,
+            "peakRssMb": 42.66
+          },
+          {
+            "cpuMs": 330.53,
+            "timeMs": 175.64,
+            "peakRssMb": 49.66
+          },
+          {
+            "cpuMs": 345.28,
+            "timeMs": 181.24,
+            "peakRssMb": 49.03
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -74.2,
+        "memoryMb": -2.7,
+        "timeMs": 2.1,
+        "wholeTree": {
+          "cpuMs": 6550.4,
+          "memoryMb": 205.3
+        },
+        "standardLibrary": {
+          "cpuMs": 6624.6,
+          "memoryMb": 208
+        },
+        "runs": [
+          {
+            "cpuMs": 6589,
+            "timeMs": 2229.8,
+            "peakRssMb": 221
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 5.92,
+      "measuredAt": "2026-10-08T04:14:24.016Z",
+      "harnessSeconds": 14.2
+    },
+    "github.com/gogo/protobuf": {
+      "status": "ok",
+      "listedVersion": "v1.3.2",
+      "version": "v1.3.2",
+      "packagesInModule": 168,
+      "packages": [
+        "github.com/gogo/protobuf/codec",
+        "github.com/gogo/protobuf/gogoproto",
+        "github.com/gogo/protobuf/io",
+        "github.com/gogo/protobuf/jsonpb",
+        "github.com/gogo/protobuf/proto",
+        "github.com/gogo/protobuf/sortkeys",
+        "github.com/gogo/protobuf/test",
+        "github.com/gogo/protobuf/types",
+        "github.com/gogo/protobuf/vanity",
+        "github.com/gogo/protobuf/version",
+        "github.com/gogo/protobuf/jsonpb/jsonpb_test_proto",
+        "github.com/gogo/protobuf/plugin/compare",
+        "github.com/gogo/protobuf/plugin/defaultcheck",
+        "github.com/gogo/protobuf/plugin/description",
+        "github.com/gogo/protobuf/plugin/embedcheck",
+        "github.com/gogo/protobuf/plugin/enumstringer",
+        "github.com/gogo/protobuf/plugin/equal",
+        "github.com/gogo/protobuf/plugin/face",
+        "github.com/gogo/protobuf/plugin/gostring",
+        "github.com/gogo/protobuf/plugin/marshalto"
+      ],
+      "modules": 12,
+      "treePackages": 149,
+      "standardLibraryPackages": 122,
+      "files": 836,
+      "checkSplit": {
+        "standardLibraryMs": 241,
+        "modulesMs": 94
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 207.6,
+        "memoryMb": 14.6
+      },
+      "check": {
+        "cpuMs": 207.6,
+        "memoryMb": 14.6,
+        "timeMs": 127.5,
+        "wholeTree": {
+          "cpuMs": 625.9,
+          "memoryMb": 58
+        },
+        "standardLibrary": {
+          "cpuMs": 418.3,
+          "memoryMb": 43.4
+        },
+        "cpuSpreadMs": 106.5,
+        "runs": [
+          {
+            "cpuMs": 571.08,
+            "timeMs": 353.16,
+            "peakRssMb": 63.48
+          },
+          {
+            "cpuMs": 615.62,
+            "timeMs": 337.72,
+            "peakRssMb": 63.55
+          },
+          {
+            "cpuMs": 677.54,
+            "timeMs": 456.51,
+            "peakRssMb": 60.97
+          },
+          {
+            "cpuMs": 655.36,
+            "timeMs": 414.73,
+            "peakRssMb": 62.22
+          },
+          {
+            "cpuMs": 603.84,
+            "timeMs": 345.08,
+            "peakRssMb": 63.81
+          },
+          {
+            "cpuMs": 628.87,
+            "timeMs": 356.07,
+            "peakRssMb": 64.33
+          },
+          {
+            "cpuMs": 624.32,
+            "timeMs": 353.82,
+            "peakRssMb": 60.23
+          },
+          {
+            "cpuMs": 630.02,
+            "timeMs": 369.99,
+            "peakRssMb": 64.42
+          },
+          {
+            "cpuMs": 663.12,
+            "timeMs": 356.05,
+            "peakRssMb": 63.17
+          },
+          {
+            "cpuMs": 647.15,
+            "timeMs": 342.36,
+            "peakRssMb": 61.25
+          },
+          {
+            "cpuMs": 617.74,
+            "timeMs": 338.6,
+            "peakRssMb": 64.33
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 5891.9,
+        "memoryMb": -0.8,
+        "timeMs": 1291.9,
+        "wholeTree": {
+          "cpuMs": 16229,
+          "memoryMb": 207
+        },
+        "standardLibrary": {
+          "cpuMs": 10337.1,
+          "memoryMb": 207.8
+        },
+        "runs": [
+          {
+            "cpuMs": 16267.6,
+            "timeMs": 3792,
+            "peakRssMb": 222.7
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.73,
+      "measuredAt": "2026-10-08T04:17:23.571Z",
+      "harnessSeconds": 19
+    },
+    "github.com/golang/glog": {
+      "status": "ok",
+      "listedVersion": "v1.2.5",
+      "version": "v1.2.5",
+      "packagesInModule": 3,
+      "packages": [
+        "github.com/golang/glog"
+      ],
+      "modules": 2,
+      "treePackages": 79,
+      "standardLibraryPackages": 76,
+      "files": 613,
+      "checkSplit": {
+        "standardLibraryMs": 208.1,
+        "modulesMs": 2.2
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 3.2
+      },
+      "check": {
+        "cpuMs": -2.9,
+        "memoryMb": 3.2,
+        "timeMs": 0,
+        "wholeTree": {
+          "cpuMs": 355.9,
+          "memoryMb": 41.1
+        },
+        "standardLibrary": {
+          "cpuMs": 358.8,
+          "memoryMb": 37.9
+        },
+        "cpuSpreadMs": 32.5,
+        "runs": [
+          {
+            "cpuMs": 367.49,
+            "timeMs": 235.01,
+            "peakRssMb": 49.47
+          },
+          {
+            "cpuMs": 346.29,
+            "timeMs": 192.72,
+            "peakRssMb": 43
+          },
+          {
+            "cpuMs": 365.56,
+            "timeMs": 197.46,
+            "peakRssMb": 41.47
+          },
+          {
+            "cpuMs": 362.77,
+            "timeMs": 199.21,
+            "peakRssMb": 49.98
+          },
+          {
+            "cpuMs": 374.23,
+            "timeMs": 200.4,
+            "peakRssMb": 49.22
+          },
+          {
+            "cpuMs": 354.84,
+            "timeMs": 201.28,
+            "peakRssMb": 45.3
+          },
+          {
+            "cpuMs": 375.3,
+            "timeMs": 204.63,
+            "peakRssMb": 46.56
+          },
+          {
+            "cpuMs": 358.81,
+            "timeMs": 205.22,
+            "peakRssMb": 46.06
+          },
+          {
+            "cpuMs": 352.69,
+            "timeMs": 201.02,
+            "peakRssMb": 46.61
+          },
+          {
+            "cpuMs": 342.76,
+            "timeMs": 203.31,
+            "peakRssMb": 45.97
+          },
+          {
+            "cpuMs": 350.96,
+            "timeMs": 199.1,
+            "peakRssMb": 48.41
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 457.3,
+        "memoryMb": 12.6,
+        "timeMs": 227.6,
+        "wholeTree": {
+          "cpuMs": 8093.4,
+          "memoryMb": 216.5
+        },
+        "standardLibrary": {
+          "cpuMs": 7636.1,
+          "memoryMb": 203.9
+        },
+        "runs": [
+          {
+            "cpuMs": 8132,
+            "timeMs": 2663.9,
+            "peakRssMb": 232.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.38,
+      "measuredAt": "2026-10-08T04:10:40.383Z",
+      "harnessSeconds": 13.7
+    },
+    "github.com/golang/mock": {
+      "status": "ok",
+      "listedVersion": "v1.6.0",
+      "version": "v1.6.0",
+      "packagesInModule": 45,
+      "packages": [
+        "github.com/golang/mock/gomock",
+        "github.com/golang/mock/sample",
+        "github.com/golang/mock/mockgen/model",
+        "github.com/golang/mock/sample/concurrent",
+        "github.com/golang/mock/sample/imp1",
+        "github.com/golang/mock/sample/imp2",
+        "github.com/golang/mock/sample/imp3",
+        "github.com/golang/mock/sample/imp4",
+        "github.com/golang/mock/sample/concurrent/mock"
+      ],
+      "modules": 11,
+      "treePackages": 196,
+      "standardLibraryPackages": 187,
+      "files": 1080,
+      "checkSplit": {
+        "standardLibraryMs": 535.6,
+        "modulesMs": 2.4
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 15.4,
+        "memoryMb": 1.2
+      },
+      "check": {
+        "cpuMs": 15.4,
+        "memoryMb": 1.2,
+        "timeMs": 25.2,
+        "wholeTree": {
+          "cpuMs": 814.8,
+          "memoryMb": 69.4
+        },
+        "standardLibrary": {
+          "cpuMs": 799.5,
+          "memoryMb": 68.2
+        },
+        "cpuSpreadMs": 90.9,
+        "runs": [
+          {
+            "cpuMs": 866.27,
+            "timeMs": 578.13,
+            "peakRssMb": 74.91
+          },
+          {
+            "cpuMs": 893.96,
+            "timeMs": 577.37,
+            "peakRssMb": 71.86
+          },
+          {
+            "cpuMs": 860.48,
+            "timeMs": 589.69,
+            "peakRssMb": 76.59
+          },
+          {
+            "cpuMs": 824.05,
+            "timeMs": 478.24,
+            "peakRssMb": 73.25
+          },
+          {
+            "cpuMs": 803.03,
+            "timeMs": 480.91,
+            "peakRssMb": 75.09
+          },
+          {
+            "cpuMs": 821.62,
+            "timeMs": 466.45,
+            "peakRssMb": 79.28
+          },
+          {
+            "cpuMs": 809.96,
+            "timeMs": 449.57,
+            "peakRssMb": 75.28
+          },
+          {
+            "cpuMs": 805.12,
+            "timeMs": 441.73,
+            "peakRssMb": 72.88
+          },
+          {
+            "cpuMs": 817.79,
+            "timeMs": 458.01,
+            "peakRssMb": 72.75
+          },
+          {
+            "cpuMs": 806.01,
+            "timeMs": 470.05,
+            "peakRssMb": 76.17
+          },
+          {
+            "cpuMs": 809.29,
+            "timeMs": 441.48,
+            "peakRssMb": 72.92
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1491,
+        "memoryMb": -2.9,
+        "timeMs": 461.7,
+        "wholeTree": {
+          "cpuMs": 19682.5,
+          "memoryMb": 209.6
+        },
+        "standardLibrary": {
+          "cpuMs": 18191.5,
+          "memoryMb": 212.5
+        },
+        "runs": [
+          {
+            "cpuMs": 19721.1,
+            "timeMs": 4525.7,
+            "peakRssMb": 225.3
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.12,
+      "measuredAt": "2026-10-08T04:11:12.170Z",
+      "harnessSeconds": 30
+    },
+    "github.com/golang/protobuf": {
+      "status": "ok",
+      "listedVersion": null,
+      "version": "v1.5.4",
+      "packagesInModule": 21,
+      "packages": [
+        "github.com/golang/protobuf/descriptor",
+        "github.com/golang/protobuf/jsonpb",
+        "github.com/golang/protobuf/proto",
+        "github.com/golang/protobuf/ptypes",
+        "github.com/golang/protobuf/protoc-gen-go/descriptor",
+        "github.com/golang/protobuf/protoc-gen-go/generator",
+        "github.com/golang/protobuf/protoc-gen-go/grpc",
+        "github.com/golang/protobuf/protoc-gen-go/plugin",
+        "github.com/golang/protobuf/ptypes/any",
+        "github.com/golang/protobuf/ptypes/duration",
+        "github.com/golang/protobuf/ptypes/empty",
+        "github.com/golang/protobuf/ptypes/struct",
+        "github.com/golang/protobuf/ptypes/timestamp",
+        "github.com/golang/protobuf/ptypes/wrappers"
+      ],
+      "modules": 4,
+      "treePackages": 177,
+      "standardLibraryPackages": 124,
+      "files": 911,
+      "checkSplit": {
+        "standardLibraryMs": 213,
+        "modulesMs": 63.4
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 108.1,
+        "memoryMb": 9
+      },
+      "check": {
+        "cpuMs": 108.1,
+        "memoryMb": 9,
+        "timeMs": 62.5,
+        "wholeTree": {
+          "cpuMs": 520.8,
+          "memoryMb": 49.3
+        },
+        "standardLibrary": {
+          "cpuMs": 412.6,
+          "memoryMb": 40.3
+        },
+        "cpuSpreadMs": 119,
+        "runs": [
+          {
+            "cpuMs": 527.75,
+            "timeMs": 284.85,
+            "peakRssMb": 54
+          },
+          {
+            "cpuMs": 521.36,
+            "timeMs": 283.2,
+            "peakRssMb": 53.94
+          },
+          {
+            "cpuMs": 523.7,
+            "timeMs": 287.77,
+            "peakRssMb": 53.45
+          },
+          {
+            "cpuMs": 525.02,
+            "timeMs": 285.41,
+            "peakRssMb": 57.63
+          },
+          {
+            "cpuMs": 533.11,
+            "timeMs": 284.01,
+            "peakRssMb": 54.25
+          },
+          {
+            "cpuMs": 522.2,
+            "timeMs": 291.08,
+            "peakRssMb": 53.45
+          },
+          {
+            "cpuMs": 520.91,
+            "timeMs": 332.17,
+            "peakRssMb": 55.55
+          },
+          {
+            "cpuMs": 513.99,
+            "timeMs": 342.21,
+            "peakRssMb": 55.34
+          },
+          {
+            "cpuMs": 513.83,
+            "timeMs": 324.73,
+            "peakRssMb": 55.14
+          },
+          {
+            "cpuMs": 524.74,
+            "timeMs": 357.11,
+            "peakRssMb": 54.8
+          },
+          {
+            "cpuMs": 632.87,
+            "timeMs": 443.3,
+            "peakRssMb": 54.94
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 5068.2,
+        "memoryMb": 2.1,
+        "timeMs": 1658.6,
+        "wholeTree": {
+          "cpuMs": 15994.3,
+          "memoryMb": 211.1
+        },
+        "standardLibrary": {
+          "cpuMs": 10926.1,
+          "memoryMb": 209
+        },
+        "runs": [
+          {
+            "cpuMs": 16032.9,
+            "timeMs": 4397.8,
+            "peakRssMb": 226.8
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 11.17,
+      "measuredAt": "2026-10-08T04:04:01.545Z",
+      "harnessSeconds": 17.4
+    },
+    "github.com/google/btree": {
+      "status": "ok",
+      "listedVersion": "v1.1.3",
+      "version": "v1.1.3",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/google/btree"
+      ],
+      "modules": 1,
+      "treePackages": 61,
+      "standardLibraryPackages": 60,
+      "files": 553,
+      "checkSplit": {
+        "standardLibraryMs": 154,
+        "modulesMs": 1.9
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 3.1,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 3.1,
+        "memoryMb": -2.5,
+        "timeMs": -0.5,
+        "wholeTree": {
+          "cpuMs": 302.9,
+          "memoryMb": 40.7
+        },
+        "standardLibrary": {
+          "cpuMs": 299.9,
+          "memoryMb": 43.1
+        },
+        "cpuSpreadMs": 45.2,
+        "runs": [
+          {
+            "cpuMs": 305.87,
+            "timeMs": 163.34,
+            "peakRssMb": 43.38
+          },
+          {
+            "cpuMs": 320.41,
+            "timeMs": 165.83,
+            "peakRssMb": 49.22
+          },
+          {
+            "cpuMs": 323.6,
+            "timeMs": 173.8,
+            "peakRssMb": 47.19
+          },
+          {
+            "cpuMs": 300.74,
+            "timeMs": 163.41,
+            "peakRssMb": 41.73
+          },
+          {
+            "cpuMs": 299,
+            "timeMs": 164.98,
+            "peakRssMb": 50.7
+          },
+          {
+            "cpuMs": 297.46,
+            "timeMs": 157.71,
+            "peakRssMb": 41.81
+          },
+          {
+            "cpuMs": 309.46,
+            "timeMs": 164.39,
+            "peakRssMb": 41.08
+          },
+          {
+            "cpuMs": 305.21,
+            "timeMs": 158.77,
+            "peakRssMb": 49.09
+          },
+          {
+            "cpuMs": 310.19,
+            "timeMs": 165.18,
+            "peakRssMb": 46.16
+          },
+          {
+            "cpuMs": 305.8,
+            "timeMs": 165.77,
+            "peakRssMb": 41.53
+          },
+          {
+            "cpuMs": 342.65,
+            "timeMs": 227.31,
+            "peakRssMb": 49.94
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 299,
+        "memoryMb": 0.1,
+        "timeMs": 143.1,
+        "wholeTree": {
+          "cpuMs": 6174.6,
+          "memoryMb": 208.2
+        },
+        "standardLibrary": {
+          "cpuMs": 5875.6,
+          "memoryMb": 208.1
+        },
+        "runs": [
+          {
+            "cpuMs": 6213.2,
+            "timeMs": 2071.6,
+            "peakRssMb": 223.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.66,
+      "measuredAt": "2026-10-08T04:16:12.166Z",
+      "harnessSeconds": 9.6
+    },
+    "github.com/google/go-cmp": {
+      "status": "ok",
+      "listedVersion": "v0.7.0",
+      "version": "v0.7.0",
+      "packagesInModule": 10,
+      "packages": [
+        "github.com/google/go-cmp/cmp",
+        "github.com/google/go-cmp/cmp/cmpopts"
+      ],
+      "modules": 1,
+      "treePackages": 70,
+      "standardLibraryPackages": 64,
+      "files": 596,
+      "checkSplit": {
+        "standardLibraryMs": 186.4,
+        "modulesMs": 9.7
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 20.8,
+        "memoryMb": 1.5
+      },
+      "check": {
+        "cpuMs": 20.8,
+        "memoryMb": 1.5,
+        "timeMs": 15.3,
+        "wholeTree": {
+          "cpuMs": 360.5,
+          "memoryMb": 39
+        },
+        "standardLibrary": {
+          "cpuMs": 339.7,
+          "memoryMb": 37.5
+        },
+        "cpuSpreadMs": 23.8,
+        "runs": [
+          {
+            "cpuMs": 367.58,
+            "timeMs": 205.27,
+            "peakRssMb": 45.97
+          },
+          {
+            "cpuMs": 362.99,
+            "timeMs": 202.27,
+            "peakRssMb": 42.45
+          },
+          {
+            "cpuMs": 352.6,
+            "timeMs": 202.58,
+            "peakRssMb": 45.77
+          },
+          {
+            "cpuMs": 363.48,
+            "timeMs": 237.77,
+            "peakRssMb": 42.3
+          },
+          {
+            "cpuMs": 372.63,
+            "timeMs": 216.15,
+            "peakRssMb": 42.86
+          },
+          {
+            "cpuMs": 367.86,
+            "timeMs": 201.67,
+            "peakRssMb": 47.42
+          },
+          {
+            "cpuMs": 364.06,
+            "timeMs": 204.6,
+            "peakRssMb": 42.47
+          },
+          {
+            "cpuMs": 365.27,
+            "timeMs": 206.8,
+            "peakRssMb": 44.42
+          },
+          {
+            "cpuMs": 355.79,
+            "timeMs": 203.98,
+            "peakRssMb": 44.78
+          },
+          {
+            "cpuMs": 348.8,
+            "timeMs": 197.54,
+            "peakRssMb": 47.66
+          },
+          {
+            "cpuMs": 350.57,
+            "timeMs": 190.4,
+            "peakRssMb": 42.17
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 602,
+        "memoryMb": -2.3,
+        "timeMs": 222.9,
+        "wholeTree": {
+          "cpuMs": 7198.1,
+          "memoryMb": 210.8
+        },
+        "standardLibrary": {
+          "cpuMs": 6596.1,
+          "memoryMb": 213.1
+        },
+        "runs": [
+          {
+            "cpuMs": 7236.7,
+            "timeMs": 2250.2,
+            "peakRssMb": 226.5
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 10.02,
+      "measuredAt": "2026-10-08T04:04:25.724Z",
+      "harnessSeconds": 10.8
+    },
+    "github.com/google/gofuzz": {
+      "status": "ok",
+      "listedVersion": "v1.2.0",
+      "version": "v1.2.0",
+      "packagesInModule": 2,
+      "packages": [
+        "github.com/google/gofuzz"
+      ],
+      "modules": 1,
+      "treePackages": 67,
+      "standardLibraryPackages": 65,
+      "files": 579,
+      "checkSplit": {
+        "standardLibraryMs": 166.5,
+        "modulesMs": 0.7
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -4.6,
+        "memoryMb": -3.8,
+        "timeMs": -3.3,
+        "wholeTree": {
+          "cpuMs": 327.6,
+          "memoryMb": 36.7
+        },
+        "standardLibrary": {
+          "cpuMs": 332.2,
+          "memoryMb": 40.5
+        },
+        "cpuSpreadMs": 54.1,
+        "runs": [
+          {
+            "cpuMs": 331.66,
+            "timeMs": 173.8,
+            "peakRssMb": 51.11
+          },
+          {
+            "cpuMs": 330.11,
+            "timeMs": 174.1,
+            "peakRssMb": 42.91
+          },
+          {
+            "cpuMs": 333.08,
+            "timeMs": 170.22,
+            "peakRssMb": 41.55
+          },
+          {
+            "cpuMs": 332.38,
+            "timeMs": 176.57,
+            "peakRssMb": 41.92
+          },
+          {
+            "cpuMs": 330.56,
+            "timeMs": 173.89,
+            "peakRssMb": 49.16
+          },
+          {
+            "cpuMs": 328.11,
+            "timeMs": 172.58,
+            "peakRssMb": 42.13
+          },
+          {
+            "cpuMs": 316.83,
+            "timeMs": 172.02,
+            "peakRssMb": 41.92
+          },
+          {
+            "cpuMs": 327.14,
+            "timeMs": 178.53,
+            "peakRssMb": 41.75
+          },
+          {
+            "cpuMs": 321.53,
+            "timeMs": 174.84,
+            "peakRssMb": 42
+          },
+          {
+            "cpuMs": 370.93,
+            "timeMs": 221.35,
+            "peakRssMb": 49.77
+          },
+          {
+            "cpuMs": 367.81,
+            "timeMs": 225.26,
+            "peakRssMb": 48.98
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 21.9,
+        "memoryMb": 1.6,
+        "timeMs": 36,
+        "wholeTree": {
+          "cpuMs": 6591.5,
+          "memoryMb": 208.2
+        },
+        "standardLibrary": {
+          "cpuMs": 6569.6,
+          "memoryMb": 206.6
+        },
+        "runs": [
+          {
+            "cpuMs": 6630.1,
+            "timeMs": 1915.6,
+            "peakRssMb": 223.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.75,
+      "measuredAt": "2026-10-08T04:15:40.542Z",
+      "harnessSeconds": 10
+    },
+    "github.com/google/uuid": {
+      "status": "ok",
+      "listedVersion": "v1.6.0",
+      "version": "v1.6.0",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/google/uuid"
+      ],
+      "modules": 1,
+      "treePackages": 108,
+      "standardLibraryPackages": 107,
+      "files": 781,
+      "checkSplit": {
+        "standardLibraryMs": 220.5,
+        "modulesMs": 2.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -9,
+        "memoryMb": -3,
+        "timeMs": -15.2,
+        "wholeTree": {
+          "cpuMs": 415.9,
+          "memoryMb": 37.8
+        },
+        "standardLibrary": {
+          "cpuMs": 424.9,
+          "memoryMb": 40.8
+        },
+        "cpuSpreadMs": 32.2,
+        "runs": [
+          {
+            "cpuMs": 419.28,
+            "timeMs": 232.96,
+            "peakRssMb": 48.42
+          },
+          {
+            "cpuMs": 418.9,
+            "timeMs": 229.8,
+            "peakRssMb": 49.97
+          },
+          {
+            "cpuMs": 411.05,
+            "timeMs": 223.23,
+            "peakRssMb": 42.56
+          },
+          {
+            "cpuMs": 417.96,
+            "timeMs": 226.47,
+            "peakRssMb": 43.23
+          },
+          {
+            "cpuMs": 428.67,
+            "timeMs": 225.17,
+            "peakRssMb": 43.31
+          },
+          {
+            "cpuMs": 414.11,
+            "timeMs": 222.82,
+            "peakRssMb": 42.16
+          },
+          {
+            "cpuMs": 418.81,
+            "timeMs": 222.42,
+            "peakRssMb": 43.28
+          },
+          {
+            "cpuMs": 436.04,
+            "timeMs": 230.38,
+            "peakRssMb": 49.78
+          },
+          {
+            "cpuMs": 415.47,
+            "timeMs": 234.74,
+            "peakRssMb": 42.41
+          },
+          {
+            "cpuMs": 443.25,
+            "timeMs": 248.51,
+            "peakRssMb": 43.89
+          },
+          {
+            "cpuMs": 411.52,
+            "timeMs": 230.65,
+            "peakRssMb": 46.05
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -215.1,
+        "memoryMb": 5,
+        "timeMs": 20.2,
+        "wholeTree": {
+          "cpuMs": 9937.3,
+          "memoryMb": 210.2
+        },
+        "standardLibrary": {
+          "cpuMs": 10152.4,
+          "memoryMb": 205.2
+        },
+        "runs": [
+          {
+            "cpuMs": 9975.9,
+            "timeMs": 2455.4,
+            "peakRssMb": 225.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.89,
+      "measuredAt": "2026-10-08T04:14:51.775Z",
+      "harnessSeconds": 13.1
+    },
+    "github.com/hashicorp/golang-lru": {
+      "status": "ok",
+      "listedVersion": "v1.0.2",
+      "version": "v1.0.2",
+      "packagesInModule": 2,
+      "packages": [
+        "github.com/hashicorp/golang-lru"
+      ],
+      "modules": 1,
+      "treePackages": 100,
+      "standardLibraryPackages": 98,
+      "files": 696,
+      "checkSplit": {
+        "standardLibraryMs": 190.6,
+        "modulesMs": 1.1
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 1.8,
+        "memoryMb": 2.7
+      },
+      "check": {
+        "cpuMs": 1.8,
+        "memoryMb": 2.7,
+        "timeMs": 11.7,
+        "wholeTree": {
+          "cpuMs": 382.7,
+          "memoryMb": 43.3
+        },
+        "standardLibrary": {
+          "cpuMs": 380.9,
+          "memoryMb": 40.6
+        },
+        "cpuSpreadMs": 49.6,
+        "runs": [
+          {
+            "cpuMs": 363.92,
+            "timeMs": 207.01,
+            "peakRssMb": 46.88
+          },
+          {
+            "cpuMs": 374.86,
+            "timeMs": 204.53,
+            "peakRssMb": 48.16
+          },
+          {
+            "cpuMs": 375.18,
+            "timeMs": 209.47,
+            "peakRssMb": 49.78
+          },
+          {
+            "cpuMs": 399.72,
+            "timeMs": 246.3,
+            "peakRssMb": 42.41
+          },
+          {
+            "cpuMs": 385.6,
+            "timeMs": 228.95,
+            "peakRssMb": 49.69
+          },
+          {
+            "cpuMs": 356.66,
+            "timeMs": 217.25,
+            "peakRssMb": 43.22
+          },
+          {
+            "cpuMs": 406.01,
+            "timeMs": 219.27,
+            "peakRssMb": 48.94
+          },
+          {
+            "cpuMs": 405.62,
+            "timeMs": 223.73,
+            "peakRssMb": 49.58
+          },
+          {
+            "cpuMs": 390.05,
+            "timeMs": 214.21,
+            "peakRssMb": 49.02
+          },
+          {
+            "cpuMs": 406.3,
+            "timeMs": 221.91,
+            "peakRssMb": 48.77
+          },
+          {
+            "cpuMs": 377.17,
+            "timeMs": 222.77,
+            "peakRssMb": 41.45
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 150.2,
+        "memoryMb": -5.3,
+        "timeMs": 104.3,
+        "wholeTree": {
+          "cpuMs": 8737.1,
+          "memoryMb": 204.8
+        },
+        "standardLibrary": {
+          "cpuMs": 8586.9,
+          "memoryMb": 210.1
+        },
+        "runs": [
+          {
+            "cpuMs": 8775.7,
+            "timeMs": 2480,
+            "peakRssMb": 220.5
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.57,
+      "measuredAt": "2026-10-08T04:16:25.264Z",
+      "harnessSeconds": 13.1
+    },
+    "github.com/json-iterator/go": {
+      "status": "ok",
+      "listedVersion": "v1.1.12",
+      "version": "v1.1.12",
+      "packagesInModule": 10,
+      "packages": [
+        "github.com/json-iterator/go"
+      ],
+      "modules": 8,
+      "treePackages": 72,
+      "standardLibraryPackages": 69,
+      "files": 664,
+      "checkSplit": {
+        "standardLibraryMs": 203.4,
+        "modulesMs": 13.8
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 24.9,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 24.9,
+        "memoryMb": -0.1,
+        "timeMs": 19.1,
+        "wholeTree": {
+          "cpuMs": 372.4,
+          "memoryMb": 40.7
+        },
+        "standardLibrary": {
+          "cpuMs": 347.6,
+          "memoryMb": 40.8
+        },
+        "cpuSpreadMs": 61.9,
+        "runs": [
+          {
+            "cpuMs": 399.4,
+            "timeMs": 225.35,
+            "peakRssMb": 43.17
+          },
+          {
+            "cpuMs": 400.43,
+            "timeMs": 238.33,
+            "peakRssMb": 48.64
+          },
+          {
+            "cpuMs": 374.22,
+            "timeMs": 204.3,
+            "peakRssMb": 49.94
+          },
+          {
+            "cpuMs": 358.92,
+            "timeMs": 197.56,
+            "peakRssMb": 50.11
+          },
+          {
+            "cpuMs": 382.7,
+            "timeMs": 206.2,
+            "peakRssMb": 42.66
+          },
+          {
+            "cpuMs": 379.07,
+            "timeMs": 197.46,
+            "peakRssMb": 45.72
+          },
+          {
+            "cpuMs": 411.53,
+            "timeMs": 266.58,
+            "peakRssMb": 42.03
+          },
+          {
+            "cpuMs": 349.65,
+            "timeMs": 193.28,
+            "peakRssMb": 46.2
+          },
+          {
+            "cpuMs": 375.38,
+            "timeMs": 208.08,
+            "peakRssMb": 47.88
+          },
+          {
+            "cpuMs": 352.06,
+            "timeMs": 199.41,
+            "peakRssMb": 42.59
+          },
+          {
+            "cpuMs": 359.62,
+            "timeMs": 188.44,
+            "peakRssMb": 49.08
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1368.1,
+        "memoryMb": 2.2,
+        "timeMs": -645.3,
+        "wholeTree": {
+          "cpuMs": 8255.2,
+          "memoryMb": 208.2
+        },
+        "standardLibrary": {
+          "cpuMs": 6887.1,
+          "memoryMb": 206
+        },
+        "runs": [
+          {
+            "cpuMs": 8293.8,
+            "timeMs": 2515.2,
+            "peakRssMb": 223.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.69,
+      "measuredAt": "2026-10-08T04:13:49.865Z",
+      "harnessSeconds": 15.1
+    },
+    "github.com/kisielk/gotool": {
+      "status": "ok",
+      "listedVersion": "v1.0.0",
+      "version": "v1.0.0",
+      "packagesInModule": 2,
+      "packages": [
+        "github.com/kisielk/gotool"
+      ],
+      "modules": 1,
+      "treePackages": 85,
+      "standardLibraryPackages": 83,
+      "files": 632,
+      "checkSplit": {
+        "standardLibraryMs": 196.3,
+        "modulesMs": 0.7
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -5.9,
+        "memoryMb": -0.7,
+        "timeMs": -7.8,
+        "wholeTree": {
+          "cpuMs": 377.6,
+          "memoryMb": 40
+        },
+        "standardLibrary": {
+          "cpuMs": 383.5,
+          "memoryMb": 40.6
+        },
+        "cpuSpreadMs": 80.4,
+        "runs": [
+          {
+            "cpuMs": 375.61,
+            "timeMs": 206.26,
+            "peakRssMb": 48.84
+          },
+          {
+            "cpuMs": 391.85,
+            "timeMs": 224.48,
+            "peakRssMb": 49.95
+          },
+          {
+            "cpuMs": 439.76,
+            "timeMs": 325.19,
+            "peakRssMb": 45.44
+          },
+          {
+            "cpuMs": 368.32,
+            "timeMs": 217.88,
+            "peakRssMb": 48.95
+          },
+          {
+            "cpuMs": 390.01,
+            "timeMs": 219.69,
+            "peakRssMb": 42.95
+          },
+          {
+            "cpuMs": 380.5,
+            "timeMs": 232.54,
+            "peakRssMb": 45.45
+          },
+          {
+            "cpuMs": 363.29,
+            "timeMs": 200.85,
+            "peakRssMb": 43.34
+          },
+          {
+            "cpuMs": 369.57,
+            "timeMs": 196.81,
+            "peakRssMb": 49.44
+          },
+          {
+            "cpuMs": 388.16,
+            "timeMs": 210.27,
+            "peakRssMb": 41.94
+          },
+          {
+            "cpuMs": 359.31,
+            "timeMs": 201.86,
+            "peakRssMb": 43.08
+          },
+          {
+            "cpuMs": 390.49,
+            "timeMs": 209.08,
+            "peakRssMb": 49.95
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 411.5,
+        "memoryMb": -8.6,
+        "timeMs": 389.4,
+        "wholeTree": {
+          "cpuMs": 8676.9,
+          "memoryMb": 206.3
+        },
+        "standardLibrary": {
+          "cpuMs": 8265.4,
+          "memoryMb": 214.9
+        },
+        "runs": [
+          {
+            "cpuMs": 8715.5,
+            "timeMs": 2818.3,
+            "peakRssMb": 222
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.18,
+      "measuredAt": "2026-10-08T04:13:34.811Z",
+      "harnessSeconds": 14.9
+    },
+    "github.com/konsorten/go-windows-terminal-sequences": {
+      "status": "ok",
+      "listedVersion": "v1.0.3",
+      "version": "v1.0.3",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/konsorten/go-windows-terminal-sequences"
+      ],
+      "modules": 1,
+      "treePackages": 59,
+      "standardLibraryPackages": 58,
+      "files": 540,
+      "checkSplit": {
+        "standardLibraryMs": 150.7,
+        "modulesMs": 0.1
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -0.9,
+        "memoryMb": -0.1,
+        "timeMs": 1.3,
+        "wholeTree": {
+          "cpuMs": 293.6,
+          "memoryMb": 37.9
+        },
+        "standardLibrary": {
+          "cpuMs": 294.4,
+          "memoryMb": 38
+        },
+        "cpuSpreadMs": 17.3,
+        "runs": [
+          {
+            "cpuMs": 303.95,
+            "timeMs": 158.29,
+            "peakRssMb": 46.34
+          },
+          {
+            "cpuMs": 291.46,
+            "timeMs": 155.77,
+            "peakRssMb": 46.08
+          },
+          {
+            "cpuMs": 304.16,
+            "timeMs": 157.94,
+            "peakRssMb": 42.69
+          },
+          {
+            "cpuMs": 286.88,
+            "timeMs": 153.69,
+            "peakRssMb": 48.8
+          },
+          {
+            "cpuMs": 292.95,
+            "timeMs": 157.77,
+            "peakRssMb": 48.84
+          },
+          {
+            "cpuMs": 301.33,
+            "timeMs": 159.34,
+            "peakRssMb": 42.75
+          },
+          {
+            "cpuMs": 297.64,
+            "timeMs": 158.56,
+            "peakRssMb": 41.91
+          },
+          {
+            "cpuMs": 296.5,
+            "timeMs": 157.8,
+            "peakRssMb": 41.91
+          },
+          {
+            "cpuMs": 294.33,
+            "timeMs": 157.8,
+            "peakRssMb": 42.45
+          },
+          {
+            "cpuMs": 296.52,
+            "timeMs": 157.99,
+            "peakRssMb": 43.34
+          },
+          {
+            "cpuMs": 300.84,
+            "timeMs": 158.81,
+            "peakRssMb": 49.27
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 271,
+        "memoryMb": 0.2,
+        "timeMs": 148.3,
+        "wholeTree": {
+          "cpuMs": 5692.3,
+          "memoryMb": 213.9
+        },
+        "standardLibrary": {
+          "cpuMs": 5421.3,
+          "memoryMb": 213.7
+        },
+        "runs": [
+          {
+            "cpuMs": 5730.9,
+            "timeMs": 1929.8,
+            "peakRssMb": 229.6
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.09,
+      "measuredAt": "2026-10-08T04:15:50.528Z",
+      "harnessSeconds": 10
+    },
+    "github.com/kr/pretty": {
+      "status": "ok",
+      "listedVersion": "v0.3.1",
+      "version": "v0.3.1",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/kr/pretty"
+      ],
+      "modules": 5,
+      "treePackages": 66,
+      "standardLibraryPackages": 63,
+      "files": 560,
+      "checkSplit": {
+        "standardLibraryMs": 184.1,
+        "modulesMs": 2
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 11.4,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 11.4,
+        "memoryMb": -2.5,
+        "timeMs": 13.9,
+        "wholeTree": {
+          "cpuMs": 321.6,
+          "memoryMb": 40.1
+        },
+        "standardLibrary": {
+          "cpuMs": 310.1,
+          "memoryMb": 42.7
+        },
+        "cpuSpreadMs": 40.6,
+        "runs": [
+          {
+            "cpuMs": 334.22,
+            "timeMs": 194.38,
+            "peakRssMb": 45.34
+          },
+          {
+            "cpuMs": 316.68,
+            "timeMs": 174.82,
+            "peakRssMb": 46.02
+          },
+          {
+            "cpuMs": 324.49,
+            "timeMs": 183.49,
+            "peakRssMb": 43.45
+          },
+          {
+            "cpuMs": 323.62,
+            "timeMs": 187.25,
+            "peakRssMb": 48.91
+          },
+          {
+            "cpuMs": 339.35,
+            "timeMs": 197.34,
+            "peakRssMb": 50.11
+          },
+          {
+            "cpuMs": 324.58,
+            "timeMs": 180.36,
+            "peakRssMb": 41.3
+          },
+          {
+            "cpuMs": 315.2,
+            "timeMs": 172.65,
+            "peakRssMb": 41.38
+          },
+          {
+            "cpuMs": 329.56,
+            "timeMs": 187.27,
+            "peakRssMb": 45.98
+          },
+          {
+            "cpuMs": 298.76,
+            "timeMs": 168.05,
+            "peakRssMb": 49.64
+          },
+          {
+            "cpuMs": 314.76,
+            "timeMs": 168.94,
+            "peakRssMb": 45.61
+          },
+          {
+            "cpuMs": 324.99,
+            "timeMs": 199.27,
+            "peakRssMb": 41.25
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 279.9,
+        "memoryMb": -5.6,
+        "timeMs": 128.5,
+        "wholeTree": {
+          "cpuMs": 6227.3,
+          "memoryMb": 206.3
+        },
+        "standardLibrary": {
+          "cpuMs": 5947.4,
+          "memoryMb": 211.9
+        },
+        "runs": [
+          {
+            "cpuMs": 6265.9,
+            "timeMs": 2059.9,
+            "peakRssMb": 222
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.63,
+      "measuredAt": "2026-10-08T04:05:11.923Z",
+      "harnessSeconds": 12.7
+    },
+    "github.com/kr/pty": {
+      "status": "ok",
+      "listedVersion": "v1.1.8",
+      "version": "v1.1.8",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/kr/pty"
+      ],
+      "modules": 2,
+      "treePackages": 62,
+      "standardLibraryPackages": 60,
+      "files": 551,
+      "checkSplit": {
+        "standardLibraryMs": 159.4,
+        "modulesMs": 0.5
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 7.9,
+        "memoryMb": 0.3
+      },
+      "check": {
+        "cpuMs": 7.9,
+        "memoryMb": 0.3,
+        "timeMs": 6.8,
+        "wholeTree": {
+          "cpuMs": 293,
+          "memoryMb": 37.4
+        },
+        "standardLibrary": {
+          "cpuMs": 285.2,
+          "memoryMb": 37.1
+        },
+        "cpuSpreadMs": 9.9,
+        "runs": [
+          {
+            "cpuMs": 288.23,
+            "timeMs": 167.05,
+            "peakRssMb": 41.55
+          },
+          {
+            "cpuMs": 298.16,
+            "timeMs": 160.14,
+            "peakRssMb": 41.86
+          },
+          {
+            "cpuMs": 294.32,
+            "timeMs": 159.43,
+            "peakRssMb": 42.86
+          },
+          {
+            "cpuMs": 296.95,
+            "timeMs": 157.95,
+            "peakRssMb": 47.83
+          },
+          {
+            "cpuMs": 295.37,
+            "timeMs": 159.27,
+            "peakRssMb": 41.45
+          },
+          {
+            "cpuMs": 296.23,
+            "timeMs": 162.18,
+            "peakRssMb": 50.98
+          },
+          {
+            "cpuMs": 290.31,
+            "timeMs": 159.44,
+            "peakRssMb": 42.56
+          },
+          {
+            "cpuMs": 296.31,
+            "timeMs": 152.02,
+            "peakRssMb": 48.91
+          },
+          {
+            "cpuMs": 295.97,
+            "timeMs": 154.1,
+            "peakRssMb": 48.53
+          },
+          {
+            "cpuMs": 296.8,
+            "timeMs": 154.28,
+            "peakRssMb": 50.36
+          },
+          {
+            "cpuMs": 288.6,
+            "timeMs": 152.75,
+            "peakRssMb": 41.98
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 71.8,
+        "memoryMb": -0.3,
+        "timeMs": -90.6,
+        "wholeTree": {
+          "cpuMs": 5248.8,
+          "memoryMb": 210.8
+        },
+        "standardLibrary": {
+          "cpuMs": 5177,
+          "memoryMb": 211.1
+        },
+        "runs": [
+          {
+            "cpuMs": 5287.4,
+            "timeMs": 1891.2,
+            "peakRssMb": 226.5
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.18,
+      "measuredAt": "2026-10-08T04:04:59.203Z",
+      "harnessSeconds": 12.2
+    },
+    "github.com/kr/text": {
+      "status": "ok",
+      "listedVersion": "v0.2.0",
+      "version": "v0.2.0",
+      "packagesInModule": 4,
+      "packages": [
+        "github.com/kr/text"
+      ],
+      "modules": 2,
+      "treePackages": 40,
+      "standardLibraryPackages": 39,
+      "files": 369,
+      "checkSplit": {
+        "standardLibraryMs": 105.2,
+        "modulesMs": 0.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -22.2,
+        "memoryMb": -1.7,
+        "timeMs": -19.3,
+        "wholeTree": {
+          "cpuMs": 208.1,
+          "memoryMb": 41.3
+        },
+        "standardLibrary": {
+          "cpuMs": 230.3,
+          "memoryMb": 43.1
+        },
+        "cpuSpreadMs": 16.6,
+        "runs": [
+          {
+            "cpuMs": 206.24,
+            "timeMs": 112.8,
+            "peakRssMb": 47.63
+          },
+          {
+            "cpuMs": 211.7,
+            "timeMs": 111.28,
+            "peakRssMb": 49.13
+          },
+          {
+            "cpuMs": 200.97,
+            "timeMs": 109.45,
+            "peakRssMb": 46.34
+          },
+          {
+            "cpuMs": 214.56,
+            "timeMs": 120.58,
+            "peakRssMb": 49.92
+          },
+          {
+            "cpuMs": 209.07,
+            "timeMs": 112.42,
+            "peakRssMb": 47.56
+          },
+          {
+            "cpuMs": 207.4,
+            "timeMs": 111.69,
+            "peakRssMb": 43.64
+          },
+          {
+            "cpuMs": 217.54,
+            "timeMs": 116.38,
+            "peakRssMb": 45
+          },
+          {
+            "cpuMs": 214.02,
+            "timeMs": 112.81,
+            "peakRssMb": 48.95
+          },
+          {
+            "cpuMs": 215.65,
+            "timeMs": 110.94,
+            "peakRssMb": 45.91
+          },
+          {
+            "cpuMs": 207.74,
+            "timeMs": 112.16,
+            "peakRssMb": 46.81
+          },
+          {
+            "cpuMs": 211.06,
+            "timeMs": 111.57,
+            "peakRssMb": 42.66
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -62.6,
+        "memoryMb": -7.1,
+        "timeMs": 1.3,
+        "wholeTree": {
+          "cpuMs": 3668.1,
+          "memoryMb": 206.3
+        },
+        "standardLibrary": {
+          "cpuMs": 3730.7,
+          "memoryMb": 213.4
+        },
+        "runs": [
+          {
+            "cpuMs": 3706.7,
+            "timeMs": 1439.2,
+            "peakRssMb": 222
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.65,
+      "measuredAt": "2026-10-08T04:04:35.728Z",
+      "harnessSeconds": 10
+    },
+    "github.com/mattn/go-colorable": {
+      "status": "ok",
+      "listedVersion": "v0.1.15",
+      "version": "v0.1.15",
+      "packagesInModule": 2,
+      "packages": [
+        "github.com/mattn/go-colorable"
+      ],
+      "modules": 3,
+      "treePackages": 64,
+      "standardLibraryPackages": 61,
+      "files": 591,
+      "checkSplit": {
+        "standardLibraryMs": 264,
+        "modulesMs": 15.8
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 66.7,
+        "memoryMb": 5.1
+      },
+      "check": {
+        "cpuMs": 66.7,
+        "memoryMb": 5.1,
+        "timeMs": 47.1,
+        "wholeTree": {
+          "cpuMs": 386.1,
+          "memoryMb": 42.8
+        },
+        "standardLibrary": {
+          "cpuMs": 319.4,
+          "memoryMb": 37.8
+        },
+        "cpuSpreadMs": 108.2,
+        "runs": [
+          {
+            "cpuMs": 409.6,
+            "timeMs": 291.61,
+            "peakRssMb": 49.58
+          },
+          {
+            "cpuMs": 389.02,
+            "timeMs": 241.16,
+            "peakRssMb": 49.53
+          },
+          {
+            "cpuMs": 395.68,
+            "timeMs": 261.62,
+            "peakRssMb": 42.77
+          },
+          {
+            "cpuMs": 425.32,
+            "timeMs": 288.01,
+            "peakRssMb": 50.36
+          },
+          {
+            "cpuMs": 404.21,
+            "timeMs": 263.86,
+            "peakRssMb": 42.08
+          },
+          {
+            "cpuMs": 346.06,
+            "timeMs": 197.16,
+            "peakRssMb": 46.05
+          },
+          {
+            "cpuMs": 317.1,
+            "timeMs": 179.52,
+            "peakRssMb": 42.53
+          },
+          {
+            "cpuMs": 372.49,
+            "timeMs": 199.59,
+            "peakRssMb": 48.61
+          },
+          {
+            "cpuMs": 402.21,
+            "timeMs": 228.37,
+            "peakRssMb": 48.31
+          },
+          {
+            "cpuMs": 388.26,
+            "timeMs": 214.93,
+            "peakRssMb": 41.45
+          },
+          {
+            "cpuMs": 383.64,
+            "timeMs": 208.33,
+            "peakRssMb": 50.42
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 162.2,
+        "memoryMb": 6.5,
+        "timeMs": 208.9,
+        "wholeTree": {
+          "cpuMs": 6299.1,
+          "memoryMb": 210.1
+        },
+        "standardLibrary": {
+          "cpuMs": 6136.9,
+          "memoryMb": 203.6
+        },
+        "runs": [
+          {
+            "cpuMs": 6337.7,
+            "timeMs": 2118,
+            "peakRssMb": 225.8
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.96,
+      "measuredAt": "2026-10-08T04:15:30.585Z",
+      "harnessSeconds": 13
+    },
+    "github.com/mattn/go-isatty": {
+      "status": "ok",
+      "listedVersion": "v0.0.24",
+      "version": "v0.0.24",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/mattn/go-isatty"
+      ],
+      "modules": 2,
+      "treePackages": 63,
+      "standardLibraryPackages": 61,
+      "files": 589,
+      "checkSplit": {
+        "standardLibraryMs": 189.8,
+        "modulesMs": 10.2
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 28.8,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 28.8,
+        "memoryMb": -2.5,
+        "timeMs": 13.2,
+        "wholeTree": {
+          "cpuMs": 336.4,
+          "memoryMb": 40.2
+        },
+        "standardLibrary": {
+          "cpuMs": 307.6,
+          "memoryMb": 42.7
+        },
+        "cpuSpreadMs": 37.5,
+        "runs": [
+          {
+            "cpuMs": 358.62,
+            "timeMs": 210.64,
+            "peakRssMb": 41.72
+          },
+          {
+            "cpuMs": 349.04,
+            "timeMs": 183.68,
+            "peakRssMb": 48
+          },
+          {
+            "cpuMs": 324.77,
+            "timeMs": 194.35,
+            "peakRssMb": 48.44
+          },
+          {
+            "cpuMs": 341.61,
+            "timeMs": 222.81,
+            "peakRssMb": 45.81
+          },
+          {
+            "cpuMs": 339.3,
+            "timeMs": 180.83,
+            "peakRssMb": 48.92
+          },
+          {
+            "cpuMs": 342.11,
+            "timeMs": 184.4,
+            "peakRssMb": 41.52
+          },
+          {
+            "cpuMs": 343.78,
+            "timeMs": 177.79,
+            "peakRssMb": 45.67
+          },
+          {
+            "cpuMs": 336.89,
+            "timeMs": 175.36,
+            "peakRssMb": 41.97
+          },
+          {
+            "cpuMs": 321.11,
+            "timeMs": 174.1,
+            "peakRssMb": 41.34
+          },
+          {
+            "cpuMs": 336.29,
+            "timeMs": 175.38,
+            "peakRssMb": 41.95
+          },
+          {
+            "cpuMs": 338.07,
+            "timeMs": 177.2,
+            "peakRssMb": 48.98
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 16.9,
+        "memoryMb": 8.3,
+        "timeMs": 100.7,
+        "wholeTree": {
+          "cpuMs": 6276.1,
+          "memoryMb": 215.2
+        },
+        "standardLibrary": {
+          "cpuMs": 6259.2,
+          "memoryMb": 206.9
+        },
+        "runs": [
+          {
+            "cpuMs": 6314.7,
+            "timeMs": 2141.1,
+            "peakRssMb": 230.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.87,
+      "measuredAt": "2026-10-08T04:05:36.823Z",
+      "harnessSeconds": 12.3
+    },
+    "github.com/modern-go/concurrent": {
+      "status": "ok",
+      "listedVersion": "v0.0.0-20180306012644-bacd9c7ef1dd",
+      "version": "v0.0.0-20180306012644-bacd9c7ef1dd",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/modern-go/concurrent"
+      ],
+      "modules": 1,
+      "treePackages": 65,
+      "standardLibraryPackages": 64,
+      "files": 560,
+      "checkSplit": {
+        "standardLibraryMs": 152.6,
+        "modulesMs": 0.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -0.5,
+        "memoryMb": -0.9,
+        "timeMs": 0,
+        "wholeTree": {
+          "cpuMs": 304.8,
+          "memoryMb": 40.5
+        },
+        "standardLibrary": {
+          "cpuMs": 305.3,
+          "memoryMb": 41.4
+        },
+        "cpuSpreadMs": 24.1,
+        "runs": [
+          {
+            "cpuMs": 304.93,
+            "timeMs": 160.05,
+            "peakRssMb": 48.95
+          },
+          {
+            "cpuMs": 295.33,
+            "timeMs": 160.18,
+            "peakRssMb": 49.14
+          },
+          {
+            "cpuMs": 312.18,
+            "timeMs": 164.89,
+            "peakRssMb": 42.08
+          },
+          {
+            "cpuMs": 311.59,
+            "timeMs": 161.48,
+            "peakRssMb": 49.02
+          },
+          {
+            "cpuMs": 302.86,
+            "timeMs": 160.57,
+            "peakRssMb": 42.47
+          },
+          {
+            "cpuMs": 307.07,
+            "timeMs": 162.01,
+            "peakRssMb": 45.98
+          },
+          {
+            "cpuMs": 297.87,
+            "timeMs": 162.76,
+            "peakRssMb": 48.22
+          },
+          {
+            "cpuMs": 307.91,
+            "timeMs": 165.51,
+            "peakRssMb": 43.8
+          },
+          {
+            "cpuMs": 319.45,
+            "timeMs": 180.09,
+            "peakRssMb": 47.13
+          },
+          {
+            "cpuMs": 307.77,
+            "timeMs": 162.09,
+            "peakRssMb": 43.09
+          },
+          {
+            "cpuMs": 314.69,
+            "timeMs": 162.94,
+            "peakRssMb": 42.22
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -110.5,
+        "memoryMb": -2.8,
+        "timeMs": 18.3,
+        "wholeTree": {
+          "cpuMs": 5962.4,
+          "memoryMb": 203.7
+        },
+        "standardLibrary": {
+          "cpuMs": 6072.9,
+          "memoryMb": 206.5
+        },
+        "runs": [
+          {
+            "cpuMs": 6001,
+            "timeMs": 1972.7,
+            "peakRssMb": 219.4
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.12,
+      "measuredAt": "2026-10-08T04:14:00.425Z",
+      "harnessSeconds": 10.6
+    },
+    "github.com/modern-go/reflect2": {
+      "status": "ok",
+      "listedVersion": "v1.0.2",
+      "version": "v1.0.2",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/modern-go/reflect2"
+      ],
+      "modules": 1,
+      "treePackages": 41,
+      "standardLibraryPackages": 40,
+      "files": 405,
+      "checkSplit": {
+        "standardLibraryMs": 122,
+        "modulesMs": 2.4
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 17.2,
+        "memoryMb": 6.6
+      },
+      "check": {
+        "cpuMs": 17.2,
+        "memoryMb": 6.6,
+        "timeMs": 6.8,
+        "wholeTree": {
+          "cpuMs": 248.4,
+          "memoryMb": 43.5
+        },
+        "standardLibrary": {
+          "cpuMs": 231.2,
+          "memoryMb": 36.8
+        },
+        "cpuSpreadMs": 26.6,
+        "runs": [
+          {
+            "cpuMs": 242.99,
+            "timeMs": 134.23,
+            "peakRssMb": 48.19
+          },
+          {
+            "cpuMs": 248.8,
+            "timeMs": 131.83,
+            "peakRssMb": 48.98
+          },
+          {
+            "cpuMs": 259.16,
+            "timeMs": 150.57,
+            "peakRssMb": 43.38
+          },
+          {
+            "cpuMs": 253.29,
+            "timeMs": 133.6,
+            "peakRssMb": 49.69
+          },
+          {
+            "cpuMs": 251.3,
+            "timeMs": 135.46,
+            "peakRssMb": 49.17
+          },
+          {
+            "cpuMs": 261.14,
+            "timeMs": 149.7,
+            "peakRssMb": 51.23
+          },
+          {
+            "cpuMs": 251.63,
+            "timeMs": 133.01,
+            "peakRssMb": 49.25
+          },
+          {
+            "cpuMs": 235.26,
+            "timeMs": 133.92,
+            "peakRssMb": 48.81
+          },
+          {
+            "cpuMs": 234.57,
+            "timeMs": 130.46,
+            "peakRssMb": 46.97
+          },
+          {
+            "cpuMs": 248.03,
+            "timeMs": 129.28,
+            "peakRssMb": 48.92
+          },
+          {
+            "cpuMs": 252.7,
+            "timeMs": 129.47,
+            "peakRssMb": 46.33
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 878.4,
+        "memoryMb": 3.9,
+        "timeMs": 548.5,
+        "wholeTree": {
+          "cpuMs": 5100.5,
+          "memoryMb": 209.6
+        },
+        "standardLibrary": {
+          "cpuMs": 4222.1,
+          "memoryMb": 205.7
+        },
+        "runs": [
+          {
+            "cpuMs": 5139.1,
+            "timeMs": 2188.8,
+            "peakRssMb": 225.3
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 6.56,
+      "measuredAt": "2026-10-08T04:14:09.808Z",
+      "harnessSeconds": 9.4
+    },
+    "github.com/pkg/errors": {
+      "status": "ok",
+      "listedVersion": "v0.9.1",
+      "version": "v0.9.1",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/pkg/errors"
+      ],
+      "modules": 1,
+      "treePackages": 60,
+      "standardLibraryPackages": 59,
+      "files": 550,
+      "checkSplit": {
+        "standardLibraryMs": 282.3,
+        "modulesMs": 0.6
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 9.4,
+        "memoryMb": 0.9
+      },
+      "check": {
+        "cpuMs": 9.4,
+        "memoryMb": 0.9,
+        "timeMs": 11.2,
+        "wholeTree": {
+          "cpuMs": 311.6,
+          "memoryMb": 41.4
+        },
+        "standardLibrary": {
+          "cpuMs": 302.2,
+          "memoryMb": 40.5
+        },
+        "cpuSpreadMs": 138,
+        "runs": [
+          {
+            "cpuMs": 436.86,
+            "timeMs": 295.81,
+            "peakRssMb": 42.5
+          },
+          {
+            "cpuMs": 347.88,
+            "timeMs": 230.47,
+            "peakRssMb": 43.61
+          },
+          {
+            "cpuMs": 302.22,
+            "timeMs": 172.68,
+            "peakRssMb": 48.55
+          },
+          {
+            "cpuMs": 301.82,
+            "timeMs": 192.28,
+            "peakRssMb": 49.06
+          },
+          {
+            "cpuMs": 326.49,
+            "timeMs": 188.4,
+            "peakRssMb": 47.98
+          },
+          {
+            "cpuMs": 314.57,
+            "timeMs": 165.28,
+            "peakRssMb": 42.27
+          },
+          {
+            "cpuMs": 298.82,
+            "timeMs": 160.45,
+            "peakRssMb": 49.06
+          },
+          {
+            "cpuMs": 323.26,
+            "timeMs": 172.88,
+            "peakRssMb": 46.84
+          },
+          {
+            "cpuMs": 324.87,
+            "timeMs": 174.84,
+            "peakRssMb": 42.7
+          },
+          {
+            "cpuMs": 310.7,
+            "timeMs": 164.95,
+            "peakRssMb": 49.98
+          },
+          {
+            "cpuMs": 303.8,
+            "timeMs": 173.36,
+            "peakRssMb": 42.06
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -42.6,
+        "memoryMb": 4,
+        "timeMs": 153.5,
+        "wholeTree": {
+          "cpuMs": 6225,
+          "memoryMb": 214.2
+        },
+        "standardLibrary": {
+          "cpuMs": 6267.6,
+          "memoryMb": 210.2
+        },
+        "runs": [
+          {
+            "cpuMs": 6263.6,
+            "timeMs": 2254.6,
+            "peakRssMb": 229.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 10.29,
+      "measuredAt": "2026-10-08T04:04:46.964Z",
+      "harnessSeconds": 11.2
+    },
+    "github.com/pmezard/go-difflib": {
+      "status": "ok",
+      "listedVersion": "v1.0.0",
+      "version": "v1.0.0",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/pmezard/go-difflib/difflib"
+      ],
+      "modules": 1,
+      "treePackages": 62,
+      "standardLibraryPackages": 61,
+      "files": 554,
+      "checkSplit": {
+        "standardLibraryMs": 157.3,
+        "modulesMs": 1
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -6.1,
+        "memoryMb": -4.7,
+        "timeMs": -7.8,
+        "wholeTree": {
+          "cpuMs": 303,
+          "memoryMb": 37.1
+        },
+        "standardLibrary": {
+          "cpuMs": 309.1,
+          "memoryMb": 41.8
+        },
+        "cpuSpreadMs": 35.3,
+        "runs": [
+          {
+            "cpuMs": 311.28,
+            "timeMs": 165.42,
+            "peakRssMb": 41.88
+          },
+          {
+            "cpuMs": 305.93,
+            "timeMs": 169.5,
+            "peakRssMb": 42.14
+          },
+          {
+            "cpuMs": 313.98,
+            "timeMs": 163.14,
+            "peakRssMb": 42.52
+          },
+          {
+            "cpuMs": 299.9,
+            "timeMs": 165.05,
+            "peakRssMb": 41.8
+          },
+          {
+            "cpuMs": 297.1,
+            "timeMs": 162.66,
+            "peakRssMb": 41.67
+          },
+          {
+            "cpuMs": 296.93,
+            "timeMs": 159.4,
+            "peakRssMb": 46.98
+          },
+          {
+            "cpuMs": 303.79,
+            "timeMs": 165.34,
+            "peakRssMb": 47.88
+          },
+          {
+            "cpuMs": 332.18,
+            "timeMs": 206.5,
+            "peakRssMb": 49.11
+          },
+          {
+            "cpuMs": 304.28,
+            "timeMs": 161.05,
+            "peakRssMb": 41.8
+          },
+          {
+            "cpuMs": 315.68,
+            "timeMs": 195.91,
+            "peakRssMb": 48.25
+          },
+          {
+            "cpuMs": 310.53,
+            "timeMs": 183.18,
+            "peakRssMb": 50.81
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -158.4,
+        "memoryMb": -0.6,
+        "timeMs": -18.3,
+        "wholeTree": {
+          "cpuMs": 5885.5,
+          "memoryMb": 208.6
+        },
+        "standardLibrary": {
+          "cpuMs": 6043.9,
+          "memoryMb": 209.2
+        },
+        "runs": [
+          {
+            "cpuMs": 5924.1,
+            "timeMs": 1765.3,
+            "peakRssMb": 224.3
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 16.29,
+      "measuredAt": "2026-10-08T04:00:18.328Z",
+      "harnessSeconds": 10.1
+    },
+    "github.com/prometheus/client_model": {
+      "status": "ok",
+      "listedVersion": "v0.6.3",
+      "version": "v0.6.3",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/prometheus/client_model/go"
+      ],
+      "modules": 4,
+      "treePackages": 103,
+      "standardLibraryPackages": 74,
+      "files": 723,
+      "checkSplit": {
+        "standardLibraryMs": 273.7,
+        "modulesMs": 58.9
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 125.7,
+        "memoryMb": 1.2
+      },
+      "check": {
+        "cpuMs": 125.7,
+        "memoryMb": 1.2,
+        "timeMs": 75.3,
+        "wholeTree": {
+          "cpuMs": 453.7,
+          "memoryMb": 41.8
+        },
+        "standardLibrary": {
+          "cpuMs": 328,
+          "memoryMb": 40.6
+        },
+        "cpuSpreadMs": 105.4,
+        "runs": [
+          {
+            "cpuMs": 513.89,
+            "timeMs": 344.52,
+            "peakRssMb": 46.56
+          },
+          {
+            "cpuMs": 442.43,
+            "timeMs": 256.88,
+            "peakRssMb": 48.7
+          },
+          {
+            "cpuMs": 513.47,
+            "timeMs": 344.52,
+            "peakRssMb": 47.27
+          },
+          {
+            "cpuMs": 466.42,
+            "timeMs": 261.49,
+            "peakRssMb": 47.05
+          },
+          {
+            "cpuMs": 438.97,
+            "timeMs": 249.23,
+            "peakRssMb": 43.81
+          },
+          {
+            "cpuMs": 437.89,
+            "timeMs": 257.72,
+            "peakRssMb": 50.23
+          },
+          {
+            "cpuMs": 517.53,
+            "timeMs": 334,
+            "peakRssMb": 49.41
+          },
+          {
+            "cpuMs": 436.64,
+            "timeMs": 226.07,
+            "peakRssMb": 50.08
+          },
+          {
+            "cpuMs": 442.31,
+            "timeMs": 240.23,
+            "peakRssMb": 45.48
+          },
+          {
+            "cpuMs": 456.64,
+            "timeMs": 243.03,
+            "peakRssMb": 46.2
+          },
+          {
+            "cpuMs": 541.99,
+            "timeMs": 403.27,
+            "peakRssMb": 48.59
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 3245.2,
+        "memoryMb": -4.8,
+        "timeMs": 1777.2,
+        "wholeTree": {
+          "cpuMs": 10820.5,
+          "memoryMb": 210.3
+        },
+        "standardLibrary": {
+          "cpuMs": 7575.3,
+          "memoryMb": 215.1
+        },
+        "runs": [
+          {
+            "cpuMs": 10859.1,
+            "timeMs": 4251.6,
+            "peakRssMb": 226
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 10.19,
+      "measuredAt": "2026-10-08T04:11:30.572Z",
+      "harnessSeconds": 18.4
+    },
+    "github.com/rogpeppe/go-internal": {
+      "status": "ok",
+      "listedVersion": "v1.16.0",
+      "version": "v1.16.0",
+      "packagesInModule": 30,
+      "packages": [
+        "github.com/rogpeppe/go-internal/cache",
+        "github.com/rogpeppe/go-internal/diff",
+        "github.com/rogpeppe/go-internal/dirhash",
+        "github.com/rogpeppe/go-internal/fmtsort",
+        "github.com/rogpeppe/go-internal/goproxytest",
+        "github.com/rogpeppe/go-internal/gotooltest",
+        "github.com/rogpeppe/go-internal/imports",
+        "github.com/rogpeppe/go-internal/lockedfile",
+        "github.com/rogpeppe/go-internal/modfile",
+        "github.com/rogpeppe/go-internal/module",
+        "github.com/rogpeppe/go-internal/par",
+        "github.com/rogpeppe/go-internal/renameio",
+        "github.com/rogpeppe/go-internal/robustio",
+        "github.com/rogpeppe/go-internal/semver",
+        "github.com/rogpeppe/go-internal/testenv",
+        "github.com/rogpeppe/go-internal/testscript",
+        "github.com/rogpeppe/go-internal/txtar",
+        "github.com/rogpeppe/go-internal/testscript/plugin"
+      ],
+      "modules": 9,
+      "treePackages": 233,
+      "standardLibraryPackages": 203,
+      "files": 1197,
+      "checkSplit": {
+        "standardLibraryMs": 477.2,
+        "modulesMs": 24.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 40.2,
+        "memoryMb": 4.7
+      },
+      "check": {
+        "cpuMs": 40.2,
+        "memoryMb": 4.7,
+        "timeMs": 23.1,
+        "wholeTree": {
+          "cpuMs": 844.9,
+          "memoryMb": 76.1
+        },
+        "standardLibrary": {
+          "cpuMs": 804.7,
+          "memoryMb": 71.4
+        },
+        "cpuSpreadMs": 100.1,
+        "runs": [
+          {
+            "cpuMs": 887.97,
+            "timeMs": 522.17,
+            "peakRssMb": 83.31
+          },
+          {
+            "cpuMs": 843.82,
+            "timeMs": 466.76,
+            "peakRssMb": 83.41
+          },
+          {
+            "cpuMs": 830.01,
+            "timeMs": 464.89,
+            "peakRssMb": 76.58
+          },
+          {
+            "cpuMs": 847.84,
+            "timeMs": 480.39,
+            "peakRssMb": 78.39
+          },
+          {
+            "cpuMs": 860.44,
+            "timeMs": 463.71,
+            "peakRssMb": 79.88
+          },
+          {
+            "cpuMs": 832.96,
+            "timeMs": 467.46,
+            "peakRssMb": 77.13
+          },
+          {
+            "cpuMs": 857.16,
+            "timeMs": 464.51,
+            "peakRssMb": 82.31
+          },
+          {
+            "cpuMs": 828.59,
+            "timeMs": 459.64,
+            "peakRssMb": 81.61
+          },
+          {
+            "cpuMs": 917.45,
+            "timeMs": 511.76,
+            "peakRssMb": 84.97
+          },
+          {
+            "cpuMs": 817.37,
+            "timeMs": 466.56,
+            "peakRssMb": 83.22
+          },
+          {
+            "cpuMs": 858.71,
+            "timeMs": 477.19,
+            "peakRssMb": 79.53
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1924.2,
+        "memoryMb": 2.8,
+        "timeMs": 229.5,
+        "wholeTree": {
+          "cpuMs": 23740.2,
+          "memoryMb": 207.3
+        },
+        "standardLibrary": {
+          "cpuMs": 21816,
+          "memoryMb": 204.5
+        },
+        "runs": [
+          {
+            "cpuMs": 23778.8,
+            "timeMs": 5119.1,
+            "peakRssMb": 223
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.29,
+      "measuredAt": "2026-10-08T04:13:19.908Z",
+      "harnessSeconds": 30.5
+    },
+    "github.com/sirupsen/logrus": {
+      "status": "ok",
+      "listedVersion": "v1.10.2",
+      "version": "v1.10.2",
+      "packagesInModule": 6,
+      "packages": [
+        "github.com/sirupsen/logrus"
+      ],
+      "modules": 4,
+      "treePackages": 72,
+      "standardLibraryPackages": 70,
+      "files": 619,
+      "checkSplit": {
+        "standardLibraryMs": 174.8,
+        "modulesMs": 13
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 21.9,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 21.9,
+        "memoryMb": -0.2,
+        "timeMs": 21.7,
+        "wholeTree": {
+          "cpuMs": 345.3,
+          "memoryMb": 40.9
+        },
+        "standardLibrary": {
+          "cpuMs": 323.3,
+          "memoryMb": 41.1
+        },
+        "cpuSpreadMs": 23.5,
+        "runs": [
+          {
+            "cpuMs": 356.52,
+            "timeMs": 195.91,
+            "peakRssMb": 42.7
+          },
+          {
+            "cpuMs": 349.41,
+            "timeMs": 193.94,
+            "peakRssMb": 48.59
+          },
+          {
+            "cpuMs": 347.19,
+            "timeMs": 182.82,
+            "peakRssMb": 41.64
+          },
+          {
+            "cpuMs": 346.81,
+            "timeMs": 192.77,
+            "peakRssMb": 50.39
+          },
+          {
+            "cpuMs": 344.25,
+            "timeMs": 186.04,
+            "peakRssMb": 49.84
+          },
+          {
+            "cpuMs": 348.3,
+            "timeMs": 186.93,
+            "peakRssMb": 46.42
+          },
+          {
+            "cpuMs": 340.86,
+            "timeMs": 192.96,
+            "peakRssMb": 42.09
+          },
+          {
+            "cpuMs": 364.4,
+            "timeMs": 193.88,
+            "peakRssMb": 42.28
+          },
+          {
+            "cpuMs": 346.47,
+            "timeMs": 191.09,
+            "peakRssMb": 46.36
+          },
+          {
+            "cpuMs": 348.22,
+            "timeMs": 189.69,
+            "peakRssMb": 42.22
+          },
+          {
+            "cpuMs": 354.98,
+            "timeMs": 199.51,
+            "peakRssMb": 49.92
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 601,
+        "memoryMb": 9.8,
+        "timeMs": 837.3,
+        "wholeTree": {
+          "cpuMs": 7158.8,
+          "memoryMb": 216.6
+        },
+        "standardLibrary": {
+          "cpuMs": 6557.8,
+          "memoryMb": 206.8
+        },
+        "runs": [
+          {
+            "cpuMs": 7197.4,
+            "timeMs": 2949.9,
+            "peakRssMb": 232.3
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.84,
+      "measuredAt": "2026-10-08T04:11:43.032Z",
+      "harnessSeconds": 12.5
+    },
+    "github.com/spf13/pflag": {
+      "status": "ok",
+      "listedVersion": "v1.0.10",
+      "version": "v1.0.10",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/spf13/pflag"
+      ],
+      "modules": 1,
+      "treePackages": 77,
+      "standardLibraryPackages": 76,
+      "files": 692,
+      "checkSplit": {
+        "standardLibraryMs": 186.6,
+        "modulesMs": 9.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 19.6,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 19.6,
+        "memoryMb": -1.9,
+        "timeMs": 10.3,
+        "wholeTree": {
+          "cpuMs": 378.2,
+          "memoryMb": 40.8
+        },
+        "standardLibrary": {
+          "cpuMs": 358.6,
+          "memoryMb": 42.8
+        },
+        "cpuSpreadMs": 34.3,
+        "runs": [
+          {
+            "cpuMs": 386.6,
+            "timeMs": 203.7,
+            "peakRssMb": 42.42
+          },
+          {
+            "cpuMs": 381.15,
+            "timeMs": 200,
+            "peakRssMb": 49.14
+          },
+          {
+            "cpuMs": 357.9,
+            "timeMs": 193.39,
+            "peakRssMb": 49.14
+          },
+          {
+            "cpuMs": 373.11,
+            "timeMs": 194.02,
+            "peakRssMb": 42.25
+          },
+          {
+            "cpuMs": 363.25,
+            "timeMs": 204.79,
+            "peakRssMb": 42.55
+          },
+          {
+            "cpuMs": 389.06,
+            "timeMs": 204.43,
+            "peakRssMb": 48.86
+          },
+          {
+            "cpuMs": 369.27,
+            "timeMs": 203.64,
+            "peakRssMb": 43.45
+          },
+          {
+            "cpuMs": 385.01,
+            "timeMs": 202.34,
+            "peakRssMb": 46.48
+          },
+          {
+            "cpuMs": 392,
+            "timeMs": 209.4,
+            "peakRssMb": 47.11
+          },
+          {
+            "cpuMs": 392.23,
+            "timeMs": 232.96,
+            "peakRssMb": 42.34
+          },
+          {
+            "cpuMs": 372.17,
+            "timeMs": 200.75,
+            "peakRssMb": 46.31
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 315.7,
+        "memoryMb": -7.7,
+        "timeMs": 154.3,
+        "wholeTree": {
+          "cpuMs": 7987,
+          "memoryMb": 206.4
+        },
+        "standardLibrary": {
+          "cpuMs": 7671.3,
+          "memoryMb": 214.1
+        },
+        "runs": [
+          {
+            "cpuMs": 8025.6,
+            "timeMs": 2309.1,
+            "peakRssMb": 222.1
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.52,
+      "measuredAt": "2026-10-08T04:15:05.844Z",
+      "harnessSeconds": 14.1
+    },
+    "github.com/stretchr/objx": {
+      "status": "ok",
+      "listedVersion": "v0.5.3",
+      "version": "v0.5.3",
+      "packagesInModule": 1,
+      "packages": [
+        "github.com/stretchr/objx"
+      ],
+      "modules": 1,
+      "treePackages": 102,
+      "standardLibraryPackages": 101,
+      "files": 682,
+      "checkSplit": {
+        "standardLibraryMs": 233.8,
+        "modulesMs": 3.6
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 20.2,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 20.2,
+        "memoryMb": -3.6,
+        "timeMs": 3.6,
+        "wholeTree": {
+          "cpuMs": 383.5,
+          "memoryMb": 37.3
+        },
+        "standardLibrary": {
+          "cpuMs": 363.3,
+          "memoryMb": 41
+        },
+        "cpuSpreadMs": 74.4,
+        "runs": [
+          {
+            "cpuMs": 411.24,
+            "timeMs": 245.2,
+            "peakRssMb": 42.78
+          },
+          {
+            "cpuMs": 389.52,
+            "timeMs": 219.71,
+            "peakRssMb": 41.78
+          },
+          {
+            "cpuMs": 386.44,
+            "timeMs": 206.98,
+            "peakRssMb": 42.34
+          },
+          {
+            "cpuMs": 397.63,
+            "timeMs": 221.79,
+            "peakRssMb": 44.53
+          },
+          {
+            "cpuMs": 388.39,
+            "timeMs": 207.19,
+            "peakRssMb": 48.55
+          },
+          {
+            "cpuMs": 388.95,
+            "timeMs": 203.11,
+            "peakRssMb": 49.17
+          },
+          {
+            "cpuMs": 379.37,
+            "timeMs": 217.32,
+            "peakRssMb": 42.38
+          },
+          {
+            "cpuMs": 376.84,
+            "timeMs": 205.72,
+            "peakRssMb": 41.69
+          },
+          {
+            "cpuMs": 336.81,
+            "timeMs": 207.83,
+            "peakRssMb": 50.88
+          },
+          {
+            "cpuMs": 338.41,
+            "timeMs": 205.68,
+            "peakRssMb": 47.92
+          },
+          {
+            "cpuMs": 368.69,
+            "timeMs": 202.51,
+            "peakRssMb": 42.03
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -51.2,
+        "memoryMb": 5.1,
+        "timeMs": -51.3,
+        "wholeTree": {
+          "cpuMs": 8646.9,
+          "memoryMb": 211.7
+        },
+        "standardLibrary": {
+          "cpuMs": 8698.1,
+          "memoryMb": 206.6
+        },
+        "runs": [
+          {
+            "cpuMs": 8685.5,
+            "timeMs": 2107.3,
+            "peakRssMb": 227.4
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 13.6,
+      "measuredAt": "2026-10-08T04:02:54.159Z",
+      "harnessSeconds": 10.9
+    },
+    "github.com/stretchr/testify": {
+      "status": "ok",
+      "listedVersion": "v1.12.1",
+      "version": "v1.12.1",
+      "packagesInModule": 10,
+      "packages": [
+        "github.com/stretchr/testify",
+        "github.com/stretchr/testify/assert",
+        "github.com/stretchr/testify/http",
+        "github.com/stretchr/testify/mock",
+        "github.com/stretchr/testify/require",
+        "github.com/stretchr/testify/suite",
+        "github.com/stretchr/testify/assert/yaml"
+      ],
+      "modules": 3,
+      "treePackages": 201,
+      "standardLibraryPackages": 190,
+      "files": 1116,
+      "checkSplit": {
+        "standardLibraryMs": 420.4,
+        "modulesMs": 25.4
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 56.3,
+        "memoryMb": 6.2
+      },
+      "check": {
+        "cpuMs": 56.3,
+        "memoryMb": 6.2,
+        "timeMs": 51.6,
+        "wholeTree": {
+          "cpuMs": 824.1,
+          "memoryMb": 69.5
+        },
+        "standardLibrary": {
+          "cpuMs": 767.8,
+          "memoryMb": 63.4
+        },
+        "cpuSpreadMs": 91.3,
+        "runs": [
+          {
+            "cpuMs": 800.83,
+            "timeMs": 453.41,
+            "peakRssMb": 75.11
+          },
+          {
+            "cpuMs": 799.76,
+            "timeMs": 435.71,
+            "peakRssMb": 72.95
+          },
+          {
+            "cpuMs": 827.02,
+            "timeMs": 467.67,
+            "peakRssMb": 70.16
+          },
+          {
+            "cpuMs": 790.25,
+            "timeMs": 450.91,
+            "peakRssMb": 75
+          },
+          {
+            "cpuMs": 777.93,
+            "timeMs": 434.14,
+            "peakRssMb": 77.81
+          },
+          {
+            "cpuMs": 844.62,
+            "timeMs": 505.4,
+            "peakRssMb": 75.45
+          },
+          {
+            "cpuMs": 869.21,
+            "timeMs": 499.98,
+            "peakRssMb": 75.16
+          },
+          {
+            "cpuMs": 846.76,
+            "timeMs": 492.66,
+            "peakRssMb": 77.38
+          },
+          {
+            "cpuMs": 832.37,
+            "timeMs": 516.36,
+            "peakRssMb": 72.81
+          },
+          {
+            "cpuMs": 851.8,
+            "timeMs": 466.19,
+            "peakRssMb": 72.33
+          },
+          {
+            "cpuMs": 809.95,
+            "timeMs": 449.16,
+            "peakRssMb": 74.14
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1901.8,
+        "memoryMb": 5.2,
+        "timeMs": 401.6,
+        "wholeTree": {
+          "cpuMs": 20630.8,
+          "memoryMb": 209.8
+        },
+        "standardLibrary": {
+          "cpuMs": 18729,
+          "memoryMb": 204.6
+        },
+        "runs": [
+          {
+            "cpuMs": 20669.4,
+            "timeMs": 4498.7,
+            "peakRssMb": 225.5
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 15.36,
+      "measuredAt": "2026-10-08T04:01:33.344Z",
+      "harnessSeconds": 23
+    },
+    "github.com/yuin/goldmark": {
+      "status": "ok",
+      "listedVersion": "v1.8.6",
+      "version": "v1.8.6",
+      "packagesInModule": 11,
+      "packages": [
+        "github.com/yuin/goldmark"
+      ],
+      "modules": 1,
+      "treePackages": 76,
+      "standardLibraryPackages": 69,
+      "files": 616,
+      "checkSplit": {
+        "standardLibraryMs": 169.8,
+        "modulesMs": 16.5
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 36.3,
+        "memoryMb": 3.5
+      },
+      "check": {
+        "cpuMs": 36.3,
+        "memoryMb": 3.5,
+        "timeMs": 18.5,
+        "wholeTree": {
+          "cpuMs": 363.9,
+          "memoryMb": 40.8
+        },
+        "standardLibrary": {
+          "cpuMs": 327.6,
+          "memoryMb": 37.2
+        },
+        "cpuSpreadMs": 40.4,
+        "runs": [
+          {
+            "cpuMs": 349.33,
+            "timeMs": 194,
+            "peakRssMb": 46.25
+          },
+          {
+            "cpuMs": 363.15,
+            "timeMs": 191.13,
+            "peakRssMb": 41.86
+          },
+          {
+            "cpuMs": 360.82,
+            "timeMs": 191.02,
+            "peakRssMb": 48.34
+          },
+          {
+            "cpuMs": 389.72,
+            "timeMs": 210.03,
+            "peakRssMb": 48.89
+          },
+          {
+            "cpuMs": 383.07,
+            "timeMs": 222.88,
+            "peakRssMb": 42.67
+          },
+          {
+            "cpuMs": 366.83,
+            "timeMs": 210.83,
+            "peakRssMb": 49.59
+          },
+          {
+            "cpuMs": 370.11,
+            "timeMs": 203.18,
+            "peakRssMb": 49.88
+          },
+          {
+            "cpuMs": 380.36,
+            "timeMs": 205.54,
+            "peakRssMb": 42.42
+          },
+          {
+            "cpuMs": 366.14,
+            "timeMs": 198.88,
+            "peakRssMb": 42.98
+          },
+          {
+            "cpuMs": 364.93,
+            "timeMs": 197.84,
+            "peakRssMb": 42.11
+          },
+          {
+            "cpuMs": 372.86,
+            "timeMs": 196.59,
+            "peakRssMb": 50.05
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 783.3,
+        "memoryMb": -0.8,
+        "timeMs": 327.7,
+        "wholeTree": {
+          "cpuMs": 7577.3,
+          "memoryMb": 206.3
+        },
+        "standardLibrary": {
+          "cpuMs": 6794,
+          "memoryMb": 207.1
+        },
+        "runs": [
+          {
+            "cpuMs": 7615.9,
+            "timeMs": 2293.6,
+            "peakRssMb": 222
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.5,
+      "measuredAt": "2026-10-08T04:16:02.551Z",
+      "harnessSeconds": 12
+    },
+    "golang.org/x/crypto": {
+      "status": "ok",
+      "listedVersion": "v0.57.0",
+      "version": "v0.55.0",
+      "packagesInModule": 55,
+      "packages": [
+        "golang.org/x/crypto/acme",
+        "golang.org/x/crypto/argon2",
+        "golang.org/x/crypto/bcrypt",
+        "golang.org/x/crypto/blake2b",
+        "golang.org/x/crypto/blake2s",
+        "golang.org/x/crypto/blowfish",
+        "golang.org/x/crypto/bn256",
+        "golang.org/x/crypto/cast5",
+        "golang.org/x/crypto/chacha20",
+        "golang.org/x/crypto/chacha20poly1305",
+        "golang.org/x/crypto/cryptobyte",
+        "golang.org/x/crypto/curve25519",
+        "golang.org/x/crypto/ed25519",
+        "golang.org/x/crypto/hkdf",
+        "golang.org/x/crypto/md4",
+        "golang.org/x/crypto/ocsp",
+        "golang.org/x/crypto/openpgp",
+        "golang.org/x/crypto/otr",
+        "golang.org/x/crypto/pbkdf2",
+        "golang.org/x/crypto/pkcs12"
+      ],
+      "modules": 5,
+      "treePackages": 219,
+      "standardLibraryPackages": 190,
+      "files": 1139,
+      "checkSplit": {
+        "standardLibraryMs": 469,
+        "modulesMs": 28.2
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 76.6,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 76.6,
+        "memoryMb": -0.5,
+        "timeMs": 67,
+        "wholeTree": {
+          "cpuMs": 843.7,
+          "memoryMb": 64.8
+        },
+        "standardLibrary": {
+          "cpuMs": 767.2,
+          "memoryMb": 65.3
+        },
+        "cpuSpreadMs": 64.8,
+        "runs": [
+          {
+            "cpuMs": 834.92,
+            "timeMs": 504.61,
+            "peakRssMb": 66.48
+          },
+          {
+            "cpuMs": 853.8,
+            "timeMs": 488.29,
+            "peakRssMb": 72.83
+          },
+          {
+            "cpuMs": 838.95,
+            "timeMs": 486.56,
+            "peakRssMb": 74.23
+          },
+          {
+            "cpuMs": 862.34,
+            "timeMs": 516.17,
+            "peakRssMb": 69.8
+          },
+          {
+            "cpuMs": 844.64,
+            "timeMs": 532.76,
+            "peakRssMb": 67.39
+          },
+          {
+            "cpuMs": 846.68,
+            "timeMs": 496.83,
+            "peakRssMb": 69.66
+          },
+          {
+            "cpuMs": 856.5,
+            "timeMs": 487.65,
+            "peakRssMb": 70.22
+          },
+          {
+            "cpuMs": 824.74,
+            "timeMs": 513.64,
+            "peakRssMb": 68.19
+          },
+          {
+            "cpuMs": 826.61,
+            "timeMs": 494.01,
+            "peakRssMb": 75.08
+          },
+          {
+            "cpuMs": 889.5,
+            "timeMs": 520.23,
+            "peakRssMb": 72.31
+          },
+          {
+            "cpuMs": 887.5,
+            "timeMs": 491.07,
+            "peakRssMb": 77.3
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 2845.1,
+        "memoryMb": -4.3,
+        "timeMs": 862,
+        "wholeTree": {
+          "cpuMs": 20286.6,
+          "memoryMb": 208.5
+        },
+        "standardLibrary": {
+          "cpuMs": 17441.5,
+          "memoryMb": 212.8
+        },
+        "runs": [
+          {
+            "cpuMs": 20325.2,
+            "timeMs": 4696.4,
+            "peakRssMb": 224.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 11.21,
+      "measuredAt": "2026-10-08T04:02:43.292Z",
+      "harnessSeconds": 26.4
+    },
+    "golang.org/x/exp": {
+      "status": "ok",
+      "listedVersion": "v0.0.0-20260611194520-c48552f49976",
+      "version": "v0.0.0-20260611194520-c48552f49976",
+      "packagesInModule": 34,
+      "packages": [
+        "golang.org/x/exp/apidiff",
+        "golang.org/x/exp/constraints",
+        "golang.org/x/exp/ebnf",
+        "golang.org/x/exp/maps",
+        "golang.org/x/exp/mmap",
+        "golang.org/x/exp/rand",
+        "golang.org/x/exp/slices",
+        "golang.org/x/exp/slog",
+        "golang.org/x/exp/stats",
+        "golang.org/x/exp/trace",
+        "golang.org/x/exp/utf8string",
+        "golang.org/x/exp/io/i2c",
+        "golang.org/x/exp/io/spi",
+        "golang.org/x/exp/slog/benchmarks",
+        "golang.org/x/exp/slog/slogtest",
+        "golang.org/x/exp/io/i2c/driver",
+        "golang.org/x/exp/io/spi/driver"
+      ],
+      "modules": 11,
+      "treePackages": 117,
+      "standardLibraryPackages": 93,
+      "files": 803,
+      "checkSplit": {
+        "standardLibraryMs": 236.3,
+        "modulesMs": 19.8
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 16.4,
+        "memoryMb": 2.1
+      },
+      "check": {
+        "cpuMs": 16.4,
+        "memoryMb": 2.1,
+        "timeMs": 12.8,
+        "wholeTree": {
+          "cpuMs": 481.6,
+          "memoryMb": 46.8
+        },
+        "standardLibrary": {
+          "cpuMs": 465.1,
+          "memoryMb": 44.6
+        },
+        "cpuSpreadMs": 72.7,
+        "runs": [
+          {
+            "cpuMs": 455.26,
+            "timeMs": 264.2,
+            "peakRssMb": 54.84
+          },
+          {
+            "cpuMs": 450.77,
+            "timeMs": 263.06,
+            "peakRssMb": 54.06
+          },
+          {
+            "cpuMs": 481.33,
+            "timeMs": 263.3,
+            "peakRssMb": 50.08
+          },
+          {
+            "cpuMs": 458.77,
+            "timeMs": 260.91,
+            "peakRssMb": 52.61
+          },
+          {
+            "cpuMs": 466.99,
+            "timeMs": 267.57,
+            "peakRssMb": 52.44
+          },
+          {
+            "cpuMs": 484.51,
+            "timeMs": 283.11,
+            "peakRssMb": 51.66
+          },
+          {
+            "cpuMs": 502.16,
+            "timeMs": 274.13,
+            "peakRssMb": 50.44
+          },
+          {
+            "cpuMs": 519.14,
+            "timeMs": 288.46,
+            "peakRssMb": 56.53
+          },
+          {
+            "cpuMs": 523.49,
+            "timeMs": 303.56,
+            "peakRssMb": 52.22
+          },
+          {
+            "cpuMs": 503.67,
+            "timeMs": 276.17,
+            "peakRssMb": 51
+          },
+          {
+            "cpuMs": 503.78,
+            "timeMs": 280.62,
+            "peakRssMb": 48.89
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 2218.8,
+        "memoryMb": 5.4,
+        "timeMs": 454.9,
+        "wholeTree": {
+          "cpuMs": 12386.7,
+          "memoryMb": 219.9
+        },
+        "standardLibrary": {
+          "cpuMs": 10167.9,
+          "memoryMb": 214.5
+        },
+        "runs": [
+          {
+            "cpuMs": 12425.3,
+            "timeMs": 3441,
+            "peakRssMb": 235.6
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.72,
+      "measuredAt": "2026-10-08T04:12:02.612Z",
+      "harnessSeconds": 19.6
+    },
+    "golang.org/x/lint": {
+      "status": "ok",
+      "listedVersion": "v0.0.0-20241112194109-818c5a804067",
+      "version": "v0.0.0-20241112194109-818c5a804067",
+      "packagesInModule": 2,
+      "packages": [
+        "golang.org/x/lint"
+      ],
+      "modules": 9,
+      "treePackages": 98,
+      "standardLibraryPackages": 94,
+      "files": 756,
+      "checkSplit": {
+        "standardLibraryMs": 298.4,
+        "modulesMs": 11.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 5.6
+      },
+      "check": {
+        "cpuMs": -36.2,
+        "memoryMb": 5.6,
+        "timeMs": -42.2,
+        "wholeTree": {
+          "cpuMs": 476.5,
+          "memoryMb": 48.6
+        },
+        "standardLibrary": {
+          "cpuMs": 512.7,
+          "memoryMb": 43
+        },
+        "cpuSpreadMs": 44.1,
+        "runs": [
+          {
+            "cpuMs": 511.84,
+            "timeMs": 331.59,
+            "peakRssMb": 53.25
+          },
+          {
+            "cpuMs": 498.16,
+            "timeMs": 282.89,
+            "peakRssMb": 53.39
+          },
+          {
+            "cpuMs": 474.3,
+            "timeMs": 268.12,
+            "peakRssMb": 55.7
+          },
+          {
+            "cpuMs": 473.51,
+            "timeMs": 266.77,
+            "peakRssMb": 50.19
+          },
+          {
+            "cpuMs": 467.72,
+            "timeMs": 262.99,
+            "peakRssMb": 49.89
+          },
+          {
+            "cpuMs": 479.48,
+            "timeMs": 261.78,
+            "peakRssMb": 55.3
+          },
+          {
+            "cpuMs": 485.32,
+            "timeMs": 260.05,
+            "peakRssMb": 54.06
+          },
+          {
+            "cpuMs": 480.27,
+            "timeMs": 257.17,
+            "peakRssMb": 53.09
+          },
+          {
+            "cpuMs": 500.16,
+            "timeMs": 297.29,
+            "peakRssMb": 55.73
+          },
+          {
+            "cpuMs": 473.05,
+            "timeMs": 261.93,
+            "peakRssMb": 56.09
+          },
+          {
+            "cpuMs": 478.56,
+            "timeMs": 265.52,
+            "peakRssMb": 56.23
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1216.3,
+        "memoryMb": 0.6,
+        "timeMs": 614.6,
+        "wholeTree": {
+          "cpuMs": 11959.6,
+          "memoryMb": 210.4
+        },
+        "standardLibrary": {
+          "cpuMs": 10743.3,
+          "memoryMb": 209.8
+        },
+        "runs": [
+          {
+            "cpuMs": 11998.2,
+            "timeMs": 3644.1,
+            "peakRssMb": 226.1
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 8.26,
+      "measuredAt": "2026-10-08T04:06:27.966Z",
+      "harnessSeconds": 23.9
+    },
+    "golang.org/x/mod": {
+      "status": "ok",
+      "listedVersion": "v0.41.0",
+      "version": "v0.40.0",
+      "packagesInModule": 11,
+      "packages": [
+        "golang.org/x/mod/modfile",
+        "golang.org/x/mod/module",
+        "golang.org/x/mod/semver",
+        "golang.org/x/mod/sumdb",
+        "golang.org/x/mod/zip",
+        "golang.org/x/mod/sumdb/dirhash",
+        "golang.org/x/mod/sumdb/note",
+        "golang.org/x/mod/sumdb/storage",
+        "golang.org/x/mod/sumdb/tlog"
+      ],
+      "modules": 2,
+      "treePackages": 200,
+      "standardLibraryPackages": 190,
+      "files": 1076,
+      "checkSplit": {
+        "standardLibraryMs": 441.9,
+        "modulesMs": 11.7
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 23.2,
+        "memoryMb": 0.2
+      },
+      "check": {
+        "cpuMs": 23.2,
+        "memoryMb": 0.2,
+        "timeMs": 25.6,
+        "wholeTree": {
+          "cpuMs": 856.1,
+          "memoryMb": 65.5
+        },
+        "standardLibrary": {
+          "cpuMs": 832.9,
+          "memoryMb": 65.3
+        },
+        "cpuSpreadMs": 115.4,
+        "runs": [
+          {
+            "cpuMs": 802.86,
+            "timeMs": 462.99,
+            "peakRssMb": 70.66
+          },
+          {
+            "cpuMs": 808.78,
+            "timeMs": 449.96,
+            "peakRssMb": 71.78
+          },
+          {
+            "cpuMs": 853.98,
+            "timeMs": 568.82,
+            "peakRssMb": 75.28
+          },
+          {
+            "cpuMs": 801.98,
+            "timeMs": 485.07,
+            "peakRssMb": 70.89
+          },
+          {
+            "cpuMs": 917.4,
+            "timeMs": 624.84,
+            "peakRssMb": 68.95
+          },
+          {
+            "cpuMs": 819.91,
+            "timeMs": 494.31,
+            "peakRssMb": 73.89
+          },
+          {
+            "cpuMs": 897.14,
+            "timeMs": 637.28,
+            "peakRssMb": 75.53
+          },
+          {
+            "cpuMs": 880.38,
+            "timeMs": 574.05,
+            "peakRssMb": 76.67
+          },
+          {
+            "cpuMs": 882.78,
+            "timeMs": 554.32,
+            "peakRssMb": 70.92
+          },
+          {
+            "cpuMs": 859,
+            "timeMs": 494.58,
+            "peakRssMb": 67.45
+          },
+          {
+            "cpuMs": 868.2,
+            "timeMs": 511.63,
+            "peakRssMb": 69.63
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1698.2,
+        "memoryMb": 0.7,
+        "timeMs": 1109.4,
+        "wholeTree": {
+          "cpuMs": 20156.3,
+          "memoryMb": 213.4
+        },
+        "standardLibrary": {
+          "cpuMs": 18458.1,
+          "memoryMb": 212.7
+        },
+        "runs": [
+          {
+            "cpuMs": 20194.9,
+            "timeMs": 5418.2,
+            "peakRssMb": 229.1
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 11.61,
+      "measuredAt": "2026-10-08T04:07:27.240Z",
+      "harnessSeconds": 25.2
+    },
+    "golang.org/x/net": {
+      "status": "ok",
+      "listedVersion": "v0.59.0",
+      "version": "v0.58.0",
+      "packagesInModule": 43,
+      "packages": [
+        "golang.org/x/net/bpf",
+        "golang.org/x/net/context",
+        "golang.org/x/net/dict",
+        "golang.org/x/net/html",
+        "golang.org/x/net/http2",
+        "golang.org/x/net/http3",
+        "golang.org/x/net/icmp",
+        "golang.org/x/net/idna",
+        "golang.org/x/net/ipv4",
+        "golang.org/x/net/ipv6",
+        "golang.org/x/net/nettest",
+        "golang.org/x/net/netutil",
+        "golang.org/x/net/proxy",
+        "golang.org/x/net/publicsuffix",
+        "golang.org/x/net/quic",
+        "golang.org/x/net/route",
+        "golang.org/x/net/trace",
+        "golang.org/x/net/webdav",
+        "golang.org/x/net/websocket",
+        "golang.org/x/net/xsrftoken"
+      ],
+      "modules": 8,
+      "treePackages": 244,
+      "standardLibraryPackages": 200,
+      "files": 1439,
+      "checkSplit": {
+        "standardLibraryMs": 464,
+        "modulesMs": 146.2
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 197.3,
+        "memoryMb": 10.6
+      },
+      "check": {
+        "cpuMs": 197.3,
+        "memoryMb": 10.6,
+        "timeMs": 117.1,
+        "wholeTree": {
+          "cpuMs": 1048.3,
+          "memoryMb": 79.4
+        },
+        "standardLibrary": {
+          "cpuMs": 851,
+          "memoryMb": 68.8
+        },
+        "cpuSpreadMs": 90.3,
+        "runs": [
+          {
+            "cpuMs": 1078.49,
+            "timeMs": 619.3,
+            "peakRssMb": 89.05
+          },
+          {
+            "cpuMs": 1046.35,
+            "timeMs": 607.23,
+            "peakRssMb": 83.56
+          },
+          {
+            "cpuMs": 1046.08,
+            "timeMs": 619.99,
+            "peakRssMb": 85.14
+          },
+          {
+            "cpuMs": 1049.54,
+            "timeMs": 602.37,
+            "peakRssMb": 83.83
+          },
+          {
+            "cpuMs": 1041.01,
+            "timeMs": 599.12,
+            "peakRssMb": 86.39
+          },
+          {
+            "cpuMs": 1026.72,
+            "timeMs": 617.74,
+            "peakRssMb": 83.56
+          },
+          {
+            "cpuMs": 1057.49,
+            "timeMs": 602.75,
+            "peakRssMb": 84.91
+          },
+          {
+            "cpuMs": 1051.21,
+            "timeMs": 644.02,
+            "peakRssMb": 78.83
+          },
+          {
+            "cpuMs": 1117.06,
+            "timeMs": 644.55,
+            "peakRssMb": 88.44
+          },
+          {
+            "cpuMs": 1072,
+            "timeMs": 595.96,
+            "peakRssMb": 84.72
+          },
+          {
+            "cpuMs": 1067.53,
+            "timeMs": 609.1,
+            "peakRssMb": 85.25
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 4925.3,
+        "memoryMb": 2.5,
+        "timeMs": 638.3,
+        "wholeTree": {
+          "cpuMs": 26132.6,
+          "memoryMb": 208.5
+        },
+        "standardLibrary": {
+          "cpuMs": 21207.3,
+          "memoryMb": 206
+        },
+        "runs": [
+          {
+            "cpuMs": 26171.2,
+            "timeMs": 5336.3,
+            "peakRssMb": 224.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 13.74,
+      "measuredAt": "2026-10-08T04:02:00.965Z",
+      "harnessSeconds": 27.6
+    },
+    "golang.org/x/oauth2": {
+      "status": "ok",
+      "listedVersion": "v0.37.0",
+      "version": "v0.36.0",
+      "packagesInModule": 42,
+      "packages": [
+        "golang.org/x/oauth2"
+      ],
+      "modules": 2,
+      "treePackages": 182,
+      "standardLibraryPackages": 180,
+      "files": 1027,
+      "checkSplit": {
+        "standardLibraryMs": 419.2,
+        "modulesMs": 1.6
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -2.6,
+        "memoryMb": -1.3,
+        "timeMs": -24.4,
+        "wholeTree": {
+          "cpuMs": 772.8,
+          "memoryMb": 63.9
+        },
+        "standardLibrary": {
+          "cpuMs": 775.4,
+          "memoryMb": 65.1
+        },
+        "cpuSpreadMs": 32.3,
+        "runs": [
+          {
+            "cpuMs": 775.76,
+            "timeMs": 429.71,
+            "peakRssMb": 67.81
+          },
+          {
+            "cpuMs": 789.7,
+            "timeMs": 421.6,
+            "peakRssMb": 70.8
+          },
+          {
+            "cpuMs": 779.97,
+            "timeMs": 415.77,
+            "peakRssMb": 69.91
+          },
+          {
+            "cpuMs": 782.65,
+            "timeMs": 419.48,
+            "peakRssMb": 70.44
+          },
+          {
+            "cpuMs": 763.16,
+            "timeMs": 406.15,
+            "peakRssMb": 68.67
+          },
+          {
+            "cpuMs": 765.41,
+            "timeMs": 399,
+            "peakRssMb": 69.56
+          },
+          {
+            "cpuMs": 770.12,
+            "timeMs": 421.37,
+            "peakRssMb": 67.11
+          },
+          {
+            "cpuMs": 781.22,
+            "timeMs": 420.17,
+            "peakRssMb": 67.44
+          },
+          {
+            "cpuMs": 785.62,
+            "timeMs": 422.17,
+            "peakRssMb": 67.2
+          },
+          {
+            "cpuMs": 757.39,
+            "timeMs": 450.87,
+            "peakRssMb": 69.34
+          },
+          {
+            "cpuMs": 772.1,
+            "timeMs": 488.96,
+            "peakRssMb": 69.55
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 1443.1,
+        "memoryMb": 3.3,
+        "timeMs": 691.6,
+        "wholeTree": {
+          "cpuMs": 18830.8,
+          "memoryMb": 214.2
+        },
+        "standardLibrary": {
+          "cpuMs": 17387.7,
+          "memoryMb": 210.9
+        },
+        "runs": [
+          {
+            "cpuMs": 18869.4,
+            "timeMs": 4915.6,
+            "peakRssMb": 229.9
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 10.35,
+      "measuredAt": "2026-10-08T04:06:50.774Z",
+      "harnessSeconds": 22.8
+    },
+    "golang.org/x/sync": {
+      "status": "ok",
+      "listedVersion": "v0.23.0",
+      "version": "v0.22.0",
+      "packagesInModule": 4,
+      "packages": [
+        "golang.org/x/sync/errgroup",
+        "golang.org/x/sync/semaphore",
+        "golang.org/x/sync/singleflight",
+        "golang.org/x/sync/syncmap"
+      ],
+      "modules": 1,
+      "treePackages": 67,
+      "standardLibraryPackages": 63,
+      "files": 561,
+      "checkSplit": {
+        "standardLibraryMs": 152.5,
+        "modulesMs": 0.5
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": -3.4,
+        "memoryMb": -1.2,
+        "timeMs": -0.2,
+        "wholeTree": {
+          "cpuMs": 303.7,
+          "memoryMb": 40.8
+        },
+        "standardLibrary": {
+          "cpuMs": 307.1,
+          "memoryMb": 42
+        },
+        "cpuSpreadMs": 24,
+        "runs": [
+          {
+            "cpuMs": 299.26,
+            "timeMs": 160.35,
+            "peakRssMb": 48.64
+          },
+          {
+            "cpuMs": 297.37,
+            "timeMs": 165.84,
+            "peakRssMb": 48.52
+          },
+          {
+            "cpuMs": 314.67,
+            "timeMs": 169.83,
+            "peakRssMb": 41.72
+          },
+          {
+            "cpuMs": 320.3,
+            "timeMs": 165.62,
+            "peakRssMb": 49.27
+          },
+          {
+            "cpuMs": 308.54,
+            "timeMs": 158.86,
+            "peakRssMb": 46.22
+          },
+          {
+            "cpuMs": 296.26,
+            "timeMs": 159.92,
+            "peakRssMb": 42.13
+          },
+          {
+            "cpuMs": 312.36,
+            "timeMs": 163.32,
+            "peakRssMb": 42.59
+          },
+          {
+            "cpuMs": 310.25,
+            "timeMs": 166.3,
+            "peakRssMb": 46.48
+          },
+          {
+            "cpuMs": 306.63,
+            "timeMs": 162.08,
+            "peakRssMb": 46.94
+          },
+          {
+            "cpuMs": 305.49,
+            "timeMs": 159.67,
+            "peakRssMb": 45.69
+          },
+          {
+            "cpuMs": 302.27,
+            "timeMs": 158.24,
+            "peakRssMb": 42.33
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 154.2,
+        "memoryMb": 2.8,
+        "timeMs": 85.9,
+        "wholeTree": {
+          "cpuMs": 6117.6,
+          "memoryMb": 210.6
+        },
+        "standardLibrary": {
+          "cpuMs": 5963.4,
+          "memoryMb": 207.8
+        },
+        "runs": [
+          {
+            "cpuMs": 6156.2,
+            "timeMs": 2008.1,
+            "peakRssMb": 226.3
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 12.12,
+      "measuredAt": "2026-10-08T04:03:44.161Z",
+      "harnessSeconds": 10.1
+    },
+    "golang.org/x/sys": {
+      "status": "ok",
+      "listedVersion": "v0.48.0",
+      "version": "v0.47.0",
+      "packagesInModule": 5,
+      "packages": [
+        "golang.org/x/sys/cpu",
+        "golang.org/x/sys/execabs",
+        "golang.org/x/sys/unix"
+      ],
+      "modules": 1,
+      "treePackages": 67,
+      "standardLibraryPackages": 64,
+      "files": 610,
+      "checkSplit": {
+        "standardLibraryMs": 159.4,
+        "modulesMs": 9.9
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 1.6
+      },
+      "check": {
+        "cpuMs": -10.9,
+        "memoryMb": 1.6,
+        "timeMs": -29.7,
+        "wholeTree": {
+          "cpuMs": 335.5,
+          "memoryMb": 42.5
+        },
+        "standardLibrary": {
+          "cpuMs": 346.4,
+          "memoryMb": 40.8
+        },
+        "cpuSpreadMs": 36.3,
+        "runs": [
+          {
+            "cpuMs": 330.03,
+            "timeMs": 176.52,
+            "peakRssMb": 50.09
+          },
+          {
+            "cpuMs": 338.55,
+            "timeMs": 174.53,
+            "peakRssMb": 41.73
+          },
+          {
+            "cpuMs": 342.94,
+            "timeMs": 177.48,
+            "peakRssMb": 45.61
+          },
+          {
+            "cpuMs": 345.66,
+            "timeMs": 173.78,
+            "peakRssMb": 49.27
+          },
+          {
+            "cpuMs": 333.94,
+            "timeMs": 177,
+            "peakRssMb": 45.86
+          },
+          {
+            "cpuMs": 323.48,
+            "timeMs": 171.56,
+            "peakRssMb": 48.61
+          },
+          {
+            "cpuMs": 319.34,
+            "timeMs": 173.81,
+            "peakRssMb": 47.64
+          },
+          {
+            "cpuMs": 347.43,
+            "timeMs": 174.11,
+            "peakRssMb": 50.09
+          },
+          {
+            "cpuMs": 328.97,
+            "timeMs": 183.87,
+            "peakRssMb": 48.94
+          },
+          {
+            "cpuMs": 355.63,
+            "timeMs": 178.09,
+            "peakRssMb": 47.95
+          },
+          {
+            "cpuMs": 338.41,
+            "timeMs": 189.96,
+            "peakRssMb": 44.14
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 185.5,
+        "memoryMb": 0.7,
+        "timeMs": 66.1,
+        "wholeTree": {
+          "cpuMs": 6847.3,
+          "memoryMb": 206.8
+        },
+        "standardLibrary": {
+          "cpuMs": 6661.8,
+          "memoryMb": 206.1
+        },
+        "runs": [
+          {
+            "cpuMs": 6885.9,
+            "timeMs": 1990.7,
+            "peakRssMb": 222.5
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 16.82,
+      "measuredAt": "2026-10-08T04:00:08.237Z",
+      "harnessSeconds": 14.1
+    },
+    "golang.org/x/term": {
+      "status": "ok",
+      "listedVersion": "v0.46.0",
+      "version": "v0.45.0",
+      "packagesInModule": 1,
+      "packages": [
+        "golang.org/x/term"
+      ],
+      "modules": 2,
+      "treePackages": 63,
+      "standardLibraryPackages": 61,
+      "files": 593,
+      "checkSplit": {
+        "standardLibraryMs": 171.2,
+        "modulesMs": 11.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 12.8,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 12.8,
+        "memoryMb": -1.3,
+        "timeMs": 10.6,
+        "wholeTree": {
+          "cpuMs": 328.6,
+          "memoryMb": 39.7
+        },
+        "standardLibrary": {
+          "cpuMs": 315.7,
+          "memoryMb": 40.9
+        },
+        "cpuSpreadMs": 41.2,
+        "runs": [
+          {
+            "cpuMs": 316.62,
+            "timeMs": 191.4,
+            "peakRssMb": 42.97
+          },
+          {
+            "cpuMs": 322.33,
+            "timeMs": 189.79,
+            "peakRssMb": 47.94
+          },
+          {
+            "cpuMs": 341.25,
+            "timeMs": 182.48,
+            "peakRssMb": 49.02
+          },
+          {
+            "cpuMs": 331.49,
+            "timeMs": 180.94,
+            "peakRssMb": 44.39
+          },
+          {
+            "cpuMs": 354.36,
+            "timeMs": 181.35,
+            "peakRssMb": 48.77
+          },
+          {
+            "cpuMs": 341.67,
+            "timeMs": 184.17,
+            "peakRssMb": 45.13
+          },
+          {
+            "cpuMs": 313.14,
+            "timeMs": 184.42,
+            "peakRssMb": 49.23
+          },
+          {
+            "cpuMs": 314.19,
+            "timeMs": 181.29,
+            "peakRssMb": 42.58
+          },
+          {
+            "cpuMs": 335.56,
+            "timeMs": 182.51,
+            "peakRssMb": 44.98
+          },
+          {
+            "cpuMs": 332.83,
+            "timeMs": 169.06,
+            "peakRssMb": 47.7
+          },
+          {
+            "cpuMs": 313.49,
+            "timeMs": 170.58,
+            "peakRssMb": 41.83
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 443.4,
+        "memoryMb": 5.6,
+        "timeMs": 207.4,
+        "wholeTree": {
+          "cpuMs": 6554.9,
+          "memoryMb": 215
+        },
+        "standardLibrary": {
+          "cpuMs": 6111.5,
+          "memoryMb": 209.4
+        },
+        "runs": [
+          {
+            "cpuMs": 6593.5,
+            "timeMs": 2193.5,
+            "peakRssMb": 230.7
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 10.06,
+      "measuredAt": "2026-10-08T04:07:02.084Z",
+      "harnessSeconds": 11.3
+    },
+    "golang.org/x/text": {
+      "status": "ok",
+      "listedVersion": "v0.42.0",
+      "version": "v0.41.0",
+      "packagesInModule": 63,
+      "packages": [
+        "golang.org/x/text",
+        "golang.org/x/text/cases",
+        "golang.org/x/text/collate",
+        "golang.org/x/text/currency",
+        "golang.org/x/text/date",
+        "golang.org/x/text/encoding",
+        "golang.org/x/text/language",
+        "golang.org/x/text/message",
+        "golang.org/x/text/number",
+        "golang.org/x/text/runes",
+        "golang.org/x/text/search",
+        "golang.org/x/text/secure",
+        "golang.org/x/text/transform",
+        "golang.org/x/text/unicode",
+        "golang.org/x/text/width",
+        "golang.org/x/text/collate/build",
+        "golang.org/x/text/encoding/charmap",
+        "golang.org/x/text/encoding/htmlindex",
+        "golang.org/x/text/encoding/ianaindex",
+        "golang.org/x/text/encoding/japanese"
+      ],
+      "modules": 4,
+      "treePackages": 246,
+      "standardLibraryPackages": 204,
+      "files": 1248,
+      "checkSplit": {
+        "standardLibraryMs": 525.5,
+        "modulesMs": 795.8
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 1284.8,
+        "memoryMb": 78.4
+      },
+      "check": {
+        "cpuMs": 1284.8,
+        "memoryMb": 78.4,
+        "timeMs": 799.3,
+        "wholeTree": {
+          "cpuMs": 2081.8,
+          "memoryMb": 150.7
+        },
+        "standardLibrary": {
+          "cpuMs": 797,
+          "memoryMb": 72.3
+        },
+        "cpuSpreadMs": 130.9,
+        "runs": [
+          {
+            "cpuMs": 2127.52,
+            "timeMs": 1341.24,
+            "peakRssMb": 158.8
+          },
+          {
+            "cpuMs": 2040.82,
+            "timeMs": 1241.32,
+            "peakRssMb": 153.31
+          },
+          {
+            "cpuMs": 2084.78,
+            "timeMs": 1200.07,
+            "peakRssMb": 156.69
+          },
+          {
+            "cpuMs": 2032.21,
+            "timeMs": 1156.44,
+            "peakRssMb": 154.52
+          },
+          {
+            "cpuMs": 2061.09,
+            "timeMs": 1196.87,
+            "peakRssMb": 163.52
+          },
+          {
+            "cpuMs": 2163.15,
+            "timeMs": 1235.39,
+            "peakRssMb": 156.81
+          },
+          {
+            "cpuMs": 2117.94,
+            "timeMs": 1234.29,
+            "peakRssMb": 155.08
+          },
+          {
+            "cpuMs": 2128.88,
+            "timeMs": 1311.42,
+            "peakRssMb": 154.14
+          },
+          {
+            "cpuMs": 2032.36,
+            "timeMs": 1257.02,
+            "peakRssMb": 156.14
+          },
+          {
+            "cpuMs": 2086.71,
+            "timeMs": 1236.58,
+            "peakRssMb": 157.52
+          },
+          {
+            "cpuMs": 2037.7,
+            "timeMs": 1181.45,
+            "peakRssMb": 154.56
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 5563.4,
+        "memoryMb": 3.8,
+        "timeMs": 1124.8,
+        "wholeTree": {
+          "cpuMs": 26004,
+          "memoryMb": 213.5
+        },
+        "standardLibrary": {
+          "cpuMs": 20440.6,
+          "memoryMb": 209.7
+        },
+        "runs": [
+          {
+            "cpuMs": 26042.6,
+            "timeMs": 5386.2,
+            "peakRssMb": 229.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 15.82,
+      "measuredAt": "2026-10-08T04:01:10.389Z",
+      "harnessSeconds": 42.5
+    },
+    "golang.org/x/time": {
+      "status": "ok",
+      "listedVersion": "v0.16.0",
+      "version": "v0.15.0",
+      "packagesInModule": 1,
+      "packages": [
+        "golang.org/x/time/rate"
+      ],
+      "modules": 1,
+      "treePackages": 60,
+      "standardLibraryPackages": 59,
+      "files": 542,
+      "checkSplit": {
+        "standardLibraryMs": 157,
+        "modulesMs": 0.5
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 1.7
+      },
+      "check": {
+        "cpuMs": -6.5,
+        "memoryMb": 1.7,
+        "timeMs": -1.1,
+        "wholeTree": {
+          "cpuMs": 295.1,
+          "memoryMb": 43.2
+        },
+        "standardLibrary": {
+          "cpuMs": 301.6,
+          "memoryMb": 41.5
+        },
+        "cpuSpreadMs": 16.5,
+        "runs": [
+          {
+            "cpuMs": 295.19,
+            "timeMs": 164.57,
+            "peakRssMb": 49.14
+          },
+          {
+            "cpuMs": 306.22,
+            "timeMs": 162.8,
+            "peakRssMb": 48.58
+          },
+          {
+            "cpuMs": 292.71,
+            "timeMs": 160.56,
+            "peakRssMb": 46.72
+          },
+          {
+            "cpuMs": 297.99,
+            "timeMs": 161.53,
+            "peakRssMb": 42.47
+          },
+          {
+            "cpuMs": 294.37,
+            "timeMs": 158.31,
+            "peakRssMb": 48.66
+          },
+          {
+            "cpuMs": 297.17,
+            "timeMs": 162.61,
+            "peakRssMb": 45.61
+          },
+          {
+            "cpuMs": 303.44,
+            "timeMs": 160.57,
+            "peakRssMb": 49.41
+          },
+          {
+            "cpuMs": 309.2,
+            "timeMs": 162.32,
+            "peakRssMb": 49.22
+          },
+          {
+            "cpuMs": 298.9,
+            "timeMs": 159.51,
+            "peakRssMb": 48.7
+          },
+          {
+            "cpuMs": 306.02,
+            "timeMs": 165.52,
+            "peakRssMb": 49.09
+          },
+          {
+            "cpuMs": 296.07,
+            "timeMs": 156.4,
+            "peakRssMb": 47.86
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -777.6,
+        "memoryMb": -0.5,
+        "timeMs": -379.5,
+        "wholeTree": {
+          "cpuMs": 5643.7,
+          "memoryMb": 208.1
+        },
+        "standardLibrary": {
+          "cpuMs": 6421.3,
+          "memoryMb": 208.6
+        },
+        "runs": [
+          {
+            "cpuMs": 5682.3,
+            "timeMs": 1846.9,
+            "peakRssMb": 223.8
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.36,
+      "measuredAt": "2026-10-08T04:15:17.556Z",
+      "harnessSeconds": 11.7
+    },
+    "golang.org/x/tools": {
+      "status": "ok",
+      "listedVersion": "v0.51.0",
+      "version": "v0.49.0",
+      "packagesInModule": 215,
+      "packages": [
+        "golang.org/x/tools/blog",
+        "golang.org/x/tools/copyright",
+        "golang.org/x/tools/cover",
+        "golang.org/x/tools/imports",
+        "golang.org/x/tools/playground",
+        "golang.org/x/tools/present",
+        "golang.org/x/tools/txtar",
+        "golang.org/x/tools/benchmark/parse",
+        "golang.org/x/tools/blog/atom",
+        "golang.org/x/tools/container/intsets",
+        "golang.org/x/tools/go/analysis",
+        "golang.org/x/tools/go/buildutil",
+        "golang.org/x/tools/go/callgraph",
+        "golang.org/x/tools/go/cfg",
+        "golang.org/x/tools/go/gccgoexportdata",
+        "golang.org/x/tools/go/gcexportdata",
+        "golang.org/x/tools/go/loader",
+        "golang.org/x/tools/go/packages",
+        "golang.org/x/tools/go/ssa",
+        "golang.org/x/tools/playground/socket"
+      ],
+      "modules": 11,
+      "treePackages": 281,
+      "standardLibraryPackages": 225,
+      "files": 1464,
+      "checkSplit": {
+        "standardLibraryMs": 542.5,
+        "modulesMs": 104.3
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 164.9,
+        "memoryMb": 4.7
+      },
+      "check": {
+        "cpuMs": 164.9,
+        "memoryMb": 4.7,
+        "timeMs": 95.4,
+        "wholeTree": {
+          "cpuMs": 1089.4,
+          "memoryMb": 86.4
+        },
+        "standardLibrary": {
+          "cpuMs": 924.5,
+          "memoryMb": 81.7
+        },
+        "cpuSpreadMs": 45.5,
+        "runs": [
+          {
+            "cpuMs": 1119.08,
+            "timeMs": 657.22,
+            "peakRssMb": 95
+          },
+          {
+            "cpuMs": 1077.63,
+            "timeMs": 621.92,
+            "peakRssMb": 91.88
+          },
+          {
+            "cpuMs": 1092.31,
+            "timeMs": 609.66,
+            "peakRssMb": 97.23
+          },
+          {
+            "cpuMs": 1107.58,
+            "timeMs": 618.36,
+            "peakRssMb": 90.36
+          },
+          {
+            "cpuMs": 1086.21,
+            "timeMs": 602.14,
+            "peakRssMb": 90.23
+          },
+          {
+            "cpuMs": 1073.58,
+            "timeMs": 603.54,
+            "peakRssMb": 91.19
+          },
+          {
+            "cpuMs": 1117.63,
+            "timeMs": 648.59,
+            "peakRssMb": 92.22
+          },
+          {
+            "cpuMs": 1076.46,
+            "timeMs": 602.74,
+            "peakRssMb": 90.44
+          },
+          {
+            "cpuMs": 1079.11,
+            "timeMs": 609.62,
+            "peakRssMb": 91.13
+          },
+          {
+            "cpuMs": 1109.77,
+            "timeMs": 691.84,
+            "peakRssMb": 99.97
+          },
+          {
+            "cpuMs": 1095.31,
+            "timeMs": 612.4,
+            "peakRssMb": 96.16
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 8436.3,
+        "memoryMb": 114.5,
+        "timeMs": 104.5,
+        "wholeTree": {
+          "cpuMs": 32102.8,
+          "memoryMb": 324.8
+        },
+        "standardLibrary": {
+          "cpuMs": 23666.5,
+          "memoryMb": 210.3
+        },
+        "runs": [
+          {
+            "cpuMs": 32141.4,
+            "timeMs": 5403,
+            "peakRssMb": 340.5
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 13.39,
+      "measuredAt": "2026-10-08T04:03:23.794Z",
+      "harnessSeconds": 29.6
+    },
+    "golang.org/x/xerrors": {
+      "status": "ok",
+      "listedVersion": null,
+      "version": "v0.0.0-20240903120638-7835f813f4da",
+      "packagesInModule": 2,
+      "packages": [
+        "golang.org/x/xerrors"
+      ],
+      "modules": 1,
+      "treePackages": 62,
+      "standardLibraryPackages": 60,
+      "files": 559,
+      "checkSplit": {
+        "standardLibraryMs": 166,
+        "modulesMs": 0.8
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 14.6,
+        "memoryMb": 4.4
+      },
+      "check": {
+        "cpuMs": 14.6,
+        "memoryMb": 4.4,
+        "timeMs": 23.4,
+        "wholeTree": {
+          "cpuMs": 342.1,
+          "memoryMb": 41.9
+        },
+        "standardLibrary": {
+          "cpuMs": 327.4,
+          "memoryMb": 37.5
+        },
+        "cpuSpreadMs": 94.4,
+        "runs": [
+          {
+            "cpuMs": 325.78,
+            "timeMs": 178.59,
+            "peakRssMb": 48.53
+          },
+          {
+            "cpuMs": 322.97,
+            "timeMs": 175.73,
+            "peakRssMb": 48.02
+          },
+          {
+            "cpuMs": 332.88,
+            "timeMs": 200.97,
+            "peakRssMb": 47.14
+          },
+          {
+            "cpuMs": 315.97,
+            "timeMs": 184.67,
+            "peakRssMb": 41.5
+          },
+          {
+            "cpuMs": 369.89,
+            "timeMs": 241.31,
+            "peakRssMb": 47.92
+          },
+          {
+            "cpuMs": 353.89,
+            "timeMs": 213.81,
+            "peakRssMb": 47.02
+          },
+          {
+            "cpuMs": 383.78,
+            "timeMs": 254.73,
+            "peakRssMb": 43.39
+          },
+          {
+            "cpuMs": 410.34,
+            "timeMs": 298.48,
+            "peakRssMb": 47.34
+          },
+          {
+            "cpuMs": 370.5,
+            "timeMs": 229.02,
+            "peakRssMb": 45.33
+          },
+          {
+            "cpuMs": 345.01,
+            "timeMs": 226.45,
+            "peakRssMb": 48.33
+          },
+          {
+            "cpuMs": 343.57,
+            "timeMs": 208.67,
+            "peakRssMb": 48.19
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 7.7,
+        "memoryMb": 0.4,
+        "timeMs": 44.7,
+        "wholeTree": {
+          "cpuMs": 6876.4,
+          "memoryMb": 214.7
+        },
+        "standardLibrary": {
+          "cpuMs": 6868.7,
+          "memoryMb": 214.3
+        },
+        "runs": [
+          {
+            "cpuMs": 6915,
+            "timeMs": 2450.5,
+            "peakRssMb": 230.4
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 10.86,
+      "measuredAt": "2026-10-08T04:04:14.952Z",
+      "harnessSeconds": 13.4
+    },
+    "google.golang.org/appengine": {
+      "status": "ok",
+      "listedVersion": "v1.6.8",
+      "version": "v1.6.8",
+      "packagesInModule": 50,
+      "packages": [
+        "google.golang.org/appengine"
+      ],
+      "modules": 14,
+      "treePackages": 221,
+      "standardLibraryPackages": 185,
+      "files": 1189,
+      "checkSplit": {
+        "standardLibraryMs": 526.4,
+        "modulesMs": 64.7
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 100,
+        "memoryMb": 12.7
+      },
+      "check": {
+        "cpuMs": 100,
+        "memoryMb": 12.7,
+        "timeMs": 60.9,
+        "wholeTree": {
+          "cpuMs": 858.9,
+          "memoryMb": 77.1
+        },
+        "standardLibrary": {
+          "cpuMs": 758.9,
+          "memoryMb": 64.4
+        },
+        "cpuSpreadMs": 95.9,
+        "runs": [
+          {
+            "cpuMs": 930.73,
+            "timeMs": 603.43,
+            "peakRssMb": 81.41
+          },
+          {
+            "cpuMs": 871.38,
+            "timeMs": 480.49,
+            "peakRssMb": 81.55
+          },
+          {
+            "cpuMs": 861.87,
+            "timeMs": 481.29,
+            "peakRssMb": 86.48
+          },
+          {
+            "cpuMs": 837.57,
+            "timeMs": 478.8,
+            "peakRssMb": 82.69
+          },
+          {
+            "cpuMs": 849.27,
+            "timeMs": 488.49,
+            "peakRssMb": 82.42
+          },
+          {
+            "cpuMs": 855.85,
+            "timeMs": 500.42,
+            "peakRssMb": 80.77
+          },
+          {
+            "cpuMs": 894.95,
+            "timeMs": 488.37,
+            "peakRssMb": 80.56
+          },
+          {
+            "cpuMs": 863.44,
+            "timeMs": 529.25,
+            "peakRssMb": 84.88
+          },
+          {
+            "cpuMs": 834.88,
+            "timeMs": 466.17,
+            "peakRssMb": 82.53
+          },
+          {
+            "cpuMs": 868.82,
+            "timeMs": 484.43,
+            "peakRssMb": 87.94
+          },
+          {
+            "cpuMs": 857.15,
+            "timeMs": 488.52,
+            "peakRssMb": 83.3
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 3695.1,
+        "memoryMb": 3.2,
+        "timeMs": 1700.4,
+        "wholeTree": {
+          "cpuMs": 20976,
+          "memoryMb": 211.5
+        },
+        "standardLibrary": {
+          "cpuMs": 17280.9,
+          "memoryMb": 208.3
+        },
+        "runs": [
+          {
+            "cpuMs": 21014.6,
+            "timeMs": 5650.4,
+            "peakRssMb": 227.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 7.62,
+      "measuredAt": "2026-10-08T04:06:04.082Z",
+      "harnessSeconds": 27.3
+    },
+    "google.golang.org/genproto": {
+      "status": "install-failed",
+      "listedVersion": null,
+      "detail": "release-age gate: no release of google.golang.org/genproto is at least 7 days old and usable with Go 1.25.3",
+      "load": 9.38,
+      "measuredAt": "2026-10-08T04:10:42.129Z",
+      "harnessSeconds": 1.7
+    },
+    "google.golang.org/grpc": {
+      "status": "ok",
+      "listedVersion": "v1.84.0",
+      "version": "v1.84.0",
+      "packagesInModule": 258,
+      "packages": [
+        "google.golang.org/grpc"
+      ],
+      "modules": 46,
+      "treePackages": 303,
+      "standardLibraryPackages": 192,
+      "files": 1465,
+      "checkSplit": {
+        "standardLibraryMs": 600,
+        "modulesMs": 214.1
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 286.6,
+        "memoryMb": 24.2
+      },
+      "check": {
+        "cpuMs": 286.6,
+        "memoryMb": 24.2,
+        "timeMs": 178.7,
+        "wholeTree": {
+          "cpuMs": 1106.6,
+          "memoryMb": 91.5
+        },
+        "standardLibrary": {
+          "cpuMs": 820,
+          "memoryMb": 67.3
+        },
+        "cpuSpreadMs": 91.2,
+        "runs": [
+          {
+            "cpuMs": 1158.27,
+            "timeMs": 836.75,
+            "peakRssMb": 96.19
+          },
+          {
+            "cpuMs": 1103.43,
+            "timeMs": 628.74,
+            "peakRssMb": 97.02
+          },
+          {
+            "cpuMs": 1115.18,
+            "timeMs": 650.05,
+            "peakRssMb": 96.63
+          },
+          {
+            "cpuMs": 1098.65,
+            "timeMs": 637.68,
+            "peakRssMb": 98.34
+          },
+          {
+            "cpuMs": 1123.68,
+            "timeMs": 635.07,
+            "peakRssMb": 101.44
+          },
+          {
+            "cpuMs": 1067.1,
+            "timeMs": 629.72,
+            "peakRssMb": 102.13
+          },
+          {
+            "cpuMs": 1123.69,
+            "timeMs": 655.76,
+            "peakRssMb": 97.58
+          },
+          {
+            "cpuMs": 1109.58,
+            "timeMs": 652.43,
+            "peakRssMb": 100.03
+          },
+          {
+            "cpuMs": 1101.41,
+            "timeMs": 615.54,
+            "peakRssMb": 93.39
+          },
+          {
+            "cpuMs": 1120.78,
+            "timeMs": 620.65,
+            "peakRssMb": 91.41
+          },
+          {
+            "cpuMs": 1076.18,
+            "timeMs": 614.84,
+            "peakRssMb": 92.2
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 8196.1,
+        "memoryMb": -8.4,
+        "timeMs": 2819.9,
+        "wholeTree": {
+          "cpuMs": 27119.6,
+          "memoryMb": 208.9
+        },
+        "standardLibrary": {
+          "cpuMs": 18923.5,
+          "memoryMb": 217.3
+        },
+        "runs": [
+          {
+            "cpuMs": 27158.2,
+            "timeMs": 7118,
+            "peakRssMb": 224.6
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 12.53,
+      "measuredAt": "2026-10-08T04:08:59.293Z",
+      "harnessSeconds": 53.2
+    },
+    "google.golang.org/protobuf": {
+      "status": "ok",
+      "listedVersion": "v1.36.12",
+      "version": "v1.36.12",
+      "packagesInModule": 151,
+      "packages": [
+        "google.golang.org/protobuf/proto",
+        "google.golang.org/protobuf/protoadapt",
+        "google.golang.org/protobuf/compiler/protogen",
+        "google.golang.org/protobuf/encoding/protodelim",
+        "google.golang.org/protobuf/encoding/protojson",
+        "google.golang.org/protobuf/encoding/prototext",
+        "google.golang.org/protobuf/encoding/protowire",
+        "google.golang.org/protobuf/reflect/protodesc",
+        "google.golang.org/protobuf/reflect/protopath",
+        "google.golang.org/protobuf/reflect/protorange",
+        "google.golang.org/protobuf/reflect/protoreflect",
+        "google.golang.org/protobuf/reflect/protoregistry",
+        "google.golang.org/protobuf/runtime/protoiface",
+        "google.golang.org/protobuf/runtime/protoimpl",
+        "google.golang.org/protobuf/runtime/protolazy",
+        "google.golang.org/protobuf/testing/protocmp",
+        "google.golang.org/protobuf/testing/protopack",
+        "google.golang.org/protobuf/testing/prototest",
+        "google.golang.org/protobuf/types/descriptorpb",
+        "google.golang.org/protobuf/types/dynamicpb"
+      ],
+      "modules": 3,
+      "treePackages": 151,
+      "standardLibraryPackages": 100,
+      "files": 960,
+      "checkSplit": {
+        "standardLibraryMs": 283.2,
+        "modulesMs": 67.8
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 136.3,
+        "memoryMb": 10.4
+      },
+      "check": {
+        "cpuMs": 136.3,
+        "memoryMb": 10.4,
+        "timeMs": 77.3,
+        "wholeTree": {
+          "cpuMs": 604.8,
+          "memoryMb": 57.3
+        },
+        "standardLibrary": {
+          "cpuMs": 468.5,
+          "memoryMb": 46.9
+        },
+        "cpuSpreadMs": 20.3,
+        "runs": [
+          {
+            "cpuMs": 619,
+            "timeMs": 360.2,
+            "peakRssMb": 63.3
+          },
+          {
+            "cpuMs": 608.8,
+            "timeMs": 325.58,
+            "peakRssMb": 61.14
+          },
+          {
+            "cpuMs": 600.24,
+            "timeMs": 362.47,
+            "peakRssMb": 62.73
+          },
+          {
+            "cpuMs": 619.35,
+            "timeMs": 329.92,
+            "peakRssMb": 62.63
+          },
+          {
+            "cpuMs": 605.78,
+            "timeMs": 334.24,
+            "peakRssMb": 60.44
+          },
+          {
+            "cpuMs": 603.15,
+            "timeMs": 312.53,
+            "peakRssMb": 63.97
+          },
+          {
+            "cpuMs": 620.35,
+            "timeMs": 332.09,
+            "peakRssMb": 63.97
+          },
+          {
+            "cpuMs": 600.09,
+            "timeMs": 339.11,
+            "peakRssMb": 61.41
+          },
+          {
+            "cpuMs": 607.73,
+            "timeMs": 333.17,
+            "peakRssMb": 69.22
+          },
+          {
+            "cpuMs": 613.08,
+            "timeMs": 337.86,
+            "peakRssMb": 61.83
+          },
+          {
+            "cpuMs": 605.36,
+            "timeMs": 323.89,
+            "peakRssMb": 62.95
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 4355.6,
+        "memoryMb": 1.9,
+        "timeMs": 503.7,
+        "wholeTree": {
+          "cpuMs": 16176.7,
+          "memoryMb": 207.6
+        },
+        "standardLibrary": {
+          "cpuMs": 11821.1,
+          "memoryMb": 205.7
+        },
+        "runs": [
+          {
+            "cpuMs": 16215.3,
+            "timeMs": 3780.2,
+            "peakRssMb": 223.3
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 9.88,
+      "measuredAt": "2026-10-08T04:12:49.380Z",
+      "harnessSeconds": 20.4
+    },
+    "gopkg.in/check.v1": {
+      "status": "ok",
+      "listedVersion": "v1.0.0-20201130134442-10cb98267c6c",
+      "version": "v1.0.0-20201130134442-10cb98267c6c",
+      "packagesInModule": 1,
+      "packages": [
+        "gopkg.in/check.v1"
+      ],
+      "modules": 4,
+      "treePackages": 87,
+      "standardLibraryPackages": 84,
+      "files": 655,
+      "checkSplit": {
+        "standardLibraryMs": 217.8,
+        "modulesMs": 3.6
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 22.3,
+        "memoryMb": 0.1
+      },
+      "check": {
+        "cpuMs": 22.3,
+        "memoryMb": 0.1,
+        "timeMs": 13.7,
+        "wholeTree": {
+          "cpuMs": 410.2,
+          "memoryMb": 40
+        },
+        "standardLibrary": {
+          "cpuMs": 387.9,
+          "memoryMb": 39.9
+        },
+        "cpuSpreadMs": 48.5,
+        "runs": [
+          {
+            "cpuMs": 413.36,
+            "timeMs": 242.75,
+            "peakRssMb": 48.95
+          },
+          {
+            "cpuMs": 413.1,
+            "timeMs": 224.46,
+            "peakRssMb": 49.28
+          },
+          {
+            "cpuMs": 383.14,
+            "timeMs": 226.57,
+            "peakRssMb": 44.23
+          },
+          {
+            "cpuMs": 389.79,
+            "timeMs": 226.2,
+            "peakRssMb": 42.95
+          },
+          {
+            "cpuMs": 431.67,
+            "timeMs": 259.07,
+            "peakRssMb": 48.91
+          },
+          {
+            "cpuMs": 417.95,
+            "timeMs": 261.75,
+            "peakRssMb": 47.34
+          },
+          {
+            "cpuMs": 410.53,
+            "timeMs": 261.8,
+            "peakRssMb": 42.58
+          },
+          {
+            "cpuMs": 413.02,
+            "timeMs": 243.77,
+            "peakRssMb": 44.25
+          },
+          {
+            "cpuMs": 423.26,
+            "timeMs": 232.66,
+            "peakRssMb": 45.5
+          },
+          {
+            "cpuMs": 394.07,
+            "timeMs": 225.8,
+            "peakRssMb": 43.19
+          },
+          {
+            "cpuMs": 415.22,
+            "timeMs": 221.96,
+            "peakRssMb": 49.02
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": -462.6,
+        "memoryMb": -0.2,
+        "timeMs": -269.4,
+        "wholeTree": {
+          "cpuMs": 9201.5,
+          "memoryMb": 215.4
+        },
+        "standardLibrary": {
+          "cpuMs": 9664.1,
+          "memoryMb": 215.6
+        },
+        "runs": [
+          {
+            "cpuMs": 9240.1,
+            "timeMs": 2342.7,
+            "peakRssMb": 231.1
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 12.84,
+      "measuredAt": "2026-10-08T04:02:16.866Z",
+      "harnessSeconds": 15.9
+    },
+    "gopkg.in/errgo.v2": {
+      "status": "ok",
+      "listedVersion": "v2.1.0",
+      "version": "v2.1.0",
+      "packagesInModule": 2,
+      "packages": [
+        "gopkg.in/errgo.v2/errors",
+        "gopkg.in/errgo.v2/fmt/errors"
+      ],
+      "modules": 5,
+      "treePackages": 60,
+      "standardLibraryPackages": 58,
+      "files": 545,
+      "checkSplit": {
+        "standardLibraryMs": 162.5,
+        "modulesMs": 0.7
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 0,
+        "memoryMb": 0.9
+      },
+      "check": {
+        "cpuMs": -3.9,
+        "memoryMb": 0.9,
+        "timeMs": -0.5,
+        "wholeTree": {
+          "cpuMs": 305.9,
+          "memoryMb": 40.7
+        },
+        "standardLibrary": {
+          "cpuMs": 309.8,
+          "memoryMb": 39.8
+        },
+        "cpuSpreadMs": 85.7,
+        "runs": [
+          {
+            "cpuMs": 297.42,
+            "timeMs": 171.8,
+            "peakRssMb": 49.39
+          },
+          {
+            "cpuMs": 301.7,
+            "timeMs": 163.52,
+            "peakRssMb": 41.67
+          },
+          {
+            "cpuMs": 305.62,
+            "timeMs": 162.48,
+            "peakRssMb": 49.17
+          },
+          {
+            "cpuMs": 300.62,
+            "timeMs": 163.82,
+            "peakRssMb": 41.94
+          },
+          {
+            "cpuMs": 303.2,
+            "timeMs": 158.07,
+            "peakRssMb": 42.5
+          },
+          {
+            "cpuMs": 308.81,
+            "timeMs": 170.72,
+            "peakRssMb": 46.19
+          },
+          {
+            "cpuMs": 315.71,
+            "timeMs": 183.49,
+            "peakRssMb": 49.17
+          },
+          {
+            "cpuMs": 315.7,
+            "timeMs": 173.92,
+            "peakRssMb": 47.58
+          },
+          {
+            "cpuMs": 383.12,
+            "timeMs": 300.31,
+            "peakRssMb": 44.58
+          },
+          {
+            "cpuMs": 338.38,
+            "timeMs": 216.6,
+            "peakRssMb": 42.89
+          },
+          {
+            "cpuMs": 323.12,
+            "timeMs": 215.48,
+            "peakRssMb": 50.42
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 640.7,
+        "memoryMb": -2.1,
+        "timeMs": 405.7,
+        "wholeTree": {
+          "cpuMs": 6318.9,
+          "memoryMb": 209.1
+        },
+        "standardLibrary": {
+          "cpuMs": 5678.2,
+          "memoryMb": 211.2
+        },
+        "runs": [
+          {
+            "cpuMs": 6357.5,
+            "timeMs": 2321.6,
+            "peakRssMb": 224.8
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 6.02,
+      "measuredAt": "2026-10-08T04:14:38.700Z",
+      "harnessSeconds": 14.7
+    },
+    "gopkg.in/yaml.v2": {
+      "status": "ok",
+      "listedVersion": "v2.4.0",
+      "version": "v2.4.0",
+      "packagesInModule": 1,
+      "packages": [
+        "gopkg.in/yaml.v2"
+      ],
+      "modules": 2,
+      "treePackages": 66,
+      "standardLibraryPackages": 65,
+      "files": 583,
+      "checkSplit": {
+        "standardLibraryMs": 159.9,
+        "modulesMs": 9.2
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 36.6,
+        "memoryMb": 0
+      },
+      "check": {
+        "cpuMs": 36.6,
+        "memoryMb": -0.2,
+        "timeMs": 16.4,
+        "wholeTree": {
+          "cpuMs": 353,
+          "memoryMb": 42.3
+        },
+        "standardLibrary": {
+          "cpuMs": 316.3,
+          "memoryMb": 42.4
+        },
+        "cpuSpreadMs": 40.4,
+        "runs": [
+          {
+            "cpuMs": 328.14,
+            "timeMs": 176.5,
+            "peakRssMb": 46.42
+          },
+          {
+            "cpuMs": 344.26,
+            "timeMs": 181.82,
+            "peakRssMb": 49.28
+          },
+          {
+            "cpuMs": 349.35,
+            "timeMs": 179.76,
+            "peakRssMb": 49
+          },
+          {
+            "cpuMs": 355.92,
+            "timeMs": 189.76,
+            "peakRssMb": 42.89
+          },
+          {
+            "cpuMs": 360.26,
+            "timeMs": 188.95,
+            "peakRssMb": 48.28
+          },
+          {
+            "cpuMs": 360.26,
+            "timeMs": 185.71,
+            "peakRssMb": 47.66
+          },
+          {
+            "cpuMs": 354.21,
+            "timeMs": 179.15,
+            "peakRssMb": 48.98
+          },
+          {
+            "cpuMs": 325.51,
+            "timeMs": 176.8,
+            "peakRssMb": 49.08
+          },
+          {
+            "cpuMs": 364.02,
+            "timeMs": 192.78,
+            "peakRssMb": 41.59
+          },
+          {
+            "cpuMs": 365.88,
+            "timeMs": 197.84,
+            "peakRssMb": 41.39
+          },
+          {
+            "cpuMs": 363.33,
+            "timeMs": 198.35,
+            "peakRssMb": 47.72
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 647.5,
+        "memoryMb": 1.8,
+        "timeMs": 377.7,
+        "wholeTree": {
+          "cpuMs": 6854.6,
+          "memoryMb": 209.5
+        },
+        "standardLibrary": {
+          "cpuMs": 6207.1,
+          "memoryMb": 207.7
+        },
+        "runs": [
+          {
+            "cpuMs": 6893.2,
+            "timeMs": 2222.1,
+            "peakRssMb": 225.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 12.81,
+      "measuredAt": "2026-10-08T04:03:34.105Z",
+      "harnessSeconds": 10.3
+    },
+    "honnef.co/go/tools": {
+      "status": "ok",
+      "listedVersion": "v0.8.1",
+      "version": "v0.7.0",
+      "packagesInModule": 217,
+      "packages": [
+        "honnef.co/go/tools/config",
+        "honnef.co/go/tools/debug",
+        "honnef.co/go/tools/knowledge",
+        "honnef.co/go/tools/lintcmd",
+        "honnef.co/go/tools/pattern",
+        "honnef.co/go/tools/printf",
+        "honnef.co/go/tools/quickfix",
+        "honnef.co/go/tools/sarif",
+        "honnef.co/go/tools/simple",
+        "honnef.co/go/tools/staticcheck",
+        "honnef.co/go/tools/structlayout",
+        "honnef.co/go/tools/stylecheck",
+        "honnef.co/go/tools/unused",
+        "honnef.co/go/tools/analysis/callcheck",
+        "honnef.co/go/tools/analysis/code",
+        "honnef.co/go/tools/analysis/dfa",
+        "honnef.co/go/tools/analysis/edit",
+        "honnef.co/go/tools/analysis/lint",
+        "honnef.co/go/tools/analysis/report",
+        "honnef.co/go/tools/go/buildid"
+      ],
+      "modules": 13,
+      "treePackages": 470,
+      "standardLibraryPackages": 232,
+      "files": 1681,
+      "checkSplit": {
+        "standardLibraryMs": 725.4,
+        "modulesMs": 166.4
+      },
+      "gradedBy": "check",
+      "added": {
+        "cpuMs": 202.9,
+        "memoryMb": 14.7
+      },
+      "check": {
+        "cpuMs": 202.9,
+        "memoryMb": 14.7,
+        "timeMs": 136.9,
+        "wholeTree": {
+          "cpuMs": 1175.7,
+          "memoryMb": 98.7
+        },
+        "standardLibrary": {
+          "cpuMs": 972.8,
+          "memoryMb": 83.9
+        },
+        "cpuSpreadMs": 110.9,
+        "runs": [
+          {
+            "cpuMs": 1264.44,
+            "timeMs": 916.27,
+            "peakRssMb": 101.05
+          },
+          {
+            "cpuMs": 1177.03,
+            "timeMs": 710.42,
+            "peakRssMb": 105.59
+          },
+          {
+            "cpuMs": 1163.72,
+            "timeMs": 678.56,
+            "peakRssMb": 104.94
+          },
+          {
+            "cpuMs": 1251.63,
+            "timeMs": 793.68,
+            "peakRssMb": 109.16
+          },
+          {
+            "cpuMs": 1164.36,
+            "timeMs": 681.13,
+            "peakRssMb": 104.23
+          },
+          {
+            "cpuMs": 1179.07,
+            "timeMs": 674.8,
+            "peakRssMb": 103.89
+          },
+          {
+            "cpuMs": 1207.15,
+            "timeMs": 729.16,
+            "peakRssMb": 107.34
+          },
+          {
+            "cpuMs": 1178.66,
+            "timeMs": 672.34,
+            "peakRssMb": 104.13
+          },
+          {
+            "cpuMs": 1241.84,
+            "timeMs": 740.49,
+            "peakRssMb": 102.73
+          },
+          {
+            "cpuMs": 1162.16,
+            "timeMs": 678.16,
+            "peakRssMb": 102.67
+          },
+          {
+            "cpuMs": 1153.58,
+            "timeMs": 707.48,
+            "peakRssMb": 103.13
+          }
+        ]
+      },
+      "build": {
+        "cpuMs": 15310.9,
+        "memoryMb": 4.7,
+        "timeMs": 2553.2,
+        "wholeTree": {
+          "cpuMs": 40648.7,
+          "memoryMb": 209.5
+        },
+        "standardLibrary": {
+          "cpuMs": 25337.8,
+          "memoryMb": 204.8
+        },
+        "runs": [
+          {
+            "cpuMs": 40687.3,
+            "timeMs": 7569.8,
+            "peakRssMb": 225.2
+          }
+        ]
+      },
+      "baseline": {
+        "checkCpuMs": 2.94,
+        "checkPeakRssMb": 5.47,
+        "buildCpuMs": 38.6,
+        "buildPeakRssMb": 15.7
+      },
+      "load": 13.47,
+      "measuredAt": "2026-10-08T04:08:06.110Z",
+      "harnessSeconds": 38.9
+    }
+  }
+}

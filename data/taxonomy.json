@@ -489,11 +489,24 @@
       "group": "web"
     },
     {
+      "id": "http-server",
+      "title": "HTTP servers",
+      "description": "Accept HTTP requests on a socket and answer them through a framework or a runtime's own server API: request and response objects, middleware and handlers. Routers on their own, application servers behind a gateway interface and full-stack frameworks are out of scope.",
+      "benchmarkable": true,
+      "benchmarkIdea": "Serve a small JSON API under load: a few routes, one with a path parameter and one that reads a JSON body.",
+      "examples": [
+        "express",
+        "hono",
+        "router"
+      ],
+      "group": "web"
+    },
+    {
       "id": "http-server-routing",
       "title": "HTTP server routing",
-      "description": "Match incoming HTTP requests against registered routes and middleware and dispatch to a handler; single-purpose middleware, header utilities and full-stack frameworks are out of scope.",
+      "description": "Match a request's method and path against a table of registered routes with parameters and say which handler it is for. Servers and frameworks that have a router take part with it; answering the request is out of scope.",
       "benchmarkable": true,
-      "benchmarkIdea": "Register 100 parameterized routes with two middleware and dispatch a fixed mix of requests to handlers that return JSON.",
+      "benchmarkIdea": "Match a fixed list of requests against a table of a hundred routes with static, parameter and wildcard segments.",
       "examples": [
         "express",
         "hono",

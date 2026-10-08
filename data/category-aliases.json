@@ -1,199 +1,1274 @@
 {
-  "glob-matching": ["Wildcard matching", "fnmatch", "Path pattern matching"],
-  "terminal-styling": ["ANSI colors", "Console colors", "Colored output", "ECMA-48", "ANSI X3.64"],
-  "cli-argument-parsing": ["Command-line flags", "Option parsing", "argv parsing", "getopt"],
-  "schema-validation": ["JSON Schema", "Data validation", "Input validation"],
-  "id-generation": ["UUID", "GUID", "nanoid", "ULID", "RFC 9562", "RFC 4122", "ISO/IEC 9834-8"],
-  "config-format-parsing": ["YAML parsing", "JSON5", "JSON with comments"],
-  "source-map-decoding": ["Sourcemap parsing", "Stack trace mapping", "VLQ decoding", "ECMA-426"],
-  "file-lookup": ["Find up", "Path exists", "Locate file"],
-  "module-resolution": ["require.resolve", "Import resolution", "Node resolution"],
-  "stream-implementations": ["Readable streams", "Node streams", "Pipes"],
-  "type-definitions": ["Typings", "@types", "d.ts"],
-  "build-tooling": ["Bundlers", "Compilers", "Linters", "Test runners"],
-  "tooling-internals": ["AST utilities", "Babel helpers", "ESLint internals"],
-  "platform-binaries": ["Native binaries", "Prebuilt binaries", "Optional dependencies"],
-  "runtime-shims": ["Polyfills", "Ponyfills", "Compatibility helpers"],
-  "static-data": ["Lookup tables", "Data sets", "Regex patterns"],
-  "javascript-parsing": ["JS parsers", "ECMAScript parser", "AST parsers", "ESTree", "ECMA-262"],
-  "css-parsing": ["CSS parsers", "Stylesheet ASTs", "CSS tokenizers"],
-  "markup-parsing": ["DOM parsers", "SAX parsers", "HTML5 parsers", "XML readers"],
-  "html-escaping": ["Escape HTML", "HTML encode", "XSS escaping", "Unescape entities"],
-  "json-parsing": ["JSON.parse", "JSON decoders", "JSON deserialization", "RFC 8259", "ECMA-404"],
-  "stable-json-stringify": ["Canonical JSON", "Stable stringify", "Sorted-key JSON", "RFC 8785"],
-  "value-inspection": ["Pretty printing", "util.inspect", "Object dumps"],
-  "deep-equality": ["Deep equal", "Structural equality", "isEqual", "Object comparison"],
-  "object-merging": ["Deep merge", "Object.assign", "Extend", "Defaults"],
-  "file-globbing": ["Globs", "File pattern search", "Wildcard file search"],
-  "directory-walking": ["Directory traversal", "Recursive readdir", "File tree walk", "Crawl"],
-  "process-execution": ["Spawn", "exec", "Subprocesses", "Shell commands"],
-  "async-concurrency": ["Promise pools", "Concurrency limits", "Task queues", "p-limit"],
-  "event-emitter": ["Pub/sub", "Event buses", "Observer pattern", "Event listeners"],
-  "stream-merging": ["Combine streams", "Stream concatenation", "Multistream"],
-  "http-client": ["Fetch", "HTTP requests", "REST clients", "Ajax", "curl", "RFC 9110"],
-  "http-server-routing": ["Routers", "Web frameworks", "URL routing", "Route matching", "HTTP servers", "RFC 9110"],
-  "url-parsing": ["URL parsers", "WHATWG URL", "Link parsing", "RFC 3986"],
-  "jwt-signing": ["JSON Web Tokens", "JWS", "JOSE", "Bearer tokens", "RFC 7519", "RFC 7515", "RFC 7517"],
-  "deflate-compression": ["gzip", "zlib", "Inflate", "gunzip", "RFC 1951", "RFC 1952", "RFC 1950"],
-  "tar-archiving": ["Tarballs", "tar.gz", "Archive extraction", "untar"],
-  "arbitrary-precision-math": ["BigInt", "Big numbers", "Decimals", "Bignums", "Big decimals"],
-  "css-color-parsing": ["Hex colors", "RGB to HSL", "CSS colors", "Color conversion"],
-  "terminal-string-width": ["Display width", "wcwidth", "East Asian width", "Column width", "UAX #11"],
-  "indentation-stripping": ["Dedent", "Strip indent", "Heredoc trimming"],
-  "debug-logging": ["Debug output", "DEBUG environment variable", "Trace logging"],
-  "frameworks": ["UI frameworks", "Utility libraries", "Web frameworks"],
-  "ui-components": ["React components", "Widgets", "Design systems", "Hooks"],
-  "service-sdks": ["Cloud SDKs", "API clients", "OpenTelemetry", "AWS SDK"],
-  "library-internals": ["Internal helpers", "Private dependencies", "Sub-packages"],
-  "hash-maps": ["Hash tables", "Dictionaries", "Associative arrays", "HashMap", "Key-value maps"],
-  "lru-cache": ["Least recently used", "In-memory caches", "Memoization caches", "Cache eviction"],
-  "bit-sets": ["Bit vectors", "Bitmaps", "Bit arrays", "Bitfields"],
-  "inline-vectors": ["SmallVec", "Stack-allocated vectors", "Small vector optimization", "ArrayVec"],
-  "message-channels": ["MPSC", "Queues between threads", "Channels", "Message passing"],
-  "non-cryptographic-hashing": ["Fast hashes", "FNV", "xxHash", "Murmur", "Hash functions"],
-  "cryptographic-hashing": ["SHA-256", "MD5", "SHA-1", "BLAKE3", "Digests", "RFC 6234", "RFC 1321", "FIPS 180-4", "FIPS 202"],
-  "checksums": ["CRC32", "Adler-32", "CRC", "Error detection"],
-  "random-number-generation": ["RNG", "PRNG", "Random", "Pseudorandom"],
-  "base64-encoding": ["base64 decode", "btoa", "atob", "Base64url", "RFC 4648"],
-  "float-formatting": ["Double to string", "Number to string", "Shortest float", "Ryu", "dtoa", "IEEE 754", "Floating point"],
-  "regex-matching": ["Regexes", "Regexps", "Pattern matching", "RE2"],
-  "parser-combinators": ["PEG", "Parser generators", "Grammars", "Lexers"],
-  "toml-parsing": ["TOML parsers", "Cargo.toml", "pyproject.toml"],
-  "binary-serialization": ["Protobuf", "MessagePack", "Protocol Buffers", "CBOR", "Bincode", "RFC 8949"],
-  "asn1-der-decoding": ["X.509 parsing", "Certificate parsing", "BER", "ASN.1 parsers", "RFC 5280", "ITU-T X.690", "X.680", "X.509"],
-  "block-compression": ["Zstandard", "Brotli", "LZ4", "Snappy", "zstd", "LZW", "RFC 7932", "RFC 8878"],
-  "authenticated-encryption": ["AEAD", "AES-GCM", "ChaCha20-Poly1305", "Encryption", "RFC 5116", "RFC 8439", "NIST SP 800-38D"],
-  "digital-signatures": ["Ed25519", "ECDSA", "Signing", "secp256k1", "Signature verification", "RFC 8032", "RFC 6979", "FIPS 186-5"],
-  "date-time": ["Temporal", "Timestamps", "Date formatting", "Time zones", "Calendars", "Moment", "RFC 3339", "ISO 8601", "RFC 9557"],
-  "text-diff": ["Diffs", "Patches", "Myers diff", "Line diffs", "Unified diffs"],
-  "case-conversion": ["camelCase", "snake_case", "kebab-case", "PascalCase", "Change case"],
-  "macro-support": ["Proc macros", "Derive macros", "Code generation"],
-  "language-ergonomics": ["Error handling", "Traits", "Helper macros", "Bitflags"],
-  "system-bindings": ["FFI", "libc", "Syscalls", "Windows API", "Native bindings"],
-  "environment-detection": ["CPU count", "Is TTY", "Terminal size", "Feature detection"],
-  "markdown-parsing": ["Markdown to HTML", "CommonMark", "Markdown parsers", "MD"],
-  "html-sanitizing": ["XSS filtering", "HTML cleaning", "Sanitize HTML", "Allowlist tags"],
-  "css-selector-matching": ["$", "querySelector", "Selector engines", "DOM queries"],
-  "json-path-query": ["JSONPath", "JMESPath", "JSON Pointer", "jq", "RFC 9535", "RFC 6901"],
-  "typed-object-mapping": ["Dataclasses from dicts", "Structuring", "Deserialization to classes", "Model binding"],
-  "object-pickling": ["Pickle", "Object serialization", "Marshal"],
-  "immutable-collections": ["Persistent data structures", "Frozen dicts", "Immutable maps", "Immutable lists"],
-  "dataframes": ["Tabular data", "Pandas", "Data tables", "Columnar data"],
-  "chart-rendering": ["Plotting", "Graphs", "Charts", "Data visualization"],
-  "image-processing": ["Image resizing", "Thumbnails", "Image manipulation", "Photo editing"],
-  "pdf-text-extraction": ["PDF parsing", "PDF to text", "Read PDF", "ISO 32000"],
-  "pdf-generation": ["Create PDF", "PDF writers", "HTML to PDF", "ISO 32000"],
-  "text-table-rendering": ["ASCII tables", "Console tables", "Pretty tables", "Tabulate"],
-  "structured-logging": ["JSON logging", "Loggers", "Log formatting", "Logging"],
-  "retry-policies": ["Exponential backoff", "Retries", "Backoff", "Retry with jitter"],
-  "file-locking": ["Lock files", "flock", "Advisory locks", "Mutex files"],
-  "charset-detection": ["Encoding detection", "chardet", "Guess encoding"],
-  "file-type-detection": ["Magic numbers", "MIME sniffing", "Magic bytes", "libmagic"],
-  "password-hashing": ["bcrypt", "Argon2", "scrypt", "Password storage", "RFC 9106", "RFC 7914"],
-  "subword-tokenization": ["BPE", "Byte-pair encoding", "LLM tokenizers", "Token counting", "tiktoken"],
-  "websocket-messaging": ["WebSockets", "ws", "Realtime sockets", "WebSocket frames", "RFC 6455"],
-  "postgres-client": ["Postgres drivers", "pg", "psql", "PostgreSQL drivers"],
-  "mysql-client": ["MySQL drivers", "MariaDB", "MySQL connectors"],
-  "template-rendering": ["Templating", "ERB", "Template engines", "Mustache", "Handlebars", "Jinja"],
-  "http-application-servers": ["Web servers", "Rack servers", "WSGI", "App servers", "RFC 9110", "RFC 9112"],
-  "background-job-queues": ["Job queues", "Workers", "Task queues", "Async jobs", "Sidekiq"],
-  "redis-client": ["Redis drivers", "Valkey", "Key-value clients"],
-  "http-message-parsing": ["HTTP parsers", "Request parsing", "HTTP/1.1 parsers", "Header parsing", "RFC 9112", "RFC 7230"],
-  "ruby-parsing": ["Ruby ASTs", "Ruby parsers", "Prism"],
-  "user-agent-parsing": ["Browser detection", "UA parsing", "Device detection", "Bot detection"],
-  "message-translation": ["i18n", "Internationalization", "gettext", "Localization", "l10n"],
-  "dynamic-attribute-objects": ["OpenStruct", "Hash with method access", "Mash", "Dot access"],
-  "object-json-serialization": ["Serializers", "JSON views", "API serialization", "Presenters"],
-  "framework-extensions": ["Plugins", "Rails gems", "Middleware", "Add-ons"],
-  "ini-parsing": ["INI files", ".properties", "Config files", "gitconfig"],
-  "dotenv-loading": [".env", "Environment variables", "Env files"],
-  "semver-comparison": ["Semver", "Version ranges", "Version comparison", "Version parsing"],
-  "shell-word-splitting": ["shlex", "Shell quoting", "Command-line splitting", "Shell escaping"],
-  "file-watching": ["fsnotify", "inotify", "Watch files", "File change events", "chokidar"],
-  "recursive-file-copy": ["Copy directory", "cp -r", "Directory copy"],
-  "deep-cloning": ["Deep copy", "Clone object", "structuredClone", "cloneDeep"],
-  "human-size-formatting": ["Bytes to MB", "Pretty bytes", "File size formatting", "Humanize"],
-  "sorted-maps": ["B-trees", "Tries", "Radix trees", "Ordered maps", "TreeMap"],
-  "quantile-sketches": ["Percentiles", "HDR histograms", "t-digest", "Latency histograms"],
-  "metrics-instrumentation": ["Prometheus", "Counters and gauges", "StatsD", "Telemetry"],
-  "embedded-key-value-stores": ["BoltDB", "LevelDB", "RocksDB", "Embedded databases", "KV stores"],
-  "mongodb-client": ["Mongo drivers", "MongoDB drivers", "BSON"],
-  "generated-api-types": ["Protobuf types", "Generated code", "API definitions"],
-  "applications": ["Programs", "Servers", "CLI tools"],
-  "zip-archiving": ["Zip files", "Unzip", "Archive compression", "ISO/IEC 21320"],
-  "qr-code-generation": ["QR codes", "Barcodes", "2D barcodes", "ISO/IEC 18004"],
-  "cron-scheduling": ["Crontab", "Cron parsers", "Job scheduling", "Scheduled tasks"],
-  "dependency-injection": ["DI", "IoC containers", "Inversion of control", "Service containers"],
-  "iterator-combinators": ["itertools", "Lazy sequences", "map filter reduce", "Generators"],
-  "reactive-signals": ["Observables", "Reactivity", "State management", "Computed values"],
-  "placeholder-packages": ["Test packages", "Hello world", "Dummy packages"],
-  "other": ["Miscellaneous", "Uncategorized"],
-  "ansi-text-layout": ["Strip ANSI", "Word wrap", "Wrap text", "Truncate terminal text", "ECMA-48"],
-  "edit-distance": ["Levenshtein", "Fuzzy matching", "String similarity", "Did you mean"],
-  "brace-expansion": ["Bash braces", "{a,b} expansion", "Range expansion"],
-  "mime-type-lookup": ["Content type lookup", "File extension to MIME", "MIME types", "RFC 6838"],
-  "cookie-parsing": ["Cookies", "Set-Cookie", "Cookie jars", "RFC 6265"],
-  "media-type-parsing": ["Content-Type headers", "MIME parsing", "Accept headers", "RFC 6838", "RFC 9110"],
-  "query-string-parsing": ["URL parameters", "URLSearchParams", "Form encoding", "x-www-form-urlencoded"],
-  "percent-encoding": ["URL encoding", "encodeURIComponent", "URL escape", "urlencode", "RFC 3986"],
-  "ip-address-parsing": ["IPv4", "IPv6", "Subnets", "Netmasks", "RFC 4291", "RFC 4632", "RFC 5952"],
-  "idna-punycode": ["Internationalized domain names", "IDN", "Unicode domains", "xn--", "RFC 3492", "RFC 5891", "UTS #46"],
-  "public-suffix-lookup": ["TLD extraction", "Registrable domains", "eTLD+1", "Domain parsing"],
-  "uri-template-expansion": ["RFC 6570", "URL templates", "Path templates"],
-  "source-map-generation": ["Sourcemap writing", "Magic string", "VLQ encoding", "ECMA-426"],
-  "css-selector-parsing": ["Selector parsers", "Selector ASTs", "Selector tokenizers"],
-  "path-manipulation": ["path.join", "Normalize path", "File paths", "basename", "dirname"],
-  "atomic-file-writing": ["Safe file write", "Write then rename", "Crash-safe writes"],
-  "temporary-files": ["Temp files", "tmpdir", "mktemp", "Scratch directories"],
-  "layered-configuration": ["App settings", "Config loaders", "Viper", "Environment overrides"],
-  "terminal-progress-bars": ["Spinners", "Progress indicators", "Loading bars", "tqdm"],
-  "syntax-highlighting": ["Grammars", "Code highlighting", "Code coloring", "Lexers", "Pygments"],
-  "sql-parsing": ["SQL parsers", "SQL ASTs", "Query parsing", "SQL formatters", "ISO/IEC 9075"],
-  "graphql-execution": ["GraphQL servers", "GraphQL queries", "GraphQL resolvers"],
-  "csv-parsing": ["CSV readers", "Comma-separated values", "TSV", "Delimited text", "RFC 4180"],
-  "spreadsheet-writing": ["Excel export", "XLSX writers", "Write Excel", "ECMA-376", "ISO/IEC 29500"],
-  "spreadsheet-reading": ["Excel import", "XLSX readers", "Read Excel", "XLS", "ECMA-376", "ISO/IEC 29500"],
-  "html-to-markdown": ["Turndown", "Markdownify", "HTML converters"],
-  "plist-parsing": ["plist", "Apple property lists", "Info.plist"],
-  "json-patch": ["RFC 6902", "JSON diffs", "JSON Merge Patch", "RFC 7396"],
-  "pem-encoding": ["PEM files", "Certificates", "Private key files", "PKCS", "RFC 7468"],
-  "number-parsing": ["String to number", "parseFloat", "parseInt", "atoi", "strtod", "IEEE 754", "Floating point"],
-  "substring-search": ["String search", "memchr", "indexOf", "Aho-Corasick", "Multi-pattern search"],
-  "unicode-normalization": ["NFC", "NFD", "NFKC", "Canonical equivalence", "UAX #15"],
-  "unicode-segmentation": ["Grapheme clusters", "Word boundaries", "Line breaking", "Intl.Segmenter", "UAX #29", "UAX #14"],
-  "utf8-validation": ["Unicode", "UTF-8 decoders", "Byte strings", "Valid UTF-8", "RFC 3629", "ISO/IEC 10646"],
-  "charset-transcoding": ["iconv", "Encoding conversion", "TextDecoder", "Latin-1", "Shift_JIS", "ISO 8859"],
-  "ascii-transliteration": ["Slugify", "Remove accents", "Unidecode", "URL slugs", "Deburr"],
-  "noun-inflection": ["Pluralize", "Singularize", "Inflectors", "Plurals"],
-  "natural-sorting": ["Natural order", "Human sort", "Alphanumeric sort", "Version sort"],
-  "key-derivation": ["HKDF", "PBKDF2", "KDF", "Key stretching", "RFC 5869", "RFC 8018", "NIST SP 800-132"],
-  "message-authentication-codes": ["HMAC", "MAC", "Poly1305", "Message signing", "RFC 2104", "FIPS 198-1"],
-  "symmetric-ciphers": ["AES", "ChaCha20", "Block ciphers", "Stream ciphers", "CTR mode", "RFC 8439", "FIPS 197"],
-  "one-time-passwords": ["TOTP", "HOTP", "2FA", "Two-factor authentication", "Authenticator codes", "RFC 6238", "RFC 4226"],
-  "image-decoding": ["PNG decoders", "JPEG decoders", "GIF", "Image codecs", "Image loading", "RFC 2083", "ISO/IEC 10918", "ISO/IEC 15948"],
-  "linear-algebra": ["Matrices", "Vectors", "N-dimensional arrays", "NumPy", "Tensor math"],
-  "graph-algorithms": ["Shortest paths", "Topological sort", "Graph data structures", "Dijkstra"],
-  "synchronization-primitives": ["Mutexes", "RwLock", "Locks", "Semaphores", "Spinlocks"],
-  "slot-arenas": ["Arena allocators", "Slab allocators", "Generational indexes", "Object pools"],
-  "small-strings": ["Small string optimization", "SSO", "Inline strings", "Compact strings"],
-  "queues-and-linked-lists": ["FIFO", "Deques", "Doubly linked lists", "Ring buffers"],
-  "resource-pools": ["Connection pools", "Object pools", "Buffer pools", "Pooling"],
-  "rate-limiting": ["Throttling", "Token buckets", "Leaky buckets", "Throttle"],
-  "dns-message-codec": ["DNS resolvers", "DNS lookups", "DNS clients", "Name resolution", "RFC 1035"],
-  "ssh-client": ["SFTP", "SCP", "Remote shells", "Secure shell", "RFC 4253", "RFC 4251"],
-  "smtp-client": ["Send email", "Mailers", "Email sending", "Mail clients", "RFC 5321"],
-  "kafka-client": ["Kafka producers", "Kafka consumers", "Event streaming"],
-  "sqlite-client": ["SQLite drivers", "sqlite3", "Embedded SQL databases"],
-  "object-relational-mapping": ["ORM", "Database models", "Query builders", "Active Record"],
-  "git-repository-access": ["Git libraries", "libgit2", "Read git objects", "Git clients"],
-  "grpc-rpc": ["Remote procedure calls", "RPC", "Protobuf services"],
-  "socks-proxy-client": ["SOCKS5", "Proxy agents", "Tor proxies", "RFC 1928"],
-  "fake-data-generation": ["Faker", "Test data", "Mock data", "Fixtures", "Dummy data"],
-  "symbol-demangling": ["Demangle", "C++ name mangling", "Rust symbol names", "Stack symbol names"],
-  "embedded-script-interpreters": ["Scripting engines", "Lua", "JavaScript in Go", "Starlark", "Embedded VMs"],
-  "expression-evaluation": ["Formula evaluation", "Rule engines", "CEL", "eval"],
-  "xml-building": ["XML writers", "XML generation", "XML serialization"],
-  "classname-composition": ["clsx", "classnames", "CSS class joining", "Tailwind variants"],
-  "web-application-frameworks": ["Full-stack frameworks", "Meta-frameworks", "SSR frameworks", "Server-side rendering", "Next.js", "TanStack Start", "Expo", "Rails", "Django"],
-  "client-side-routing": ["Front-end routers", "SPA routing", "React Router", "TanStack Router", "Route matching in the browser", "History API"]
+  "glob-matching": [
+    "Wildcard matching",
+    "fnmatch",
+    "Path pattern matching"
+  ],
+  "terminal-styling": [
+    "ANSI colors",
+    "Console colors",
+    "Colored output",
+    "ECMA-48",
+    "ANSI X3.64"
+  ],
+  "cli-argument-parsing": [
+    "Command-line flags",
+    "Option parsing",
+    "argv parsing",
+    "getopt"
+  ],
+  "schema-validation": [
+    "JSON Schema",
+    "Data validation",
+    "Input validation"
+  ],
+  "id-generation": [
+    "UUID",
+    "GUID",
+    "nanoid",
+    "ULID",
+    "RFC 9562",
+    "RFC 4122",
+    "ISO/IEC 9834-8"
+  ],
+  "config-format-parsing": [
+    "YAML parsing",
+    "JSON5",
+    "JSON with comments"
+  ],
+  "source-map-decoding": [
+    "Sourcemap parsing",
+    "Stack trace mapping",
+    "VLQ decoding",
+    "ECMA-426"
+  ],
+  "file-lookup": [
+    "Find up",
+    "Path exists",
+    "Locate file"
+  ],
+  "module-resolution": [
+    "require.resolve",
+    "Import resolution",
+    "Node resolution"
+  ],
+  "stream-implementations": [
+    "Readable streams",
+    "Node streams",
+    "Pipes"
+  ],
+  "type-definitions": [
+    "Typings",
+    "@types",
+    "d.ts"
+  ],
+  "build-tooling": [
+    "Bundlers",
+    "Compilers",
+    "Linters",
+    "Test runners"
+  ],
+  "tooling-internals": [
+    "AST utilities",
+    "Babel helpers",
+    "ESLint internals"
+  ],
+  "platform-binaries": [
+    "Native binaries",
+    "Prebuilt binaries",
+    "Optional dependencies"
+  ],
+  "runtime-shims": [
+    "Polyfills",
+    "Ponyfills",
+    "Compatibility helpers"
+  ],
+  "static-data": [
+    "Lookup tables",
+    "Data sets",
+    "Regex patterns"
+  ],
+  "javascript-parsing": [
+    "JS parsers",
+    "ECMAScript parser",
+    "AST parsers",
+    "ESTree",
+    "ECMA-262"
+  ],
+  "css-parsing": [
+    "CSS parsers",
+    "Stylesheet ASTs",
+    "CSS tokenizers"
+  ],
+  "markup-parsing": [
+    "DOM parsers",
+    "SAX parsers",
+    "HTML5 parsers",
+    "XML readers"
+  ],
+  "html-escaping": [
+    "Escape HTML",
+    "HTML encode",
+    "XSS escaping",
+    "Unescape entities"
+  ],
+  "json-parsing": [
+    "JSON.parse",
+    "JSON decoders",
+    "JSON deserialization",
+    "RFC 8259",
+    "ECMA-404"
+  ],
+  "stable-json-stringify": [
+    "Canonical JSON",
+    "Stable stringify",
+    "Sorted-key JSON",
+    "RFC 8785"
+  ],
+  "value-inspection": [
+    "Pretty printing",
+    "util.inspect",
+    "Object dumps"
+  ],
+  "deep-equality": [
+    "Deep equal",
+    "Structural equality",
+    "isEqual",
+    "Object comparison"
+  ],
+  "object-merging": [
+    "Deep merge",
+    "Object.assign",
+    "Extend",
+    "Defaults"
+  ],
+  "file-globbing": [
+    "Globs",
+    "File pattern search",
+    "Wildcard file search"
+  ],
+  "directory-walking": [
+    "Directory traversal",
+    "Recursive readdir",
+    "File tree walk",
+    "Crawl"
+  ],
+  "process-execution": [
+    "Spawn",
+    "exec",
+    "Subprocesses",
+    "Shell commands"
+  ],
+  "async-concurrency": [
+    "Promise pools",
+    "Concurrency limits",
+    "Task queues",
+    "p-limit"
+  ],
+  "event-emitter": [
+    "Pub/sub",
+    "Event buses",
+    "Observer pattern",
+    "Event listeners"
+  ],
+  "stream-merging": [
+    "Combine streams",
+    "Stream concatenation",
+    "Multistream"
+  ],
+  "http-client": [
+    "Fetch",
+    "HTTP requests",
+    "REST clients",
+    "Ajax",
+    "curl",
+    "RFC 9110"
+  ],
+  "http-server-routing": [
+    "Routers",
+    "URL routing",
+    "Route matching",
+    "Path matching"
+  ],
+  "url-parsing": [
+    "URL parsers",
+    "WHATWG URL",
+    "Link parsing",
+    "RFC 3986"
+  ],
+  "jwt-signing": [
+    "JSON Web Tokens",
+    "JWS",
+    "JOSE",
+    "Bearer tokens",
+    "RFC 7519",
+    "RFC 7515",
+    "RFC 7517"
+  ],
+  "deflate-compression": [
+    "gzip",
+    "zlib",
+    "Inflate",
+    "gunzip",
+    "RFC 1951",
+    "RFC 1952",
+    "RFC 1950"
+  ],
+  "tar-archiving": [
+    "Tarballs",
+    "tar.gz",
+    "Archive extraction",
+    "untar"
+  ],
+  "arbitrary-precision-math": [
+    "BigInt",
+    "Big numbers",
+    "Decimals",
+    "Bignums",
+    "Big decimals"
+  ],
+  "css-color-parsing": [
+    "Hex colors",
+    "RGB to HSL",
+    "CSS colors",
+    "Color conversion"
+  ],
+  "terminal-string-width": [
+    "Display width",
+    "wcwidth",
+    "East Asian width",
+    "Column width",
+    "UAX #11"
+  ],
+  "indentation-stripping": [
+    "Dedent",
+    "Strip indent",
+    "Heredoc trimming"
+  ],
+  "debug-logging": [
+    "Debug output",
+    "DEBUG environment variable",
+    "Trace logging"
+  ],
+  "frameworks": [
+    "UI frameworks",
+    "Utility libraries",
+    "Web frameworks"
+  ],
+  "ui-components": [
+    "React components",
+    "Widgets",
+    "Design systems",
+    "Hooks"
+  ],
+  "service-sdks": [
+    "Cloud SDKs",
+    "API clients",
+    "OpenTelemetry",
+    "AWS SDK"
+  ],
+  "library-internals": [
+    "Internal helpers",
+    "Private dependencies",
+    "Sub-packages"
+  ],
+  "hash-maps": [
+    "Hash tables",
+    "Dictionaries",
+    "Associative arrays",
+    "HashMap",
+    "Key-value maps"
+  ],
+  "lru-cache": [
+    "Least recently used",
+    "In-memory caches",
+    "Memoization caches",
+    "Cache eviction"
+  ],
+  "bit-sets": [
+    "Bit vectors",
+    "Bitmaps",
+    "Bit arrays",
+    "Bitfields"
+  ],
+  "inline-vectors": [
+    "SmallVec",
+    "Stack-allocated vectors",
+    "Small vector optimization",
+    "ArrayVec"
+  ],
+  "message-channels": [
+    "MPSC",
+    "Queues between threads",
+    "Channels",
+    "Message passing"
+  ],
+  "non-cryptographic-hashing": [
+    "Fast hashes",
+    "FNV",
+    "xxHash",
+    "Murmur",
+    "Hash functions"
+  ],
+  "cryptographic-hashing": [
+    "SHA-256",
+    "MD5",
+    "SHA-1",
+    "BLAKE3",
+    "Digests",
+    "RFC 6234",
+    "RFC 1321",
+    "FIPS 180-4",
+    "FIPS 202"
+  ],
+  "checksums": [
+    "CRC32",
+    "Adler-32",
+    "CRC",
+    "Error detection"
+  ],
+  "random-number-generation": [
+    "RNG",
+    "PRNG",
+    "Random",
+    "Pseudorandom"
+  ],
+  "base64-encoding": [
+    "base64 decode",
+    "btoa",
+    "atob",
+    "Base64url",
+    "RFC 4648"
+  ],
+  "float-formatting": [
+    "Double to string",
+    "Number to string",
+    "Shortest float",
+    "Ryu",
+    "dtoa",
+    "IEEE 754",
+    "Floating point"
+  ],
+  "regex-matching": [
+    "Regexes",
+    "Regexps",
+    "Pattern matching",
+    "RE2"
+  ],
+  "parser-combinators": [
+    "PEG",
+    "Parser generators",
+    "Grammars",
+    "Lexers"
+  ],
+  "toml-parsing": [
+    "TOML parsers",
+    "Cargo.toml",
+    "pyproject.toml"
+  ],
+  "binary-serialization": [
+    "Protobuf",
+    "MessagePack",
+    "Protocol Buffers",
+    "CBOR",
+    "Bincode",
+    "RFC 8949"
+  ],
+  "asn1-der-decoding": [
+    "X.509 parsing",
+    "Certificate parsing",
+    "BER",
+    "ASN.1 parsers",
+    "RFC 5280",
+    "ITU-T X.690",
+    "X.680",
+    "X.509"
+  ],
+  "block-compression": [
+    "Zstandard",
+    "Brotli",
+    "LZ4",
+    "Snappy",
+    "zstd",
+    "LZW",
+    "RFC 7932",
+    "RFC 8878"
+  ],
+  "authenticated-encryption": [
+    "AEAD",
+    "AES-GCM",
+    "ChaCha20-Poly1305",
+    "Encryption",
+    "RFC 5116",
+    "RFC 8439",
+    "NIST SP 800-38D"
+  ],
+  "digital-signatures": [
+    "Ed25519",
+    "ECDSA",
+    "Signing",
+    "secp256k1",
+    "Signature verification",
+    "RFC 8032",
+    "RFC 6979",
+    "FIPS 186-5"
+  ],
+  "date-time": [
+    "Temporal",
+    "Timestamps",
+    "Date formatting",
+    "Time zones",
+    "Calendars",
+    "Moment",
+    "RFC 3339",
+    "ISO 8601",
+    "RFC 9557"
+  ],
+  "text-diff": [
+    "Diffs",
+    "Patches",
+    "Myers diff",
+    "Line diffs",
+    "Unified diffs"
+  ],
+  "case-conversion": [
+    "camelCase",
+    "snake_case",
+    "kebab-case",
+    "PascalCase",
+    "Change case"
+  ],
+  "macro-support": [
+    "Proc macros",
+    "Derive macros",
+    "Code generation"
+  ],
+  "language-ergonomics": [
+    "Error handling",
+    "Traits",
+    "Helper macros",
+    "Bitflags"
+  ],
+  "system-bindings": [
+    "FFI",
+    "libc",
+    "Syscalls",
+    "Windows API",
+    "Native bindings"
+  ],
+  "environment-detection": [
+    "CPU count",
+    "Is TTY",
+    "Terminal size",
+    "Feature detection"
+  ],
+  "markdown-parsing": [
+    "Markdown to HTML",
+    "CommonMark",
+    "Markdown parsers",
+    "MD"
+  ],
+  "html-sanitizing": [
+    "XSS filtering",
+    "HTML cleaning",
+    "Sanitize HTML",
+    "Allowlist tags"
+  ],
+  "css-selector-matching": [
+    "$",
+    "querySelector",
+    "Selector engines",
+    "DOM queries"
+  ],
+  "json-path-query": [
+    "JSONPath",
+    "JMESPath",
+    "JSON Pointer",
+    "jq",
+    "RFC 9535",
+    "RFC 6901"
+  ],
+  "typed-object-mapping": [
+    "Dataclasses from dicts",
+    "Structuring",
+    "Deserialization to classes",
+    "Model binding"
+  ],
+  "object-pickling": [
+    "Pickle",
+    "Object serialization",
+    "Marshal"
+  ],
+  "immutable-collections": [
+    "Persistent data structures",
+    "Frozen dicts",
+    "Immutable maps",
+    "Immutable lists"
+  ],
+  "dataframes": [
+    "Tabular data",
+    "Pandas",
+    "Data tables",
+    "Columnar data"
+  ],
+  "chart-rendering": [
+    "Plotting",
+    "Graphs",
+    "Charts",
+    "Data visualization"
+  ],
+  "image-processing": [
+    "Image resizing",
+    "Thumbnails",
+    "Image manipulation",
+    "Photo editing"
+  ],
+  "pdf-text-extraction": [
+    "PDF parsing",
+    "PDF to text",
+    "Read PDF",
+    "ISO 32000"
+  ],
+  "pdf-generation": [
+    "Create PDF",
+    "PDF writers",
+    "HTML to PDF",
+    "ISO 32000"
+  ],
+  "text-table-rendering": [
+    "ASCII tables",
+    "Console tables",
+    "Pretty tables",
+    "Tabulate"
+  ],
+  "structured-logging": [
+    "JSON logging",
+    "Loggers",
+    "Log formatting",
+    "Logging"
+  ],
+  "retry-policies": [
+    "Exponential backoff",
+    "Retries",
+    "Backoff",
+    "Retry with jitter"
+  ],
+  "file-locking": [
+    "Lock files",
+    "flock",
+    "Advisory locks",
+    "Mutex files"
+  ],
+  "charset-detection": [
+    "Encoding detection",
+    "chardet",
+    "Guess encoding"
+  ],
+  "file-type-detection": [
+    "Magic numbers",
+    "MIME sniffing",
+    "Magic bytes",
+    "libmagic"
+  ],
+  "password-hashing": [
+    "bcrypt",
+    "Argon2",
+    "scrypt",
+    "Password storage",
+    "RFC 9106",
+    "RFC 7914"
+  ],
+  "subword-tokenization": [
+    "BPE",
+    "Byte-pair encoding",
+    "LLM tokenizers",
+    "Token counting",
+    "tiktoken"
+  ],
+  "websocket-messaging": [
+    "WebSockets",
+    "ws",
+    "Realtime sockets",
+    "WebSocket frames",
+    "RFC 6455"
+  ],
+  "postgres-client": [
+    "Postgres drivers",
+    "pg",
+    "psql",
+    "PostgreSQL drivers"
+  ],
+  "mysql-client": [
+    "MySQL drivers",
+    "MariaDB",
+    "MySQL connectors"
+  ],
+  "template-rendering": [
+    "Templating",
+    "ERB",
+    "Template engines",
+    "Mustache",
+    "Handlebars",
+    "Jinja"
+  ],
+  "http-application-servers": [
+    "Web servers",
+    "Rack servers",
+    "WSGI",
+    "App servers",
+    "RFC 9110",
+    "RFC 9112"
+  ],
+  "background-job-queues": [
+    "Job queues",
+    "Workers",
+    "Task queues",
+    "Async jobs",
+    "Sidekiq"
+  ],
+  "redis-client": [
+    "Redis drivers",
+    "Valkey",
+    "Key-value clients"
+  ],
+  "http-message-parsing": [
+    "HTTP parsers",
+    "Request parsing",
+    "HTTP/1.1 parsers",
+    "Header parsing",
+    "RFC 9112",
+    "RFC 7230"
+  ],
+  "ruby-parsing": [
+    "Ruby ASTs",
+    "Ruby parsers",
+    "Prism"
+  ],
+  "user-agent-parsing": [
+    "Browser detection",
+    "UA parsing",
+    "Device detection",
+    "Bot detection"
+  ],
+  "message-translation": [
+    "i18n",
+    "Internationalization",
+    "gettext",
+    "Localization",
+    "l10n"
+  ],
+  "dynamic-attribute-objects": [
+    "OpenStruct",
+    "Hash with method access",
+    "Mash",
+    "Dot access"
+  ],
+  "object-json-serialization": [
+    "Serializers",
+    "JSON views",
+    "API serialization",
+    "Presenters"
+  ],
+  "framework-extensions": [
+    "Plugins",
+    "Rails gems",
+    "Middleware",
+    "Add-ons"
+  ],
+  "ini-parsing": [
+    "INI files",
+    ".properties",
+    "Config files",
+    "gitconfig"
+  ],
+  "dotenv-loading": [
+    ".env",
+    "Environment variables",
+    "Env files"
+  ],
+  "semver-comparison": [
+    "Semver",
+    "Version ranges",
+    "Version comparison",
+    "Version parsing"
+  ],
+  "shell-word-splitting": [
+    "shlex",
+    "Shell quoting",
+    "Command-line splitting",
+    "Shell escaping"
+  ],
+  "file-watching": [
+    "fsnotify",
+    "inotify",
+    "Watch files",
+    "File change events",
+    "chokidar"
+  ],
+  "recursive-file-copy": [
+    "Copy directory",
+    "cp -r",
+    "Directory copy"
+  ],
+  "deep-cloning": [
+    "Deep copy",
+    "Clone object",
+    "structuredClone",
+    "cloneDeep"
+  ],
+  "human-size-formatting": [
+    "Bytes to MB",
+    "Pretty bytes",
+    "File size formatting",
+    "Humanize"
+  ],
+  "sorted-maps": [
+    "B-trees",
+    "Tries",
+    "Radix trees",
+    "Ordered maps",
+    "TreeMap"
+  ],
+  "quantile-sketches": [
+    "Percentiles",
+    "HDR histograms",
+    "t-digest",
+    "Latency histograms"
+  ],
+  "metrics-instrumentation": [
+    "Prometheus",
+    "Counters and gauges",
+    "StatsD",
+    "Telemetry"
+  ],
+  "embedded-key-value-stores": [
+    "BoltDB",
+    "LevelDB",
+    "RocksDB",
+    "Embedded databases",
+    "KV stores"
+  ],
+  "mongodb-client": [
+    "Mongo drivers",
+    "MongoDB drivers",
+    "BSON"
+  ],
+  "generated-api-types": [
+    "Protobuf types",
+    "Generated code",
+    "API definitions"
+  ],
+  "applications": [
+    "Programs",
+    "Servers",
+    "CLI tools"
+  ],
+  "zip-archiving": [
+    "Zip files",
+    "Unzip",
+    "Archive compression",
+    "ISO/IEC 21320"
+  ],
+  "qr-code-generation": [
+    "QR codes",
+    "Barcodes",
+    "2D barcodes",
+    "ISO/IEC 18004"
+  ],
+  "cron-scheduling": [
+    "Crontab",
+    "Cron parsers",
+    "Job scheduling",
+    "Scheduled tasks"
+  ],
+  "dependency-injection": [
+    "DI",
+    "IoC containers",
+    "Inversion of control",
+    "Service containers"
+  ],
+  "iterator-combinators": [
+    "itertools",
+    "Lazy sequences",
+    "map filter reduce",
+    "Generators"
+  ],
+  "reactive-signals": [
+    "Observables",
+    "Reactivity",
+    "State management",
+    "Computed values"
+  ],
+  "placeholder-packages": [
+    "Test packages",
+    "Hello world",
+    "Dummy packages"
+  ],
+  "other": [
+    "Miscellaneous",
+    "Uncategorized"
+  ],
+  "ansi-text-layout": [
+    "Strip ANSI",
+    "Word wrap",
+    "Wrap text",
+    "Truncate terminal text",
+    "ECMA-48"
+  ],
+  "edit-distance": [
+    "Levenshtein",
+    "Fuzzy matching",
+    "String similarity",
+    "Did you mean"
+  ],
+  "brace-expansion": [
+    "Bash braces",
+    "{a,b} expansion",
+    "Range expansion"
+  ],
+  "mime-type-lookup": [
+    "Content type lookup",
+    "File extension to MIME",
+    "MIME types",
+    "RFC 6838"
+  ],
+  "cookie-parsing": [
+    "Cookies",
+    "Set-Cookie",
+    "Cookie jars",
+    "RFC 6265"
+  ],
+  "media-type-parsing": [
+    "Content-Type headers",
+    "MIME parsing",
+    "Accept headers",
+    "RFC 6838",
+    "RFC 9110"
+  ],
+  "query-string-parsing": [
+    "URL parameters",
+    "URLSearchParams",
+    "Form encoding",
+    "x-www-form-urlencoded"
+  ],
+  "percent-encoding": [
+    "URL encoding",
+    "encodeURIComponent",
+    "URL escape",
+    "urlencode",
+    "RFC 3986"
+  ],
+  "ip-address-parsing": [
+    "IPv4",
+    "IPv6",
+    "Subnets",
+    "Netmasks",
+    "RFC 4291",
+    "RFC 4632",
+    "RFC 5952"
+  ],
+  "idna-punycode": [
+    "Internationalized domain names",
+    "IDN",
+    "Unicode domains",
+    "xn--",
+    "RFC 3492",
+    "RFC 5891",
+    "UTS #46"
+  ],
+  "public-suffix-lookup": [
+    "TLD extraction",
+    "Registrable domains",
+    "eTLD+1",
+    "Domain parsing"
+  ],
+  "uri-template-expansion": [
+    "RFC 6570",
+    "URL templates",
+    "Path templates"
+  ],
+  "source-map-generation": [
+    "Sourcemap writing",
+    "Magic string",
+    "VLQ encoding",
+    "ECMA-426"
+  ],
+  "css-selector-parsing": [
+    "Selector parsers",
+    "Selector ASTs",
+    "Selector tokenizers"
+  ],
+  "path-manipulation": [
+    "path.join",
+    "Normalize path",
+    "File paths",
+    "basename",
+    "dirname"
+  ],
+  "atomic-file-writing": [
+    "Safe file write",
+    "Write then rename",
+    "Crash-safe writes"
+  ],
+  "temporary-files": [
+    "Temp files",
+    "tmpdir",
+    "mktemp",
+    "Scratch directories"
+  ],
+  "layered-configuration": [
+    "App settings",
+    "Config loaders",
+    "Viper",
+    "Environment overrides"
+  ],
+  "terminal-progress-bars": [
+    "Spinners",
+    "Progress indicators",
+    "Loading bars",
+    "tqdm"
+  ],
+  "syntax-highlighting": [
+    "Grammars",
+    "Code highlighting",
+    "Code coloring",
+    "Lexers",
+    "Pygments"
+  ],
+  "sql-parsing": [
+    "SQL parsers",
+    "SQL ASTs",
+    "Query parsing",
+    "SQL formatters",
+    "ISO/IEC 9075"
+  ],
+  "graphql-execution": [
+    "GraphQL servers",
+    "GraphQL queries",
+    "GraphQL resolvers"
+  ],
+  "csv-parsing": [
+    "CSV readers",
+    "Comma-separated values",
+    "TSV",
+    "Delimited text",
+    "RFC 4180"
+  ],
+  "spreadsheet-writing": [
+    "Excel export",
+    "XLSX writers",
+    "Write Excel",
+    "ECMA-376",
+    "ISO/IEC 29500"
+  ],
+  "spreadsheet-reading": [
+    "Excel import",
+    "XLSX readers",
+    "Read Excel",
+    "XLS",
+    "ECMA-376",
+    "ISO/IEC 29500"
+  ],
+  "html-to-markdown": [
+    "Turndown",
+    "Markdownify",
+    "HTML converters"
+  ],
+  "plist-parsing": [
+    "plist",
+    "Apple property lists",
+    "Info.plist"
+  ],
+  "json-patch": [
+    "RFC 6902",
+    "JSON diffs",
+    "JSON Merge Patch",
+    "RFC 7396"
+  ],
+  "pem-encoding": [
+    "PEM files",
+    "Certificates",
+    "Private key files",
+    "PKCS",
+    "RFC 7468"
+  ],
+  "number-parsing": [
+    "String to number",
+    "parseFloat",
+    "parseInt",
+    "atoi",
+    "strtod",
+    "IEEE 754",
+    "Floating point"
+  ],
+  "substring-search": [
+    "String search",
+    "memchr",
+    "indexOf",
+    "Aho-Corasick",
+    "Multi-pattern search"
+  ],
+  "unicode-normalization": [
+    "NFC",
+    "NFD",
+    "NFKC",
+    "Canonical equivalence",
+    "UAX #15"
+  ],
+  "unicode-segmentation": [
+    "Grapheme clusters",
+    "Word boundaries",
+    "Line breaking",
+    "Intl.Segmenter",
+    "UAX #29",
+    "UAX #14"
+  ],
+  "utf8-validation": [
+    "Unicode",
+    "UTF-8 decoders",
+    "Byte strings",
+    "Valid UTF-8",
+    "RFC 3629",
+    "ISO/IEC 10646"
+  ],
+  "charset-transcoding": [
+    "iconv",
+    "Encoding conversion",
+    "TextDecoder",
+    "Latin-1",
+    "Shift_JIS",
+    "ISO 8859"
+  ],
+  "ascii-transliteration": [
+    "Slugify",
+    "Remove accents",
+    "Unidecode",
+    "URL slugs",
+    "Deburr"
+  ],
+  "noun-inflection": [
+    "Pluralize",
+    "Singularize",
+    "Inflectors",
+    "Plurals"
+  ],
+  "natural-sorting": [
+    "Natural order",
+    "Human sort",
+    "Alphanumeric sort",
+    "Version sort"
+  ],
+  "key-derivation": [
+    "HKDF",
+    "PBKDF2",
+    "KDF",
+    "Key stretching",
+    "RFC 5869",
+    "RFC 8018",
+    "NIST SP 800-132"
+  ],
+  "message-authentication-codes": [
+    "HMAC",
+    "MAC",
+    "Poly1305",
+    "Message signing",
+    "RFC 2104",
+    "FIPS 198-1"
+  ],
+  "symmetric-ciphers": [
+    "AES",
+    "ChaCha20",
+    "Block ciphers",
+    "Stream ciphers",
+    "CTR mode",
+    "RFC 8439",
+    "FIPS 197"
+  ],
+  "one-time-passwords": [
+    "TOTP",
+    "HOTP",
+    "2FA",
+    "Two-factor authentication",
+    "Authenticator codes",
+    "RFC 6238",
+    "RFC 4226"
+  ],
+  "image-decoding": [
+    "PNG decoders",
+    "JPEG decoders",
+    "GIF",
+    "Image codecs",
+    "Image loading",
+    "RFC 2083",
+    "ISO/IEC 10918",
+    "ISO/IEC 15948"
+  ],
+  "linear-algebra": [
+    "Matrices",
+    "Vectors",
+    "N-dimensional arrays",
+    "NumPy",
+    "Tensor math"
+  ],
+  "graph-algorithms": [
+    "Shortest paths",
+    "Topological sort",
+    "Graph data structures",
+    "Dijkstra"
+  ],
+  "synchronization-primitives": [
+    "Mutexes",
+    "RwLock",
+    "Locks",
+    "Semaphores",
+    "Spinlocks"
+  ],
+  "slot-arenas": [
+    "Arena allocators",
+    "Slab allocators",
+    "Generational indexes",
+    "Object pools"
+  ],
+  "small-strings": [
+    "Small string optimization",
+    "SSO",
+    "Inline strings",
+    "Compact strings"
+  ],
+  "queues-and-linked-lists": [
+    "FIFO",
+    "Deques",
+    "Doubly linked lists",
+    "Ring buffers"
+  ],
+  "resource-pools": [
+    "Connection pools",
+    "Object pools",
+    "Buffer pools",
+    "Pooling"
+  ],
+  "rate-limiting": [
+    "Throttling",
+    "Token buckets",
+    "Leaky buckets",
+    "Throttle"
+  ],
+  "dns-message-codec": [
+    "DNS resolvers",
+    "DNS lookups",
+    "DNS clients",
+    "Name resolution",
+    "RFC 1035"
+  ],
+  "ssh-client": [
+    "SFTP",
+    "SCP",
+    "Remote shells",
+    "Secure shell",
+    "RFC 4253",
+    "RFC 4251"
+  ],
+  "smtp-client": [
+    "Send email",
+    "Mailers",
+    "Email sending",
+    "Mail clients",
+    "RFC 5321"
+  ],
+  "kafka-client": [
+    "Kafka producers",
+    "Kafka consumers",
+    "Event streaming"
+  ],
+  "sqlite-client": [
+    "SQLite drivers",
+    "sqlite3",
+    "Embedded SQL databases"
+  ],
+  "object-relational-mapping": [
+    "ORM",
+    "Database models",
+    "Query builders",
+    "Active Record"
+  ],
+  "git-repository-access": [
+    "Git libraries",
+    "libgit2",
+    "Read git objects",
+    "Git clients"
+  ],
+  "grpc-rpc": [
+    "Remote procedure calls",
+    "RPC",
+    "Protobuf services"
+  ],
+  "socks-proxy-client": [
+    "SOCKS5",
+    "Proxy agents",
+    "Tor proxies",
+    "RFC 1928"
+  ],
+  "fake-data-generation": [
+    "Faker",
+    "Test data",
+    "Mock data",
+    "Fixtures",
+    "Dummy data"
+  ],
+  "symbol-demangling": [
+    "Demangle",
+    "C++ name mangling",
+    "Rust symbol names",
+    "Stack symbol names"
+  ],
+  "embedded-script-interpreters": [
+    "Scripting engines",
+    "Lua",
+    "JavaScript in Go",
+    "Starlark",
+    "Embedded VMs"
+  ],
+  "expression-evaluation": [
+    "Formula evaluation",
+    "Rule engines",
+    "CEL",
+    "eval"
+  ],
+  "xml-building": [
+    "XML writers",
+    "XML generation",
+    "XML serialization"
+  ],
+  "classname-composition": [
+    "clsx",
+    "classnames",
+    "CSS class joining",
+    "Tailwind variants"
+  ],
+  "web-application-frameworks": [
+    "Full-stack frameworks",
+    "Meta-frameworks",
+    "SSR frameworks",
+    "Server-side rendering",
+    "Next.js",
+    "TanStack Start",
+    "Expo",
+    "Rails",
+    "Django"
+  ],
+  "client-side-routing": [
+    "Front-end routers",
+    "SPA routing",
+    "React Router",
+    "TanStack Router",
+    "Route matching in the browser",
+    "History API"
+  ],
+  "http-server": [
+    "Web servers",
+    "Web frameworks",
+    "Server frameworks",
+    "Request handlers",
+    "RFC 9110"
+  ]
 }
