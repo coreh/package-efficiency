@@ -1,8 +1,7 @@
 {
   "language": "python",
   "runtimes": [
-    "cpython",
-    "pypy"
+    "cpython"
   ],
   "author": {
     "kind": "agent",
@@ -11,5 +10,8 @@
     "date": "2026-10-07"
   },
   "review": "unreviewed",
-  "notes": "cloudpickle.dumps then pickle.loads (as its documentation shows), default options."
+  "notes": "cloudpickle.dumps then pickle.loads (as its documentation shows), default options.",
+  "runtimeNotes": {
+    "pypy": "Not run: cloudpickle 3.1.2 cannot be imported on PyPy 3.12 v8.0.0. On PyPy it extends pickle.Pickler.dispatch, which PyPy's built-in _pickle.Pickler does not have (AttributeError at import)."
+  }
 }
