@@ -238,7 +238,7 @@ ${FONTS}
 <header class="top">
 <label for="menu" class="menu-button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14v2H1zM1 7h14v2H1zM1 11h14v2H1z" fill="currentColor"/></svg>Browse</label>
 <a class="name" href="/">${LOGO()}Package Efficiency Labels</a>
-<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><kbd class="search-key" hidden></kbd><a class="search-advanced" href="/search/" title="Search with filters">Advanced…</a><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><span class="search-end"><a class="search-advanced" href="/search/" title="Search with filters">Advanced…</a><kbd class="search-key" hidden></kbd></span><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
 <nav aria-label="Indexes">${topLinks(model)}</nav>
 </header>
 <div class="frame">

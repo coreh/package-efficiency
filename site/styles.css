@@ -347,8 +347,8 @@ details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; tex
 .top .name:hover { background: none; color: inherit; text-decoration: underline; }
 
 /* Search: shortcut hint, results, the active result and matched letters. */
-.search-key { position: absolute; right: 96px; top: 50%; transform: translateY(-50%); padding: 0 5px; border: 1px solid #b5b5b5; border-radius: 3px; font: inherit; font-size: 0.75rem; color: #595959; background: #f1f1f1; pointer-events: none; }
-.search:focus-within .search-key, .search input:not(:placeholder-shown) ~ .search-key { display: none; }
+.search-key { padding: 0 5px; border: 1px solid #b5b5b5; border-radius: 3px; font: inherit; font-size: 0.75rem; color: #595959; background: #f1f1f1; pointer-events: none; }
+.search:focus-within .search-key, .search input:not(:placeholder-shown) ~ .search-end .search-key { display: none; }
 #q-results a[aria-selected="true"] { background: var(--mark); color: #000; }
 #q-results a:hover { background: none; color: inherit; }
 #q-results a[aria-selected="true"]:hover { background: var(--mark); color: #000; }
@@ -725,9 +725,10 @@ table.adv-results { width: 100%; min-width: 52rem; table-layout: fixed; }
 .adv-class { display: flex; justify-content: space-between; align-items: center; max-width: 7.5rem; white-space: nowrap; margin-bottom: 2px; }
 .adv-class .cls { margin-left: 2px; }
 
-/* The way to the advanced search, inside the search field at its right end. */
-.search input { padding-right: 92px; }
-.search-advanced { position: absolute; right: 1px; top: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 10px; border-left: 1px solid #cfcfcf; color: #333; background: #f6f6f6; font-size: 0.8125rem; font-weight: 600; text-decoration: none; }
-.search-advanced:hover { background: var(--mark); color: #000; }
+/* The end of the search field: a plain link to the advanced search, then the shortcut hint. */
+.search input { padding-right: 132px; }
+.search-end { position: absolute; right: 8px; top: 0; bottom: 0; display: flex; align-items: center; gap: 10px; pointer-events: none; }
+.top .search-advanced { pointer-events: auto; color: #595959; font-size: 0.8125rem; text-decoration: underline; }
+.top .search-advanced:hover { background: none; color: #000; }
 .adv-head { align-items: center; margin: 14px 0 6px; }
 .adv-head .adv-count { margin: 0; }
