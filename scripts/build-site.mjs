@@ -284,15 +284,15 @@ for (const data of tasks) {
   await write(dist(urls.task(data.task.id), 'results.csv'), toCsv(resultRows(data, ctx)))
   await emit(urls.source(data.task.id), exportsOf.taskSourceExport(ctx, data))
   for (const adapterId of new Set(data.runtimes.flatMap((r) => [...r.entries, ...r.history]).map(adapterIdOf))) {
-    await page(urls.source(data.task.id, adapterId), adapterSourcePage(data, adapterId, model))
-    await emit(urls.source(data.task.id, adapterId), exportsOf.adapterSourceExport(ctx, data, adapterId))
+    lazyPage(urls.source(data.task.id, adapterId), adapterSourcePage(data, adapterId, model), exportsOf.adapterSourceExport(ctx, data, adapterId).markdown)
   }
   for (const runtime of data.runtimes) {
     // Each result's own page, current and earlier versions alike.
     for (const entry of [...runtime.entries, ...runtime.history]) {
       const address = urls.result(data.task.id, runtime.id, entry)
-      await page(address, resultPage(data, runtime, entry, model))
-      await emit(address, exportsOf.resultExport(ctx, data, runtime, entry, address))
+      // Packed for the Worker, like the pages of listed packages: there are
+      // thousands, and a site may hold only so many files.
+      lazyPage(address, resultPage(data, runtime, entry, model), exportsOf.resultExport(ctx, data, runtime, entry, address).markdown)
     }
     for (const entry of runtime.entries) {
       for (const rankingId of Object.keys(RANKINGS)) {
