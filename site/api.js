@@ -10,6 +10,9 @@ const kept = {
   set: (key, value) => { try { localStorage.setItem(key, value) } catch {} },
 }
 const shownIn = (entry, selector) => entry.querySelector(`${selector}.api-on`)
+// The parts of one address beside its description: the try box, the examples, the answer.
+const requestOf = (variant) => variant.closest('.api-entry').querySelector(`.api-request[data-format="${variant.dataset.format}"]`)
+const formOf = (variant) => requestOf(variant).querySelector('.api-try')
 
 // --- One format at a time, the same one in every entry that has it
 
@@ -36,13 +39,12 @@ function showLanguage(language) {
 // A name keeps its slashes and its @: they are parts of the address.
 const segment = (value) => encodeURI(value.trim())
 function addressOf(variant) {
-  const form = variant.querySelector('.api-try')
+  const form = formOf(variant)
   return variant.dataset.path.replace(/\{(\w+)\}/g, (_, name) => segment(form.elements[name]?.value ?? ''))
 }
 // Writes the address into the path on show, the examples and the copy button.
 function fill(variant) {
-  const entry = variant.closest('.api-entry')
-  const form = variant.querySelector('.api-try')
+  const form = formOf(variant)
   for (const part of variant.querySelectorAll('.api-path .api-param')) {
     const typed = form.elements[part.dataset.name]?.value.trim()
     part.textContent = typed || `{${part.dataset.name}}`
@@ -52,7 +54,7 @@ function fill(variant) {
   const after = variant.dataset.site + addressOf(variant)
   if (before === after) return
   variant.dataset.address = after
-  const request = entry.querySelector(`.api-request[data-format="${variant.dataset.format}"]`)
+  const request = requestOf(variant)
   // The address is a part of its own in each example, so the highlighting around it stays.
   for (const url of request.querySelectorAll('.api-url')) url.textContent = after
 }
@@ -104,8 +106,7 @@ function bodyBox(text, json) {
   return [box, more]
 }
 async function send(variant) {
-  const entry = variant.closest('.api-entry')
-  const result = entry.querySelector(`.api-request[data-format="${variant.dataset.format}"] .api-result`)
+  const result = requestOf(variant).querySelector('.api-result')
   const path = addressOf(variant)
   const head = element('div', 'api-box-head')
   head.append(element('span', 'api-box-title', 'Response'), element('code', 'api-asked', path))
@@ -163,13 +164,13 @@ for (const entry of entries) {
     kept.set('api-format', select.value)
   })
   for (const variant of entry.querySelectorAll('.api-variant')) {
-    const form = variant.querySelector('.api-try')
+    const form = formOf(variant)
     form.hidden = false
     form.addEventListener('input', () => fill(variant))
     form.addEventListener('submit', (event) => { event.preventDefault(); fill(variant); send(variant) })
   }
   for (const tabs of entry.querySelectorAll('.api-tabs')) tabs.hidden = false
-  for (const button of entry.querySelectorAll('.api-actions button, .api-copy')) {
+  for (const button of entry.querySelectorAll('.api-actions button, .api-try [data-copy], .api-copy')) {
     if (!navigator.clipboard) continue
     button.hidden = false
     button.addEventListener('click', () => copy(button, button.dataset.copy ? copies[button.dataset.copy](entry) : button.closest('.api-box').querySelector('.api-code.api-on code').textContent))

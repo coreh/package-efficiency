@@ -922,7 +922,7 @@ function tryField(entry, op, p) {
 }
 
 // One address of an entry, the part that describes it: the path, what is
-// particular to it, its parameters, what it answers with, and the try box.
+// particular to it, its parameters and what it answers with.
 function variantHtml(spec, entry, variant) {
   const { path, op, format, also } = variant
   const facts = variantFacts(spec, variant)
@@ -934,22 +934,22 @@ ${entry.variants.length > 1 ? `<h4 class="api-format">${esc(format)}</h4>` : ''}
 ${facts.note || twins ? `<p>${prose(facts.note)}${twins}</p>` : ''}
 ${facts.params.length ? table('params', ['Parameter', 'Type', 'Description', 'Example'], facts.params.map((p) => `<tr><td><code>${esc(p.name)}</code></td><td class="l api-type">${typeText(p.schema)}</td><td class="l api-wrap">${prose(p.description)}${p['x-multi-segment'] ? ` <span class="soft">${MULTI}</span>` : ''}</td><td class="l"><code>${esc(p.example)}</code></td></tr>`)) : ''}
 <p class="api-returns">${prose(facts.returns((name) => `\u0000${name}\u0000`)).replace(/\u0000(\w+)\u0000/g, (_, name) => `<a href="#${esc(entry.id)}-${slug(name)}">${esc(name)}</a>`)}</p>
-<form class="api-try" hidden>
-<h4>Try it</h4>
-${facts.params.length ? `<div class="api-try-fields">${facts.params.map((p) => tryField(entry, op, p)).join('\n')}</div>` : ''}
-<p class="api-try-send"><button type="submit">Send</button> <span class="soft">Asks this site for the address and shows the answer.</span></p>
-</form>
 </div>`
 }
 
-// The same address, the part beside the description: the request in each
-// language, where the answer of the try box appears, and a sample answer.
+// The same address, the part beside the description: the try box, the
+// request in each language, the answer once it is sent, and a sample answer.
 function requestHtml(spec, entry, variant) {
   const facts = variantFacts(spec, variant)
   const examples = requestExamples(facts)
   const figure = facts.media === MEDIA.svg ? `<p><img class="api-figure" src="${esc(facts.address)}" alt="The example: ${esc(entry.title.toLowerCase())}" loading="lazy"></p>` : ''
   return `<div class="api-request" data-format="${esc(slug(variant.format))}">
 ${entry.variants.length > 1 ? `<h4 class="api-format">${esc(variant.format)}</h4>` : ''}
+<form class="api-try" hidden>
+<h4>Try it</h4>
+${facts.params.length ? `<div class="api-try-fields">${facts.params.map((p) => tryField(entry, variant.op, p)).join('\n')}</div>` : ''}
+<p class="api-try-send"><button type="submit" class="api-send" title="Ask this site for the address and show the answer below">Send</button><button type="button" data-copy="address" hidden title="Copy the address${entry.variants.length > 1 ? ' of the format that is shown' : ''}, with what is typed here">Copy address</button></p>
+</form>
 <div class="api-box">
 <div class="api-box-head"><span class="api-box-title">Request</span><button type="button" class="api-copy" hidden title="Copy the example that is shown">Copy</button></div>
 <div class="api-tabs" role="group" aria-label="Language" hidden>${LANGUAGES.map(([id, name, full]) => `<button type="button" data-language="${id}"${full === name ? '' : ` title="${full}"`}>${name}</button>`).join('')}</div>
@@ -978,7 +978,7 @@ function entryHtml(spec, entry) {
 <p>${prose(entry.about, true)}</p>
 <div class="api-bar" hidden>
 ${many ? `<p class="api-choose"><label for="format-${esc(entry.id)}">Format</label> <select id="format-${esc(entry.id)}">${entry.variants.map((variant) => `<option value="${esc(slug(variant.format))}">${esc(variant.format)}</option>`).join('')}</select></p>` : ''}
-<p class="api-actions menu"><button type="button" data-copy="markdown" title="Copy this entry as Markdown${many ? ', with all its formats' : ''}">Copy as Markdown</button><button type="button" data-copy="address" title="Copy the address${many ? ' of the format that is shown' : ''}, with what is typed in the try box">Copy address</button></p>
+<p class="api-actions menu"><button type="button" data-copy="markdown" title="Copy this entry as Markdown${many ? ', with all its formats' : ''}">Copy as Markdown</button></p>
 </div>
 <template class="api-markdown">${esc(entryMarkdown(spec, entry))}</template>
 ${entry.variants.map((variant) => variantHtml(spec, entry, variant)).join('\n')}

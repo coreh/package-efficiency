@@ -82,26 +82,34 @@
 .api-fields-of > p { max-width: 86ch; margin: 4px 0 6px; }
 .api-fields-of:target > summary { box-shadow: -4px 0 0 var(--bg), -8px 0 0 var(--mark); }
 
-/* The try box: a field for each part of the address, and a button that asks. */
-.api-try { margin: 12px 0 14px; padding: 10px 12px 12px; border: 1px solid var(--rule); max-width: 86ch; }
+/* The try box, first beside the description: a field for each part of the
+   address, and a button that asks. It is the one thing here to act on, so it
+   carries the site's mark colour: a rule down its side and the Send button. */
+.api-try { margin: 0 0 12px; padding: 8px 12px 10px; border: 1px solid var(--rule); border-left: 4px solid var(--mark); background: var(--bg); }
 .api-try[hidden] { display: none; }
-.api-try h4 { margin: 0 0 8px; font-size: 0.8125rem; font-weight: 700; }
-.api-try-fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: center; margin: 0 0 10px; }
+.api-try h4 { margin: 0 0 6px; font-size: 0.8125rem; font-weight: 700; }
+.api-try-fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 10px; align-items: center; margin: 0 0 8px; }
 .api-try-fields label { font-size: 0.8125rem; }
-.api-try-send { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0; max-width: none; font-size: 0.8125rem; }
+.api-try-send { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0; max-width: none; }
 /* Fields and buttons drawn in full, so that they are the same in every browser. */
 .api-try input, .api-try select {
-  -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 100%; min-width: 0; height: 2rem; margin: 0; padding: 0 10px;
-  font: 0.8125rem/1.2 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; color: var(--ink); background-color: var(--bg); border: 1px solid var(--soft); border-radius: 0;
+  -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 100%; min-width: 0; height: 1.75rem; margin: 0; padding: 0 8px;
+  font: 0.75rem/1.2 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; color: var(--ink); background-color: var(--bg); border: 1px solid var(--soft); border-radius: 0;
 }
+.api-try input:hover, .api-try select:hover, .api-try input:focus, .api-try select:focus { border-color: var(--ink); }
 .api-try select {
-  padding-right: 28px; cursor: pointer;
+  padding-right: 26px; cursor: pointer;
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: right 14px center, right 9px center; background-size: 5px 5px; background-repeat: no-repeat;
+  background-position: right 13px center, right 8px center; background-size: 5px 5px; background-repeat: no-repeat;
 }
-.api-try button, .api-more, .api-copy { -webkit-appearance: none; appearance: none; box-sizing: border-box; font: inherit; font-size: 0.8125rem; font-weight: 700; color: var(--ink); background: var(--bg); border: 1px solid var(--ink); border-radius: 0; cursor: pointer; }
-.api-try button { height: 2rem; padding: 0 18px; }
-.api-try button:hover, .api-more:hover, .api-copy:hover { background: var(--mark); color: #000; border-color: #000; }
+.api-try button, .api-more, .api-copy { -webkit-appearance: none; appearance: none; box-sizing: border-box; font: inherit; font-size: 0.8125rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 1px solid var(--soft); border-radius: 0; cursor: pointer; }
+.api-try button { height: 1.75rem; padding: 0 12px; }
+.api-try button[hidden] { display: none; }
+.api-try button:hover, .api-more:hover, .api-copy:hover { background: var(--band); border-color: var(--ink); }
+/* Send: black on the mark colour in light and in dark, and the other way round under the pointer. */
+.api-try .api-send { min-width: 5rem; font-weight: 800; color: #000; background: var(--mark); border-color: #000; }
+.api-try .api-send:hover, .api-try .api-send:active { color: var(--mark); background: #000; border-color: var(--mark); }
+.api-try .api-send:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* Beside the description: boxes of code on the band colour, each under a
    thin head with its name. The languages are plain words in a row, the one
