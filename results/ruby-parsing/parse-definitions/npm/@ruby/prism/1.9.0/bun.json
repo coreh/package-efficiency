@@ -1,0 +1,109 @@
+{
+  "task": "ruby-parsing/parse-definitions",
+  "ecosystem": "npm",
+  "package": "@ruby/prism",
+  "version": "1.9.0",
+  "dependencies": {
+    "@ruby/prism": "1.9.0"
+  },
+  "install": {
+    "kind": "install",
+    "bytes": 1185075,
+    "packages": 1
+  },
+  "runtime": "bun",
+  "runtimeVersion": "1.4.2",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "9ae2943c4e91e3e9",
+    "task": "7776dc529589a6e5",
+    "adapters": "57a7accb62d3fa61",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/lib-ruby-parser": "4.0.6+ruby-3.1.2",
+      "npm/@ruby/prism": "1.9.0",
+      "rubygems/parser": "3.3.12.0",
+      "rubygems/prism": "1.9.0",
+      "rubygems/ruby_parser": "3.22.0"
+    }
+  },
+  "measuredAt": "2026-10-08T06:18:02.365Z",
+  "source": "74efc775063a92d5",
+  "baseline": {
+    "runtime": "bun",
+    "runtimeVersion": "1.4.2",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "9ae2943c4e91e3e9",
+      "task": "7776dc529589a6e5",
+      "adapters": "57a7accb62d3fa61",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/lib-ruby-parser": "4.0.6+ruby-3.1.2",
+        "npm/@ruby/prism": "1.9.0",
+        "rubygems/parser": "3.3.12.0",
+        "rubygems/prism": "1.9.0",
+        "rubygems/ruby_parser": "3.22.0"
+      }
+    },
+    "measuredAt": "2026-10-08T06:18:02.365Z",
+    "kind": "warm",
+    "task": "ruby-parsing/parse-definitions",
+    "runs": [
+      {
+        "rssBytes": 41893888,
+        "footprintBytes": 18104920,
+        "heapUsedBytes": 3198664,
+        "peakRssBytes": 42106880
+      },
+      {
+        "rssBytes": 40189952,
+        "footprintBytes": 15827568,
+        "heapUsedBytes": 3197896,
+        "peakRssBytes": 40304640
+      },
+      {
+        "rssBytes": 41222144,
+        "footprintBytes": 17531480,
+        "heapUsedBytes": 3198768,
+        "peakRssBytes": 41385984
+      }
+    ]
+  },
+  "status": "failed",
+  "error": "TypeError: wasi.getImportObject is not a function. (In 'wasi.getImportObject()', 'wasi.getImportObject' is undefined)\n21 | \n22 |   const instance = await WebAssembly.instantiate(wasm, wasi.getImportObject());\n                                                                 ^\n      at loadPrism (.cache/work/ruby-parsing/parse-definitions/npm/@ruby/prism/node_modules/@ruby/prism/src/index.js:22:61)\nBun v1.4.2 (macOS arm64)"
+}
