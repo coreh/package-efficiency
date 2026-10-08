@@ -1138,35 +1138,40 @@ const overallSize = (pairs) => {
 // One label for each package over every task of a category: its geometric
 // mean multiple of each task's best, on the runtime it covers most tasks and
 // does best on. Reference entries are left out.
-// A package over every task it is measured in, one label for each runtime:
-// the geometric mean of its multiples of each task's best result. Shown on
-// the package's own page before the tasks, when there is more than one.
+// A package over every task it is measured in: one label with the three
+// measures, on the runtime where it covers most tasks and does best. Each
+// figure is the geometric mean of its multiples of each task's best result
+// (for type checks, of the lowest cost in each category). Shown on the
+// package's own page before the tasks, when there is more than one.
 function packageOverall(pkg, model) {
-  const rankings = ['cpu', 'memory']
-  const rows = model.runtimes
-    .map((rt) => ({ rt, cpu: packageGrade(pkg, rt.id, 'cpu'), memory: packageGrade(pkg, rt.id, 'memory') }))
+  const best = model.runtimes
+    .map((rt) => ({ rt, cpu: packageGrade(pkg, rt.id, 'cpu'), memory: packageGrade(pkg, rt.id, 'memory'), types: packageGrade(pkg, rt.id, 'types') }))
     .filter((r) => r.cpu?.several && r.memory?.several)
-  if (rows.length === 0) return ''
-  const name = 'rank-overall-package'
-  const data = { metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } }, typeChecks: {} }
+    .sort((a, b) => b.cpu.pairs.length - a.cpu.pairs.length || a.cpu.grade.ratio - b.cpu.grade.ratio)[0]
+  if (!best) return ''
+  const { rt, cpu, memory, types } = best
+  const tasks = cpu.pairs.length
+  const grade = (hit) => ({ class: hit.grade.class, value: hit.grade.ratio, ...(hit.grade.reference ? { reference: true, ratio: hit.grade.ratio } : {}) })
+  const typed = types?.grade.ratio != null && types.grade.class ? types : null
+  const entry = {
+    title: pkg.title,
+    grades: { cpu: grade(cpu), memory: grade(memory), ...(typed ? { types: grade(typed) } : {}) },
+    types: { icon: rt.id },
+    typeCaption: 'times the lowest type-check cost',
+    metrics: { importMs: null },
+    adapter: { notes: '' },
+    flags: [],
+  }
+  const data = {
+    metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } },
+    typeChecks: { typescript: { unit: '×', headline: 'times the lowest type-check cost' } },
+  }
+  const svg = overviewLabel({ entry, data, runtime: rt, summary: { subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall on ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg) } })
+  if (!svg) return ''
   return `<section>
 <h2 id="overall">Overall</h2>
-<p class="soft">${esc(pkg.title)} over all the tasks it is measured in: the geometric mean of its multiple of the best result in each task. One label for each runtime.</p>
-<div class="ranked">
-<style>${rankings.map((id) => `.ranked:has(#${name}-${id}:checked) .ranked-panel[data-ranking="${id}"]`).join(',')}{display:block}</style>
-<div class="switches">${switcher(name, 'Rank by', rankings.map((id) => ({ id, title: RANKINGS[id].title })), 'cpu')}</div>
-${rankings.map((id) => {
-    const cards = [...rows].sort((a, b) => a[id].grade.ratio - b[id].grade.ratio).map(({ rt, cpu, memory }) => {
-      const tasks = cpu.pairs.length
-      const svg = renderLabel({
-        entry: { title: pkg.title, grades: { cpu: cpu.grade, memory: memory.grade }, metrics: overallSize(cpu.pairs), adapter: { notes: `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.` }, flags: [] },
-        data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall, ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg),
-      })
-      return svg ? `<li data-label><p class="over"></p>${svg}<p class="under">${esc(rt.title)}, ${plural(tasks, 'task')}</p></li>` : ''
-    })
-    return `<div class="ranked-panel" data-ranking="${id}">${shelf(cards)}</div>`
-  }).join('\n')}
-</div>
+<p class="soft">${esc(pkg.title)} over the ${plural(tasks, 'task')} it is measured in, on ${esc(rt.title)}, the runtime where it does best. Each figure is the geometric mean of its multiple of the best result in each task.</p>
+<ul class="shelf overview"><li data-label><p class="over"></p>${svg}</li></ul>
 </section>`
 }
 

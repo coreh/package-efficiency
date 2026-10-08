@@ -673,5 +673,6 @@ details.task-fold .fold-head h2 { flex: 1 1 auto; min-width: 0; margin: 0; borde
 details.task-fold .fold-classes { flex: none; margin-left: auto; color: var(--soft); white-space: nowrap; }
 details.task-fold .fold-class { margin-left: 1em; }
 details.task-fold .fold-class .cls { margin-left: .35em; vertical-align: baseline; }
-@media (max-width: 700px) { details.task-fold .fold-head { flex-wrap: wrap; } details.task-fold .fold-classes { margin-left: 1.25rem; } details.task-fold .fold-class:first-child { margin-left: 0; } }
+/* On a narrow screen the name wraps and the classes keep their place at the right. */
+@media (max-width: 700px) { details.task-fold .fold-head { align-items: flex-start; } details.task-fold .fold-arrow { margin-top: .45em; } details.task-fold .fold-head h2 { font-size: 1.05rem; } details.task-fold .fold-classes { padding-top: .1em; } details.task-fold .fold-class { margin-left: .6em; } }
 @media (prefers-reduced-motion: reduce) { details.task-fold .fold-arrow { transition: none; } }
