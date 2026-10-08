@@ -357,10 +357,14 @@ export function goProxy() {
           if (!(published <= Date.now() - MIN_AGE_MS)) return response.writeHead(403).end(`refused: ${request.url} is less than ${MIN_RELEASE_AGE_DAYS} days old`)
         }
         const upstream = await fetch(`${UPSTREAM}${request.url}`)
+        // The body is read whole before anything is sent, so a download that
+        // breaks off is still answered as an error.
+        const body = Buffer.from(await upstream.arrayBuffer())
         response.writeHead(upstream.status, { 'content-type': upstream.headers.get('content-type') ?? 'application/octet-stream' })
-        response.end(Buffer.from(await upstream.arrayBuffer()))
+        response.end(body)
       } catch (error) {
-        response.writeHead(502).end(String(error.message))
+        if (response.headersSent) response.destroy()
+        else response.writeHead(502).end(String(error.message))
       }
     })
     server.on('error', reject)

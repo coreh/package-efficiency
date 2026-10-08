@@ -11,7 +11,7 @@
 //
 // Usage: node scripts/sweep-types/rubygems.mjs <gem>... | --top=N
 //        [--force] [--retry-failed] [--runs=11] [--keep] [--out=file]
-//        [--graded=rbs|sorbet] [--scan] [--source]
+//        [--graded=rbs|sorbet] [--std=exclude|include] [--scan] [--source]
 // --top=N takes the N most used of data/rubygems/packages.json and everything
 // in data/rubygems/picked.json. A run can be stopped and started again: the
 // results file is written after every gem, gems already in it are skipped
@@ -43,9 +43,26 @@
 //
 // Command, one fresh process per run, in an empty directory:
 //   rbs [-r <library>]... -I <signature dir>... validate
-// Baseline: the same with one empty signature directory (core only). Figure
-// (`added`): median of the runs minus the baseline median, process CPU (user +
-// system) and peak RSS. The checker is the rbs that ships with the Ruby in use.
+// Baseline: the same with one empty signature directory (core only). Process
+// CPU (user + system) and peak RSS, medians of the runs. The checker is the
+// rbs that ships with the Ruby in use.
+// What is subtracted: by default a second probe, as the Go sweep does it. The
+// libraries rbs ships signatures for are Ruby's standard library (default and
+// bundled gems), and a gem that depends on them, by its gemspec or its
+// manifest.yaml, makes rbs load and validate them: that is the standard
+// library's cost, not the gem's. The probe is the same command with only
+// those libraries and the baseline's empty directory,
+//   rbs -r <library>... -I <empty dir> validate
+// with no signature of the gem, of a dependency gem or of the collection,
+// measured with the same number of runs; gems with the same libraries share
+// one measurement during a run (`standardLibraries` lists them). The gem's
+// own library is never in the probe: for a gem that is itself one of rbs's
+// libraries (json, logger) it is the thing measured.
+// Figure (`added`): the gem's medians minus the probe's, so the gem and its
+// dependency gems, not the standard library they use. `wholeTree` in the rbs
+// check is the figure over the empty baseline (what `added` was before the
+// standard library was taken out), `standardLibrary` the probe's over the
+// same baseline; with --std=include `added` is the whole tree.
 //
 // Classification: ok (rbs validate exits 0), untyped (no RBS from any of the
 // three sources), check-failed (rbs validate reports errors).
@@ -62,6 +79,10 @@
 // for classes it leaves the source to define. Baseline: the entry alone.
 // Classification: ok (no error, or errors only in typed: false source, which
 // are constants of gems that are not there), untyped, check-failed.
+// No standard-library probe here: Sorbet's signatures of core and of the
+// standard library are its payload, compiled into the binary and loaded whole
+// by every run, the baseline's too, whatever the program requires. The
+// baseline already takes all of it out, and no dependency gem is passed.
 //
 // A gem with no release at least 7 days old, or whose download fails its
 // checksum, is install-failed.
@@ -83,8 +104,11 @@ import { raisePriority } from '../lib/util.mjs'
 raisePriority()
 import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, round, spread, sweep, timed, writeJson } from './lib.mjs'
 
-const { names, value, has } = args('Usage: node scripts/sweep-types/rubygems.mjs <gem>... | --top=N [--force] [--retry-failed] [--runs=11] [--keep] [--sorbet] [--source] [--out=file]')
+const { names, value, has } = args('Usage: node scripts/sweep-types/rubygems.mjs <gem>... | --top=N [--force] [--retry-failed] [--runs=11] [--std=exclude|include] [--keep] [--sorbet] [--source] [--out=file]')
 const RUNS = Number(value('runs', 11))
+// Whether the rbs standard-library signatures a gem loads are counted against it.
+const STD = value('std', 'exclude')
+if (!['exclude', 'include'].includes(STD)) throw new Error('--std must be exclude or include')
 const WORK = fromRoot('.cache/sweep-types/rubygems')
 const OUT = value('out') ? path.resolve(value('out')) : has('scan') ? path.join(WORK, 'scan.json') : fromRoot('data/rubygems/types.json')
 const GEMS = path.join(WORK, 'gems')
@@ -247,7 +271,9 @@ async function signatureSet(name, own, gemDeps, scratch) {
     // Signatures of a dependency can name its own dependencies' types.
     if (gem) queue.push(...gem.dependencies.map(([n, r]) => ({ name: n, requirement: r })))
   }
-  return { argv: [RBS, ...[...libraries].flatMap((l) => ['-r', l]), ...dirs.flatMap((d) => ['-I', d]), 'validate'], from, missing }
+  // The standard library of the set: rbs's libraries other than the gem's own.
+  const standardLibraries = [...libraries].filter((l) => l !== own.library).sort()
+  return { argv: [RBS, ...[...libraries].flatMap((l) => ['-r', l]), ...dirs.flatMap((d) => ['-I', d]), 'validate'], from, missing, standardLibraries }
 }
 
 const base = path.join(WORK, '__baseline__')
@@ -279,14 +305,35 @@ if ((await timed([...SORBET, path.join(base, 'invalid.rb')])).status === 0) thro
 const sorbetBaseline = SCAN ? null : await measure([...SORBET, path.join(base, 'entry.rb')], {}, RUNS)
 if (sorbetBaseline) console.error(`sorbet ${lock.sorbet} baseline: ${sorbetBaseline.cpuMs} ms CPU (spread ${spread(sorbetBaseline.runs.map((r) => r.cpuMs))}), ${sorbetBaseline.peakRssMb} MB`)
 
-// Median of the runs minus the checker's baseline; never below zero in `added`
-// (small signatures sit inside the noise of the baseline).
-async function figure(argv, options, against) {
+// The standard-library reference: only the given rbs libraries, beside the
+// baseline's empty directory. One measurement per list of libraries, shared
+// by every gem of the run with the same list.
+const stdProbes = new Map()
+function standardLibrary(libraries) {
+  const key = libraries.join(' ')
+  if (!stdProbes.has(key)) stdProbes.set(key, (async () => {
+    const m = await measure([RBS, ...libraries.flatMap((l) => ['-r', l]), '-I', path.join(base, 'sig'), 'validate'], RUN, RUNS)
+    if (m.runs.some((r) => r.status !== 0)) throw new Error(`standard-library reference failed: rbs validate of ${libraries.join(', ')}`)
+    return { cpuMs: m.cpuMs, peakRssMb: m.peakRssMb, timeMs: m.timeMs }
+  })())
+  return stdProbes.get(key)
+}
+
+// Median of the runs minus the standard-library reference when there is one,
+// else minus the checker's baseline; never below zero in `added` (small
+// signatures sit inside the noise of the reference). `wholeTree` is always
+// the figure over the baseline.
+async function figure(argv, options, against, std = null) {
   const m = await measure(argv, options, RUNS)
   if (m.runs.some((r) => r.status !== 0)) return null
-  const cpuMs = round(m.cpuMs - against.cpuMs, 1)
-  const memoryMb = round(m.peakRssMb - against.peakRssMb, 1)
-  return { added: { cpuMs: Math.max(0, cpuMs), memoryMb: Math.max(0, memoryMb) }, cpuMs, memoryMb, timeMs: round(m.timeMs - against.timeMs, 1), cpuSpreadMs: spread(m.runs.map((r) => r.cpuMs)), baseline: { cpuMs: against.cpuMs, peakRssMb: against.peakRssMb }, runs: m.runs }
+  const cpuMs = round(m.cpuMs - (std ?? against).cpuMs, 1)
+  const memoryMb = round(m.peakRssMb - (std ?? against).peakRssMb, 1)
+  return {
+    added: { cpuMs: Math.max(0, cpuMs), memoryMb: Math.max(0, memoryMb) }, cpuMs, memoryMb, timeMs: round(m.timeMs - (std ?? against).timeMs, 1),
+    wholeTree: { cpuMs: round(m.cpuMs - against.cpuMs, 1), memoryMb: round(m.peakRssMb - against.peakRssMb, 1) },
+    ...(std ? { standardLibrary: { cpuMs: round(std.cpuMs - against.cpuMs, 1), memoryMb: round(std.peakRssMb - against.peakRssMb, 1) } } : {}),
+    cpuSpreadMs: spread(m.runs.map((r) => r.cpuMs)), baseline: { cpuMs: against.cpuMs, peakRssMb: against.peakRssMb }, runs: m.runs,
+  }
 }
 
 async function checkRbs(name, gem, dir) {
@@ -300,14 +347,16 @@ async function checkRbs(name, gem, dir) {
   const set = await signatureSet(name, own, gem.spec.dependencies, dir)
   // Signatures the gem does not ship itself are community types: the
   // collection's, and those rbs carries for default gems.
-  const result = { typesFrom: own.from, ...(own.from === 'bundled' ? {} : { communityTypes: true }), dependencySignatures: set.from, ...(set.missing.length ? { dependenciesWithoutSignatures: set.missing } : {}) }
+  const result = { typesFrom: own.from, ...(own.from === 'bundled' ? {} : { communityTypes: true }), dependencySignatures: set.from, ...(set.missing.length ? { dependenciesWithoutSignatures: set.missing } : {}), standardLibraries: set.standardLibraries }
   const probe = await timed(set.argv, RUN)
   if (probe.status !== 0) {
     const errors = (probe.stdout + '\n' + probe.stderr).split('\n').filter((l) => /ERROR -- rbs:|\(RBS::\w+\)/.test(l)).map((l) => l.replace(/\x1b\[[\d;]*m/g, '').replace(/^.*ERROR -- rbs:\s*/, '').replaceAll(dir, '').replaceAll(WORK, ''))
     return { status: 'check-failed', ...result, errors: errors.length, detail: (errors[0] ?? probe.stderr.trim().split('\n').at(-1) ?? '').slice(0, 300) }
   }
   if (SCAN) return { status: 'ok', ...result }
-  const measured = await figure(set.argv, RUN, baseline)
+  // A set with no library of rbs's but the gem's own has the baseline for reference.
+  const std = STD === 'exclude' ? (set.standardLibraries.length ? await standardLibrary(set.standardLibraries) : baseline) : null
+  const measured = await figure(set.argv, RUN, baseline, std)
   return measured ? { status: 'ok', ...result, ...measured } : { status: 'check-failed', ...result, detail: 'a measured run failed' }
 }
 
@@ -398,7 +447,7 @@ const header = {
   // The graded checker, and both.
   checker: checkers[GRADED],
   checkers,
-  method: { graded: GRADED, ruby: rubyVersion, rbsSources: ['bundled sig/', 'ruby/gem_rbs_collection', 'rbs stdlib'], rbsDependencies: 'runtime closure: rbs stdlib, bundled sig/, collection', sorbetSources: ['bundled rbi/', 'inline sigs'], sorbetFlags: SORBET.slice(1) },
+  method: { graded: GRADED, standardLibrary: STD === 'exclude' ? 'rbs: not counted, minus a probe loading the same rbs stdlib libraries; sorbet: in the baseline (its payload)' : 'rbs: counted; sorbet: in the baseline (its payload)', ruby: rubyVersion, rbsSources: ['bundled sig/', 'ruby/gem_rbs_collection', 'rbs stdlib'], rbsDependencies: 'runtime closure: rbs stdlib, bundled sig/, collection', sorbetSources: ['bundled rbi/', 'inline sigs'], sorbetFlags: SORBET.slice(1) },
   communityTypes: { 'ruby/gem_rbs_collection': collectionRepo.commit },
   minReleaseAgeDays: MIN_RELEASE_AGE_DAYS,
   memoryKind: 'peak RSS of the checker process',
@@ -407,7 +456,7 @@ const header = {
   baseline: GRADED === 'rbs' ? baseline : sorbetBaseline,
   baselines: { rbs: baseline, sorbet: sorbetBaseline },
 }
-const one = (id, c) => `${id} ${c.status === 'ok' ? (c.added ? `+${c.cpuMs} ms (spread ${c.cpuSpreadMs}) +${c.memoryMb} MB` : 'ok') + ` [${c.typesFrom}]` : c.status}${c.status === 'check-failed' ? ` (${c.detail?.slice(0, 110)})` : ''}`
+const one = (id, c) => `${id} ${c.status === 'ok' ? (c.added ? `+${c.cpuMs} ms (spread ${c.cpuSpreadMs}${c.wholeTree ? `; whole tree ${c.wholeTree.cpuMs}` : ''}) +${c.memoryMb} MB${c.wholeTree ? ` (whole tree ${c.wholeTree.memoryMb}), ${c.standardLibraries.length} std` : ''}` : 'ok') + ` [${c.typesFrom}]` : c.status}${c.status === 'check-failed' ? ` (${c.detail?.slice(0, 110)})` : ''}`
 await sweep({
   out: OUT,
   header,
