@@ -1,0 +1,103 @@
+{
+  "task": "object-pickling/graph-roundtrip",
+  "ecosystem": "pypi",
+  "package": "cloudpickle",
+  "version": "3.1.2",
+  "dependencies": {},
+  "install": {
+    "kind": "install",
+    "bytes": 69184,
+    "packages": 1
+  },
+  "runtime": "pypy",
+  "runtimeVersion": "8.0.0",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "9ae2943c4e91e3e9",
+    "task": "e3ccce58a36bc463",
+    "adapters": "c37311437e16d11c",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "pypi/cloudpickle": "3.1.2",
+      "pypi/dill": "0.4.1",
+      "pypi/jsonpickle": "4.1.2"
+    }
+  },
+  "measuredAt": "2026-10-08T05:26:33.524Z",
+  "source": "28079d4513b74423",
+  "baseline": {
+    "runtime": "pypy",
+    "runtimeVersion": "8.0.0",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "9ae2943c4e91e3e9",
+      "task": "e3ccce58a36bc463",
+      "adapters": "c37311437e16d11c",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "pypi/cloudpickle": "3.1.2",
+        "pypi/dill": "0.4.1",
+        "pypi/jsonpickle": "4.1.2"
+      }
+    },
+    "measuredAt": "2026-10-08T05:26:16.121Z",
+    "kind": "warm",
+    "task": "object-pickling/graph-roundtrip",
+    "runs": [
+      {
+        "rssBytes": 34455552,
+        "footprintBytes": 32637336,
+        "heapUsedBytes": 9722592,
+        "peakRssBytes": 46956544
+      },
+      {
+        "rssBytes": 34127872,
+        "footprintBytes": 28541336,
+        "heapUsedBytes": 9722576,
+        "peakRssBytes": 46727168
+      },
+      {
+        "rssBytes": 46628864,
+        "footprintBytes": 30441856,
+        "heapUsedBytes": 9722536,
+        "peakRssBytes": 46628864
+      }
+    ]
+  },
+  "status": "failed",
+  "error": "AttributeError: type object 'Pickler' has no attribute 'dispatch'\n  File \".cache/native-packages/pypi/37bf97f3c720730045b9/cloudpickle/cloudpickle.py\", line 1224, in <module>\n    class Pickler(pickle.Pickler):\n  File \".cache/native-packages/pypi/37bf97f3c720730045b9/cloudpickle/cloudpickle.py\", line 1406, in Pickler\n    dispatch = pickle.Pickler.dispatch.copy()\n                              ^^^^^^^^"
+}

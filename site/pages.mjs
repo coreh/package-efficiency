@@ -1166,12 +1166,17 @@ function packageOverall(pkg, model) {
     metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } },
     typeChecks: { typescript: { unit: '×', headline: 'times the lowest type-check cost' } },
   }
-  const svg = overviewLabel({ entry, data, runtime: rt, summary: { subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall on ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg) } })
-  if (!svg) return ''
+  // One label for each measure, side by side.
+  entry.adapter.notes = `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.`
+  const cards = Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => {
+    const svg = renderLabel({ entry, data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall on ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg) })
+    return svg ? `<li data-label><p class="over"></p>${svg}</li>` : ''
+  })
+  if (!cards.some(Boolean)) return ''
   return `<section>
 <h2 id="overall">Overall</h2>
 <p class="soft">${esc(pkg.title)} over the ${plural(tasks, 'task')} it is measured in, on ${esc(rt.title)}, the runtime where it does best. Each figure is the geometric mean of its multiple of the best result in each task.</p>
-<ul class="shelf overview"><li data-label><p class="over"></p>${svg}</li></ul>
+${shelf(cards)}
 </section>`
 }
 
