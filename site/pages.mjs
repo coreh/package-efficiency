@@ -175,6 +175,7 @@ function sidebar(model, path, context) {
     .map(([id, eco]) => `<li><a href="${urls.ecosystem(id)}"${urls.ecosystem(id) === path ? ' aria-current="page"' : ''}>${inlineIcon(`eco-${id}`)}${esc(eco.title)} <span class="count">${ecosystemCount(model, id)}</span></a></li>`)
     .join('')
   return `<nav class="side" aria-label="Catalog"${context.category ? ` data-category="${esc(context.category)}"` : ''}>
+<div class="side-indexes">${topLinks(model)}</div>
 <h2>${link('/categories/', 'Categories')}</h2>
 <ul class="side-categories">${categoryList(context)}</ul>${alternates}${swap}
 <h2>${link('/packages/', 'Packages')}</h2>
@@ -184,6 +185,12 @@ function sidebar(model, path, context) {
 <h2>${link('/stats/', 'Statistics')}</h2>
 </nav>`
 }
+
+// The links of the top bar. A narrow screen has no room for them there, so the
+// opened menu starts with the same links: nothing in the bar is out of reach.
+const GITHUB_MARK = '<svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>'
+const TOP_LINKS = [['/categories/', 'Categories'], ['/tasks/', 'Tasks'], ['/packages/', 'Packages'], ['/runtimes/', 'Languages/Runtimes'], ['/stats/', 'Statistics'], ['/search/', 'Search']]
+const topLinks = (model) => TOP_LINKS.map(([href, text]) => `<a href="${href}">${text}</a>`).join('') + (model.repository?.url ? `<a class="repo-link" href="${esc(model.repository.url)}" rel="noopener">${GITHUB_MARK}GitHub</a>` : '')
 
 // A table's explanatory text is written as its <caption>, but shown beneath
 // the table and outside the sideways scroll, so it stays put and readable.
@@ -230,7 +237,7 @@ ${FONTS}
 <label for="menu" class="menu-button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14v2H1zM1 7h14v2H1zM1 11h14v2H1z" fill="currentColor"/></svg>Browse</label>
 <a class="name" href="/">${LOGO()}Package Efficiency Labels</a>
 <div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><kbd class="search-key" hidden></kbd><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
-<nav aria-label="Indexes"><a href="/categories/">Categories</a><a href="/tasks/">Tasks</a><a href="/packages/">Packages</a><a href="/runtimes/">Languages/Runtimes</a><a href="/stats/">Statistics</a></nav>
+<nav aria-label="Indexes">${topLinks(model)}</nav>
 </header>
 <div class="frame">
 ${sidebar(model, path, context)}
@@ -1476,7 +1483,7 @@ export function homePage(model) {
 <div class="pitch">
 <h1 class="tagline">Compute and RAM keep getting pricier. Switching languages, runtimes and libraries has never been cheaper.</h1>
 <p>This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (<a href="#limitations">see limitations</a>), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.</p>
-<p>Choose a <a href="/categories/">category</a> or search for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${BUILD_DATE}.</p>
+<p>Choose a <a href="/categories/">category</a> or <a href="/search/">search</a> for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${BUILD_DATE}.</p>
 </div>
 ${featured(model)}
 <h2>Measured categories</h2>
@@ -2554,4 +2561,90 @@ export function searchIndex(model) {
     ...model.catalog.categories.filter((c) => !model.categories.some((m) => m.taxonomy === c.id)).map((c) => ({ t: c.title, k: c.benchmarkable ? 'Category, not measured yet' : 'Category', i: categoryMark(c.id), u: `/${c.id}/`, ...also(c.id) })),
     ...Object.values(model.catalog.byEcosystem).flat().filter((item) => !item.measured).map((item) => ({ t: item.name, k: `${ECOSYSTEMS[item.ecosystem].title}, not measured`, i: `eco-${item.ecosystem}`, u: catalogUrl(item), r: item.rank ?? 100000 })),
   ]
+}
+
+// --- Advanced search --------------------------------------------------------
+
+// The language a registry's packages are written for, as the filter names it.
+const REGISTRY_LANGUAGE = { npm: 'javascript', jsr: 'javascript', pypi: 'python', rubygems: 'ruby', gomod: 'go', cargo: 'rust' }
+const LANGUAGE_TITLE = { javascript: 'JavaScript and TypeScript', python: 'Python', ruby: 'Ruby', go: 'Go', rust: 'Rust' }
+const day = (iso) => (iso ? String(iso).slice(0, 10) : undefined)
+const without = (object) => Object.fromEntries(Object.entries(object).filter(([, v]) => v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length)))
+
+// Everything the advanced search page can find, with what it filters by.
+// y: p package, t task, c category, r runtime, e registry. t title, u address,
+// d description, e registry id, g languages, rt runtimes with a result,
+// c category, m measured, r rank in its registry, k best class for each
+// measure, l license, f date of the listed release, a other names.
+export function advancedSearchIndex(model) {
+  const bestClasses = (appearances) =>
+    without(Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, appearances.map((a) => a.entry.grades[id]?.class).filter(Boolean).sort()[0]])))
+  const categoryTitle = new Map(model.categories.map((c) => [c.id, c.title]))
+  const packages = model.packages.map((p) => {
+    const listed = p.listed ?? {}
+    return without({
+      y: 'p', t: p.title, u: urls.package(p), e: p.ecosystem, g: p.ecosystem === 'builtin' ? [...new Set(p.appearances.map((a) => languageOf(a.runtime.id)))] : [REGISTRY_LANGUAGE[p.ecosystem]],
+      rt: [...new Set(p.appearances.map((a) => a.runtime.id))], c: [...new Set(p.appearances.map((a) => categoryTitle.get(a.data.task.category) ?? a.data.task.category))].join(', '),
+      d: listed.description, m: 1, r: listed.rank, k: bestClasses(p.appearances), v: p.version, l: listed.license, f: day(listed.releasedAt),
+    })
+  })
+  const unmeasured = Object.values(model.catalog.byEcosystem).flat().filter((item) => !item.measured).map((item) =>
+    without({ y: 'p', t: item.name, u: catalogUrl(item), e: item.ecosystem, g: [REGISTRY_LANGUAGE[item.ecosystem]], c: item.category?.title, d: item.description, r: item.rank, v: item.version, l: item.license, f: day(item.releasedAt), k: item.typeCheck?.grade ? { types: item.typeCheck.grade.class } : undefined }))
+  const tasks = model.tasks.map((d) => {
+    const runtimes = d.runtimes.filter((rt) => rt.entries.length).map((rt) => rt.id)
+    return without({ y: 't', t: d.task.title, u: urls.task(d.task.id), c: categoryTitle.get(d.task.category) ?? d.task.category, d: d.task.summary, m: 1, rt: runtimes, g: [...new Set(runtimes.map(languageOf))] })
+  })
+  const measuredCategories = model.categories.map((c) => {
+    const runtimes = [...new Set(c.tasks.flatMap((d) => d.runtimes.filter((rt) => rt.entries.length).map((rt) => rt.id)))]
+    return without({ y: 'c', t: c.title, u: urls.category(c.id), a: model.catalog.aliases?.[c.taxonomy ?? c.id], d: c.description, m: 1, rt: runtimes, g: [...new Set(runtimes.map(languageOf))] })
+  })
+  const otherCategories = model.catalog.categories.filter((c) => !model.categories.some((m) => m.taxonomy === c.id)).map((c) => without({ y: 'c', t: c.title, u: `/${c.id}/`, a: model.catalog.aliases?.[c.id], d: c.description }))
+  const runtimes = model.runtimes.map((rt) => ({ y: 'r', t: rt.title, u: urls.runtime(rt.id), g: [languageOf(rt.id)], rt: [rt.id], m: 1 }))
+  const registries = Object.entries(ECOSYSTEMS).map(([id, e]) => without({ y: 'e', t: e.title, u: urls.ecosystem(id), e: id, g: REGISTRY_LANGUAGE[id] ? [REGISTRY_LANGUAGE[id]] : undefined }))
+  return [...packages, ...unmeasured, ...tasks, ...measuredCategories, ...otherCategories, ...runtimes, ...registries]
+}
+
+export function searchPage(model) {
+  const index = advancedSearchIndex(model)
+  const licenses = new Map()
+  for (const item of index) if (item.l) licenses.set(item.l, (licenses.get(item.l) ?? 0) + 1)
+  const commonLicenses = [...licenses].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([id]) => id)
+  const check = (name, value, text) => `<label class="adv-check"><input type="checkbox" name="${name}" value="${esc(value)}"> ${esc(text)}</label>`
+  const group = (legend, inner) => `<fieldset class="adv-group"><legend>${legend}</legend>${inner}</fieldset>`
+  const classSelect = (id) => `<label class="adv-field">${RANKINGS[id].title} class, at most <select name="${id}"><option value="">Any</option>${CLASSES.map((c) => `<option>${c}</option>`).join('')}</select></label>`
+  const languages = [...new Set(model.runtimes.map((rt) => languageOf(rt.id)))]
+  return layout({
+    title: 'Advanced search: Package Efficiency Labels',
+    description: 'Search packages, tasks, categories and runtimes, and filter by registry, language, runtime, efficiency class, license and release date.',
+    path: '/search/',
+    crumbs: [['Search']],
+    model,
+    body: `<main class="adv">
+<h1>Advanced search</h1>
+<p class="intro">Search the ${index.filter((i) => i.y === 'p').length.toLocaleString('en-US')} listed packages, ${model.tasks.length} tasks and ${model.catalog.categories.length} categories, and narrow the results. The address of this page keeps your search, so it can be shared.</p>
+<form class="adv-form" id="adv-form" role="search" aria-label="Advanced search">
+<label class="adv-query">Search for <input type="search" name="q" autocomplete="off" spellcheck="false" placeholder="A name, or words from a description"></label>
+<div class="adv-groups">
+${group('Search in', [['', 'Everything'], ['p', 'Packages'], ['t', 'Tasks'], ['c', 'Categories'], ['r', 'Runtimes']].map(([value, text], i) => `<label class="adv-check"><input type="radio" name="in" value="${value}"${i ? '' : ' checked'}> ${text}</label>`).join(''))}
+${group('Language', languages.map((id) => check('lang', id, LANGUAGE_TITLE[id] ?? id)).join(''))}
+${group('Registry', Object.entries(ECOSYSTEMS).map(([id, e]) => check('reg', id, e.title)).join(''))}
+${group('Has a result on', model.runtimes.map((rt) => check('rt', rt.id, rt.title)).join(''))}
+${group('Results', `${check('measured', '1', 'Only what has been measured')}${['cpu', 'memory', 'types'].map(classSelect).join('')}`)}
+${group('License and release', `<label class="adv-field">License <input type="text" name="lic" list="adv-licenses" placeholder="Any" autocomplete="off" spellcheck="false"></label><datalist id="adv-licenses">${commonLicenses.map((id) => `<option value="${esc(id)}">`).join('')}</datalist>
+<label class="adv-field">Released on or after <input type="date" name="from"></label>
+<label class="adv-field">Released on or before <input type="date" name="to"></label>`)}
+</div>
+<p class="adv-bar"><label class="adv-field">Sort by <select name="sort"><option value="">Best match</option><option value="used">Most used</option><option value="name">Name</option><option value="new">Newest release</option><option value="old">Oldest release</option></select></label> <button type="reset">Clear all</button></p>
+</form>
+<p id="adv-count" class="adv-count" role="status" aria-live="polite">Loading the index.</p>
+<noscript><p class="note">This search runs in the browser and needs JavaScript. The <a href="/packages/">packages</a>, <a href="/tasks/">tasks</a> and <a href="/categories/">categories</a> pages list everything without it.</p></noscript>
+<div class="scroll"><table class="adv-results" id="adv-results" hidden>
+<thead><tr><th scope="col" class="l">Name</th><th scope="col" class="l">Kind</th><th scope="col" class="l">Category</th><th scope="col" class="l">Best classes</th><th scope="col" class="l">License</th><th scope="col" class="l">Released</th></tr></thead>
+<tbody></tbody>
+</table></div>
+<p><button type="button" id="adv-more" hidden>Show more</button></p>
+<script type="application/json" id="adv-config">${JSON.stringify({ kinds: { p: 'Package', t: 'Task', c: 'Category', r: 'Runtime', e: 'Registry' }, registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])), measures: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])) }).replace(/</g, '\\u003c')}</script>
+<script type="module" src="/search.js"></script>
+</main>`,
+  })
 }

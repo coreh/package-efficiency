@@ -16,7 +16,7 @@ import {
   packagesPage,
   runtimePage,
   runtimesPage,
-  searchIndex, statsPage, statsMarkdown,
+  searchIndex, statsPage, statsMarkdown, advancedSearchIndex, searchPage,
   bestResult,
   runtimeSummaries,
   categoryIconFiles,
@@ -195,6 +195,8 @@ for (const id of ecosystemIds) {
   const listed = [...(await readJson(fromRoot(eco.packages), [])), ...(await readJson(fromRoot(eco.picked), [])).map((p) => ({ ...p, rank: null, picked: true }))]
   if (listed.length === 0) continue
   const assigned = await readJson(fromRoot(eco.categories), {})
+  // License and release dates, collected by scripts/fetch-metadata.mjs.
+  const metadata = (await readJson(fromRoot(eco.dir, 'metadata.json'), null))?.packages ?? {}
   catalog.byEcosystem[id] = listed.map((p) => {
     const typed = id === 'npm' || id === 'jsr' ? typeData.packages[p.name] : null
     const tsgo = typed?.status === 'ok' ? typed.tsgo : null
@@ -209,6 +211,9 @@ for (const id of ecosystemIds) {
       description: p.description,
       version: p.version,
       repository: p.repository,
+      license: metadata[p.name]?.license ?? null,
+      releasedAt: metadata[p.name]?.releasedAt ?? null,
+      firstReleasedAt: metadata[p.name]?.firstReleasedAt ?? null,
       category: taxonomyById.get(assigned[p.name]?.category) ?? null,
       measured: (id === 'gomod' ? goMeasured.get(goFamily(p.name)) : null) ?? packages.get(`${id}/${p.name}`) ?? null,
       // An adapter for it is written, whether or not it has run (see statusOf).
@@ -436,6 +441,9 @@ if (siteUrl) {
 }
 await write(dist('robots.txt'), indexable ? `User-agent: *\nAllow: /\n${siteUrl ? `Sitemap: ${siteUrl}/sitemap.xml\n` : ''}` : 'User-agent: *\nDisallow: /\n')
 await write(dist('search.json'), JSON.stringify(searchIndex(model)))
+await page('/search/', searchPage(model))
+await write(dist('search-full.json'), JSON.stringify(advancedSearchIndex(model)))
+await write(dist('search.js'), await readFile(fromRoot('site/search.js')))
 const allRows = tasks.flatMap((data) => resultRows(data, ctx))
 await write(dist('data/results.csv'), toCsv(allRows))
 await write(dist('data/results.json'), JSON.stringify(allRows))
