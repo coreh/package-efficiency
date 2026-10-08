@@ -1,0 +1,144 @@
+{
+  "task": "http-server/hundred-routes",
+  "ecosystem": "rubygems",
+  "package": "grape",
+  "version": "4.0.1",
+  "dependencies": {
+    "activesupport": "8.1.4",
+    "concurrent-ruby": "1.3.8",
+    "connection_pool": "3.0.2",
+    "dry-configurable": "1.4.0",
+    "dry-core": "1.2.0",
+    "dry-inflector": "1.3.1",
+    "dry-logic": "1.6.0",
+    "dry-types": "1.9.1",
+    "i18n": "1.15.2",
+    "mustermann": "4.0.0",
+    "rack": "3.2.7",
+    "tzinfo": "2.0.6",
+    "zeitwerk": "2.8.3",
+    "base64": "0.3.0",
+    "bigdecimal": "4.0.1",
+    "drb": "2.2.3",
+    "json": "2.18.0",
+    "logger": "1.7.0",
+    "minitest": "6.0.0",
+    "prism": "1.8.0",
+    "securerandom": "0.4.1",
+    "uri": "1.1.1"
+  },
+  "install": {
+    "kind": "install",
+    "bytes": 4706147,
+    "packages": 14
+  },
+  "runtime": "ruby-yjit",
+  "runtimeVersion": "4.0.1",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "dcd5b85e086b34c1",
+    "task": "880bee403ac52345",
+    "adapters": "13b1824f8bda8ccb",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/actix-router": "0.5.4",
+      "cargo/matchit": "0.8.4",
+      "gomod/gin-gonic-gin": "v1.12.0",
+      "gomod/gorilla-mux": "v1.8.1",
+      "gomod/julienschmidt-httprouter": "v1.3.0",
+      "npm/express": "5.2.1",
+      "npm/router": "2.2.0",
+      "pypi/fastapi": "0.142.2",
+      "pypi/starlette": "1.7.0",
+      "pypi/werkzeug": "3.1.9",
+      "rubygems/grape": "4.0.1",
+      "rubygems/sinatra": "4.2.1"
+    }
+  },
+  "measuredAt": "2026-10-08T00:14:20.021Z",
+  "source": "211b60e35da35503",
+  "baseline": {
+    "runtime": "ruby-yjit",
+    "runtimeVersion": "4.0.1",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "dcd5b85e086b34c1",
+      "task": "880bee403ac52345",
+      "adapters": "13b1824f8bda8ccb",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/actix-router": "0.5.4",
+        "cargo/matchit": "0.8.4",
+        "gomod/gin-gonic-gin": "v1.12.0",
+        "gomod/gorilla-mux": "v1.8.1",
+        "gomod/julienschmidt-httprouter": "v1.3.0",
+        "npm/express": "5.2.1",
+        "npm/router": "2.2.0",
+        "pypi/fastapi": "0.142.2",
+        "pypi/starlette": "1.7.0",
+        "pypi/werkzeug": "3.1.9",
+        "rubygems/grape": "4.0.1",
+        "rubygems/sinatra": "4.2.1"
+      }
+    },
+    "measuredAt": "2026-10-08T00:14:20.020Z",
+    "kind": "warm",
+    "task": "http-server/hundred-routes",
+    "runs": [
+      {
+        "rssBytes": 20332544,
+        "footprintBytes": 12157456,
+        "heapUsedBytes": 1197152,
+        "peakRssBytes": 20348928
+      },
+      {
+        "rssBytes": 20316160,
+        "footprintBytes": 12141072,
+        "heapUsedBytes": 1197112,
+        "peakRssBytes": 20332544
+      },
+      {
+        "rssBytes": 20561920,
+        "footprintBytes": 12370424,
+        "heapUsedBytes": 1197112,
+        "peakRssBytes": 20578304
+      }
+    ]
+  },
+  "status": "verify-failed",
+  "error": "fixture 27: PUT /api/devices/x_y.z\n+ actual - expected\n\n  {\n    params: {\n+     id: 'x_y'\n-     id: 'x_y.z'\n    },\n    route: 'PUT /api/devices/:id'\n  }\n"
+}
