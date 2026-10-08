@@ -305,7 +305,6 @@ const STYLE = `
 .l-note{font:500 11.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}
 .l-by{font:800 ${BY_SIZE}px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;font-stretch:88%}
 .l-at{font-weight:600;font-family:Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;font-stretch:88%;text-decoration:underline;fill:#000}
-a:hover .l-at{fill:#1558d6}
 .l-seal{font:700 10.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif}.l-caution{font:500 italic 10.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;fill:#444}
 .l-flag{font:700 12.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;fill:#fff}
 `.replace(/\n/g, '')

@@ -196,6 +196,13 @@ async function search() {
   if (found.length === 0) note.textContent = 'No result. Try the name of a package, task or category, or its initials.'
   else if (found.length > RESULT_LIMIT) note.textContent = `${found.length - RESULT_LIMIT} more. Type more letters to see fewer results.`
   else note.textContent = '↑ ↓ to move, Enter to open, Esc to close'
+  // Once something is typed, the way to the advanced search is here, at the
+  // end of the list, and takes the words along.
+  const further = document.createElement('a')
+  further.className = 'search-further'
+  further.href = `/search/?q=${encodeURIComponent(query)}`
+  further.textContent = 'Advanced search…'
+  note.append(further)
   results.append(note)
   results.hidden = false
   input.setAttribute('aria-expanded', 'true')

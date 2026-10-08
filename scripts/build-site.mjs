@@ -38,7 +38,7 @@ import {
   versionsOf,
 } from '../site/pages.mjs'
 import { adapterIdOf } from '../site/source.mjs'
-import { openApiSpec } from '../site/api.mjs'
+import { apiMarkdown, openApiSpec } from '../site/api.mjs'
 import { iconFile, iconFiles, iconScales } from '../site/icons.mjs'
 import { embedFiles } from '../site/layouts.mjs'
 import * as exportsOf from '../site/exports.mjs'
@@ -453,6 +453,7 @@ await write(dist('search.js'), await readFile(fromRoot('site/search.js')))
 const apiSpec = openApiSpec(model)
 await write(dist('openapi.json'), JSON.stringify(apiSpec, null, 1))
 await page('/api/', apiReferencePage(model, apiSpec))
+await write(dist('api/index.md'), apiMarkdown(model, apiSpec))
 const allRows = tasks.flatMap((data) => resultRows(data, ctx))
 await write(dist('data/results.csv'), toCsv(allRows))
 await write(dist('data/results.json'), JSON.stringify(allRows))

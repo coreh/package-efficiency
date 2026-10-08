@@ -214,7 +214,7 @@ const SIDE_LIMIT = 24
 // page keeps its package highlighted in the catalog).
 function layout({ title, description, path, crumbs = [], context = {}, model, body, formats = { data: false }, actions = '' }) {
   const own = formats?.at ?? path
-  if (formats) body = body.replace('<main>', `<main>\n${pageMenu({ markdown: `${own}index.md`, csv: formats.data ? `${own}results.csv` : null, json: formats.data ? (formats.json ?? `${own}results.json`) : null })}${actions}`)
+  if (formats) body = body.replace('<main>', `<main>\n${pageMenu({ markdown: `${own}index.md`, csv: formats.data ? `${own}results.csv` : null, json: formats.data ? (formats.json ?? `${own}results.json`) : null, download: formats.download })}${actions}`)
   else if (actions) body = body.replace('<main>', `<main>\n${actions}`)
   body = captionsBelow(body)
   const trail = crumbs.length
@@ -238,7 +238,7 @@ ${FONTS}
 <header class="top">
 <label for="menu" class="menu-button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14v2H1zM1 7h14v2H1zM1 11h14v2H1z" fill="currentColor"/></svg>Browse</label>
 <a class="name" href="/">${LOGO()}Package Efficiency Labels</a>
-<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><span class="search-end"><a class="search-advanced" href="/search/" title="Search with filters">Advanced…</a><kbd class="search-key" hidden></kbd></span><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><span class="search-end"><a class="search-advanced" href="/search/" title="Search with filters">Advanced search…</a><kbd class="search-key" hidden></kbd></span><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
 <nav aria-label="Indexes">${topLinks(model)}</nav>
 </header>
 <div class="frame">
@@ -2436,14 +2436,16 @@ const menuIcon = (id) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true
 // A page's results in other forms: Markdown to paste into a language model,
 // CSV and JSON for everything else. Without the page script it is a plain
 // list of links; the script adds "Copy page" and closes it on a click outside.
-function pageMenu({ markdown, csv, json }) {
+// `download` is one more file a page offers, as a button of its own beside the menu.
+function pageMenu({ markdown, csv, json, download }) {
   const item = (icon, href, title, detail, attrs = '') => `<li><a href="${href}"${attrs}>${menuIcon(icon)}<span><b>${title}</b><small>${detail}</small></span></a></li>`
   return `<div class="page-menu" data-markdown="${markdown}">
-<details class="menu"><summary>${menuIcon('copy')}<span class="menu-title">Copy and download</span></summary>
+${download ? `<a class="copy-page page-download" href="${download.href}" download>${menuIcon('braces')}${esc(download.title)}</a>` : ''}<details class="menu"><summary>${menuIcon('copy')}<span class="menu-title">Copy and download</span></summary>
 <ul>
 ${item('markdown', markdown, 'View as Markdown', 'The full page as plain text, with every row')}
 ${csv ? item('table', csv, 'Download CSV', 'The rows on this page, for a spreadsheet', ' download') : ''}
 ${json ? item('braces', json, 'Download JSON', 'The same rows as structured data', ' download') : ''}
+${download ? item('braces', download.href, esc(download.title), esc(download.detail), ' download') : ''}
 <li class="assistants">${ASSISTANTS.map(([id, title]) => `<a href="${markdown}" data-assistant="${id}" title="Ask ${title} about this page" rel="noopener">${assistantIcon(id)}<small>${title}</small></a>`).join('')}</li>
 </ul>
 </details>
@@ -2630,6 +2632,7 @@ export function searchPage(model) {
     path: '/search/',
     crumbs: [['Search']],
     model,
+    formats: null,
     body: `<main class="adv">
 <h1>Advanced search</h1>
 <p class="intro">Search the ${index.filter((i) => i.y === 'p').length.toLocaleString('en-US')} listed packages, ${model.tasks.length} tasks and ${model.catalog.categories.length} categories, and narrow the results. The address of this page keeps your search, so it can be shared.</p>
@@ -2665,5 +2668,5 @@ ${group('Release', `<label class="adv-field">Released on or after <input type="d
 // (site/api.mjs), so the two cannot disagree.
 export function apiReferencePage(model, spec) {
   const { title, description, body } = apiPage(model, spec)
-  return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, body: `<main class="api">${body}</main>` })
+  return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, formats: { data: false, download: { href: '/openapi.json', title: 'Download OpenAPI', detail: 'The same addresses as an OpenAPI 3.1 description' } }, body: `<main>\n<div class="api">${body}</div></main>` })
 }

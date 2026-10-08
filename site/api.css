@@ -1,27 +1,46 @@
 /* The API reference (site/api.mjs): addresses, their parameters, a sample of
    what each answers with, and the fields of the JSON files. Colours are the
    page's own, so dark mode follows without rules of its own. */
-.api-toc ul, .api-list { list-style: none; padding: 0; max-width: none; }
-.api-toc ul { display: flex; flex-wrap: wrap; gap: 4px 22px; font-weight: 600; }
-.api-toc li .soft { font-weight: 400; margin-left: 3px; font-variant-numeric: tabular-nums; }
-/* The addresses of a group, before their sections. */
-.api-list { columns: 2 24rem; column-gap: 28px; margin: 0 0 6px; font-size: 0.8125rem; }
-.api-list li { break-inside: avoid; padding: 1px 0; overflow-wrap: anywhere; }
-.api-list a { text-decoration: none; }
-.api-list a:hover { text-decoration: underline; }
-.api-list code, .api-path, .api-sample code, .api-curl code { font: 0.75rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+/* What a group has, by the title of each entry, before the entries. */
+.api-list { list-style: none; padding: 0; max-width: none; columns: 2 22rem; column-gap: 28px; margin: 0 0 10px; }
+.api-list li { break-inside: avoid; padding: 1px 0; }
+.api-path, .api-sample code, .api-curl code { font: 0.75rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
 
-/* One address. A link to it leaves room for the bar at the top of the page. */
-.api-op, .api-schema { margin: 0; padding: 14px 0 6px; border-top: 1px solid var(--rule); scroll-margin-top: 56px; }
-h2[id] { scroll-margin-top: 56px; }
-.api-op:target .api-sig, .api-schema:target h3 { box-shadow: -4px 0 0 var(--bg), -8px 0 0 var(--mark); }
+/* One entry: a task, and the addresses that answer it. A link to it leaves
+   room for the bar at the top of the page. */
+.api-entry, .api-schema { margin: 0; padding: 14px 0 6px; border-top: 1px solid var(--rule); scroll-margin-top: 56px; }
+.api-entry > h3, .api-schema > h3 { margin-top: 0; font-size: 0.9375rem; }
+.api-entry:target > h3, .api-schema:target > h3 { box-shadow: -4px 0 0 var(--bg), -8px 0 0 var(--mark); }
+.api-entry > p, .api-variant > p, .api-schema > p { max-width: 86ch; }
+/* The format chooser and the copy buttons, on one line where there is room. */
+.api-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 0 0 12px; }
+.api-bar[hidden] { display: none; }
+.api-bar p { margin: 0; max-width: none; }
+.api-choose { display: flex; align-items: center; gap: 8px; }
+.api-choose label { font-weight: 700; }
+/* Drawn here in full, arrow included, so that it is the same in every browser. */
+.api-choose select {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box; height: 2rem; min-width: 8.5rem; margin: 0; padding: 0 28px 0 10px;
+  font: inherit; font-weight: 600; line-height: 1.2; color: var(--ink); background-color: var(--bg); border: 1px solid var(--soft); border-radius: 0; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 14px center, right 9px center; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.api-choose select:hover { background-color: var(--band); }
+/* The buttons take the shape of the site's menu buttons (.menu button), joined in a row. */
+.api-actions { display: flex; flex-wrap: wrap; }
+.api-actions button { box-sizing: border-box; height: 2rem; margin: 0 -1px 0 0; padding: 0 11px; border-color: var(--soft); border-radius: 0; font-weight: 600; white-space: nowrap; -webkit-appearance: none; appearance: none; }
+.api-actions button:hover { background: var(--mark); color: #000; border-color: #000; position: relative; }
+.api-actions button[hidden] { display: none; }
+/* Every format is in the page. With scripts one is shown at a time, and the
+   name over each is not needed; without, they follow each other. */
+.api-format { margin: 14px 0 6px; font-size: 0.8125rem; font-weight: 700; }
+.api-live .api-format, .api-live .api-variant:not(.api-on) { display: none; }
 /* The method and the path: a long path scrolls sideways inside its own box. */
 .api-sig { display: flex; align-items: stretch; gap: 0; margin: 0 0 8px; max-width: 100%; font-size: 0.8125rem; }
 .api-method { flex: none; display: grid; place-items: center; padding: 0 9px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.02em; }
 .api-path { flex: 0 1 auto; min-width: 0; padding: 5px 10px; border: 1px solid var(--ink); border-left: 0; background: var(--bg); font-weight: 600; white-space: nowrap; overflow-x: auto; scrollbar-width: thin; }
 /* A part of the path to fill in. */
 .api-param { font-weight: 400; color: var(--soft); }
-.api-op > p, .api-schema > p { max-width: 86ch; }
 .api-returns { color: var(--soft); margin-bottom: 6px; }
 .api-returns a { color: var(--ink); }
 
@@ -40,11 +59,8 @@ h2[id] { scroll-margin-top: 56px; }
 .api-sample { margin: 0 0 8px; padding: 8px 12px; max-width: 86ch; max-height: 22rem; overflow: auto; background: var(--band); border: 1px solid var(--rule); tab-size: 2; }
 .api-sample code { display: block; width: max-content; min-width: 100%; font-weight: 400; white-space: pre; }
 .api-figure { display: block; max-width: 100%; max-height: 220px; width: auto; height: auto; margin: 0 0 8px; }
-.api-curl { display: flex; align-items: stretch; gap: 0; max-width: 86ch; margin: 0 0 12px; }
+.api-curl { display: flex; max-width: 86ch; margin: 0 0 12px; }
 .api-curl code { flex: 1 1 auto; min-width: 0; padding: 5px 10px; border: 1px solid var(--rule); background: var(--band); color: var(--ink); font-weight: 400; white-space: nowrap; overflow-x: auto; scrollbar-width: thin; user-select: all; -webkit-user-select: all; }
-.api-copy { flex: none; font: inherit; font-size: 0.8125rem; font-weight: 600; padding: 0 12px; min-width: 4.4rem; color: var(--ink); background: var(--bg); border: 1px solid var(--ink); margin-left: -1px; cursor: pointer; }
-.api-copy:hover { background: var(--mark); color: #000; border-color: #000; }
-.api-copy[hidden] { display: none; }
 
 @media (max-width: 760px) {
   .api-list { columns: 1; }
@@ -52,11 +68,14 @@ h2[id] { scroll-margin-top: 56px; }
   .api-sample { max-height: 18rem; }
 }
 @media print {
-  .api-copy { display: none; }
+  .api-bar { display: none; }
   .api-sample { max-height: none; }
+  /* On paper every format is shown, under its name. */
+  .api-live .api-format { display: block; }
+  .api-live .api-variant:not(.api-on) { display: block; }
 }
 
-/* The API page's own side menu: addresses in a fixed-width face, cut short rather than wrapped. */
-.side-own code { font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; min-width: 0; }
-.side-own li a { min-width: 0; }
+/* The API page's own side menu: what a reader can ask for, as sentences that may wrap. */
+.side-own li a { min-width: 0; line-height: 1.3; padding-top: 3px; padding-bottom: 3px; overflow-wrap: anywhere; }
+.side-own h2 a { padding-top: 2px; padding-bottom: 2px; }
 .api section[id], .api h2[id] { scroll-margin-top: 60px; }

@@ -348,12 +348,14 @@ details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; tex
 
 /* Search: shortcut hint, results, the active result and matched letters. */
 .search-key { padding: 0 5px; border: 1px solid #b5b5b5; border-radius: 3px; font: inherit; font-size: 0.75rem; color: #595959; background: #f1f1f1; pointer-events: none; }
-.search:focus-within .search-key, .search input:not(:placeholder-shown) ~ .search-end .search-key { display: none; }
+/* Both leave the field once something is typed: the link moves to the end of the results. */
+.search input:not(:placeholder-shown) ~ .search-end { display: none; }
 #q-results a[aria-selected="true"] { background: var(--mark); color: #000; }
 #q-results a:hover { background: none; color: inherit; }
 #q-results a[aria-selected="true"]:hover { background: var(--mark); color: #000; }
 #q-results mark { background: none; color: inherit; font-weight: 800; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
-#q-results .search-note { padding: 5px 10px; font-size: 0.75rem; color: var(--soft); border-top: 1px solid var(--rule); }
+#q-results .search-note { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 5px 10px; font-size: 0.75rem; color: var(--soft); border-top: 1px solid var(--rule); }
+#q-results a.search-further { flex: none; display: inline; margin: 0; padding: 0; font-weight: 400; color: #333; font-size: 0.8125rem; text-decoration: underline; }
 
 /* Pages of a long table. */
 /* Drawn like the switches above it: the same boxes, joined in a row. */
@@ -391,6 +393,7 @@ details.menu > ul .ico { width: 16px; height: 16px; flex: none; }
 .page-menu details[open] > summary { background: var(--mark); color: #000; }
 .page-menu.split .menu-title, .page-menu.split summary .ico { display: none; }
 .page-menu.split summary { margin-left: -1px; height: 100%; }
+.page-menu .page-download { order: -1; margin-right: 8px; text-decoration: none; }
 .page-menu .ico { width: 14px; height: 14px; margin: 0; }
 
 /* The label menu: a button at the label's corner, shown on hover or focus. */
@@ -636,10 +639,10 @@ td > a + .verified { width: 14px; height: 14px; margin: 0 0 0 5px; vertical-alig
 /* The home page's random packages show the combined label, two to a row. */
 .shelf.overview { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 460px)); }
 
-/* The short link printed on any label turns blue when pointed at, and does
-   not take the yellow of a page link. */
+/* The short link printed on any label does not take the yellow of a page
+   link. It keeps its colour when pointed at: a label is itself inside a link
+   on most pages, and a colour change there spread to all of its text in Safari. */
 svg[role="img"] a:hover { background: none; }
-svg[role="img"] a:hover text { fill: #1558d6; }
 
 /* The asterisk on a type-check figure that comes from community types. */
 .community{margin-right:.3em;font-weight:700;cursor:help;opacity:.7}
@@ -717,7 +720,7 @@ details.task-fold .fold-class .cls { margin-left: .35em; vertical-align: baselin
 .adv-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 8px 0; }
 .adv-bar button, #adv-more { cursor: pointer; font-weight: 700; }
 .adv-count { font-weight: 700; margin: 14px 0 6px; }
-table.adv-results { width: 100%; min-width: 52rem; table-layout: fixed; }
+table.adv-results { width: 100%; min-width: 60rem; table-layout: fixed; }
 .adv-results th:nth-child(1) { width: 33%; } .adv-results th:nth-child(2) { width: 14%; } .adv-results th:nth-child(3) { width: 18%; } .adv-results th:nth-child(4) { width: 12%; } .adv-results th:nth-child(5) { width: 13%; } .adv-results th:nth-child(6) { width: 10%; }
 .adv-results td { overflow-wrap: anywhere; }
 .adv-results td { vertical-align: top; }
@@ -726,7 +729,7 @@ table.adv-results { width: 100%; min-width: 52rem; table-layout: fixed; }
 .adv-class .cls { margin-left: 2px; }
 
 /* The end of the search field: a plain link to the advanced search, then the shortcut hint. */
-.search input { padding-right: 132px; }
+.search input:placeholder-shown { padding-right: 176px; }
 .search-end { position: absolute; right: 8px; top: 0; bottom: 0; display: flex; align-items: center; gap: 10px; pointer-events: none; }
 .top .search-advanced { pointer-events: auto; color: #595959; font-size: 0.8125rem; text-decoration: underline; }
 .top .search-advanced:hover { background: none; color: #000; }
