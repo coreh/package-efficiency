@@ -659,14 +659,19 @@ details.more-deps[open] > summary { text-decoration: none; }
 .related { max-width: 60rem; margin: .2rem 0 1.2rem; }
 .related p { margin: 0 0 .35em; }
 
-/* A task on a package's page, folded under its heading. */
+/* A task on a package's page, folded under its heading: an arrow, the task's
+   name, and at the right edge its best classes. The row is a div inside the
+   summary, since a summary itself does not lay out as a flex box everywhere. */
 details.task-fold { border-top: 3px solid var(--ink); margin: 1.6rem 0 0; }
-details.task-fold > summary { display: flex; align-items: baseline; gap: .9rem; flex-wrap: wrap; cursor: pointer; padding: .55rem 0 .45rem; list-style: none; }
+details.task-fold > summary { display: block; cursor: pointer; padding: .55rem 0 .5rem; list-style: none; }
 details.task-fold > summary::-webkit-details-marker { display: none; }
-details.task-fold > summary::before { content: ''; flex: none; align-self: center; width: 0; height: 0; border-left: .5em solid currentColor; border-top: .34em solid transparent; border-bottom: .34em solid transparent; transition: transform .12s; }
-details.task-fold[open] > summary::before { transform: rotate(90deg); }
-details.task-fold > summary h2 { margin: 0; border: 0; padding: 0; font-size: 1.15rem; }
-details.task-fold > summary .cls { vertical-align: baseline; }
-@media (prefers-reduced-motion: reduce) { details.task-fold > summary::before { transition: none; } }
-details.task-fold > summary .fold-class { margin-right: .9em; white-space: nowrap; }
-details.task-fold > summary .fold-class .cls { margin-left: .3em; }
+details.task-fold > summary::marker { content: ''; }
+details.task-fold .fold-head { display: flex; align-items: center; gap: .7rem; }
+details.task-fold .fold-arrow { flex: none; width: 0; height: 0; border-left: .55em solid currentColor; border-top: .36em solid transparent; border-bottom: .36em solid transparent; transition: transform .12s; }
+details.task-fold[open] .fold-arrow { transform: rotate(90deg); }
+details.task-fold .fold-head h2 { flex: 1 1 auto; min-width: 0; margin: 0; border: 0; padding: 0; font-size: 1.15rem; }
+details.task-fold .fold-classes { flex: none; margin-left: auto; color: var(--soft); white-space: nowrap; }
+details.task-fold .fold-class { margin-left: 1em; }
+details.task-fold .fold-class .cls { margin-left: .35em; vertical-align: baseline; }
+@media (max-width: 700px) { details.task-fold .fold-head { flex-wrap: wrap; } details.task-fold .fold-classes { margin-left: 1.25rem; } details.task-fold .fold-class:first-child { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) { details.task-fold .fold-arrow { transition: none; } }

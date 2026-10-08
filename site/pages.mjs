@@ -743,8 +743,8 @@ export function packagePage(pkg, model, version = pkg.version) {
       const bestOf = (id) => every.map((a) => a.entry.grades[id]).filter((g) => g?.class).sort((a, b) => a.ratio - b.ratio)[0]
       const chips = ['cpu', 'memory'].map((id) => (bestOf(id) ? `<span class="fold-class">${RANKINGS[id].title} ${chip(id, bestOf(id))}</span>` : '')).filter(Boolean).join('')
       return `<details class="task-fold"${taskCount <= 2 ? ' open' : ''}>
-<summary title="Option-click to open or close every task"><h2>${esc(data.task.title)}</h2><span class="soft">${chips}</span></summary>
-<p class="soft"><a href="${urls.task(data.task.id)}">${esc(data.task.title)}: every package in this task</a></p>
+<summary title="Option-click to open or close every task"><div class="fold-head"><span class="fold-arrow" aria-hidden="true"></span><h2>${esc(data.task.title)}</h2><span class="fold-classes">${chips}</span></div></summary>
+<p class="soft"><a href="${urls.task(data.task.id)}">Every package in this task</a></p>
 ${views.map(([view, rows]) => (view ? `<div class="settings-view" data-settings="${view}">\n${section(data, rows, view)}\n</div>` : section(data, rows, view))).join('\n')}
 </details>`
     })
