@@ -1,0 +1,111 @@
+{
+  "task": "template-rendering/loop-escaped",
+  "ecosystem": "rubygems",
+  "package": "erubis",
+  "version": "2.7.0",
+  "dependencies": {},
+  "install": {
+    "kind": "install",
+    "bytes": 1327805,
+    "packages": 1
+  },
+  "runtime": "ruby-yjit",
+  "runtimeVersion": "4.0.1",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "9ae2943c4e91e3e9",
+    "task": "b587233e10348325",
+    "adapters": "4a9184041d22e5e6",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/handlebars": "6.4.4",
+      "cargo/tinytemplate": "1.2.1",
+      "gomod/alecthomas-template": "v0.0.0-20190718012654-fb15b899a751",
+      "jsr/@bgub/eta": "4.6.0",
+      "jsr/@eta-dev/eta": "3.5.0",
+      "pypi/jinja2": "3.1.6",
+      "pypi/mako": "1.4.3",
+      "rubygems/erubi": "1.13.1",
+      "rubygems/erubis": "2.7.0",
+      "rubygems/tilt": "2.9.0"
+    }
+  },
+  "measuredAt": "2026-10-08T02:52:23.454Z",
+  "source": "741005c276da334f",
+  "baseline": {
+    "runtime": "ruby-yjit",
+    "runtimeVersion": "4.0.1",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "1cec02279c71132e",
+      "task": "b587233e10348325",
+      "adapters": "c430fb2c4c1e7768",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/handlebars": "6.4.4",
+        "cargo/tinytemplate": "1.2.1",
+        "jsr/@bgub/eta": "4.6.0",
+        "jsr/@eta-dev/eta": "3.5.0"
+      }
+    },
+    "measuredAt": "2026-10-07T16:22:09.028Z",
+    "kind": "warm",
+    "task": "template-rendering/loop-escaped",
+    "runs": [
+      {
+        "rssBytes": 20905984,
+        "footprintBytes": 11829752,
+        "heapUsedBytes": 1533472,
+        "peakRssBytes": 20922368
+      },
+      {
+        "rssBytes": 20873216,
+        "footprintBytes": 11813368,
+        "heapUsedBytes": 1533472,
+        "peakRssBytes": 20889600
+      },
+      {
+        "rssBytes": 20987904,
+        "footprintBytes": 11911672,
+        "heapUsedBytes": 1533472,
+        "peakRssBytes": 21004288
+      }
+    ]
+  },
+  "status": "verify-failed",
+  "error": "fixture 0\n+ actual - expected\n\n+ `<section title=\"Catalog 0\"><h1>Catalog 0</h1><p>By Ann Lee</p><ul><li id=\"item-0\" class=\"item featured\" title=\"Widget 0\"><b>Widget 0</b><span>100</span></li><li id=\"item-1\" class=\"item\" title=\"Tom &amp; Jerry &lt;b&gt; 1\"><b>Tom &amp; Jerry &lt;b&gt; 1</b><span>191</span><em>Fragile</em><i>sale &amp; clearance</i></li><li id=\"item-2\" class=\"item\" title=\"say &quot;hi&quot; 2\"><b>say &quot;hi&quot; 2</b><span>282</span><em>5 &lt; 6 &amp;&amp; 7 &gt; 3</em><i>&lt;hot&gt;</i><i>it's</i></li></ul><p>3 items</p></section>`\n- '<section title=\"Catalog 0\"><h1>Catalog 0</h1><p>By Ann Lee</p><ul><li id=\"item-0\" class=\"item featured\" title=\"Widget 0\"><b>Widget 0</b><span>100</span></li><li id=\"item-1\" class=\"item\" title=\"Tom &amp; Jerry &lt;b&gt; 1\"><b>Tom &amp; Jerry &lt;b&gt; 1</b><span>191</span><em>Fragile</em><i>sale &amp; clearance</i></li><li id=\"item-2\" class=\"item\" title=\"say &quot;hi&quot; 2\"><b>say &quot;hi&quot; 2</b><span>282</span><em>5 &lt; 6 &amp;&amp; 7 &gt; 3</em><i>&lt;hot&gt;</i><i>it&#39;s</i></li></ul><p>3 items</p></section>'\n"
+}
