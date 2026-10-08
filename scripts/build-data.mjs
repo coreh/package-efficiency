@@ -123,6 +123,7 @@ const SWEPT = { pypi: 'python', rubygems: 'ruby', cargo: 'cargo', gomod: 'go' }
 // package. Go has no prebuilt standard library to check against, so its sweep
 // subtracts the standard library packages the module uses.
 const SWEPT_BASIS = {
+  cargo: 'A program that only depends on the crate is checked from nothing, the crate and its whole dependency tree, and the same check of an empty program is subtracted, with the time cargo and rustc take to start once for every crate in the tree.',
   gomod: 'A program that only imports the module is checked from source, and the same check of a program that imports only the standard library packages it uses is subtracted.',
 }
 const SWEPT_BASIS_DEFAULT = 'A program that only loads the package is checked, and the same check of an empty program is subtracted.'
@@ -143,10 +144,15 @@ function installNote(result) {
 }
 const sweeps = {}
 for (const id of Object.keys(SWEPT)) sweeps[id] = await readJson(fromRoot('data', id, 'types.json'), null)
+// Cargo starts one rustc for every crate of a tree. What one start costs
+// (scripts/sweep-types/cargo-startup.mjs) is taken off once per compiled crate,
+// so that a tree of many small crates is not graded by its compiler starts.
+const cargoStartup = await readJson(fromRoot('data/cargo/startup.json'), null)
+const startCpuMs = (ecosystemId, found) => (ecosystemId === 'cargo' && cargoStartup ? cargoStartup.perCrateCpuMs * (found.compiledCrates ?? 0) : 0)
 function sweptCheck(ecosystemId, name) {
   const file = sweeps[ecosystemId], found = file?.packages?.[name]
   if (found?.status !== 'ok' || !found.added) return null
-  const cpuMs = round(Math.max(0, found.added.cpuMs), 1), memoryMb = round(Math.max(0, found.added.memoryMb), 2)
+  const cpuMs = round(Math.max(0, found.added.cpuMs - startCpuMs(ecosystemId, found)), 1), memoryMb = round(Math.max(0, found.added.memoryMb), 2)
   return { tool: [file.checker?.tool, file.checker?.version].filter(Boolean).join(' '), version: found.version ?? null, from: found.typesFrom ?? null, community: !!found.communityTypes, cpuMs, memoryMb, value: round((memoryMb * Math.max(cpuMs, 10)) / 1000, 5) }
 }
 

@@ -175,6 +175,8 @@ const aliases = await readJson(fromRoot('data/category-aliases.json'), {})
 const catalog = { groups, categories: taxonomy, aliases, byEcosystem: {}, byCategory: new Map() }
 // Type-check costs of whole packages from the sweeps (scripts/sweep-types/).
 const sweptTypes = {}
+// See cargoStartup in scripts/build-data.mjs.
+const cargoStartup = await readJson(fromRoot('data/cargo/startup.json'), null)
 for (const id of ['pypi', 'rubygems', 'cargo', 'gomod']) sweptTypes[id] = await readJson(fromRoot('data', id, 'types.json'), null)
 // Every package that has a benchmark adapter in the repository, measured or
 // not, as `<registry>/<name>` (Go modules by their family, from `module`).
@@ -197,7 +199,7 @@ for (const id of ecosystemIds) {
     const typed = id === 'npm' || id === 'jsr' ? typeData.packages[p.name] : null
     const tsgo = typed?.status === 'ok' ? typed.tsgo : null
     const swept = sweptTypes[id]?.packages?.[p.name]
-    const added = swept?.status === 'ok' ? swept.added : null
+    const added = swept?.status === 'ok' ? { ...swept.added, cpuMs: Math.max(0, swept.added.cpuMs - (id === 'cargo' && cargoStartup ? cargoStartup.perCrateCpuMs * (swept.compiledCrates ?? 0) : 0)) } : null
     const item = {
       ecosystem: id,
       name: p.name,
