@@ -313,15 +313,23 @@ const byRanking = (rankingId) => (a, b) => a.grades[rankingId].value - b.grades[
 // `older` marks an entry from a package's history rather than its latest version.
 // `embed` names other addresses for the label's embeddable shapes and the
 // page they link to: a package's best result has ones that follow the package.
-function card({ entry, data, runtime, rankingId, model, caption, linkPackage = true, older = entry.activeRelease === false, place = '', embed }) {
+// A label that is a link over its whole area. The short address printed on
+// the label is a link of its own inside it and still goes where it says.
+const linked = (svg, href, title) => (href ? `<a class="label-link" href="${esc(href)}" title="${esc(title)}">${svg}</a>` : svg)
+
+// `link`: where the label itself leads. By default the package's page; where
+// the package is not linked (its own page), this one result; null for none.
+function card({ entry, data, runtime, rankingId, model, caption, linkPackage = true, older = entry.activeRelease === false, place = '', embed, link }) {
   // A type-check figure with no class (the only package of its category that
   // has one) still gets its label, with no pointer. It has no file of its own
   // and no other shapes, so nothing to embed.
   const unclassed = rankingId === 'types' && !entry.grades.types && entry.types?.value != null
   if (unclassed) entry = { ...entry, grades: { ...entry.grades, types: { class: null, value: entry.types.value } }, adapter: { ...entry.adapter, notes: ['No class: it is the only package in its category with a type-check figure.', entry.adapter?.notes].filter(Boolean).join(' ') } }
-  const svg = renderLabel({ entry, data, runtime, rankingId })
-  if (!svg) return ''
+  const drawn = renderLabel({ entry, data, runtime, rankingId })
+  if (!drawn) return ''
   const pkg = model.packageOf(entry)
+  if (link === undefined) link = linkPackage ? urls.package(pkg, entry.version !== pkg.version ? entry.version : null) : urls.result(data.task.id, runtime.id, entry)
+  const svg = linked(drawn, link, linkPackage ? `${pkg.title}, all runtimes` : `${entry.title} on ${runtime.title}: this result`)
   // The label as a file of its own; the label menu copies and saves from it.
   const labelUrl = urls.label(data.task.id, runtime.id, entry.id, rankingId, older ? entry.version : null)
   embed ??= { base: urls.embedResult(data.task.id, runtime.id, entry.id, older ? entry.version : null, ''), page: urls.result(data.task.id, runtime.id, entry) }
@@ -1210,14 +1218,14 @@ ${rankings.map((id) => {
     const cards = rows.filter((row) => row[id]).sort((a, b) => (a[id].grade.ratio ?? a[id].grade.value) - (b[id].grade.ratio ?? b[id].grade.value)).map(({ pkg, rt, cpu, memory, types }) => {
       if (id === 'types') {
         const svg = renderLabel({ entry: types.at.entry, data: types.at.data, runtime: rt, rankingId: 'types' })
-        return svg ? `<li data-label><p class="over"></p>${svg}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all tasks</a></p></li>` : ''
+        return svg ? `<li data-label><p class="over"></p>${linked(svg, urls.package(pkg), `${pkg.title}, all tasks`)}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all tasks</a></p></li>` : ''
       }
       const tasks = cpu.pairs.length
       const svg = renderLabel({
         entry: { title: pkg.title, grades: { cpu: cpu.grade, memory: memory.grade }, metrics: overallSize(cpu.pairs), adapter: { notes: `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.` }, flags: [] },
         data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall, ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.category(category.id),
       })
-      return svg ? `<li data-label><p class="over"></p>${svg}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all tasks</a></p></li>` : ''
+      return svg ? `<li data-label><p class="over"></p>${linked(svg, urls.package(pkg), `${pkg.title}, all tasks`)}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all tasks</a></p></li>` : ''
     })
     return `<div class="ranked-panel" data-ranking="${id}">${shelf(cards)}</div>`
   }).join('\n')}
@@ -1432,7 +1440,7 @@ function featured(model) {
     const base = own ? urls.embed(data.task.id, pkg, '') : urls.embedResult(data.task.id, best.runtime.id, best.entry.id, null, '')
     const svg = overviewLabel({ entry: best.entry, data, runtime: best.runtime })
     if (!svg) return ''
-    return `<li data-label="${esc(`${base}overview.svg`)}" data-embed="${esc(base)}" data-embed-page="${esc(own ? urls.package(pkg) : urls.result(data.task.id, best.runtime.id, best.entry))}" data-embed-alt="${esc(`Package efficiency of ${best.entry.title}`)}" data-ranking="all" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => best.entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, best.runtime.id, best.entry.id, '{r}', null))}"><p class="over"></p>${svg}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all runtimes</a> &nbsp; <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a> &nbsp; <a href="${urls.result(data.task.id, best.runtime.id, best.entry)}">Permalink</a></p></li>`
+    return `<li data-label="${esc(`${base}overview.svg`)}" data-embed="${esc(base)}" data-embed-page="${esc(own ? urls.package(pkg) : urls.result(data.task.id, best.runtime.id, best.entry))}" data-embed-alt="${esc(`Package efficiency of ${best.entry.title}`)}" data-ranking="all" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => best.entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, best.runtime.id, best.entry.id, '{r}', null))}"><p class="over"></p>${linked(svg, urls.package(pkg), `${pkg.title}, all runtimes`)}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all runtimes</a> &nbsp; <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a> &nbsp; <a href="${urls.result(data.task.id, best.runtime.id, best.entry)}">Permalink</a></p></li>`
   }).filter(Boolean)
   return `<h2>Random packages</h2>
 <p class="soft">Four of the most used packages, drawn every day.</p>
@@ -1817,7 +1825,7 @@ function runtimeCards(tasks, model, scope, rankingId, only, basis = 'best') {
     .filter((s) => !only || s.runtime.id === only)
     .map((s) => {
       const summary = runtimeSummary(s, tasks, scope, basis, scopeKey)
-      const svg = renderLabel({ ...summary, rankingId })
+      const svg = linked(renderLabel({ ...summary, rankingId }), only ? null : urls.runtime(s.runtime.id), `${s.runtime.title}, all tasks`)
       const under = s[rankingId][other]
       // The tag sits above the label it is about. Every label in the row keeps
       // the same space there, tagged or not, so the labels stay level.
@@ -2053,7 +2061,7 @@ export function resultPage(data, runtime, entry, model) {
   const a = entry.adapter
   const who = a.author?.kind === 'human' ? 'a human' : `${a.author?.agent} (${a.author?.model})`
   const version = entry.builtin ? `built into ${runtime.title}` : entry.version ?? ''
-  const cards = Object.keys(RANKINGS).map((rankingId) => card({ entry, data, runtime, rankingId, model, linkPackage: false })).join('\n')
+  const cards = Object.keys(RANKINGS).map((rankingId) => card({ entry, data, runtime, rankingId, model, linkPackage: false, link: null })).join('\n')
   const title = `${entry.title}${entry.version ? ` ${entry.version}` : ''} on ${runtime.title} ${runtime.version}`
   return layout({
     title: `${title}, ${data.task.title}: Package Efficiency Labels`,
