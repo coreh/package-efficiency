@@ -53,7 +53,8 @@ function fill(variant) {
   if (before === after) return
   variant.dataset.address = after
   const request = entry.querySelector(`.api-request[data-format="${variant.dataset.format}"]`)
-  for (const code of request.querySelectorAll('.api-code code')) code.textContent = code.textContent.split(before).join(after)
+  // The address is a part of its own in each example, so the highlighting around it stays.
+  for (const url of request.querySelectorAll('.api-url')) url.textContent = after
 }
 
 // --- Sending, and showing what came back
@@ -72,17 +73,34 @@ function readable(text, type) {
   if (!type.includes('json') || text.length > 2e6) return text
   try { return JSON.stringify(JSON.parse(text), null, 2) } catch { return text }
 }
+// JSON in the colours of the site's highlighted code (the .hljs-* classes of
+// styles.css), made of text nodes and spans: nothing that came back is read as HTML.
+const JSON_PART = /("(?:\\.|[^"\\])*")(?=(\s*:)?)|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|[{}\[\],:]/g
+function paint(code, text, json) {
+  if (!json) { code.textContent = text; return }
+  const parts = []
+  let at = 0
+  for (const match of text.matchAll(JSON_PART)) {
+    if (match.index > at) parts.push(text.slice(at, match.index))
+    const kind = match[1] ? (match[2] !== undefined ? 'attr' : 'string') : /^[{}\[\],:]$/.test(match[0]) ? 'punctuation' : /^[tfn]/.test(match[0]) ? 'literal' : 'number'
+    parts.push(element('span', `hljs-${kind}`, match[0]))
+    at = match.index + match[0].length
+  }
+  parts.push(text.slice(at))
+  code.replaceChildren(...parts)
+}
 // The body in a box, cut to its first lines, with a button for the rest.
-function bodyBox(text) {
+function bodyBox(text, json) {
   const lines = text.split('\n')
   const box = element('pre', 'api-sample')
   box.tabIndex = 0
-  const code = box.appendChild(element('code', '', lines.slice(0, SHOWN_LINES).join('\n')))
+  const code = box.appendChild(element('code'))
+  paint(code, lines.slice(0, SHOWN_LINES).join('\n'), json)
   if (lines.length <= SHOWN_LINES) return [box]
   const most = Math.min(lines.length, MOST_LINES)
   const more = element('button', 'api-more', lines.length > MOST_LINES ? `Show the first ${most.toLocaleString('en-US')} of ${lines.length.toLocaleString('en-US')} lines` : `Show all ${lines.length.toLocaleString('en-US')} lines`)
   more.type = 'button'
-  more.addEventListener('click', () => { code.textContent = lines.slice(0, most).join('\n'); more.remove() })
+  more.addEventListener('click', () => { paint(code, lines.slice(0, most).join('\n'), json); more.remove() })
   return [box, more]
 }
 async function send(variant) {
@@ -111,7 +129,7 @@ async function send(variant) {
       image.src = URL.createObjectURL(blob)
       parts.push(image)
     }
-    if (response.ok) parts.push(...bodyBox(readable(await blob.text(), type)))
+    if (response.ok) parts.push(...bodyBox(readable(await blob.text(), type), type.includes('json')))
     result.replaceChildren(...parts)
   } catch (error) {
     result.replaceChildren(head, element('p', 'api-status', `No answer: ${error.message}`))

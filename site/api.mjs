@@ -7,7 +7,7 @@
 // pages.mjs may import this file in turn.
 import { RANKINGS, resultPath, shortCodes } from './label.mjs'
 import { ECOSYSTEMS, allKnownPackages, catalogUrl, categoryHref, eventMedals, runtimeMedals, runtimeScores, searchIndex, statusOf, urls, versionsOf } from './pages.mjs'
-import { adapterIdOf } from './source.mjs'
+import { adapterIdOf, highlighted } from './source.mjs'
 import * as exportsOf from './exports.mjs'
 
 const SITE = 'https://package-efficiency.org'
@@ -825,6 +825,8 @@ function variantFacts(spec, { path, op, also }) {
   const named = schema && (schema.$ref || schema.items?.$ref || schema.anyOf)
   return {
     status, media, address,
+    // Whether the JSON is a list (of rows) or one object.
+    list: Boolean(schema && (schema.type === 'array' || schema.anyOf || deref(spec, schema).type === 'array')),
     url: `${spec.servers[0].url}${address}`,
     curl: `curl ${status === 308 ? '-sI' : '-sL'} ${spec.servers[0].url}${address}`,
     params: (op.parameters ?? []).map((p) => deref(spec, p)),
@@ -865,12 +867,16 @@ ${entry.variants.map((variant) => {
 // in the try box into these parts.
 const pathHtml = (path) => esc(path).replace(/\{(\w+)\}/g, '<span class="api-param" data-name="$1">{$1}</span>')
 
-// The same request in each language of the picker: a few lines that run as
-// they are, with nothing to install (Python and Ruby use their standard
-// libraries). For a redirect the example prints where it leads.
-const LANGUAGES = [['curl', 'curl'], ['javascript', 'JavaScript'], ['python', 'Python'], ['ruby', 'Ruby']]
-function requestExamples({ url, status, media }) {
+// The same request in each language the site has packages for, and curl: a
+// small program that runs as it is. JavaScript, Python, Ruby and Go use what
+// comes with the language; Rust has no HTTP client of its own, so its example
+// names the one crate it needs. For a redirect the example prints where it
+// leads. Each is [id, name on its tab, name in full, highlight.js language].
+const LANGUAGES = [['curl', 'curl', 'curl', 'bash'], ['javascript', 'JavaScript', 'JavaScript and TypeScript', 'javascript'], ['python', 'Python', 'Python', 'python'], ['ruby', 'Ruby', 'Ruby', 'ruby'], ['go', 'Go', 'Go', 'go'], ['rust', 'Rust', 'Rust', 'rust']]
+function requestExamples({ url, status, media, list }) {
   const json = media === MEDIA.json, redirect = status === 308
+  const go = (imports, body) => `package main\n\nimport (\n${imports.map((name) => `\t"${name}"`).join('\n')}\n)\n\nfunc main() {\n\tresponse, err := http.Get("${url}")\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tdefer response.Body.Close()\n\tif response.StatusCode != http.StatusOK {\n\t\tlog.Fatal(response.Status)\n\t}\n${body}\n}`
+  const rust = (dependencies, uses, body) => `// The standard library has no HTTP client: this uses the ureq crate.\n// Cargo.toml: ${dependencies.join('\n//             ')}\n${uses}fn main() -> Result<(), ureq::Error> {\n${body}\n    Ok(())\n}`
   return {
     curl: `curl ${redirect ? '-sI' : '-sL'} ${url}`,
     javascript: redirect
@@ -884,8 +890,26 @@ function requestExamples({ url, status, media }) {
       : json
         ? `require 'json'\nrequire 'open-uri'\n\ndata = JSON.parse(URI.open('${url}').read)`
         : `require 'open-uri'\n\ntext = URI.open('${url}').read`,
+    go: redirect
+      ? go(['fmt', 'log', 'net/http'], '\n\tfmt.Println(response.Request.URL)')
+      : json
+        ? go(['encoding/json', 'fmt', 'log', 'net/http'], `\n\tvar data ${list ? '[]map[string]any' : 'map[string]any'}\n\tif err := json.NewDecoder(response.Body).Decode(&data); err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tfmt.Println(len(data), "${list ? 'rows' : 'fields'}")`)
+        : go(['fmt', 'io', 'log', 'net/http'], '\n\ttext, err := io.ReadAll(response.Body)\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tfmt.Print(string(text))'),
+    rust: redirect
+      ? rust(['ureq = "3"'], 'use ureq::ResponseExt;\n\n', `    let response = ureq::get("${url}").call()?;\n    println!("{}", response.get_uri());`)
+      : json
+        ? rust(['ureq = { version = "3", features = ["json"] }', 'serde_json = "1"'], '', `    let data: serde_json::Value = ureq::get("${url}")\n        .call()?\n        .body_mut()\n        .read_json()?;\n    println!("{data}");`)
+        : rust(['ureq = "3"'], '', `    let text = ureq::get("${url}")\n        .call()?\n        .body_mut()\n        .read_to_string()?;\n    print!("{text}");`),
   }
 }
+// An example as highlighted HTML, by the site's own highlighter (the one of
+// the benchmark source pages), with its address in a part of its own: the
+// script writes what is typed in the try box into that part as text, and the
+// highlighting around it stays.
+const ADDRESS = 'APIADDRESS0000'
+const exampleHtml = (text, url, language) => highlighted(text.split(url).join(ADDRESS), language).split(ADDRESS).join(`<span class="api-url">${esc(url)}</span>`)
+// A sample of an answer, highlighted where the site's highlighter knows the format.
+const sampleHtml = (text, media) => highlighted(text, { [MEDIA.json]: 'json', [MEDIA.md]: 'markdown' }[media], { lenient: true })
 
 // A field of the try box for one parameter: a select where the values are a
 // short fixed list, otherwise a text field, with a few real values offered.
@@ -927,13 +951,14 @@ function requestHtml(spec, entry, variant) {
   return `<div class="api-request" data-format="${esc(slug(variant.format))}">
 ${entry.variants.length > 1 ? `<h4 class="api-format">${esc(variant.format)}</h4>` : ''}
 <div class="api-box">
-<div class="api-box-head"><span class="api-box-title">Request</span><span class="api-tabs" role="group" aria-label="Language" hidden>${LANGUAGES.map(([id, name]) => `<button type="button" data-language="${id}">${name}</button>`).join('')}</span><button type="button" class="api-copy" hidden title="Copy the example that is shown">Copy</button></div>
-${LANGUAGES.map(([id, name]) => `<div class="api-code" data-language="${id}"><h5 class="api-language">${name}</h5><pre tabindex="0"><code>${esc(examples[id])}</code></pre></div>`).join('\n')}
+<div class="api-box-head"><span class="api-box-title">Request</span><button type="button" class="api-copy" hidden title="Copy the example that is shown">Copy</button></div>
+<div class="api-tabs" role="group" aria-label="Language" hidden>${LANGUAGES.map(([id, name, full]) => `<button type="button" data-language="${id}"${full === name ? '' : ` title="${full}"`}>${name}</button>`).join('')}</div>
+${LANGUAGES.map(([id, , full, language]) => `<div class="api-code" data-language="${id}"><h5 class="api-language">${full}</h5><pre tabindex="0"><code>${exampleHtml(examples[id], facts.url, language)}</code></pre></div>`).join('\n')}
 </div>
 <div class="api-box api-result" hidden aria-live="polite"></div>
 ${facts.sample || figure ? `<div class="api-box">
 <div class="api-box-head"><span class="api-box-title">Example response${facts.sample ? ', cut short' : ''}</span></div>
-${facts.sample ? `<pre class="api-sample" tabindex="0"><code>${esc(facts.sample)}</code></pre>` : ''}${figure}
+${facts.sample ? `<pre class="api-sample" tabindex="0"><code>${sampleHtml(facts.sample, facts.media)}</code></pre>` : ''}${figure}
 </div>` : ''}
 </div>`
 }

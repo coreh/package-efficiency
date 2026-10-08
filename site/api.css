@@ -110,9 +110,10 @@
 .api-box[hidden] { display: none; }
 .api-box-head { display: flex; align-items: center; gap: 4px 14px; flex-wrap: wrap; min-height: 2rem; padding: 0 0 0 12px; border-bottom: 1px solid var(--rule); background: var(--bg); font-size: 0.8125rem; }
 .api-box-title { font-weight: 700; margin-right: auto; padding: 5px 0; }
-.api-tabs { display: flex; gap: 0 12px; }
+/* The languages have a row of their own, which scrolls sideways if it must. */
+.api-tabs { display: flex; gap: 0 14px; padding: 0 12px; border-bottom: 1px solid var(--rule); background: var(--bg); font-size: 0.8125rem; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
 .api-tabs[hidden] { display: none; }
-.api-tabs button { -webkit-appearance: none; appearance: none; font: inherit; color: var(--soft); background: none; border: 0; border-radius: 0; padding: 6px 0 4px; border-bottom: 2px solid transparent; cursor: pointer; }
+.api-tabs button { flex: none; -webkit-appearance: none; appearance: none; font: inherit; color: var(--soft); background: none; border: 0; border-radius: 0; padding: 6px 0 4px; border-bottom: 2px solid transparent; cursor: pointer; }
 .api-tabs button:hover { color: var(--ink); }
 .api-tabs button[aria-pressed='true'] { color: var(--ink); font-weight: 700; border-bottom-color: var(--ink); }
 .api-copy { align-self: stretch; padding: 0 12px; min-width: 4.2rem; border-width: 0 0 0 1px; border-color: var(--rule); }
@@ -120,7 +121,8 @@
 .api-box-head > :last-child:not(.api-copy) { margin-right: 12px; }
 .api-language { margin: 0; padding: 6px 12px 0; font-size: 0.75rem; font-weight: 700; color: var(--soft); }
 .api-live .api-language, .api-live .api-code:not(.api-on) { display: none; }
-.api-code pre, .api-box .api-sample { margin: 0; padding: 9px 12px; border: 0; background: none; max-width: none; overflow: auto; scrollbar-width: thin; tab-size: 2; }
+.api-code pre, .api-box .api-sample { margin: 0; padding: 9px 12px; border: 0; background: none; max-width: none; overflow: auto; scrollbar-width: thin; tab-size: 4; }
+.api-code pre { max-height: 24rem; }
 .api-code code, .api-sample code { display: block; width: max-content; min-width: 100%; font-weight: 400; white-space: pre; }
 .api-box .api-sample { max-height: 22rem; }
 .api-figure { display: block; max-width: calc(100% - 24px); max-height: 220px; width: auto; height: auto; margin: 10px 12px; }

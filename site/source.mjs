@@ -17,6 +17,13 @@ const ORDER = ['task.md', 'task.json', 'scenario.mjs', 'prepare.mjs', 'adapter.j
 
 const escape = (text) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
+// Code as highlighted HTML, in the classes that styles.css colours (.hljs-*).
+// `language` is a highlight.js name (javascript, python, ruby, go, rust, bash,
+// json, markdown and so on); without one the text is only escaped. `lenient`
+// is for text that is not quite the language, such as JSON that has been cut
+// short: what does not fit is left plain.
+export const highlighted = (text, language, { lenient = false } = {}) => (language ? hljs.highlight(text, { language, ignoreIllegals: lenient }).value : escape(text))
+
 // Files under `dir` (relative to the repository root), as repository paths.
 function walk(dir, { deep = true } = {}) {
   return readdirSync(path.join(ROOT, dir))
@@ -39,7 +46,7 @@ function load(file, base) {
     // The plain text and its language, for the Markdown version of a page.
     text,
     language: language ?? '',
-    html: language ? hljs.highlight(text, { language }).value : escape(text),
+    html: highlighted(text, language),
   }
 }
 
