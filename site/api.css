@@ -1,0 +1,57 @@
+/* The API reference (site/api.mjs): addresses, their parameters, a sample of
+   what each answers with, and the fields of the JSON files. Colours are the
+   page's own, so dark mode follows without rules of its own. */
+.api-toc ul, .api-list { list-style: none; padding: 0; max-width: none; }
+.api-toc ul { display: flex; flex-wrap: wrap; gap: 4px 22px; font-weight: 600; }
+.api-toc li .soft { font-weight: 400; margin-left: 3px; font-variant-numeric: tabular-nums; }
+/* The addresses of a group, before their sections. */
+.api-list { columns: 2 24rem; column-gap: 28px; margin: 0 0 6px; font-size: 0.8125rem; }
+.api-list li { break-inside: avoid; padding: 1px 0; overflow-wrap: anywhere; }
+.api-list a { text-decoration: none; }
+.api-list a:hover { text-decoration: underline; }
+.api-list code, .api-path, .api-sample code, .api-curl code { font: 0.75rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+
+/* One address. A link to it leaves room for the bar at the top of the page. */
+.api-op, .api-schema { margin: 0; padding: 14px 0 6px; border-top: 1px solid var(--rule); scroll-margin-top: 56px; }
+h2[id] { scroll-margin-top: 56px; }
+.api-op:target .api-sig, .api-schema:target h3 { box-shadow: -4px 0 0 var(--bg), -8px 0 0 var(--mark); }
+/* The method and the path: a long path scrolls sideways inside its own box. */
+.api-sig { display: flex; align-items: stretch; gap: 0; margin: 0 0 8px; max-width: 100%; font-size: 0.8125rem; }
+.api-method { flex: none; display: grid; place-items: center; padding: 0 9px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.02em; }
+.api-path { flex: 0 1 auto; min-width: 0; padding: 5px 10px; border: 1px solid var(--ink); border-left: 0; background: var(--bg); font-weight: 600; white-space: nowrap; overflow-x: auto; scrollbar-width: thin; }
+/* A part of the path to fill in. */
+.api-param { font-weight: 400; color: var(--soft); }
+.api-op > p, .api-schema > p { max-width: 86ch; }
+.api-returns { color: var(--soft); margin-bottom: 6px; }
+.api-returns a { color: var(--ink); }
+
+/* Parameters and fields: the description is the one cell that wraps. */
+.api-table { min-width: min(100%, 34rem); }
+.api-table th, .api-table td { vertical-align: top; }
+.api-table td.api-wrap { white-space: normal; min-width: 15rem; max-width: 58ch; overflow-wrap: break-word; }
+.api-table td:first-child .soft { margin-left: 6px; font-size: 0.75rem; }
+.api-type { color: var(--soft); }
+.api-type a { color: var(--ink); }
+.api-facts th { text-align: left; font-weight: 700; padding-right: 16px; white-space: nowrap; }
+.api-facts tr:first-child th, .api-facts tr:first-child td { border-top: 1px solid var(--rule); }
+.api-fields { margin-bottom: 4px; }
+
+/* A sample of the answer, and the command that asks for it. */
+.api-sample { margin: 0 0 8px; padding: 8px 12px; max-width: 86ch; max-height: 22rem; overflow: auto; background: var(--band); border: 1px solid var(--rule); tab-size: 2; }
+.api-sample code { display: block; width: max-content; min-width: 100%; font-weight: 400; white-space: pre; }
+.api-figure { display: block; max-width: 100%; max-height: 220px; width: auto; height: auto; margin: 0 0 8px; }
+.api-curl { display: flex; align-items: stretch; gap: 0; max-width: 86ch; margin: 0 0 12px; }
+.api-curl code { flex: 1 1 auto; min-width: 0; padding: 5px 10px; border: 1px solid var(--rule); background: var(--band); color: var(--ink); font-weight: 400; white-space: nowrap; overflow-x: auto; scrollbar-width: thin; user-select: all; -webkit-user-select: all; }
+.api-copy { flex: none; font: inherit; font-size: 0.8125rem; font-weight: 600; padding: 0 12px; min-width: 4.4rem; color: var(--ink); background: var(--bg); border: 1px solid var(--ink); margin-left: -1px; cursor: pointer; }
+.api-copy:hover { background: var(--mark); color: #000; border-color: #000; }
+.api-copy[hidden] { display: none; }
+
+@media (max-width: 760px) {
+  .api-list { columns: 1; }
+  .api-table td.api-wrap { min-width: 13rem; }
+  .api-sample { max-height: 18rem; }
+}
+@media print {
+  .api-copy { display: none; }
+  .api-sample { max-height: none; }
+}
