@@ -167,6 +167,7 @@ const SWEPT = { pypi: 'python', rubygems: 'ruby', cargo: 'cargo', gomod: 'go' }
 // package. Go has no prebuilt standard library to check against, so its sweep
 // subtracts the standard library packages the module uses.
 const SWEPT_BASIS = {
+  pypi: 'A program that only imports the package is checked, and the same check of a program that imports only the standard library modules it uses is subtracted.',
   rubygems: 'A program that only loads the gem\'s signatures is checked, and the same check of the standard library signatures it uses is subtracted.',
   cargo: 'A program that only depends on the crate is checked from nothing, the crate and its whole dependency tree, and the same check of an empty program is subtracted, with the time cargo and rustc take to start once for every crate in the tree.',
   gomod: 'A program that only imports the module is checked from source, and the same check of a program that imports only the standard library packages it uses is subtracted.',
