@@ -566,7 +566,7 @@ export function llmsText(model, ecosystems, { url = (path) => path }) {
 
 > Efficiency classes from A to G for software packages across npm, JSR, PyPI, RubyGems, Go modules and crates.io: CPU time, memory and type-check cost, measured per task and compared with the best result in any language or runtime. Provisional, and updated as packages are measured.
 
-Switching languages, runtimes, frameworks and libraries has never been cheaper, yet compute and RAM keep getting pricier.
+Compute and RAM keep getting pricier. Switching languages, runtimes and libraries has never been cheaper.
 
 This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (see Limitations below), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.
 

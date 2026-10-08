@@ -1449,7 +1449,7 @@ export function homePage(model) {
     model,
     body: `<main>
 <div class="pitch">
-<h1 class="tagline">Switching languages, runtimes, frameworks and libraries has never been cheaper, yet compute and RAM keep getting pricier.</h1>
+<h1 class="tagline">Compute and RAM keep getting pricier. Switching languages, runtimes and libraries has never been cheaper.</h1>
 <p>This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (<a href="#limitations">see limitations</a>), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.</p>
 <p>Choose a <a href="/categories/">category</a> or search for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${BUILD_DATE}.</p>
 </div>
