@@ -1,0 +1,35 @@
+{
+  "category": "http-server-routing",
+  "task": "dispatch-requests",
+  "title": "Dispatch requests through an application with 100 routes",
+  "summary": "Hand in-memory requests to an application with 100 registered parameterized routes, await its answer, and return which handler ran and its parameters.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 1
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 60,
+  "notes": "An asynchronous task on one thread: each operation is one request given to the application's own in-memory entry point and awaited. No socket, no HTTP parsing and no timer is involved. The figure is the framework's whole dispatch (its request and context objects, routing, parameter decoding, calling the handler, and its own 404 on a miss) plus one await of the runtime per request; handlers do no work and build no response body. Rust runs on a single-thread executor."
+}

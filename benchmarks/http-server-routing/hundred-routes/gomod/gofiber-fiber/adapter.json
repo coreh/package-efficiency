@@ -1,0 +1,17 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "title": "gofiber/fiber",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "module": "github.com/gofiber/fiber/v3",
+  "notes": "app.Handler() called with a fasthttp.RequestCtx made once per fixture, no connection: Fiber's context and routing. The handler copies its params; on a miss Fiber's error handler writes its 404 or 405 text.",
+  "details": "Fiber has no public matcher, so the request is dispatched through the fasthttp handler that app.Handler() returns, as its own benchmarks do. Included besides routing: acquiring and releasing Fiber's context and reading method and path from the fasthttp request (parsed on the first call, cached by fasthttp after that). Parameter values point into the request buffer by default, so the handler copies them, as Fiber's documentation requires for a value kept after the handler. On a miss the default error handler sets status and a short text body in the in-memory response; nothing is written anywhere. The response is reset before each call."
+}

@@ -666,6 +666,25 @@ export const versionsOf = (pkg) =>
   [...new Set([pkg.version, ...pkg.appearances.map(a=>a.entry.version), ...pkg.history.map((a) => a.entry.version)].filter(Boolean))].sort((a, b) => b.localeCompare(a, 'en', { numeric: true }))
 
 // `version` selects an earlier version; without it the page is for the latest.
+// Which measured packages each measured package was installed with, both
+// ways, from the dependencies its results record. Worked out once.
+function packageLinks(model) {
+  if (model.packageLinks) return model.packageLinks
+  const byKey = new Map(model.packages.map((p) => [`${p.ecosystem}/${p.name}`, p]))
+  const uses = new Map(), usedBy = new Map()
+  const add = (map, key, value) => map.set(key, (map.get(key) ?? new Set()).add(value))
+  for (const p of model.packages) {
+    const names = new Set(p.appearances.flatMap((a) => (a.entry.adapter?.dependencies ?? []).map((d) => d.slice(0, d.lastIndexOf('@')))))
+    for (const name of names) {
+      const other = byKey.get(`${p.ecosystem}/${name}`)
+      if (!other || other === p) continue
+      add(uses, `${p.ecosystem}/${p.name}`, other)
+      add(usedBy, `${other.ecosystem}/${other.name}`, p)
+    }
+  }
+  return (model.packageLinks = { uses, usedBy })
+}
+
 export function packagePage(pkg, model, version = pkg.version) {
   // Shared applications already shown on this page (see inlineSource).
   const shownApps = new Set()
@@ -771,6 +790,16 @@ ${adapterList}`
 
   const runsOn = [...new Set(shown.map((a) => a.runtime.title))]
   const status = older ? (pkg.appearances.some(a=>a.entry.version===version) ? `${/-/.test(version) ? 'A pre-release, measured with the default' : 'A second current release line, measured with the default'}; the default is ${esc(pkg.version)}.` : `An earlier version. It is not in the rankings. The default full release is ${esc(pkg.version)}.`) : versions.length > 1 ? 'The default full release. Rankings use this version.' : ''
+  // Measured packages this one was installed with (its dependencies, as the
+  // results record them) and measured packages that were installed with it.
+  // A framework's page so leads to the router or parser inside it.
+  const links = packageLinks(model)
+  const key = `${pkg.ecosystem}/${pkg.name}`
+  const relatedList = (packages) => `<ul>${packages.map((p) => `<li><a href="${urls.package(p)}">${esc(p.title)}</a>, measured in ${[...new Set(p.appearances.map((a) => a.data.task.category))].map((id) => model.categories.find((c) => c.id === id)).filter(Boolean).map((c) => `<a href="${urls.category(c.id)}">${esc(c.title)}</a>`).join(', ')}</li>`).join('')}</ul>`
+  const builtOn = [...(links.uses.get(key) ?? [])], usedBy = [...(links.usedBy.get(key) ?? [])]
+  const related = builtOn.length || usedBy.length
+    ? `<h2 id="related">Related packages</h2>\n${builtOn.length ? `<p class="soft">${esc(pkg.title)} was installed with these packages, which are measured on their own:</p>\n${relatedList(builtOn)}` : ''}${usedBy.length ? `<p class="soft">These measured packages were installed with ${esc(pkg.title)}:</p>\n${relatedList(usedBy)}` : ''}`
+    : ''
   // The categories this package is measured in, as tiles under its name, and
   // at the foot of the page every package of those categories in one table,
   // with this package's rows marked.
@@ -798,6 +827,7 @@ ${versionNav}
 ${hasSettings ? `<div class="switches package-settings">${switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')}</div>` : ''}
 ${failures.length ? `<section class="compatibility" aria-label="Benchmark compatibility">${failures.map(({runtime,entry})=>`<div class="compatibility-item"><p><strong>${esc(runtime.title)} unavailable.</strong> ${esc(entry.notes ?? 'This version of the package did not complete the task on this runtime.')}</p><details><summary>Details</summary><pre>${esc(entry.error)}</pre></details></div>`).join('')}</section>` : ''}
 ${sections}
+${related}
 ${comparison}
 </main>`,
   })

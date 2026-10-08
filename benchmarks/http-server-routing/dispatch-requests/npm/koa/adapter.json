@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "dependencies": [
+    "@koa/router"
+  ],
+  "executor": "event loop",
+  "notes": "Koa has no router; @koa/router is the usual one. await app.callback()(req, res) with stand-in request and response objects. Handlers set ctx.respond = false; on a miss Koa writes its 404 text to the stand-in.",
+  "details": "Koa itself only runs middleware, so the routes are registered on @koa/router, as in this site's HTTP server task, and its routes() middleware is the application's only middleware. One operation awaits the handler that app.callback() returns, with a minimal request object ({ method, url, headers }) and a stand-in for http.ServerResponse that holds headers in a plain object. Included: Koa's context, request and response objects, on-finished registration, the router's linear scan over 100 path-to-regexp layers, parameter decoding. Handlers set ctx.respond = false, Koa's documented way to leave the response alone; on a miss Koa sets headers and ends the stand-in with its 404 text. @koa/router's synchronous match() is marked private, so there is no entry in hundred-routes."
+}

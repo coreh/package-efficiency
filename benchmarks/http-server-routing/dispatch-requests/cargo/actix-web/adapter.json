@@ -1,0 +1,12 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "executor": "actix-rt System (tokio current-thread)",
+  "notes": "App turned into its service with test::init_service, called with an actix_http::Request built per call from a parsed method and URI. Param handlers extract web::Path<String>; replies are empty.",
+  "details": "The application service is what actix-web's HTTP layer calls for each request; test::init_service is the documented way to get it without a server. Each call makes an actix_http::Request (from actix-http's message pool) and sets the method and the URI parsed once per fixture; test::TestRequest is not used because it also builds a resource map and configuration per request. 50 resources hold two method routes each. Handlers return HttpResponse::Ok(); a miss gets the empty 404 or 405 of actix-web."
+}
