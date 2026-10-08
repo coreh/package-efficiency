@@ -658,3 +658,15 @@ details.more-deps[open] > summary { text-decoration: none; }
 /* A package's related packages, under its category tiles. */
 .related { max-width: 60rem; margin: .2rem 0 1.2rem; }
 .related p { margin: 0 0 .35em; }
+
+/* A task on a package's page, folded under its heading. */
+details.task-fold { border-top: 3px solid var(--ink); margin: 1.6rem 0 0; }
+details.task-fold > summary { display: flex; align-items: baseline; gap: .9rem; flex-wrap: wrap; cursor: pointer; padding: .55rem 0 .45rem; list-style: none; }
+details.task-fold > summary::-webkit-details-marker { display: none; }
+details.task-fold > summary::before { content: ''; flex: none; align-self: center; width: 0; height: 0; border-left: .5em solid currentColor; border-top: .34em solid transparent; border-bottom: .34em solid transparent; transition: transform .12s; }
+details.task-fold[open] > summary::before { transform: rotate(90deg); }
+details.task-fold > summary h2 { margin: 0; border: 0; padding: 0; font-size: 1.15rem; }
+details.task-fold > summary .cls { vertical-align: baseline; }
+@media (prefers-reduced-motion: reduce) { details.task-fold > summary::before { transition: none; } }
+details.task-fold > summary .fold-class { margin-right: .9em; white-space: nowrap; }
+details.task-fold > summary .fold-class .cls { margin-left: .3em; }

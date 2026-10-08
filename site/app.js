@@ -1371,12 +1371,14 @@ for (const holder of document.querySelectorAll('[data-label]')) {
 }
 
 // Option (Alt) and a click on a source file's heading opens or closes every
-// source file of the page at once, as on GitHub.
+// source file of the page at once, as on GitHub. The same for the tasks of a
+// package's page.
 document.addEventListener('click', (event) => {
   if (!event.altKey) return
-  const summary = event.target.closest('details.source > summary')
+  const summary = event.target.closest('details.source > summary, details.task-fold > summary')
   if (!summary) return
   event.preventDefault()
   const open = !summary.parentElement.open
-  for (const file of document.querySelectorAll('details.source')) file.open = open
+  // Every block of the same kind: source files, or the tasks of a package.
+  for (const block of document.querySelectorAll(summary.parentElement.matches('details.source') ? 'details.source' : 'details.task-fold')) block.open = open
 })

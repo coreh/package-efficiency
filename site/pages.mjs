@@ -575,7 +575,7 @@ function pairNote(data, model) {
   const names = only.map((title) => `<b>${esc(title)}</b>`).join(', ')
   const link = `<a href="${urls.task(other.task.id)}">${esc(other.task.title)}</a>`
   return strictness === 'lenient'
-    ? `<p class="note">This is the lenient task of a pair. It runs the adapters of ${link}, the strict task, on the same inputs. Its check leaves out or forgives one stated kind of difference, which its <a href="#source-task.md">description</a> gives. ${only.length ? `${only.length === 1 ? 'One entry passes' : 'These entries pass'} here and not the strict task: ${names}. The note of each says why.` : 'Every entry here passes the strict task too.'}</p>`
+    ? `<p class="note">This is the lenient task of a pair. It runs the adapters of ${link}, the strict task, on the same inputs. Its check leaves out or forgives one stated kind of difference, which its <a href="#source-task.md">description</a> gives. ${only.length ? `${only.length === 1 ? 'One entry passes here and does' : 'These entries pass here and do'} not pass the strict task: ${names}. The note of each says why.` : 'Every entry here passes the strict task too.'}</p>`
     : `<p class="note">This is the strict task of a pair. ${link}, the lenient task, runs the same adapters on the same inputs with a check that forgives one stated kind of difference. ${only.length ? `${only.length === 1 ? 'One entry has' : 'These entries have'} a class there and not here: ${names}.` : 'No entry passes only there.'}</p>`
 }
 
@@ -728,6 +728,7 @@ export function packagePage(pkg, model, version = pkg.version) {
   // of the two at a time, chosen by the Settings switch under the title.
   const asInstalled = (a) => a.entry.name === a.entry.package
   let hasSettings = false
+  const taskCount = new Set(shown.map((a) => a.data)).size
   const sections = model.tasks
     .map((data) => {
       const every = shown.filter((a) => a.data === data)
@@ -735,10 +736,17 @@ export function packagePage(pkg, model, version = pkg.version) {
       const both = every.some(asInstalled) && !every.every(asInstalled)
       hasSettings ||= both
       const views = both ? [['tuned', every.filter((a) => !asInstalled(a))], ['installed', every.filter(asInstalled)]] : [['', every]]
-      return `<section>
-<h2><a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a></h2>
+      // A task folds away: its labels, tables and code are long, and a package
+      // can be in many tasks. A page with one or two tasks opens them all;
+      // the heading carries the best classes so a closed task still says
+      // something. Option-click opens or closes every task (see app.js).
+      const bestOf = (id) => every.map((a) => a.entry.grades[id]).filter((g) => g?.class).sort((a, b) => a.ratio - b.ratio)[0]
+      const chips = ['cpu', 'memory'].map((id) => (bestOf(id) ? `<span class="fold-class">${RANKINGS[id].title} ${chip(id, bestOf(id))}</span>` : '')).filter(Boolean).join('')
+      return `<details class="task-fold"${taskCount <= 2 ? ' open' : ''}>
+<summary title="Option-click to open or close every task"><h2>${esc(data.task.title)}</h2><span class="soft">${chips}</span></summary>
+<p class="soft"><a href="${urls.task(data.task.id)}">${esc(data.task.title)}: every package in this task</a></p>
 ${views.map(([view, rows]) => (view ? `<div class="settings-view" data-settings="${view}">\n${section(data, rows, view)}\n</div>` : section(data, rows, view))).join('\n')}
-</section>`
+</details>`
     })
     .join('\n')
   function section(data, rows, view) {
@@ -829,7 +837,7 @@ ${adapterList}`
   }
   const builtOn = [...(links.uses.get(key) ?? [])], usedBy = [...(links.usedBy.get(key) ?? [])]
   const related = builtOn.length || usedBy.length
-    ? `<div class="related" id="related">${builtOn.length ? `<p><b>Brings packages measured on their own:</b> ${relatedLinks(builtOn)}.</p>` : ''}${usedBy.length ? `<p><b>Comes with these measured packages:</b> ${relatedLinks(usedBy)}.</p>` : ''}</div>`
+    ? `<div class="related" id="related">${builtOn.length ? `<p><b>Brings packages measured on their own:</b> ${relatedLinks(builtOn)}</p>` : ''}${usedBy.length ? `<p><b>Comes with these measured packages:</b> ${relatedLinks(usedBy)}</p>` : ''}</div>`
     : ''
   // The categories this package is measured in, as tiles under its name, and
   // at the foot of the page every package of those categories in one table,
