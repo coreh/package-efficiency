@@ -3,8 +3,8 @@
 // missing is measured: TypeScript packages with no result yet, Rust crates
 // with no check yet, and Python, Ruby or Go adapters whose source changed
 // (those three are re-checked a whole language at a time).
-// Then the five sweeps of the most used packages (JSR, PyPI, RubyGems,
-// crates.io, Go modules; 1,000 each plus the hand-picked ones), one after another. With
+// Then the four sweeps of the most used packages (JSR, PyPI, RubyGems,
+// crates.io; 1,000 each plus the hand-picked ones), one after another. With
 // --incremental they skip what already has a result; otherwise everything is
 // measured again. --no-sweep leaves them out, for a quick run. A sweep that
 // fails is reported and the others still run.
@@ -38,7 +38,6 @@ if(!process.argv.includes('--no-sweep')){
     ['PyPI',['scripts/sweep-types/pypi.mjs','--top=1000',...again]],
     ['RubyGems',['scripts/sweep-types/rubygems.mjs','--top=1000',...again]],
     ['crates.io',['scripts/sweep-types/cargo.mjs','--top=1000',...again]],
-    ['Go modules',['scripts/sweep-types/gomod.mjs','--top=1000',...again]],
   ]
   for(const [title,args] of sweeps){
     console.error(`\ntype-check sweep: ${title}`)
