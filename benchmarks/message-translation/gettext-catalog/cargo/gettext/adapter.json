@@ -1,0 +1,11 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "notes": "Catalog::gettext(msgid) or ngettext(msgid, plural, n); a small loop fills %s and %d. Not passing: the Russian plural formula is mis-parsed, so ru gets wrong forms.",
+  "details": "Catalog::parse runs once per fixture, outside the timed call, and the crate has no printf. Its Plural-Forms parser splits at && before ?:, so for the standard Russian formula ngettext(5) returns form 0 instead of 2. English fixtures pass. The variant gettext-force-plural sets ParseOptions::force_plural."
+}

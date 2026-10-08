@@ -1,0 +1,15 @@
+{
+  "category": "plist-parsing",
+  "task": "parse-xml",
+  "title": "Parse an XML property list",
+  "summary": "Parse an XML property list of 1.7 to 57 KB, 55 to 2,100 elements (nested dictionaries and arrays, strings, integers, reals, booleans, dates and data) into native values.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 24,
+  "notes": "Each operation returns the library's own value for the document; dates and data are read into one common shape by the verifier."
+}

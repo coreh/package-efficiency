@@ -10,6 +10,7 @@ export const HARNESS_VERSION = 6
 
 const REPO_ROOT = new URL('..', import.meta.url).pathname
 const PHASE_TIMEOUT_MS = 30_000
+const ROUND_TIMEOUT_MS = 600_000
 // A server that stops answering under load would otherwise hang the run forever.
 const LOAD_TIMEOUT_MS = 300_000
 // Sizing of operation runs: see measureOperation.
@@ -124,7 +125,9 @@ function launch(command, args, cwd, env) {
         queue.shift() ??
         (await new Promise((resolve, reject) => {
           if (exited) return reject(new Error(lastLines(stderr)))
-          const timer = setTimeout(() => reject(new Error(`timed out waiting for "${phase}"`)), PHASE_TIMEOUT_MS)
+          // A round of a slow package can take minutes, and slow is what is being
+          // measured: only the phases around it have the short limit.
+          const timer = setTimeout(() => reject(new Error(`timed out waiting for "${phase}"`)), phase === 'round' ? ROUND_TIMEOUT_MS : PHASE_TIMEOUT_MS)
           const settle = (fn) => (value) => {
             clearTimeout(timer)
             waiter = null

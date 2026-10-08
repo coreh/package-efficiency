@@ -1,0 +1,15 @@
+{
+  "category": "public-suffix-lookup",
+  "task": "split-hosts",
+  "title": "Split hosts at the public suffix",
+  "summary": "Split one host name into subdomain, registrable domain and public suffix.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 720,
+  "notes": "Each operation returns [subdomain, registrable domain, public suffix], or null for a host that is only a public suffix."
+}

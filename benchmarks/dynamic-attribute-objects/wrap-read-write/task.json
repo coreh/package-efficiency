@@ -1,0 +1,30 @@
+{
+  "category": "dynamic-attribute-objects",
+  "task": "wrap-read-write",
+  "title": "Wrap a nested hash, read and write by method",
+  "summary": "Wrap a nested hash of about 1,000 keys in an attribute object, read 200 and write 50 attributes by method call at varying depths, and convert the object back to a hash.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "rubygems"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 5000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 4
+}

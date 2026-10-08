@@ -1,0 +1,31 @@
+{
+  "category": "embedded-script-interpreters",
+  "task": "javascript-guest",
+  "title": "Run a JavaScript program and read its result",
+  "summary": "Run one small JavaScript program (recursive fib(22), sort 500 numbers, build a string, a float sum, a global-leak probe) in a fresh interpreter context and return the value it produces.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 12,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 500
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 6
+}

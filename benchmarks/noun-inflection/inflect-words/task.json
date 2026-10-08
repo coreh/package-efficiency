@@ -1,0 +1,15 @@
+{
+  "category": "noun-inflection",
+  "task": "inflect-words",
+  "title": "Pluralize and singularize nouns",
+  "summary": "Pluralize each noun of a list, then singularize each plural, regular and irregular nouns alike.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "jsr", "cargo", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 32,
+  "notes": "Each operation returns a flat list: for each noun its plural, then the singular of that plural."
+}

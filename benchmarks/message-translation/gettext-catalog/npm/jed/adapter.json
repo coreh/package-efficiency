@@ -1,0 +1,14 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "dependencies": [
+    "gettext-parser"
+  ],
+  "notes": "gettext(msgid) or ngettext(msgid, plural, n) on a Jed instance; Jed.sprintf fills the placeholders. The .mo is parsed by gettext-parser and converted to Jed's JSON data in prepare.",
+  "details": "Jed takes its own JSON data and has no .mo reader, so prepare converts the parsed .mo (gettext-parser, as Jed's documentation does with po2json) to Jed's format. Lookups and placeholders are Jed's own."
+}

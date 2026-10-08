@@ -1,0 +1,9 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "package": "gettext",
+  "title": "gettext force_plural",
+  "tags": ["non-default-options"],
+  "notes": "As gettext, but the catalog is parsed with ParseOptions::force_plural, giving the locale's plural rule as a function instead of the header's formula.",
+  "details": "The crate's parser for the Plural-Forms formula splits at && before it splits at ?:, so the standard Russian formula yields the wrong form (5 messages gets form 0). The option replaces the formula; the two rules (en, ru) are written in the adapter, outside the timed call."
+}

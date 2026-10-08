@@ -1,0 +1,16 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "notes": "Order.new(hash) then record.to_h, default options. Not passing: to_h is shallow, so customer and lines come back as objects, not plain data.",
+  "details": "Virtus has no recursive dump (no option for one in its documentation), so the round trip back to plain data does not equal the input; loading the nested records into declared classes works. Recursing by hand in the adapter would move the work out of the library, so none is done."
+}

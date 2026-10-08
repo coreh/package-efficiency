@@ -13,7 +13,8 @@ while (sizes.length < 56) {
   sizes.push(Math.floor(x / 2147483647 * 2 ** (10 + (sizes.length % 7) * 6)) + 1)
 }
 export const cases = sizes.map((input) => ({ input }))
-const units = { '': 0, B: 0, K: 1, KB: 1, KIB: 1, M: 2, MB: 2, MIB: 2, G: 3, GB: 3, GIB: 3, T: 4, TB: 4, TIB: 4, P: 5, PB: 5, PIB: 5 }
+// "bytes" in full is as good as "B".
+const units = { '': 0, B: 0, BYTE: 0, BYTES: 0, K: 1, KB: 1, KIB: 1, M: 2, MB: 2, MIB: 2, G: 3, GB: 3, GIB: 3, T: 4, TB: 4, TIB: 4, P: 5, PB: 5, PIB: 5 }
 const check = (n, out, i) => {
   assert.equal(typeof out, 'string', `fixture ${i}: string output required`)
   const m = /^(\d+(?:\.\d+)?)\s?([A-Za-z]*)$/.exec(out)
@@ -29,7 +30,10 @@ const check = (n, out, i) => {
   }
   let expectedK = 0
   while (expectedK < 5 && n >= 1024 ** (expectedK + 1)) expectedK++
-  assert.ok(k === expectedK, `fixture ${i}: unit of ${out}`)
+  // A size just under a unit's boundary may round up to 1 of the next unit (1.0 PiB for 1024^5 - 1).
+  const roundsUp = k === expectedK + 1 && num === 1 && n / 1024 ** k > 0.99
+  assert.ok(k === expectedK || roundsUp, `fixture ${i}: unit of ${out}`)
+  if (roundsUp) return
   assert.ok(num >= 1 && num <= 1024, `fixture ${i}: magnitude of ${out}`)
   const back = num * 1024 ** k
   assert.ok(Math.abs(back - n) <= n * 0.01, `fixture ${i}: ${out} is not ${n} bytes`)

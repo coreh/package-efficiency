@@ -1,0 +1,32 @@
+{
+  "category": "one-time-passwords",
+  "task": "totp-hotp-verify",
+  "title": "HOTP and TOTP at explicit times",
+  "summary": "From a base32 secret, a counter, a Unix time and a candidate code: generate the HOTP and the TOTP code and verify the candidate with a window of one step.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 48
+}

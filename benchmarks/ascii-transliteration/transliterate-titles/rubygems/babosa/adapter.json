@@ -1,0 +1,16 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "notes": "Babosa::Identifier.new(text).transliterate.to_s with defaults; Latin only, so Cyrillic and Greek come back unchanged and the check fails.",
+  "details": "With no arguments, transliterate uses only the Latin transliterator. The other scripts are separate (transliterate(:cyrillic), :greek), so Cyrillic and Greek letters pass through untouched and fixture 0 fails. The variant babosa-all-scripts passes the three scripts."
+}
