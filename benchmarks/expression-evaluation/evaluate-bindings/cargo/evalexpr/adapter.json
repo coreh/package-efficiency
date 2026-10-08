@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "review": "unreviewed",
+  "notes": "build_operator_tree once per call, then eval_with_context for each of 8 prebuilt contexts. Not passing: abs(x) is not defined, the crate's name for it is math::abs.",
+  "details": "With version 12 and default contexts, every expression that calls abs fails with 'Function identifier is not bound to anything by context: abs'. min and max are built in. The evalexpr-abs-function variant registers a custom abs function in each context."
+}

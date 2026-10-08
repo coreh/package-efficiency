@@ -71,7 +71,7 @@ library's normal way of opening a workbook and are measured as they are.
 - PyPI `xlrd` (2.0 and later) reads only the legacy `.xls` format, as does
   RubyGems `spreadsheet`; neither can open an XLSX. `pandas` and `polars` are
   dataframes, another job.
-- Ruby `creek` and `simple_xlsx_reader`, and Rust `fast_excel_reader`, were not
-  entered because of the limit of entries per registry.
+- Ruby `creek` and `simple_xlsx_reader` were not entered because of the limit
+  of entries per registry.
 
 See [shared methodology](../../README.md) for timing and reproduction.

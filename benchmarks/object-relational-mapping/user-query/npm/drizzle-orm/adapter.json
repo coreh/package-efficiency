@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" }, "review": "unreviewed",
+  "dependencies": ["sql.js"],
+  "notes": "drizzle-orm/sql-js over sql.js (SQLite compiled to WebAssembly, opened once): insert().values(rows).run(), then select().where(and(gte, ne)).orderBy(desc, asc).all(); the table is created with raw SQL.",
+  "details": "Drizzle has no runtime call that creates a table from the declared model (drizzle-kit does that offline), so the CREATE TABLE statement is run with db.run. sql.js is the only SQLite binding for Node, Bun and Deno that needs no native build and has a synchronous Drizzle driver."
+}

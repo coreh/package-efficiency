@@ -1,7 +1,7 @@
 // Compile raw results into the normalized, graded data the site consumes.
 // Writes dist/data/index.json and dist/data/<category>/<task>.json.
 // Usage: node scripts/build-data.mjs
-import { ecosystem, ecosystemIds } from './lib/ecosystems.mjs'
+import { ecosystem, ecosystemIds, goPackageName } from './lib/ecosystems.mjs'
 import { releaseState, releaseEntryId } from './lib/releases.mjs'
 import { globSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
@@ -262,7 +262,9 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       name: result.package,
       // Variants of one package (for example a non-default configuration)
       // are separate adapters that share a `package`.
-      package: adapter.package ?? result.package,
+      // A Go module is one package whatever its adapter's folder is called: the
+      // name made from its module path (the first entries had short names).
+      package: result.ecosystem === 'gomod' && adapter.module ? goPackageName(adapter.module) : adapter.package ?? result.package,
       // A Go module's path (adapter.json `module`): what it is listed and linked by.
       ...(adapter.module ? { module: adapter.module } : {}),
       title: adapter.title ?? result.package,

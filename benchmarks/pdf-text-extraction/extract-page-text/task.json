@@ -1,0 +1,30 @@
+{
+  "category": "pdf-text-extraction",
+  "task": "extract-page-text",
+  "title": "Extract page text",
+  "summary": "Open a small PDF held in memory (1 to 12 pages of plain text in the standard fonts) and return the text of each page.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 8
+}

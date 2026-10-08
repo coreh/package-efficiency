@@ -1,0 +1,31 @@
+{
+  "category": "sqlite-client",
+  "task": "in-memory-table",
+  "title": "Insert and select in an in-memory database",
+  "summary": "Open an in-memory SQLite database, create a table of five columns, insert the rows in one transaction with a prepared statement, and select them all back ordered by score.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 3
+}

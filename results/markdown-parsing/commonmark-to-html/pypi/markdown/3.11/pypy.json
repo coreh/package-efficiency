@@ -1,0 +1,115 @@
+{
+  "task": "markdown-parsing/commonmark-to-html",
+  "ecosystem": "pypi",
+  "package": "markdown",
+  "version": "3.11",
+  "dependencies": {},
+  "install": {
+    "kind": "install",
+    "bytes": 347537,
+    "packages": 1
+  },
+  "runtime": "pypy",
+  "runtimeVersion": "8.0.0",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "dcd5b85e086b34c1",
+    "task": "e36dc0ce5f453cc2",
+    "adapters": "0c3681278baa35b4",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/pulldown-cmark": "0.13.4",
+      "gomod/russross-blackfriday": "v2.1.0",
+      "gomod/yuin-goldmark": "v1.8.6",
+      "npm/marked": "18.0.14",
+      "pypi/markdown": "3.11",
+      "pypi/markdown-it-py": "4.2.0",
+      "pypi/mistune": "3.3.4",
+      "rubygems/commonmarker": "2.10.0",
+      "rubygems/redcarpet": "3.6.1"
+    }
+  },
+  "measuredAt": "2026-10-08T00:39:07.913Z",
+  "source": "f2255e0e8f1af171",
+  "baseline": {
+    "runtime": "pypy",
+    "runtimeVersion": "8.0.0",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "dcd5b85e086b34c1",
+      "task": "e36dc0ce5f453cc2",
+      "adapters": "0c3681278baa35b4",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/pulldown-cmark": "0.13.4",
+        "gomod/russross-blackfriday": "v2.1.0",
+        "gomod/yuin-goldmark": "v1.8.6",
+        "npm/marked": "18.0.14",
+        "pypi/markdown": "3.11",
+        "pypi/markdown-it-py": "4.2.0",
+        "pypi/mistune": "3.3.4",
+        "rubygems/commonmarker": "2.10.0",
+        "rubygems/redcarpet": "3.6.1"
+      }
+    },
+    "measuredAt": "2026-10-08T00:39:07.912Z",
+    "kind": "warm",
+    "task": "markdown-parsing/commonmark-to-html",
+    "runs": [
+      {
+        "rssBytes": 39780352,
+        "footprintBytes": 27263384,
+        "heapUsedBytes": 7888472,
+        "peakRssBytes": 39780352
+      },
+      {
+        "rssBytes": 39845888,
+        "footprintBytes": 27328920,
+        "heapUsedBytes": 7889072,
+        "peakRssBytes": 39845888
+      },
+      {
+        "rssBytes": 39616512,
+        "footprintBytes": 27083136,
+        "heapUsedBytes": 7888912,
+        "peakRssBytes": 39616512
+      }
+    ]
+  },
+  "status": "verify-failed",
+  "error": "fixture 0\n+ actual - expected\n\n+ '<ul><li>buffer render</li><li>render beta</li><li>beta cache</li></ul><p><code>js\\n' +\n+   'if (gamma &lt; 2 &amp;&amp; stream) {\\n' +\n- '<ul><li>buffer render</li><li>render beta</li><li>beta cache</li></ul><pre><code class=\"language-js\">if (gamma &lt; 2 &amp;&amp; stream) {\\n' +\n    '  return window(2);\\n' +\n+   '}</code></p><h2>alpha delta</h2><p>See <a href=\"https://example.com/render/4\">buffer docs</a> for token gamma stream window token.\\n' +\n+   'Second line of beta.</p><p><code>js\\n' +\n+   'if (token &lt; 5 &amp;&amp; gamma) {\\n' +\n-   '}\\n' +\n-   '</code></pre><h2>alpha delta</h2><p>See <a href=\"https://example.com/render/4\">buffer docs</a> for token gamma stream window token.\\n' +\n-   'Second line of beta.</p><pre><code class=\"language-js\">if (token &lt; 5 &amp;&amp; gamma) {\\n' +\n    '  return stream(5);\\n' +\n+   '}</code></p><h2>socket alpha</h2><p>See <a href=\"https://example.com/buffer/7\">cache docs</a> for window token gamma stream window.\\n' +\n-   '}\\n' +\n-   '</code></pre><h2>socket alpha</h2><p>See <a href=\"https://example.com/buffer/7\">cache docs</a> for window token gamma stream window.\\n' +\n    'Second line of render.</p><blockquote><p>window token gamma stream window\\n' +\n    'more <em>window</em> text</p></blockquote>'\n"
+}

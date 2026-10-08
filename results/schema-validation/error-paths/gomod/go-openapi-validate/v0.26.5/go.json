@@ -1,0 +1,343 @@
+{
+  "task": "schema-validation/error-paths",
+  "ecosystem": "gomod",
+  "package": "go-openapi-validate",
+  "version": "v0.26.5",
+  "dependencies": {
+    "github.com/go-openapi/analysis": "v0.26.2",
+    "github.com/go-openapi/errors": "v0.22.8",
+    "github.com/go-openapi/jsonpointer": "v1.0.0",
+    "github.com/go-openapi/jsonreference": "v1.0.1",
+    "github.com/go-openapi/loads": "v0.25.2",
+    "github.com/go-openapi/spec": "v0.22.11",
+    "github.com/go-openapi/strfmt": "v0.27.0",
+    "github.com/go-openapi/swag/conv": "v0.29.1",
+    "github.com/go-openapi/swag/fileutils": "v0.29.1",
+    "github.com/go-openapi/swag/jsonutils": "v0.29.1",
+    "github.com/go-openapi/swag/loading": "v0.29.1",
+    "github.com/go-openapi/swag/mangling": "v0.29.1",
+    "github.com/go-openapi/swag/pools": "v0.29.1",
+    "github.com/go-openapi/swag/stringutils": "v0.29.1",
+    "github.com/go-openapi/swag/typeutils": "v0.29.1",
+    "github.com/go-openapi/swag/yamlutils": "v0.29.1",
+    "github.com/go-viper/mapstructure/v2": "v2.5.0",
+    "github.com/google/uuid": "v1.6.0",
+    "github.com/oklog/ulid/v2": "v2.1.2",
+    "go.yaml.in/yaml/v3": "v3.0.5",
+    "golang.org/x/net": "v0.58.0",
+    "golang.org/x/text": "v0.41.0"
+  },
+  "install": {
+    "kind": "binary",
+    "bytes": 7846784
+  },
+  "runtime": "go",
+  "runtimeVersion": "1.25.3",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "dcd5b85e086b34c1",
+    "task": "2d32f45fe0e13c85",
+    "adapters": "392d83a7526d49fd",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/jsonschema": "0.58.2",
+      "gomod/go-openapi-validate": "v0.26.5",
+      "gomod/xeipuuv-gojsonschema": "v1.2.0",
+      "jsr/@valibot/valibot": "1.5.0",
+      "jsr/@zod/zod": "4.6.5",
+      "npm/@sinclair/typebox": "0.34.52",
+      "npm/ajv": "8.20.0",
+      "npm/zod": "4.6.5",
+      "pypi/fastjsonschema": "2.22.2",
+      "pypi/jsonschema": "4.26.0",
+      "pypi/pydantic": "2.13.5",
+      "rubygems/dry-schema": "1.16.0",
+      "rubygems/dry-validation": "1.11.1",
+      "rubygems/json-schema": "6.2.0"
+    }
+  },
+  "measuredAt": "2026-10-08T01:36:39.433Z",
+  "source": "d01d30e324495f96",
+  "baseline": {
+    "runtime": "go",
+    "runtimeVersion": "1.25.3",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "dcd5b85e086b34c1",
+      "task": "2d32f45fe0e13c85",
+      "adapters": "392d83a7526d49fd",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/jsonschema": "0.58.2",
+        "gomod/go-openapi-validate": "v0.26.5",
+        "gomod/xeipuuv-gojsonschema": "v1.2.0",
+        "jsr/@valibot/valibot": "1.5.0",
+        "jsr/@zod/zod": "4.6.5",
+        "npm/@sinclair/typebox": "0.34.52",
+        "npm/ajv": "8.20.0",
+        "npm/zod": "4.6.5",
+        "pypi/fastjsonschema": "2.22.2",
+        "pypi/jsonschema": "4.26.0",
+        "pypi/pydantic": "2.13.5",
+        "rubygems/dry-schema": "1.16.0",
+        "rubygems/dry-validation": "1.11.1",
+        "rubygems/json-schema": "6.2.0"
+      }
+    },
+    "measuredAt": "2026-10-08T01:36:39.431Z",
+    "kind": "warm",
+    "task": "schema-validation/error-paths",
+    "runs": [
+      {
+        "rssBytes": 6602752,
+        "footprintBytes": 4751888,
+        "heapUsedBytes": 301952,
+        "peakRssBytes": 6602752
+      },
+      {
+        "rssBytes": 6438912,
+        "footprintBytes": 4571592,
+        "heapUsedBytes": 302016,
+        "peakRssBytes": 6504448
+      },
+      {
+        "rssBytes": 6701056,
+        "footprintBytes": 4866552,
+        "heapUsedBytes": 302192,
+        "peakRssBytes": 6733824
+      }
+    ]
+  },
+  "status": "ok",
+  "runs": [
+    {
+      "status": "ok",
+      "importMs": null,
+      "importCpuMs": null,
+      "heap": {
+        "bootBytes": 515336,
+        "loadedBytes": null,
+        "readyBytes": 635424,
+        "warmBytes": 678848,
+        "peakBytes": null
+      },
+      "rounds": [
+        {
+          "checksum": 75900,
+          "cpuMs": 401.644,
+          "operations": 10800,
+          "systemCpuMs": 59.772999999999996,
+          "wallMs": 253.168584,
+          "heapUsedBytes": 678000
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 398.71299999999997,
+          "operations": 10800,
+          "systemCpuMs": 59.625,
+          "wallMs": 252.261375,
+          "heapUsedBytes": 677808
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 397.41399999999976,
+          "operations": 10800,
+          "systemCpuMs": 58.14599999999996,
+          "wallMs": 251.7405,
+          "heapUsedBytes": 672256
+        }
+      ],
+      "warmupRounds": [
+        {
+          "checksum": 75900,
+          "cpuMs": 400.359,
+          "operations": 10800,
+          "systemCpuMs": 61.422999999999995,
+          "wallMs": 252.434333
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 398.124,
+          "operations": 10800,
+          "systemCpuMs": 57.47399999999999,
+          "wallMs": 253.137958
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 400.26,
+          "operations": 10800,
+          "systemCpuMs": 61.859999999999985,
+          "wallMs": 250.994916
+        }
+      ],
+      "rssAfterLoadBytes": 21315584,
+      "footprintAfterLoadBytes": 13369920,
+      "peakRssBytes": 21315584,
+      "peakFootprintBytes": 13369920
+    },
+    {
+      "status": "ok",
+      "importMs": null,
+      "importCpuMs": null,
+      "heap": {
+        "bootBytes": 500264,
+        "loadedBytes": null,
+        "readyBytes": 630352,
+        "warmBytes": 672768,
+        "peakBytes": null
+      },
+      "rounds": [
+        {
+          "checksum": 75900,
+          "cpuMs": 395.7330000000002,
+          "operations": 10800,
+          "systemCpuMs": 58.80600000000001,
+          "wallMs": 250.326042,
+          "heapUsedBytes": 679312
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 397.2649999999999,
+          "operations": 10800,
+          "systemCpuMs": 57.18900000000002,
+          "wallMs": 250.802,
+          "heapUsedBytes": 672304
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 410.355,
+          "operations": 10800,
+          "systemCpuMs": 64.59199999999998,
+          "wallMs": 255.465541,
+          "heapUsedBytes": 679984
+        }
+      ],
+      "warmupRounds": [
+        {
+          "checksum": 75900,
+          "cpuMs": 401.083,
+          "operations": 10800,
+          "systemCpuMs": 61.114,
+          "wallMs": 253.895167
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 404.86800000000005,
+          "operations": 10800,
+          "systemCpuMs": 61.793000000000006,
+          "wallMs": 254.454083
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 405.1289999999999,
+          "operations": 10800,
+          "systemCpuMs": 59.21600000000001,
+          "wallMs": 254.988042
+        }
+      ],
+      "rssAfterLoadBytes": 21102592,
+      "footprintAfterLoadBytes": 13140520,
+      "peakRssBytes": 21102592,
+      "peakFootprintBytes": 13140520
+    },
+    {
+      "status": "ok",
+      "importMs": null,
+      "importCpuMs": null,
+      "heap": {
+        "bootBytes": 510104,
+        "loadedBytes": null,
+        "readyBytes": 630256,
+        "warmBytes": 676176,
+        "peakBytes": null
+      },
+      "rounds": [
+        {
+          "checksum": 75900,
+          "cpuMs": 400.89699999999993,
+          "operations": 10800,
+          "systemCpuMs": 59.389999999999986,
+          "wallMs": 253.97825,
+          "heapUsedBytes": 676272
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 404.24900000000025,
+          "operations": 10800,
+          "systemCpuMs": 61.57400000000001,
+          "wallMs": 253.772083,
+          "heapUsedBytes": 674576
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 399.3090000000002,
+          "operations": 10800,
+          "systemCpuMs": 57.50100000000003,
+          "wallMs": 252.578875,
+          "heapUsedBytes": 680224
+        }
+      ],
+      "warmupRounds": [
+        {
+          "checksum": 75900,
+          "cpuMs": 400.12300000000005,
+          "operations": 10800,
+          "systemCpuMs": 62.66300000000001,
+          "wallMs": 251.497625
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 406.12200000000007,
+          "operations": 10800,
+          "systemCpuMs": 64.02799999999999,
+          "wallMs": 252.928583
+        },
+        {
+          "checksum": 75900,
+          "cpuMs": 403.90200000000004,
+          "operations": 10800,
+          "systemCpuMs": 61.429,
+          "wallMs": 254.589375
+        }
+      ],
+      "rssAfterLoadBytes": 21266432,
+      "footprintAfterLoadBytes": 13304384,
+      "peakRssBytes": 21266432,
+      "peakFootprintBytes": 13304384
+    }
+  ]
+}

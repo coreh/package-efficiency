@@ -1,0 +1,28 @@
+{
+  "category": "expression-evaluation",
+  "task": "evaluate-bindings",
+  "title": "Parse and evaluate against 8 bindings",
+  "summary": "Parse one arithmetic or comparison expression of 5 to 40 operators (+ - * /, unary minus, parentheses, min, max, abs) and evaluate it against 8 sets of float variables.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo", "pypi", "rubygems", "gomod"],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 40
+}

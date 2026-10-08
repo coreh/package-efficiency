@@ -1,0 +1,28 @@
+{
+  "category": "fake-data-generation",
+  "task": "seeded-records",
+  "title": "100 seeded records",
+  "summary": "With a given seed, generate 100 fake records of name, email, street address and date.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo", "pypi", "rubygems", "gomod"],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 9
+}
