@@ -3,7 +3,7 @@
 //
 // Usage: node scripts/sweep-types/gomod.mjs <module>... | --top=N
 //        [--force] [--retry-failed] [--runs=11] [--cold-runs=3] [--build-runs=1]
-//        [--graded=check|build] [--keep] [--out=file]
+//        [--graded=check|build] [--std=exclude|include] [--keep] [--out=file]
 // --top=N takes the N most used of data/gomod/packages.json and everything in
 // data/gomod/picked.json. A run can be stopped and started again: the results
 // file is written after every module, modules already in it are skipped
@@ -41,8 +41,14 @@
 //          Typically several times the check figure, mostly code generation.
 // `go vet` is not used: it needs the compiled export data of every dependency,
 // so it is the build plus the analyzers.
-// Baseline: the same probe with no import; both figures are reported minus
-// the baseline's. Process CPU (user + system of the whole process tree) and
+// What is subtracted: by default a second probe that imports only the
+// standard-library packages the tree's modules import, measured the same way
+// for each module. So `added` is the module and its dependency modules, not
+// the standard library they use (Rust's standard library comes checked; Go's
+// is source, and for a small module it is nearly the whole cost: uuid's tree
+// is 107 standard packages and one of its own). `wholeTree` in each figure is
+// the cost over an empty probe, `standardLibrary` the reference's; with
+// --std=include `added` is the whole tree. Process CPU (user + system of the whole process tree) and
 // the peak RSS of the largest process. No network is in either figure:
 // sources are fetched first, the check reads files only, and the build runs
 // with GOPROXY=off.
@@ -84,6 +90,9 @@ const { names, value, has } = args('Usage: node scripts/sweep-types/gomod.mjs <m
 const RUNS = Number(value('runs', 11))
 const COLD_RUNS = Number(value('cold-runs', 3))
 const BUILD_RUNS = Number(value('build-runs', 1))
+// Whether the standard library the tree imports is counted against the module.
+const STD = value('std', 'exclude')
+if (!['exclude', 'include'].includes(STD)) throw new Error('--std must be exclude or include')
 const GRADED = value('graded', 'check')
 if (!['check', 'build'].includes(GRADED)) throw new Error('--graded must be check or build')
 if (GRADED === 'build' && BUILD_RUNS < 1) throw new Error('--graded=build needs --build-runs of at least 1')
@@ -148,7 +157,14 @@ async function pickVersion(modulePath, wanted) {
   if (!response.ok) throw new Error(`proxy.golang.org has no module ${modulePath} (${response.status})`)
   const numbers = (version) => version.slice(1).split('+')[0].split('.').map(Number)
   const releases = (await response.text()).split('\n').filter((v) => /^v\d+\.\d+\.\d+(\+incompatible)?$/.test(v)).sort((a, b) => { const x = numbers(a), y = numbers(b); return y[0] - x[0] || y[1] - x[1] || y[2] - x[2] })
-  for (const version of releases.slice(0, 40)) if (oldEnough(await publishedAt(modulePath, version)) && await usable(modulePath, version)) return version
+  // Old +incompatible tags (v11.0.0+incompatible) sort above a module's real
+  // v0/v1 releases: they are used only when there is nothing else.
+  const proper = releases.filter((v) => !v.endsWith('+incompatible'))
+  // Downwards from the listed version first: some modules carry stray old
+  // tags that sort above their current line (k8s.io/client-go v1.5.2 over v0.37).
+  const below = (v) => { if (!wanted || !/^v\d+\.\d+\.\d+/.test(wanted)) return true; const x = numbers(v), y = numbers(wanted); return (x[0] - y[0] || x[1] - y[1] || x[2] - y[2]) <= 0 }
+  const candidates = proper.length ? proper : releases
+  for (const version of [...candidates.filter(below), ...candidates.filter((v) => !below(v))].slice(0, 60)) if (oldEnough(await publishedAt(modulePath, version)) && await usable(modulePath, version)) return version
   if (!releases.length) {
     // A module with no tagged release is known to the proxy by its latest commit.
     const latest = await fetch(`${UPSTREAM}/${escapePath(modulePath)}/@latest`).then((r) => (r.ok ? r.json() : null), () => null)
@@ -235,21 +251,28 @@ async function measureModule({ name }) {
     } catch (error) {
       return { status: 'install-failed', version, ...result, detail: firstError(error) }
     }
+    // Which packages have cgo files: listed with cgo on (listing compiles nothing).
+    const withCgo = new Set(records(await go(['list', '-e', '-json=ImportPath,CgoFiles', `${name}/...`], dir, { ...ONLINE, CGO_ENABLED: '1' }).catch(() => '')).filter((p) => p.CgoFiles?.length).map((p) => p.ImportPath))
     const own = all.filter((p) => p.ImportPath === name || p.ImportPath.startsWith(name + '/'))
     const importable = own.filter((p) => p.Name !== 'main' && ((p.GoFiles?.length ?? 0) + (p.CgoFiles?.length ?? 0) > 0 || p.Error) && !skipped(p.ImportPath, name))
     // cgo is off, so a package that is only cgo has no file left.
-    const cgoOnly = (p) => /build constraints exclude all Go files|C source files not allowed|cgo/.test(p.Error?.Err ?? '')
+    const cgoOnly = (p) => withCgo.has(p.ImportPath) || /build constraints exclude all Go files|C source files not allowed|cgo/.test(p.Error?.Err ?? '')
     // A root that is only a doc.go says nothing of the module: its packages are used.
     const root = importable.find((p) => p.ImportPath === name && !(p.GoFiles ?? []).every((f) => f === 'doc.go'))
     const depth = (p) => p.ImportPath.split('/').length
-    const usableOnes = importable.filter((p) => !p.Error || !cgoOnly(p))
-    const chosen = (root && (!root.Error || !cgoOnly(root)) ? [root] : usableOnes.sort((a, b) => depth(a) - depth(b) || a.ImportPath.localeCompare(b.ImportPath)).slice(0, PACKAGE_LIMIT)).map((p) => p.ImportPath)
+    // A package with cgo files is not what its users get with cgo off (a stub,
+    // or nothing): it is never measured.
+    const usableOnes = importable.filter((p) => !cgoOnly(p))
+    if (root && cgoOnly(root)) return { status: 'check-failed', ...result, packagesInModule: own.length, needsCgo: true, detail: 'the module needs cgo, which is off: no C is compiled' }
+    const chosen = (root ? [root] : usableOnes.sort((a, b) => depth(a) - depth(b) || a.ImportPath.localeCompare(b.ImportPath)).slice(0, PACKAGE_LIMIT)).map((p) => p.ImportPath)
     result.packagesInModule = own.length
     if (chosen.length === 0) {
       if (importable.some(cgoOnly)) return { status: 'check-failed', ...result, needsCgo: true, detail: 'its packages need cgo, which is off: no C is compiled' }
       return { status: 'no-entry', ...result, detail: own.length ? 'no importable package (only main, internal or test packages)' : 'no package' }
     }
     result.packages = chosen
+    const skippedForCgo = importable.filter(cgoOnly).length
+    if (skippedForCgo) result.cgoPackagesSkipped = skippedForCgo
     try {
       await writeProbe(dir, { name, version }, chosen)
       // Resolves the imports: go.mod and go.sum are completed and the sources
@@ -259,7 +282,9 @@ async function measureModule({ name }) {
     } catch (error) {
       return { status: 'install-failed', ...result, detail: firstError(error) }
     }
-    const tree = records(await go(['list', '-e', '-deps', '-json=ImportPath,Standard,Error,CgoFiles', '.'], dir, OFFLINE))
+    const tree = records(await go(['list', '-e', '-deps', '-json=ImportPath,Standard,Error,Imports', '.'], dir, OFFLINE))
+    const full = tree.filter((p) => p.ImportPath !== 'probe')
+    const standard = new Set(tree.filter((p) => p.Standard).map((p) => p.ImportPath))
     const broken = tree.filter((p) => p.Error)
     if (broken.length) {
       const needsCgo = broken.some(cgoOnly)
@@ -268,22 +293,39 @@ async function measureModule({ name }) {
     result.treePackages = tree.length - 1
     result.standardLibraryPackages = tree.filter((p) => p.Standard).length
     let measured
+    let std
     try {
       measured = await coldFigures(dir)
+      // The reference: a probe that imports only the standard-library packages
+      // the tree's modules import, so the standard library is not counted
+      // against the module (as Rust's is not: it comes checked).
+      if (!measured.failed && STD === 'exclude') {
+        const stdImports = [...new Set(full.filter((p) => !p.Standard).flatMap((p) => p.Imports ?? []))].filter((i) => standard.has(i) && i !== 'C').sort()
+        const stdDir = dir + '.std'
+        await rm(stdDir, { recursive: true, force: true })
+        await writeProbe(stdDir, null, stdImports)
+        std = await coldFigures(stdDir)
+        await rm(stdDir, { recursive: true, force: true })
+        if (std.failed) throw new Error(`standard-library reference failed: ${std.failed}`)
+      }
     } catch (error) {
       return { status: 'check-failed', ...result, detail: firstError(error) }
     }
     if (measured.failed) return { status: 'check-failed', ...result, errors: measured.errors, detail: String(measured.failed).replaceAll(MODCACHE, '').slice(0, 300) }
+    // Minus the standard-library reference (or, with --std=include, minus the
+    // empty probe). `wholeTree` is always the figure over the empty probe.
     const added = (kind) => ({
-      cpuMs: round(measured[kind].cpuMs - baseline[kind].cpuMs, 1),
-      memoryMb: round(measured[kind].peakRssMb - baseline[kind].peakRssMb, 1),
-      timeMs: round(measured[kind].timeMs - baseline[kind].timeMs, 1),
+      cpuMs: round(measured[kind].cpuMs - (std ?? baseline)[kind].cpuMs, 1),
+      memoryMb: round(measured[kind].peakRssMb - (std ?? baseline)[kind].peakRssMb, 1),
+      timeMs: round(measured[kind].timeMs - (std ?? baseline)[kind].timeMs, 1),
+      wholeTree: { cpuMs: round(measured[kind].cpuMs - baseline[kind].cpuMs, 1), memoryMb: round(measured[kind].peakRssMb - baseline[kind].peakRssMb, 1) },
+      ...(std ? { standardLibrary: { cpuMs: round(std[kind].cpuMs - baseline[kind].cpuMs, 1), memoryMb: round(std[kind].peakRssMb - baseline[kind].peakRssMb, 1) } } : {}),
       ...(kind === 'check' ? { cpuSpreadMs: spread(measured.check.runs.map((r) => r.cpuMs)) } : {}),
       runs: measured[kind].runs,
     })
     const figures = { check: added('check') }
     if (measured.build?.failed) figures.build = { failed: measured.build.failed }
-    else if (measured.build) figures.build = added('build')
+    else if (measured.build && !std?.build?.failed) figures.build = added('build')
     const graded = figures[GRADED]
     if (!graded || graded.failed) return { status: 'check-failed', ...result, detail: `build: ${graded?.failed}`, ...figures }
     result.files = measured.summary.files
@@ -309,7 +351,7 @@ async function measureModule({ name }) {
 const freeGb = async () => { const s = await statfs(WORK); return (s.bavail * s.bsize) / 2 ** 30 }
 const header = {
   checker: GRADED === 'check' ? { tool: 'go/types', version: goVersion } : { tool: 'go build', version: goVersion },
-  method: { graded: GRADED, program: 'blank imports of the module root, or of its importable packages', packageLimit: PACKAGE_LIMIT, cgo: 'off', check: 'go/types over the whole tree from source, standard library included', build: 'go build of the probe package, empty GOCACHE, no link' },
+  method: { graded: GRADED, standardLibrary: STD === 'exclude' ? 'not counted: minus a probe importing the same standard-library packages' : 'counted', program: 'blank imports of the module root, or of its importable packages', packageLimit: PACKAGE_LIMIT, cgo: 'off', check: 'go/types over the whole tree from source, standard library included', build: 'go build of the probe package, empty GOCACHE, no link' },
   minReleaseAgeDays: MIN_RELEASE_AGE_DAYS,
   memoryKind: 'peak RSS of the checker process (build: of the largest process in the go build tree)',
   scoreBasis: 'added process CPU ms * added peak RSS MB',
@@ -330,7 +372,7 @@ await sweep({
     const free = await freeGb()
     return free < MIN_FREE_GB ? `only ${free.toFixed(1)} GB of disk free (the sweep stops under ${MIN_FREE_GB} GB)` : null
   },
-  summary: (r) => (r.status === 'ok' ? `check +${r.check.cpuMs} ms CPU (spread ${r.check.cpuSpreadMs}), +${r.check.memoryMb} MB${r.build?.cpuMs !== undefined ? `; build +${(r.build.cpuMs / 1000).toFixed(2)} CPU-s, +${r.build.memoryMb} MB` : r.build?.failed ? '; build failed' : ''}; ${r.packages.length}/${r.packagesInModule} packages, tree ${r.treePackages} (${r.standardLibraryPackages} std; check time std ${r.checkSplit.standardLibraryMs} ms, modules ${r.checkSplit.modulesMs} ms), ${r.modules} modules` : `${r.status}: ${r.detail}`) + ` ${r.version ?? ''}`,
+  summary: (r) => (r.status === 'ok' ? `check +${r.check.cpuMs} ms CPU (spread ${r.check.cpuSpreadMs}; whole tree ${r.check.wholeTree.cpuMs}), +${r.check.memoryMb} MB${r.build?.cpuMs !== undefined ? `; build +${(r.build.cpuMs / 1000).toFixed(2)} CPU-s (whole tree ${(r.build.wholeTree.cpuMs / 1000).toFixed(1)}), +${r.build.memoryMb} MB` : r.build?.failed ? '; build failed' : ''}; ${r.packages.length}/${r.packagesInModule} packages, tree ${r.treePackages} (${r.standardLibraryPackages} std; check time std ${r.checkSplit.standardLibraryMs} ms, modules ${r.checkSplit.modulesMs} ms), ${r.modules} modules` : `${r.status}: ${r.detail}`) + ` ${r.version ?? ''}`,
 })
 if (!has('keep')) {
   await clearCaches()
