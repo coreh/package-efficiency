@@ -112,7 +112,7 @@ const goVersion = /go(\d+\.\d+(\.\d+)?)/.exec((await exec(GO, ['version'], { env
 const BASE_ENV = { ...process.env, GOPATH: path.join(WORK, 'gopath'), GOMODCACHE: MODCACHE, GOCACHE: BUILDCACHE, GOTOOLCHAIN: 'local', CGO_ENABLED: '0', GONOSUMDB: '', GONOSUMCHECK: '', GONOPROXY: '', GOPRIVATE: '', GOINSECURE: '', GOSUMDB: 'sum.golang.org', GOWORK: 'off' }
 const ONLINE = { ...BASE_ENV, GOPROXY: await goProxy(), GOFLAGS: '-mod=mod' }
 const OFFLINE = { ...BASE_ENV, GOPROXY: 'off', GOFLAGS: '-mod=readonly' }
-const firstError = (error) => String(error.stderr || error.message).trim().split('\n').filter((l) => l && !l.startsWith('go: downloading') && !l.startsWith('go: finding'))[0]?.slice(0, 300) ?? 'failed'
+const firstError = (error) => String(error.stderr || error.message).trim().split('\n').filter((l) => l && !/^go: (downloading|finding|found|added|upgraded) /.test(l) && !/^(package probe|\s+imports )/.test(l) && !l.startsWith('#'))[0]?.slice(0, 300) ?? 'failed'
 const go = (argv, cwd, env = ONLINE) => exec(GO, argv, { cwd, env, maxBuffer: 1 << 30, timeout: TIMEOUT_MS }).then((r) => r.stdout)
 // `go list -json` prints one indented object after another.
 const records = (text) => JSON.parse(`[${text.trim().replace(/^\}\n\{$/gm, '},{')}]`)
@@ -241,6 +241,8 @@ async function measureModule({ name }) {
     let version
     let all
     const result = { listedVersion: listedVersion[name] }
+    // A module inside another's internal/ tree can be imported by nobody else.
+    if (name.split('/').includes('internal')) return { status: 'no-entry', ...result, detail: 'an internal module: not importable from outside its parent' }
     try {
       version = await pickVersion(name, listedVersion[name])
       result.version = version
