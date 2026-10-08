@@ -118,7 +118,14 @@ const rustCheck = await readJson(fromRoot('data/rust-check.json'), { rust: null,
 // sweeps in scripts/sweep-types/: what loading a package's types adds to a
 // check. Where a package has one, it is the figure its class is set from, so
 // that a measured package and a listed one are compared by the same method.
-const SWEPT = { pypi: 'python', rubygems: 'ruby', cargo: 'cargo' }
+const SWEPT = { pypi: 'python', rubygems: 'ruby', cargo: 'cargo', gomod: 'go' }
+// What each sweep subtracts from the check of a program that only loads the
+// package. Go has no prebuilt standard library to check against, so its sweep
+// subtracts the standard library packages the module uses.
+const SWEPT_BASIS = {
+  gomod: 'A program that only imports the module is checked from source, and the same check of a program that imports only the standard library packages it uses is subtracted.',
+}
+const SWEPT_BASIS_DEFAULT = 'A program that only loads the package is checked, and the same check of an empty program is subtracted.'
 // What a result says of its own install, added to the entry's account of how
 // it is set up: compiled code that came prebuilt, and gems compiled on the
 // machine (the one case where a package's code runs at install; see
@@ -261,9 +268,9 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
         : checked && cargoCheck(checked)
     // A swept figure for the whole package replaces the adapter's as the one
     // that is graded; the adapter's stays beside it.
-    const swept = result.ecosystem in SWEPT && !result.builtin ? sweptCheck(result.ecosystem, adapter.package ?? result.package) : null
+    const swept = result.ecosystem in SWEPT && !result.builtin ? sweptCheck(result.ecosystem, result.ecosystem === 'gomod' ? adapter.module : adapter.package ?? result.package) : null
     const gradedTypes = swept
-      ? { ...(typeInfo || {}), tool: swept.tool, swept: true, metricKey: SWEPT[result.ecosystem] === 'cargo' ? undefined : SWEPT[result.ecosystem], icon: typeInfo?.icon ?? { python: 'cpython', ruby: 'ruby' }[SWEPT[result.ecosystem]], adapter: typeInfo ? { cpuMs: typeInfo.cpuMs, memoryMb: typeInfo.memoryMb, value: typeInfo.value } : null, cpuMs: swept.cpuMs, memoryMb: swept.memoryMb, value: swept.value, ...(swept.community ? { community: true, from: swept.from } : {}) }
+      ? { ...(typeInfo || {}), tool: swept.tool, swept: true, basis: SWEPT_BASIS[result.ecosystem] ?? SWEPT_BASIS_DEFAULT, metricKey: SWEPT[result.ecosystem] === 'cargo' ? undefined : SWEPT[result.ecosystem], icon: typeInfo?.icon ?? { python: 'cpython', ruby: 'ruby', go: 'go' }[SWEPT[result.ecosystem]], adapter: typeInfo ? { cpuMs: typeInfo.cpuMs, memoryMb: typeInfo.memoryMb, value: typeInfo.value } : null, cpuMs: swept.cpuMs, memoryMb: swept.memoryMb, value: swept.value, ...(swept.community ? { community: true, from: swept.from } : {}) }
       : typeInfo
     ;(isCurrent ? runtime.entries : runtime.history).push({
       id,
@@ -367,7 +374,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   // Where a language's entries are graded by a swept figure, the tool named is the sweep's.
   for (const [ecosystemId, language] of Object.entries(SWEPT)) {
     const sample = everyEntry.find((e) => e.types?.swept && e.ecosystem === ecosystemId)
-    if (sample) typeChecks[language] = { ...(language === 'cargo' ? CARGO_CHECK_METRIC : TYPES_METRIC), ...typeChecks[language], tool: sample.types.tool, notes: 'A program that only loads the package, checked against an empty one.' }
+    if (sample) typeChecks[language] = { ...(language === 'cargo' ? CARGO_CHECK_METRIC : TYPES_METRIC), ...typeChecks[language], tool: sample.types.tool, notes: sample.types.basis }
   }
   const order = [...Object.keys(config.runtimes), ...Object.keys(config.toolchains)]
   const data = {

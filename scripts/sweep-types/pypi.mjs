@@ -4,7 +4,8 @@
 // data/pypi/types.json.
 //
 // Usage: node scripts/sweep-types/pypi.mjs <pkg>... | --top=N
-//        [--force] [--retry-failed] [--runs=11] [--keep] [--infer-untyped] [--out=file]
+//        [--force] [--retry-failed] [--runs=11] [--std=exclude|include] [--keep]
+//        [--infer-untyped] [--out=file]
 // --top=N takes the N most used of data/pypi/packages.json and everything in
 // data/pypi/picked.json. A run can be stopped and started again: the results
 // file is written after every package, packages already in it are skipped
@@ -25,8 +26,25 @@
 // The package is alone in its own venv, and --python-executable makes mypy
 // apply PEP 561: only a py.typed marker or a stub distribution counts as typed.
 //
-// Baseline: `pass` checked against an empty venv. Figure (`added`): median of
-// the runs minus the baseline median, process CPU (user + system) and peak RSS.
+// Baseline: `pass` checked against an empty venv. Process CPU (user + system)
+// and peak RSS, medians of the runs.
+// What is subtracted: by default a second probe, as the Go sweep does it. mypy
+// reads the standard library from typeshed's stubs, and a package pays for
+// every stub its modules import (requests' tree is a hundred of them): those
+// are the standard library's cost, not the package's. `mypy -v` names every
+// file it parses; the ones under mypy's typeshed/stdlib/ that the empty
+// baseline does not parse already are the package's standard-library modules
+// (`standardLibraryModules`). The probe is one `import <module>` for each of
+// them and nothing else, checked against the empty venv with the same command
+// and the same number of runs. A name mypy will not import alone is dropped
+// from the probe (`standardLibraryDropped`); the probe is refused unless it
+// parses exactly the modules it lists, so nothing else can be subtracted.
+// Packages with the same list share one measurement during a run.
+// Figure (`added`): the package's medians minus the probe's, so the package,
+// its dependencies and their stubs, not the standard library they use.
+// `mypy.wholeTree` is the figure over the empty baseline (what `added` was
+// before the standard library was taken out), `mypy.standardLibrary` the
+// probe's over the same baseline; with --std=include `added` is the whole tree.
 //
 // Classification:
 //   ok             mypy accepts the imports
@@ -54,8 +72,11 @@ import { raisePriority } from '../lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
 
-const { names, value, has } = args('Usage: node scripts/sweep-types/pypi.mjs <pkg>... | --top=N [--force] [--retry-failed] [--runs=11] [--keep] [--infer-untyped] [--out=file]')
+const { names, value, has } = args('Usage: node scripts/sweep-types/pypi.mjs <pkg>... | --top=N [--force] [--retry-failed] [--runs=11] [--std=exclude|include] [--keep] [--infer-untyped] [--out=file]')
 const RUNS = Number(value('runs', 11))
+// Whether the typeshed standard-library stubs a package imports are counted against it.
+const STD = value('std', 'exclude')
+if (!['exclude', 'include'].includes(STD)) throw new Error('--std must be exclude or include')
 const WORK = fromRoot('.cache/sweep-types/pypi')
 const OUT = value('out') ? path.resolve(value('out')) : fromRoot('data/pypi/types.json')
 const PIP_CACHE = path.join(WORK, 'pip-cache')
@@ -166,8 +187,10 @@ async function runMypy(venv, entry, extra = []) {
   const errors = [...r.stdout.matchAll(/^(.+?):(\d+): error: (.*?)\s+\[([a-z-]+)\]$/gm)].map(([, file, line, message, code]) => ({ file, line: Number(line), message, code }))
   return { ...r, errors, hints: [...r.stdout.matchAll(/pip install ([A-Za-z0-9_.-]+)"/g)].map((m) => m[1]) }
 }
-// Deterministic size: how many modules mypy parsed.
-const parsedFiles = async (venv, entry) => ((await timed([...MYPY, '--python-executable', path.join(venv, 'bin', 'python'), '-v', entry], { cwd: path.dirname(entry) })).stderr.match(/^LOG:\s+Parsing /gm) ?? []).length
+// Deterministic size: the modules mypy parsed, each with its file.
+const parsedModules = async (venv, entry) => [...(await timed([...MYPY, '--python-executable', path.join(venv, 'bin', 'python'), '-v', entry], { cwd: path.dirname(entry) })).stderr.matchAll(/^LOG:\s+Parsing (.+) \(([^()\s]+)\)$/gm)].map(([, file, module]) => ({ file, module }))
+// The standard library is the stubs mypy carries: typeshed/stdlib/ in its package.
+const stdlibOf = (parsed) => parsed.filter((p) => p.file.includes('/mypy/typeshed/stdlib/')).map((p) => p.module)
 
 // The empty baseline: `pass`, checked against an empty venv.
 await mkdir(WORK, { recursive: true })
@@ -178,17 +201,80 @@ await writeFile(path.join(baseDir, 'invalid.py'), 'def bad() -> int:\n    return
 if ((await runMypy(path.join(baseDir, 'venv'), path.join(baseDir, 'invalid.py'))).status === 0) throw new Error('mypy accepted a deliberate type error')
 const baseArgv = [...MYPY, '--python-executable', path.join(baseDir, 'venv', 'bin', 'python'), path.join(baseDir, 'entry.py')]
 const baseline = await measure(baseArgv, { cwd: baseDir }, RUNS)
-baseline.files = await parsedFiles(path.join(baseDir, 'venv'), path.join(baseDir, 'entry.py'))
+const baselineParsed = await parsedModules(path.join(baseDir, 'venv'), path.join(baseDir, 'entry.py'))
+if (baselineParsed.length === 0 || stdlibOf(baselineParsed).length === 0) throw new Error('mypy -v names no standard-library file for the empty baseline: its log format has changed')
+baseline.files = baselineParsed.length
+// What mypy parses for any program (builtins, typing, ...): never in a probe.
+const baselineStdlib = new Set(stdlibOf(baselineParsed))
 console.error(`baseline: ${baseline.cpuMs} ms CPU (spread ${spread(baseline.runs.map((r) => r.cpuMs))}), ${baseline.peakRssMb} MB, ${baseline.files} files`)
 
-async function measureEntry(venv, entry) {
+// The standard-library reference: a program that imports exactly the given
+// typeshed modules, checked against the empty venv like the baseline. One
+// measurement per list of modules, shared by every package of the run with
+// the same list.
+const stdProbes = new Map()
+let stdProbeCount = 0
+function standardLibrary(wanted) {
+  const key = wanted.join(' ')
+  if (!stdProbes.has(key)) stdProbes.set(key, (async () => {
+    const dir = path.join(WORK, '__stdlib__', String(++stdProbeCount))
+    const venv = path.join(baseDir, 'venv')
+    const entry = path.join(dir, 'entry.py')
+    await mkdir(dir, { recursive: true })
+    try {
+      let modules = wanted
+      const dropped = []
+      // A module mypy will not import by itself (none is known; a stub that
+      // is not for --python-version would be one) is left out of the probe.
+      for (let attempt = 0; ; attempt++) {
+        await writeFile(entry, modules.map((m) => `import ${m}`).join('\n') + '\n')
+        const probe = await runMypy(venv, entry)
+        if (probe.status === 0) break
+        const bad = new Set(probe.errors.map((e) => modules[e.line - 1]).filter(Boolean))
+        if (bad.size === 0 || attempt === 3) throw new Error(`standard-library reference failed: ${(probe.stdout + probe.stderr).trim().split('\n')[0].replaceAll(dir, '').slice(0, 200)}`)
+        dropped.push(...bad)
+        modules = modules.filter((m) => !bad.has(m))
+      }
+      // It must parse what it lists and no more, or something else is subtracted.
+      const parsed = await parsedModules(venv, entry)
+      const got = stdlibOf(parsed).filter((m) => !baselineStdlib.has(m)).sort()
+      if (parsed.length - baseline.files !== got.length) throw new Error('standard-library reference failed: the probe parses files outside the standard library')
+      const extra = got.filter((m) => !wanted.includes(m))
+      if (extra.length) throw new Error(`standard-library reference failed: the probe parses ${extra.length} modules the package does not (${extra.slice(0, 3).join(', ')})`)
+      const m = await measure([...MYPY, '--python-executable', path.join(venv, 'bin', 'python'), entry], { cwd: dir }, RUNS)
+      if (m.runs.some((r) => r.status !== 0)) throw new Error('standard-library reference failed: a measured run failed')
+      // Modules the package parses and the probe does not stay counted against the package.
+      const notInProbe = wanted.filter((w) => !got.includes(w))
+      return { cpuMs: m.cpuMs, peakRssMb: m.peakRssMb, timeMs: m.timeMs, modules: got.length, notInProbe, dropped }
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })())
+  return stdProbes.get(key)
+}
+
+// `standardLibraryOut`: subtract the standard-library reference (the graded
+// figure does; what is recorded beside an `untyped` status does not).
+async function measureEntry(venv, entry, standardLibraryOut = false) {
   const m = await measure([...MYPY, '--python-executable', path.join(venv, 'bin', 'python'), entry], { cwd: path.dirname(entry) }, RUNS)
   if (m.runs.some((r) => r.status !== 0)) return null
+  const parsed = await parsedModules(venv, entry)
+  const wanted = [...new Set(stdlibOf(parsed).filter((s) => !baselineStdlib.has(s)))].sort()
+  // No module beyond the baseline's: the reference is the baseline itself.
+  const std = standardLibraryOut && STD === 'exclude' && wanted.length ? await standardLibrary(wanted) : null
+  const against = std ?? baseline
   return {
-    cpuMs: round(m.cpuMs - baseline.cpuMs, 1),
-    memoryMb: round(m.peakRssMb - baseline.peakRssMb, 1),
-    timeMs: round(m.timeMs - baseline.timeMs, 1),
-    files: (await parsedFiles(venv, entry)) - baseline.files,
+    cpuMs: round(m.cpuMs - against.cpuMs, 1),
+    memoryMb: round(m.peakRssMb - against.peakRssMb, 1),
+    timeMs: round(m.timeMs - against.timeMs, 1),
+    ...(standardLibraryOut ? {
+      wholeTree: { cpuMs: round(m.cpuMs - baseline.cpuMs, 1), memoryMb: round(m.peakRssMb - baseline.peakRssMb, 1) },
+      ...(STD === 'exclude' ? { standardLibrary: { cpuMs: round(against.cpuMs - baseline.cpuMs, 1), memoryMb: round(against.peakRssMb - baseline.peakRssMb, 1) } } : {}),
+      standardLibraryModules: wanted.length,
+      ...(std?.notInProbe.length ? { standardLibraryNotInProbe: std.notInProbe } : {}),
+      ...(std?.dropped.length ? { standardLibraryDropped: std.dropped } : {}),
+    } : {}),
+    files: parsed.length - baseline.files,
     cpuSpreadMs: spread(m.runs.map((r) => r.cpuMs)),
     runs: m.runs,
   }
@@ -264,7 +350,9 @@ async function measurePackage({ name }) {
       probe = await runMypy(venv, entry)
     }
     if (probe.status !== 0) return { status: 'check-failed', ...result, modules, detail: (probe.stdout + probe.stderr).trim().split('\n')[0].replaceAll(dir, '').slice(0, 300) }
-    const mypy = await measureEntry(venv, entry)
+    // Minus the standard-library reference (or, with --std=include, minus the
+    // empty baseline). `mypy.wholeTree` is always the figure over the baseline.
+    const mypy = await measureEntry(venv, entry, true)
     if (!mypy) return { status: 'check-failed', ...result, modules, detail: 'a measured run failed' }
     return { status: 'ok', ...result, typesFrom, modules, added: { cpuMs: Math.max(0, mypy.cpuMs), memoryMb: Math.max(0, mypy.memoryMb) }, mypy, baseline: { cpuMs: baseline.cpuMs, peakRssMb: baseline.peakRssMb } }
   } finally {
@@ -274,7 +362,7 @@ async function measurePackage({ name }) {
 
 const header = {
   checker: { tool: 'mypy', version: lock.mypy },
-  method: { hostPython: pyVersion, targetPython: TARGET_PYTHON, flags: MYPY.slice(3), program: 'import <each public top-level module>', stubs: 'mypy hint, types-<name>, <name>-stubs; community ones marked' },
+  method: { hostPython: pyVersion, targetPython: TARGET_PYTHON, flags: MYPY.slice(3), standardLibrary: STD === 'exclude' ? 'not counted: minus a probe importing the same typeshed stdlib modules' : 'counted', program: 'import <each public top-level module>', stubs: 'mypy hint, types-<name>, <name>-stubs; community ones marked' },
   minReleaseAgeDays: MIN_RELEASE_AGE_DAYS,
   memoryKind: 'peak RSS of the checker process',
   scoreBasis: 'added process CPU ms * added peak RSS MB',
@@ -288,5 +376,5 @@ await sweep({
   force: has('force'),
   retryFailed: has('retry-failed'),
   measureOne: measurePackage,
-  summary: (r) => (r.status === 'ok' ? `+${r.mypy.cpuMs} ms CPU (spread ${r.mypy.cpuSpreadMs}), +${r.mypy.memoryMb} MB, +${r.mypy.files} files (${r.typesFrom}${r.stubsPublisher ? ` by ${r.stubsPublisher}` : ''}; ${r.modules.join(', ')})` : `${r.status}${r.detail ? `: ${r.detail}` : ''}${r.sourceInferred?.cpuMs !== undefined ? ` [source-inferred +${r.sourceInferred.cpuMs} ms, +${r.sourceInferred.memoryMb} MB]` : ''}`) + ` v${r.version ?? '?'}`,
+  summary: (r) => (r.status === 'ok' ? `+${r.mypy.cpuMs} ms CPU (spread ${r.mypy.cpuSpreadMs}; whole tree ${r.mypy.wholeTree.cpuMs}), +${r.mypy.memoryMb} MB (whole tree ${r.mypy.wholeTree.memoryMb}), +${r.mypy.files} files, ${r.mypy.standardLibraryModules} std (${r.typesFrom}${r.stubsPublisher ? ` by ${r.stubsPublisher}` : ''}; ${r.modules.join(', ')})` : `${r.status}${r.detail ? `: ${r.detail}` : ''}${r.sourceInferred?.cpuMs !== undefined ? ` [source-inferred +${r.sourceInferred.cpuMs} ms, +${r.sourceInferred.memoryMb} MB]` : ''}`) + ` v${r.version ?? '?'}`,
 })

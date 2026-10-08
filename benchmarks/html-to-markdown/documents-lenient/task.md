@@ -68,8 +68,6 @@ Still not passing, because the difference is not of this kind:
 - `html-to-md` (npm): besides losing the space between adjacent inline
   elements, which is forgiven here, it decodes entities in a code block twice
   (`&amp;amp;`, the text `&amp;`, comes out as `&`).
-- `html-to-markdown-rs` (Rust): a nested list is folded into the text of its
-  item.
 
 See [shared methodology](../../README.md) for timing and reproduction, and
 "Strict and lenient tasks" there for the rules of such a pair.

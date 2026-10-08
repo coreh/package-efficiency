@@ -59,17 +59,17 @@ so there are no builtin adapters.
 
 - npm `turndown` (`new TurndownService()` once, `turndown(html)`), `node-html-markdown`
   (`NodeHtmlMarkdown.translate`), `html-to-md` (`html2md`).
-- Crates `htmd` (`convert`), `html2md` (`parse_html`), `html-to-markdown-rs` (`convert`).
+- Crates `htmd` (`convert`), `html2md` (`parse_html`), `html-to-markdown-rs` (`convert(html, None)`, then `.content`).
 - PyPI `markdownify`, `html2text`, `html-to-markdown` (`convert(...).content`).
 - RubyGems `reverse_markdown`; Go `JohannesKaufmann/html-to-markdown` (`ConvertString`).
 
-Libraries do different amounts of work: `html-to-markdown` (PyPI) also collects
+Libraries do different amounts of work: `html-to-markdown` (PyPI) and the crate
+it is built on, `html-to-markdown-rs`, also collect
 page metadata and tables in the same call, and `node-html-markdown` and
 `turndown` build a DOM first. Each is measured as it is called.
 
 Not passing, with defaults, on the fixtures: `html-to-md` (whitespace between
-adjacent inline elements is lost), `html-to-markdown-rs` (nested lists are folded
-into the item text), `html2text` (an `&` inside emphasis gets a space before it)
+adjacent inline elements is lost), `html2text` (an `&` inside emphasis gets a space before it)
 and `reverse_markdown` (the space between a closing strong or emphasis and a
 double quote is dropped). They are real differences in the text, not style, and
 no option fixing them was found, so there are no variants.
@@ -84,5 +84,5 @@ packages).
 
 This is the strict task of a pair. [documents-lenient](../documents-lenient/task.md) runs the same
 adapters on the same inputs with a check that leaves out or forgives one
-stated kind of difference. It has the same 12 fragments and does not compare white space inside an inline element or beside one. `html2text` and `reverse_markdown` pass there; `html-to-md` (it also decodes entities in a code block twice) and `html-to-markdown-rs` do not.
+stated kind of difference. It has the same 12 fragments and does not compare white space inside an inline element or beside one. `html2text` and `reverse_markdown` pass there; `html-to-md` (it also decodes entities in a code block twice) does not.
 See "Strict and lenient tasks" in the [shared methodology](../../README.md).

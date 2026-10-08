@@ -6,6 +6,6 @@
     "date": "2026-10-07"
   },
   "review": "unreviewed",
-  "notes": "html_to_markdown_rs::convert(html, None) with default options. Not passing: a nested list inside a list item is folded into the item's text, and line breaks inside paragraphs are kept.",
-  "details": "Fixtures 2 to 11 fail. Seen with version 2.30.0 on pretty-printed HTML (nested ul/ol inside li, newlines between words). No variant was written because no option for it is known."
+  "notes": "html_to_markdown_rs::convert(html, None) with default options, then the result's content. Major version 3, the one the PyPI package html-to-markdown is built on.",
+  "details": "Version 2.30.0 was measured first and failed fixtures 2 to 11 (nested lists folded into the item's text, line breaks kept inside paragraphs); 3.15.1 passes all 12."
 }
