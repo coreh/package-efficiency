@@ -352,6 +352,7 @@ details.source pre.numbers { position: sticky; left: 0; padding-right: 10px; tex
 /* Drawn like the switches above it: the same boxes, joined in a row. */
 .pager { display: flex; flex-wrap: wrap; align-items: center; margin: 0 0 12px; }
 .pager.above { margin: 0 0 8px; }
+.pager.below { justify-content: flex-end; }
 .switches:has(+ .panel) { margin-bottom: 8px; }
 .pager button, .pager .status { font: inherit; font-weight: 600; color: inherit; background: var(--bg); border: 1px solid var(--soft); padding: 4px 11px; margin-left: -1px; }
 .pager button:first-child { margin-left: 0; }
@@ -655,15 +656,29 @@ details.more-deps > summary { display: inline; cursor: pointer; text-decoration:
 details.more-deps > summary::-webkit-details-marker { display: none; }
 details.more-deps[open] > summary { text-decoration: none; }
 
-/* A package's related packages, under its category tiles. */
-.related { max-width: 60rem; margin: .2rem 0 1.2rem; }
-.related p { margin: 0 0 .35em; }
+/* A package's measured dependencies, under its category tiles, as a tree:
+   the package at the root and a branch with an elbow for each dependency. */
+.related { max-width: 60rem; margin: .4rem 0 1.4rem; display: grid; gap: .9rem; }
+.dep-tree .dep-root { margin: 0 0 .15rem; }
+.dep-tree ul { list-style: none; margin: 0; padding: 0 0 0 .55rem; }
+.dep-tree li { position: relative; display: flex; align-items: baseline; gap: .6rem; padding: .16rem 0 .16rem 1.5rem; }
+.dep-tree li::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; border-left: 1.5px solid var(--soft); }
+.dep-tree li::after { content: ''; position: absolute; left: 0; top: 0; width: 1.05rem; height: .95em; border-bottom: 1.5px solid var(--soft); }
+.dep-tree li:last-child::before { bottom: auto; height: .95em; }
+.dep-tree .dep-name { font-weight: 700; white-space: nowrap; }
+.dep-tree .dep-where { color: var(--soft); min-width: 0; }
+.dep-tree .dep-where a { color: inherit; }
+.dep-tree .dep-classes { margin-left: auto; white-space: nowrap; display: inline-flex; gap: .25rem; }
+/* The tables of tasks: the same columns in every one, across the whole page. */
+table.task-rows { table-layout: fixed; width: 100%; min-width: 56rem; }
+table.task-rows .c-task { width: 26%; } table.task-rows .c-what { width: 44%; } table.task-rows .c-entries { width: 7rem; }
+table.task-rows td, table.task-rows td.wrap { white-space: normal; min-width: 0; max-width: none; overflow-wrap: anywhere; }
 
 /* A task on a package's page, folded under its heading: an arrow, the task's
    name, and at the right edge its best classes. The row is a div inside the
    summary, since a summary itself does not lay out as a flex box everywhere. */
-details.task-fold { border-top: 3px solid var(--ink); margin: 1.6rem 0 0; }
-details.task-fold > summary { display: block; cursor: pointer; padding: .55rem 0 .5rem; list-style: none; }
+details.task-fold { margin: 1.1rem 0 0; }
+details.task-fold > summary { display: block; cursor: pointer; padding: .55rem 0 .5rem; border-bottom: 3px solid var(--ink); list-style: none; }
 details.task-fold > summary::-webkit-details-marker { display: none; }
 details.task-fold > summary::marker { content: ''; }
 details.task-fold .fold-head { display: flex; align-items: center; gap: .7rem; }

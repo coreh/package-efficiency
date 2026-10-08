@@ -830,14 +830,20 @@ ${adapterList}`
   // A framework's page so leads to the router or parser inside it.
   const links = packageLinks(model)
   const key = `${pkg.ecosystem}/${pkg.name}`
-  const relatedLinks = (packages) => {
-    const item = (p) => `<a href="${urls.package(p)}">${esc(p.title)}</a> (${[...new Set(p.appearances.map((a) => a.data.task.category))].map((id) => model.categories.find((c) => c.id === id)).filter(Boolean).map((c) => esc(c.title)).join(', ')})`
+  // Drawn as a tree: this package at the root, each measured dependency a
+  // branch with the categories it is measured in and its best classes there.
+  const branch = (p) => {
+    const best = (id) => p.appearances.map((a) => a.entry.grades[id]).filter((g) => g?.class).sort((a, b) => CLASSES.indexOf(a.class) - CLASSES.indexOf(b.class))[0]
+    const where = [...new Set(p.appearances.map((a) => a.data.task.category))].map((id) => model.categories.find((c) => c.id === id)).filter(Boolean).map((c) => `<a href="${urls.category(c.id)}">${esc(c.title)}</a>`).join(', ')
+    return `<li><a class="dep-name" href="${urls.package(p)}">${esc(p.title)}</a><span class="dep-where">${where}</span><span class="dep-classes">${['cpu', 'memory'].map((id) => (best(id) ? chip(id, best(id), `Best ${RANKINGS[id].title} class`) : '')).join('')}</span></li>`
+  }
+  const tree = (root, packages, label) => {
     const sorted = [...packages].sort((a, b) => a.title.localeCompare(b.title))
-    return sorted.length <= 8 ? sorted.map(item).join(', ') : `${sorted.slice(0, 6).map(item).join(', ')} and <details class="more-deps"><summary>${sorted.length - 6} more</summary> ${sorted.slice(6).map(item).join(', ')}</details>`
+    return `<div class="dep-tree" role="group" aria-label="${esc(label)}"><p class="dep-root"><b>${esc(root)}</b> <span class="soft">${esc(label)}</span></p><ul>${sorted.map(branch).join('')}</ul></div>`
   }
   const builtOn = [...(links.uses.get(key) ?? [])], usedBy = [...(links.usedBy.get(key) ?? [])]
   const related = builtOn.length || usedBy.length
-    ? `<div class="related" id="related">${builtOn.length ? `<p><b>Brings packages measured on their own:</b> ${relatedLinks(builtOn)}</p>` : ''}${usedBy.length ? `<p><b>Comes with these measured packages:</b> ${relatedLinks(usedBy)}</p>` : ''}</div>`
+    ? `<div class="related" id="related">${builtOn.length ? tree(pkg.title, builtOn, `depends on ${plural(builtOn.length, 'package')} measured on ${builtOn.length === 1 ? 'its' : 'their'} own`) : ''}${usedBy.length ? tree(pkg.title, usedBy, `is a dependency of ${plural(usedBy.length, 'measured package')}`) : ''}</div>`
     : ''
   // The categories this package is measured in, as tiles under its name, and
   // at the foot of the page every package of those categories in one table,
@@ -1099,7 +1105,8 @@ ${catalogTable(listed, model, { caption: `Use: ${esc(listed[0].popularity.label)
 }
 
 function taskRows(tasks) {
-  return `<div class="scroll"><table class="sortable">
+  return `<div class="scroll"><table class="sortable task-rows">
+<colgroup><col class="c-task"><col class="c-what"><col class="c-entries"><col class="c-runs"></colgroup>
 <thead><tr><th scope="col">Task</th><th scope="col" class="l">What it does</th><th scope="col">Entries</th><th scope="col" class="l">Runs on</th></tr></thead>
 <tbody>${tasks
     .map((data) => {
