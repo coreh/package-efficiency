@@ -1169,6 +1169,184 @@ asynchronous operations, c: files, d: a local peer).
 | `dynamic-attribute-objects` | Wrap a nested hash, read 200 and write 50 attributes by method call, convert back | Exact values and final hash (keys compared as text) | sync, exact | Needs a: `hashie`, `recursive-open-struct`, `snaky_hash`, beside the standard library's OpenStruct. A Ruby-only comparison. `objx` (Go) reads by path string, a different interface: out. Wrapping is inside the call: some wrap eagerly, some on first read, and both must be counted |
 | `object-pickling` | Serialize and restore a graph of 2,000 class instances with shared references and a cycle | `describe` walks the restored graph: field values, and which references are the same object | sync, 3 | Needs a: `cloudpickle`, `dill`, `jsonpickle`, beside the standard library's `pickle`. A Python-only comparison; no other ecosystem serializes closures. A second task `closures` (restore functions and call them): `cloudpickle`, `dill`; `pickle` is recorded as not passing. `tblib` (tracebacks): out |
 
+## Strict and lenient tasks
+
+A strict check turns a package away for one edge case, and the package then
+has no figure at all: a JSON Patch library that applies every valid patch but
+does not reject a `remove` of a missing member, an HTML converter that loses
+one space beside an inline element. The failure is real and stays on record.
+But the package still does the job most people use it for, and readers want to
+know what that costs.
+
+So a task can have a second, lenient task beside it. Both run the same
+adapters on the same inputs. The strict task says who conforms. The lenient
+task gives a class to every package that does the job apart from one stated
+kind of difference. A package that passes both is listed in both; one that
+passes only the lenient task is listed there, with a note that it does not
+pass the strict task and why.
+
+Three pairs to copy from:
+
+| Strict | Lenient | What the lenient task does |
+| --- | --- | --- |
+| `json-patch/apply-patch` | `json-patch/apply-patch-lenient` | Leaves out the patches that must be rejected; accepts a `copy` that shares its value |
+| `html-to-markdown/documents` | `html-to-markdown/documents-lenient` | Same fragments; white space inside and beside inline elements is not compared |
+| `css-selector-matching/document-queries` | `css-selector-matching/document-queries-lenient` | Leaves out the selectors of Selectors Level 4 |
+
+### When to add one
+
+Add a lenient task when at least two packages fail the strict task for a
+reason that can be stated as one kind of difference, and that a reader could
+fairly call "does the job, apart from this".
+
+Do not add one when:
+
+- The failing packages give wrong answers: a charset detector that names the
+  wrong encoding, a type lookup with a missing entry, a formatter that rounds
+  to another unit. A lenient task that accepted some share of right answers
+  would be a score, not a check. Those packages stay recorded as not passing.
+- The only failing entries are packages with default options that already
+  have a passing variant beside them (`variantOf`, see rule 7 under "Tasks
+  whose output differs between packages"). The variant is the answer.
+- Only one package would be rescued. Record it as not passing.
+- The difference is the heart of the job (see "When there is no fair check").
+
+Decided against so far, for those reasons: `charset-detection/legacy-corpus`
+and `file-type-detection/first-bytes` (wrong answers),
+`mime-type-lookup/extensions-from-types` (a wrong extension and a missing
+entry), `human-size-formatting/byte-counts` (one package rounds too coarsely,
+one writes another format, the others have passing variants),
+`markdown-parsing/commonmark-to-html` and both `schema-validation` tasks (only
+default-option entries with passing variants, and one package alone), and
+`json-path-query/evaluate-queries` (nothing fails).
+
+### What a lenient task may forgive
+
+1. **One class of difference, written down.** `task.md` says exactly what is
+   left out or forgiven compared with the strict task, and why it is one kind
+   of thing ("no patch has to be rejected", "white space beside an inline
+   element", "Selectors Level 3 only"). Never "whatever these packages get
+   wrong": the rule must be one that a package not yet written could be judged
+   by. Write the rule into the scenario as a rule (a predicate over the
+   fixtures, a pattern), and assert there which fixtures it removes.
+2. **The timed work stays the same.** Prefer forgiving in the check to
+   removing fixtures, so both tasks time the same inputs and their figures can
+   be read side by side. Remove a fixture only where a package's behaviour on
+   it is an error or a crash (a selector it refuses to compile), or where the
+   work on it is different work (a patch that must be rejected ends in an
+   error path). Never change a fixture: one that stays is the strict task's,
+   byte for byte. `kind`, `load` and `metrics` are the strict task's.
+3. **It is still a real check.** Everything the rule does not name is compared
+   as strictly as before. The scenario proves it when it loads
+   (`assert.throws`): the input returned unchanged, a constant, another
+   fixture's result and a result with the substance changed must all fail;
+   an output with the forgiven difference must pass here, and fail the strict
+   check where that can be shown.
+4. **An entry that still fails is still recorded.** A package that fails the
+   lenient task for another reason (`immutable-json-patch`, `html-to-md`) is
+   not passing in both, and `task.md` says why the difference is not of the
+   forgiven kind. Do not widen the rule to let it in.
+5. **The adapters are not touched.** The lenient task runs the strict task's
+   adapters as they are. If an adapter would have to change to pass, that is
+   a variant in the strict task, not a lenient task.
+
+### Files
+
+A lenient task is a folder beside the strict one, with no adapter folders:
+
+```
+benchmarks/<category>/<task>/                 the strict task, with the adapters
+benchmarks/<category>/<task>-lenient/task.json
+benchmarks/<category>/<task>-lenient/task.md
+benchmarks/<category>/<task>-lenient/scenario.mjs
+```
+
+`task.json` of the lenient task is the strict one's (`kind`, `load`,
+`metrics`) with its own `task`, `title` ("…, lenient"), `summary`,
+`fixtureCount`, and three fields:
+
+```json
+"strictness": "lenient",
+"pairedWith": "<category>/<task>",
+"adaptersFrom": "<category>/<task>",
+```
+
+and the strict task gets two, and ", strict" at the end of its `title`:
+
+```json
+"strictness": "strict",
+"pairedWith": "<category>/<task>-lenient",
+```
+
+- `adaptersFrom` makes the scripts run that task's adapters for this one.
+  Results go under `results/<category>/<task>-lenient/`, working folders
+  under `.cache/work/<category>/<task>-lenient/`, and the fixtures given to
+  Rust, Go, Python and Ruby adapters are this task's. A Rust adapter is the
+  same binary for both tasks: it reads its fixtures from the file it is
+  given. Locks (`lock.json`, `go.mod`) and type checks stay with the adapter,
+  in the strict task's folder: nothing is checked twice, and the lenient
+  task's entries show the strict task's check. Variants (`variantOf`) and
+  entries recorded as not passing work as in the strict task. A change to an
+  adapter, or to the strict scenario, marks the results of both tasks for
+  measuring again.
+- `strictness` and `pairedWith` are for the site: each task's page names the
+  other and lists the entries that pass only the lenient one, and such an
+  entry's note begins "Does not pass the strict task:" followed by the
+  adapter's `notes`. So the `notes` of an adapter that fails the strict task
+  must give the reason in a way that reads well after those words.
+- While you write the task, add `"draft": true`. The measuring loop
+  (`scripts/unmeasured.mjs`) passes over a draft, so nothing is measured with
+  a check that may still change. `--check` works on a draft. Remove the field
+  when the task is final.
+
+`scenario.mjs` imports the strict scenario and derives everything from it.
+Do not copy fixture data, the generator or the reader:
+
+```js
+import { cases as strictCases, consume as strictConsume } from '../<task>/scenario.mjs'
+export const cases = strictCases.filter(keep).map(({ input, expected }) => ({ input, expected }))
+export const verifyOne = (i, output) => { /* the strict comparison, minus the stated class */ }
+export const verifyResults = (outputs) => { /* length, then verifyOne for each */ }
+export const verify = (operation) => verifyResults(cases.map(({ input }) => operation(input)))
+export const consume = strictConsume
+```
+
+That one import, written exactly as `'../<task>/scenario.mjs'`, is the only
+import besides `node:` modules. Beside a JavaScript adapter the scripts put
+the strict scenario as `scenario.from.mjs` and point the import at it. If the
+strict scenario does not export what you need (its reference, its reader, its
+expected values), either derive it from what it does export and check your
+derivation against the strict check when the scenario loads
+(`documents-lenient` reads the HTML fragments itself and passes each reading
+through the strict `verifyOne`), or add a small export or parameter to the
+strict scenario without changing its fixtures (`apply-patch` gives its
+reference a `duplicate` parameter). The second changes the strict scenario's
+fingerprint, so the strict task is measured again; say so when you do it.
+
+Always export `verifyResults`: adapters in Rust, Go, Python and Ruby hand
+their outputs to it. (A Rust adapter that uses the plain `operation::run`
+compares with each case's `expected` inside the binary and cannot be forgiven
+anything; the lenient task can still remove fixtures for it.)
+
+In `task.md` write, in this order: that it is the lenient form of which task
+and runs its adapters; what differs from the strict task, item by item, each
+with whether it is removed or forgiven and why; what is still compared; which
+entries pass only here; which still do not pass and why their difference is
+not of the forgiven kind. Add a line to the strict task's `task.md` that
+points to the lenient one.
+
+### Check your work
+
+```sh
+node scripts/measure.mjs <category>/<task> --check
+node scripts/measure.mjs <category>/<task>-lenient --check
+```
+
+Every entry that prints `works` for the strict task must print `works` for
+the lenient one, on every runtime. The entries you meant to rescue must print
+`works` for the lenient task; if one does not, read why before touching the
+rule (it may fail for a second reason, which then goes into its `details`).
+
 ## Client tasks
 
 A client library needs something to talk to. A task of kind `client` is the

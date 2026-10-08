@@ -1,9 +1,11 @@
 {
   "category": "json-patch",
   "task": "apply-patch",
-  "title": "Apply an RFC 6902 patch",
+  "title": "Apply an RFC 6902 patch, strict",
   "summary": "Apply a JSON Patch (RFC 6902) of add, remove, replace, move, copy and test operations to a JSON document and return the result.",
   "kind": "sync-operation",
+  "strictness": "strict",
+  "pairedWith": "json-patch/apply-patch-lenient",
   "ecosystems": ["npm", "cargo", "pypi", "rubygems", "gomod"],
   "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
   "metrics": {

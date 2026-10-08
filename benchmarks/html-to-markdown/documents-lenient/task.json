@@ -1,0 +1,38 @@
+{
+  "category": "html-to-markdown",
+  "task": "documents-lenient",
+  "title": "HTML document to Markdown, lenient",
+  "summary": "Convert an HTML fragment of 0.5 to 50 kB, with headings, paragraphs, nested lists, links, emphasis, inline code and code blocks, to Markdown text. The lenient form of the strict task: white space inside and beside inline elements is not compared.",
+  "kind": "sync-operation",
+  "strictness": "lenient",
+  "pairedWith": "html-to-markdown/documents",
+  "adaptersFrom": "html-to-markdown/documents",
+  "draft": true,
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "pypi",
+    "rubygems",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 12
+}

@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { activeReleaseRows } from '../scripts/lib/releases.mjs'
 import { assistantIcon, groupIcon, inlineIcon } from './icons.mjs'
-import { adapterIdOf, adapterSource, taskSource } from './source.mjs'
+import { adapterIdOf, adapterSource, adaptersTaskOf, taskSource } from './source.mjs'
 import { overviewLabel } from './layouts.mjs'
 import { CLASSES, LEAST, RANKINGS, classColor, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
 
@@ -562,6 +562,23 @@ ${panels.join('\n')}
 </div>`
 }
 
+// A strict task and its lenient task (task.json `strictness` and
+// `pairedWith`; see "Strict and lenient tasks" in benchmarks/README.md) name
+// each other, and both name the entries that pass only the lenient one.
+// Nothing is said until both have results.
+function pairNote(data, model) {
+  const { strictness, pairedWith } = data.task
+  const other = strictness && pairedWith ? model.tasks.find((d) => d.task.id === pairedWith) : null
+  if (!other) return ''
+  const lenient = strictness === 'lenient' ? data : other
+  const only = [...new Set(lenient.runtimes.flatMap((r) => r.entries).filter((e) => e.adapter.strict?.passes === false).map((e) => e.title))].sort()
+  const names = only.map((title) => `<b>${esc(title)}</b>`).join(', ')
+  const link = `<a href="${urls.task(other.task.id)}">${esc(other.task.title)}</a>`
+  return strictness === 'lenient'
+    ? `<p class="note">This is the lenient task of a pair. It runs the adapters of ${link}, the strict task, on the same inputs. Its check leaves out or forgives one stated kind of difference, which its <a href="#source-task.md">description</a> gives. ${only.length ? `${only.length === 1 ? 'One entry passes' : 'These entries pass'} here and not the strict task: ${names}. The note of each says why.` : 'Every entry here passes the strict task too.'}</p>`
+    : `<p class="note">This is the strict task of a pair. ${link}, the lenient task, runs the same adapters on the same inputs with a check that forgives one stated kind of difference. ${only.length ? `${only.length === 1 ? 'One entry has' : 'These entries have'} a class there and not here: ${names}.` : 'No entry passes only there.'}</p>`
+}
+
 export function taskPage(data, model) {
   const category = model.categories.find((c) => c.id === data.task.category)
   const authors = new Set(data.runtimes.flatMap((r) => r.entries.map((e) => `${e.adapter.author.agent ?? e.adapter.author.kind} (${e.adapter.author.model ?? 'no model recorded'})`)))
@@ -577,6 +594,7 @@ export function taskPage(data, model) {
     body: `<main>
 <h1>${esc(data.task.title)}</h1>
 <p class="intro">${esc(data.task.summary)} A class compares an entry with the best result in any language or runtime, so a class means the same on every tab.${data.runtimes.some((rt) => rt.entries.some((e) => e.reference)) ? ' Reference items, marked R, are there for comparison only: they have no class and win no medal, and no class is set against them.' : ''}</p>
+${pairNote(data, model)}
 ${explorer(data, model)}
 
 <h2 id="runtimes">Languages and runtimes compared on this task</h2>
@@ -666,6 +684,15 @@ export const versionsOf = (pkg) =>
   [...new Set([pkg.version, ...pkg.appearances.map(a=>a.entry.version), ...pkg.history.map((a) => a.entry.version)].filter(Boolean))].sort((a, b) => b.localeCompare(a, 'en', { numeric: true }))
 
 // `version` selects an earlier version; without it the page is for the latest.
+// What an entry was installed with. A few packages are named in the
+// sentence; a long list (a framework brings dozens) is folded under a count.
+const MEASURED_WITH_SHOWN = 5
+function measuredWith(dependencies) {
+  if (!dependencies.length) return ''
+  if (dependencies.length <= MEASURED_WITH_SHOWN) return ` Measured with ${esc(dependencies.join(', '))}.`
+  return ` Measured with ${esc(dependencies.slice(0, 3).join(', '))} and <details class="more-deps"><summary>${dependencies.length - 3} more packages</summary> ${esc(dependencies.slice(3).join(', '))}</details>.`
+}
+
 // Which measured packages each measured package was installed with, both
 // ways, from the dependencies its results record. Worked out once.
 function packageLinks(model) {
@@ -773,7 +800,7 @@ ${cell(e.metrics.latencyP99Ms, num(e.metrics.latencyP99Ms, ' ms'))}</tr>`)
             .filter((runtime) => a.runtimeNotes?.[runtime.id])
             .map((runtime) => `${esc(runtime.title)}: ${esc(a.runtimeNotes[runtime.id])}`)
             .join(' ')
-          return `<div class="adapter"><p>${esc(e.title)}: written by ${esc(who)} on ${esc(a.author.date)}, ${reviewed}.${a.dependencies.length ? ` Measured with ${esc(a.dependencies.join(', '))}.` : ''}${a.notes ? ` ${esc(a.notes)}` : ''}${runtimeNotes ? ` ${runtimeNotes}` : ''}</p>
+          return `<div class="adapter"><p>${esc(e.title)}: written by ${esc(who)} on ${esc(a.author.date)}, ${reviewed}.${measuredWith(a.dependencies)}${a.notes ? ` ${esc(a.notes)}` : ''}${runtimeNotes ? ` ${runtimeNotes}` : ''}</p>
 ${feedback(model, { scope: 'entry', about: `${e.title} in ${data.task.title}`, pkg: `${pkg.ecosystem}/${pkg.name}`, task: data.task.id, source: adapterSource(data.task.id, adapterIdOf(e)).dir, code: urls.source(data.task.id, adapterIdOf(e)), page: urls.package(pkg, older ? version : null), vouch: pkg.ecosystem !== 'builtin' })}
 ${inlineSource(data.task.id, adapterIdOf(e), model, { shownApps, withShared: !adapters.some((other) => adapterIdOf(other) === adapterSource(data.task.id, adapterIdOf(e)).variantOf) })}</div>`
         })
@@ -795,10 +822,14 @@ ${adapterList}`
   // A framework's page so leads to the router or parser inside it.
   const links = packageLinks(model)
   const key = `${pkg.ecosystem}/${pkg.name}`
-  const relatedList = (packages) => `<ul>${packages.map((p) => `<li><a href="${urls.package(p)}">${esc(p.title)}</a>, measured in ${[...new Set(p.appearances.map((a) => a.data.task.category))].map((id) => model.categories.find((c) => c.id === id)).filter(Boolean).map((c) => `<a href="${urls.category(c.id)}">${esc(c.title)}</a>`).join(', ')}</li>`).join('')}</ul>`
+  const relatedLinks = (packages) => {
+    const item = (p) => `<a href="${urls.package(p)}">${esc(p.title)}</a> (${[...new Set(p.appearances.map((a) => a.data.task.category))].map((id) => model.categories.find((c) => c.id === id)).filter(Boolean).map((c) => esc(c.title)).join(', ')})`
+    const sorted = [...packages].sort((a, b) => a.title.localeCompare(b.title))
+    return sorted.length <= 8 ? sorted.map(item).join(', ') : `${sorted.slice(0, 6).map(item).join(', ')} and <details class="more-deps"><summary>${sorted.length - 6} more</summary> ${sorted.slice(6).map(item).join(', ')}</details>`
+  }
   const builtOn = [...(links.uses.get(key) ?? [])], usedBy = [...(links.usedBy.get(key) ?? [])]
   const related = builtOn.length || usedBy.length
-    ? `<h2 id="related">Related packages</h2>\n${builtOn.length ? `<p class="soft">${esc(pkg.title)} was installed with these packages, which are measured on their own:</p>\n${relatedList(builtOn)}` : ''}${usedBy.length ? `<p class="soft">These measured packages were installed with ${esc(pkg.title)}:</p>\n${relatedList(usedBy)}` : ''}`
+    ? `<div class="related" id="related">${builtOn.length ? `<p><b>Brings packages measured on their own:</b> ${relatedLinks(builtOn)}.</p>` : ''}${usedBy.length ? `<p><b>Comes with these measured packages:</b> ${relatedLinks(usedBy)}.</p>` : ''}</div>`
     : ''
   // The categories this package is measured in, as tiles under its name, and
   // at the foot of the page every package of those categories in one table,
@@ -823,11 +854,12 @@ ${adapterList}`
 <p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.module ?? pkg.name)}">View on the registry</a>.` : ''}</p>
 
 ${measuredIn.length ? `<ul class="tiles">${measuredIn.map((c) => `<li><a href="${urls.category(c.id)}">${categoryIcon(c.id)}<span><b>${esc(c.title)}</b><small>${plural(c.tasks.length, 'task')}, ${plural(model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === c.id)).length, 'package')} measured</small></span></a></li>`).join('')}</ul>` : ''}
+${related}
 ${versionNav}
 ${hasSettings ? `<div class="switches package-settings">${switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')}</div>` : ''}
 ${failures.length ? `<section class="compatibility" aria-label="Benchmark compatibility">${failures.map(({runtime,entry})=>`<div class="compatibility-item"><p><strong>${esc(runtime.title)} unavailable.</strong> ${esc(entry.notes ?? 'This version of the package did not complete the task on this runtime.')}</p><details><summary>Details</summary><pre>${esc(entry.error)}</pre></details></div>`).join('')}</section>` : ''}
+${version === pkg.version ? packageOverall(pkg, model) : ''}
 ${sections}
-${related}
 ${comparison}
 </main>`,
   })
@@ -1098,6 +1130,38 @@ const overallSize = (pairs) => {
 // One label for each package over every task of a category: its geometric
 // mean multiple of each task's best, on the runtime it covers most tasks and
 // does best on. Reference entries are left out.
+// A package over every task it is measured in, one label for each runtime:
+// the geometric mean of its multiples of each task's best result. Shown on
+// the package's own page before the tasks, when there is more than one.
+function packageOverall(pkg, model) {
+  const rankings = ['cpu', 'memory']
+  const rows = model.runtimes
+    .map((rt) => ({ rt, cpu: packageGrade(pkg, rt.id, 'cpu'), memory: packageGrade(pkg, rt.id, 'memory') }))
+    .filter((r) => r.cpu?.several && r.memory?.several)
+  if (rows.length === 0) return ''
+  const name = 'rank-overall-package'
+  const data = { metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } }, typeChecks: {} }
+  return `<section>
+<h2 id="overall">Overall</h2>
+<p class="soft">${esc(pkg.title)} over all the tasks it is measured in: the geometric mean of its multiple of the best result in each task. One label for each runtime.</p>
+<div class="ranked">
+<style>${rankings.map((id) => `.ranked:has(#${name}-${id}:checked) .ranked-panel[data-ranking="${id}"]`).join(',')}{display:block}</style>
+<div class="switches">${switcher(name, 'Rank by', rankings.map((id) => ({ id, title: RANKINGS[id].title })), 'cpu')}</div>
+${rankings.map((id) => {
+    const cards = [...rows].sort((a, b) => a[id].grade.ratio - b[id].grade.ratio).map(({ rt, cpu, memory }) => {
+      const tasks = cpu.pairs.length
+      const svg = renderLabel({
+        entry: { title: pkg.title, grades: { cpu: cpu.grade, memory: memory.grade }, metrics: overallSize(cpu.pairs), adapter: { notes: `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.` }, flags: [] },
+        data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall, ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg),
+      })
+      return svg ? `<li data-label><p class="over"></p>${svg}<p class="under">${esc(rt.title)}, ${plural(tasks, 'task')}</p></li>` : ''
+    })
+    return `<div class="ranked-panel" data-ranking="${id}">${shelf(cards)}</div>`
+  }).join('\n')}
+</div>
+</section>`
+}
+
 function overallLabels(category, packages, model) {
   const rankings = Object.keys(RANKINGS)
   const runtimes = model.runtimes.filter((rt) => packages.some((p) => p.appearances.some((a) => a.runtime.id === rt.id)))
@@ -2380,6 +2444,15 @@ function inlineSource(taskId, adapterId, model, { withShared = true, shownApps }
 
 const fileIndex = (files) => (files.length > 1 ? `<p class="files">${files.map((f) => `<a href="#${esc(f.name)}">${esc(f.name)}</a>`).join(' ')}</p>` : '')
 
+// For a task that runs another task's adapters (task.json `adaptersFrom`):
+// whose they are. The files shown are those, from that task's folder.
+function borrowedNote(data, model) {
+  const from = adaptersTaskOf(data.task.id)
+  if (from === data.task.id) return ''
+  const other = model.tasks.find((d) => d.task.id === from)
+  return `<p class="note">This task has no adapters of its own. It runs the adapters of ${other ? `<a href="${urls.task(from)}">${esc(other.task.title)}</a>` : `<code>${esc(from)}</code>`}${data.task.strictness === 'lenient' ? ', the strict task of the pair' : ''}, unchanged, against its own scenario.</p>\n`
+}
+
 export function taskSourcePage(data, model) {
   const category = model.categories.find((c) => c.id === data.task.category)
   const files = taskSource(data.task.id)
@@ -2397,7 +2470,7 @@ export function taskSourcePage(data, model) {
 ${fileIndex(files)}
 ${files.map((f) => sourceFile(f, model)).join('\n')}
 <h2>Adapters</h2>
-<p class="files">${adapters.map(([id, e]) => `<a href="${urls.source(data.task.id, id)}">${esc(e.title)}</a>`).join(' ')}</p>
+${borrowedNote(data, model)}<p class="files">${adapters.map(([id, e]) => `<a href="${urls.source(data.task.id, id)}">${esc(e.title)}</a>`).join(' ')}</p>
 </main>`,
   })
 }
@@ -2423,7 +2496,7 @@ ${source.shared.map((f) => sourceFile({ ...f, name: `${source.variantOf.split('/
     body: `<main>
 <h1>${esc(entry.title)}${verified(entry.adapter)} <span class="ver">benchmark source</span></h1>
 <p class="intro">The adapter that runs ${pkg ? `<a href="${urls.package(pkg)}">${esc(pkg.title)}</a>` : esc(entry.title)} in <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a>. <a href="${repoUrl(model, 'tree', source.dir)}">This folder on GitHub</a>. See also <a href="${urls.source(data.task.id)}">the task and its scenario</a>.</p>
-
+${borrowedNote(data, model)}
 ${fileIndex(source.files)}
 ${source.files.map((f) => sourceFile(f, model)).join('\n')}
 ${shared}

@@ -33,3 +33,11 @@ build the same tree. Packages run with their default settings as installed.
 
 Python, Ruby and Go libraries for this job (soupsieve, cssselect2, goquery,
 cascadia) cannot take part in a synchronous task yet.
+
+## The lenient task
+
+This is the strict task of a pair. [document-queries-lenient](../document-queries-lenient/task.md) runs the same
+adapters on the same inputs with a check that leaves out or forgives one
+stated kind of difference. It has the 42 selectors written in Selectors Level 3, without `:is(h2, h3) + p` and `[data-kind="NOTE" i]`. cascadia and goquery, which refuse the first, and cssselect, which
+refuses the second, pass there.
+See "Strict and lenient tasks" in the [shared methodology](../../README.md).

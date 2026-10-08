@@ -3,10 +3,13 @@
 // Usage: node scripts/unmeasured.mjs [--json]
 import { existsSync, globSync } from 'node:fs'
 import { adaptersOf, taskIds } from './lib/tasks.mjs'
-import { fromRoot } from './lib/util.mjs'
+import { fromRoot, readJson } from './lib/util.mjs'
 
 const tasks = []
 for (const taskId of taskIds()) {
+  // A task still being written (task.json "draft": true) is not listed: its
+  // check may still change, and a result kept from before would not match it.
+  if ((await readJson(fromRoot('benchmarks', taskId, 'task.json'))).draft) continue
   const missing = []
   for (const adapter of await adaptersOf(taskId)) {
     if (adapter.id.startsWith('_')) continue

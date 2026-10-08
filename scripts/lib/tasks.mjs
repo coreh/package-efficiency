@@ -7,10 +7,47 @@ import { fromRoot, readJson } from './util.mjs'
 
 export const taskIds = () => globSync('*/*/task.json', { cwd: fromRoot('benchmarks') }).map((file) => path.dirname(file)).sort()
 
+// A task can run the adapters of another task instead of having folders of
+// its own: task.json `adaptersFrom` names that task ("<category>/<task>").
+// A lenient task does so with the adapters of its strict task (see "Strict
+// and lenient tasks" in benchmarks/README.md). Results, working folders and
+// fixtures stay the borrowing task's own; only the adapter folders are shared.
+// This is the task whose folders hold the adapters of `taskId`.
+export function adaptersTaskOf(taskId) {
+  const from = JSON.parse(readFileSync(fromRoot('benchmarks', taskId, 'task.json'), 'utf8')).adaptersFrom
+  if (!from) return taskId
+  if (!existsSync(fromRoot('benchmarks', from, 'task.json'))) throw new Error(`${taskId}: adaptersFrom names "${from}", which is not a task`)
+  if (JSON.parse(readFileSync(fromRoot('benchmarks', from, 'task.json'), 'utf8')).adaptersFrom) throw new Error(`${taskId}: adaptersFrom names "${from}", which has no adapters of its own`)
+  return from
+}
+
+// The scenario files of a task: its own scenario.mjs and, for a task with
+// `adaptersFrom`, the scenario of that task, which its own may import (as
+// '../<task>/scenario.mjs') to derive its cases and its check from.
+export function scenarioFiles(taskId) {
+  const from = adaptersTaskOf(taskId)
+  const own = fromRoot('benchmarks', taskId, 'scenario.mjs')
+  return from === taskId ? [own] : [own, fromRoot('benchmarks', from, 'scenario.mjs')]
+}
+
+// Puts a task's scenario beside a JavaScript adapter as scenario.mjs. A
+// scenario is loaded alone there, so the scenario a borrowing task imports is
+// put beside it as scenario.from.mjs and the import is pointed at it.
+export function placeScenario(taskId, dir) {
+  const [own, borrowed] = scenarioFiles(taskId)
+  let text = readFileSync(own, 'utf8')
+  if (borrowed) {
+    const specifier = `${path.posix.relative(taskId, adaptersTaskOf(taskId))}/scenario.mjs`
+    text = text.replaceAll(`'${specifier}'`, "'./scenario.from.mjs'").replaceAll(`"${specifier}"`, '"./scenario.from.mjs"')
+    writeFileSync(path.join(dir, 'scenario.from.mjs'), readFileSync(borrowed))
+  }
+  writeFileSync(path.join(dir, 'scenario.mjs'), text)
+}
+
 // The adapters of a task, as `<ecosystem>/<package>` (JSR packages have a
 // scope, so the id can be three parts long), each with its adapter.json.
 export async function adaptersOf(taskId) {
-  const dir = fromRoot('benchmarks', taskId)
+  const dir = fromRoot('benchmarks', adaptersTaskOf(taskId))
   const adapters = []
   for (const file of globSync('**/adapter.json', { cwd: dir, exclude: (name) => name === 'node_modules' || name === 'target' }).sort()) {
     adapters.push({ id: path.dirname(file), ...(await readJson(path.join(dir, file))) })
@@ -23,11 +60,12 @@ export async function adaptersOf(taskId) {
 // each result, so a later look can tell whether the code has changed since.
 // Notes and other descriptive fields of adapter.json do not count.
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 export function adapterFingerprint(taskId, adapterId) {
   const hash = createHash('sha256')
+  const adaptersTask = adaptersTaskOf(taskId)
   const add = (id) => {
-    const dir = fromRoot('benchmarks', taskId, id)
+    const dir = fromRoot('benchmarks', adaptersTask, id)
     if (!existsSync(dir)) return null
     for (const file of globSync('**/*', { cwd: dir, withFileTypes: true, exclude: (entry) => ['node_modules', 'target', '.DS_Store', 'go.sum'].includes(entry.name) }).filter((entry) => entry.isFile()).map((entry) => path.relative(dir, path.join(entry.parentPath, entry.name))).sort()) {
       if (file === 'adapter.json') continue
@@ -78,7 +116,8 @@ export async function taskInputs(taskId, { config, machine }) {
   }
   return {
     harness: digest(...harnessFiles.flatMap((file) => [path.relative(fromRoot('harness'), file), readFileSync(file)])),
-    task: digest(JSON.stringify({ kind: task.kind, load: task.load }), readFileSync(fromRoot('benchmarks', taskId, 'scenario.mjs'))),
+    // A task that borrows its adapters derives its scenario from the other task's, so that one counts too.
+    task: digest(JSON.stringify({ kind: task.kind, load: task.load }), ...scenarioFiles(taskId).map((file) => readFileSync(file))),
     adapters: digest(...adapters.map((adapter) => `${adapter.id}=${adapterFingerprint(taskId, adapter.id)}`)),
     runtimes: Object.fromEntries([...Object.entries(config.runtimes), ...Object.entries(config.toolchains)].map(([id, entry]) => [id, entry.version ?? entry.expectedVersion ?? null])),
     machine: digest(JSON.stringify(machine)),

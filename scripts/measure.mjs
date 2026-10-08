@@ -18,7 +18,7 @@ import { installPinned, installJsr } from './lib/npm.mjs'
 import { binaryInstall, nodeInstall } from './lib/install-size.mjs'
 import { prepareApp } from './lib/apps.mjs'
 import { NATIVE_REGISTRIES, lockNativePackage, nativeMeta, prepareNativePackage } from './lib/native-packages.mjs'
-import { adapterFingerprint, staleReason, taskInputs } from './lib/tasks.mjs'
+import { adapterFingerprint, adaptersTaskOf, placeScenario, staleReason, taskInputs } from './lib/tasks.mjs'
 import { ASYNC_JS_RUNNER, ASYNC_KIND, asyncEnv, asyncNativeRunner, checkAsyncTask, concurrencyRecord, measureAsyncOperation } from './lib/async-operation.mjs'
 import { CLIENT_JS_RUNNER, CLIENT_KIND, checkClientTask, clientMeasurer, prepareNativeClient } from './lib/client-tasks.mjs'
 import { ROOT, fromRoot, loadConfig, machine, median, readJson, writeJson } from './lib/util.mjs'
@@ -60,6 +60,11 @@ if (!taskId) {
 
 const taskDir = fromRoot('benchmarks', taskId)
 const task = await readJson(path.join(taskDir, 'task.json'))
+// Where the adapters are: the task's own folder, or that of the task it
+// borrows them from (task.json `adaptersFrom`, see scripts/lib/tasks.mjs).
+// The scenario, the fixtures, the working folders under .cache/work and the
+// results are always this task's own.
+const adaptersDir = fromRoot('benchmarks', adaptersTaskOf(taskId))
 // Fixture files of a task on the file system (harness/files.mjs): the scratch
 // directory is named before the scenario is read, which builds its inputs from it.
 announceFiles(taskId)
@@ -221,7 +226,7 @@ async function prepareJs(ecosystem, name, meta, adapterDir) {
   const versions = { ...jsrVersions, ...await installPinned(workdir, packages, override) }
   await copyFile(path.join(adapterDir, 'adapter.js'), path.join(workdir, 'adapter.js'))
   await copyFile(isAsync ? ASYNC_JS_RUNNER : isOperation ? fromRoot('harness/js/operation-runner.mjs') : RUNNER, path.join(workdir, 'runner.mjs'))
-  if (isOperation) await copyFile(path.join(taskDir, 'scenario.mjs'), path.join(workdir, 'scenario.mjs'))
+  if (isOperation) placeScenario(taskId, workdir)
   return { workdir, version: versions[name] ?? null, dependencies: versions }
 }
 
@@ -298,14 +303,14 @@ async function jsWarm(runtimeId) {
   await writeFile(path.join(dir, 'package.json'), '{"private":true,"type":"module"}\n')
   await writeFile(path.join(dir, 'adapter.js'), 'export const operation = (input) => input\n')
   await copyFile(isAsync ? ASYNC_JS_RUNNER : fromRoot('harness/js/operation-runner.mjs'), path.join(dir, 'runner.mjs'))
-  await copyFile(path.join(taskDir, 'scenario.mjs'), path.join(dir, 'scenario.mjs'))
+  placeScenario(taskId, dir)
   return { ...jsLaunch(runtimeId, dir, 'adapter.js'), env: { BENCH_BASELINE: '1' } }
 }
 
-const adapters = globSync('{npm,jsr,builtin,cargo,pypi,rubygems,gomod}/**/adapter.json', { cwd: taskDir })
+const adapters = globSync('{npm,jsr,builtin,cargo,pypi,rubygems,gomod}/**/adapter.json', { cwd: adaptersDir })
   .map((file) => {
     const [ecosystem, ...rest] = path.dirname(file).split(path.sep)
-    return { ecosystem, name: rest.join('/'), dir: path.join(taskDir, path.dirname(file)) }
+    return { ecosystem, name: rest.join('/'), dir: path.join(adaptersDir, path.dirname(file)) }
   })
   .filter((a) => !only || only.includes(a.name))
   .sort((a, b) => a.ecosystem.localeCompare(b.ecosystem) || a.name.localeCompare(b.name))
@@ -323,11 +328,11 @@ const packaged = (target) => takesPackages && target.ecosystem in NATIVE_REGISTR
 const unlocked = new Map()
 if (takesPackages) {
   let wrote = false
-  for (const file of globSync('{pypi,rubygems,gomod}/*/adapter.json', { cwd: taskDir }).sort()) {
+  for (const file of globSync('{pypi,rubygems,gomod}/*/adapter.json', { cwd: adaptersDir }).sort()) {
     const [ecosystem, name] = path.dirname(file).split(path.sep)
-    const target = { ecosystem, name, dir: path.join(taskDir, ecosystem, name) }
+    const target = { ecosystem, name, dir: path.join(adaptersDir, ecosystem, name) }
     try {
-      if (await lockNativePackage({ target, meta: await readJson(path.join(taskDir, file)), config })) {
+      if (await lockNativePackage({ target, meta: await readJson(path.join(adaptersDir, file)), config })) {
         wrote = true
         console.error(`${ecosystem}/${name}: resolved and locked`)
       }

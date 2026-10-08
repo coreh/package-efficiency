@@ -52,7 +52,10 @@ const take = (root, path) => {
 }
 const equal = (a, b) => { try { assert.deepStrictEqual(a, b); return true } catch { return false } }
 
-export const reference = (document, patch) => {
+// `duplicate` is how a copy operation takes its value: a deep copy, as RFC 6902
+// requires. The lenient task (../apply-patch-lenient) also computes the result
+// of a copy that shares the value with its source, by passing the identity.
+export const reference = (document, patch, duplicate = structuredClone) => {
   const doc = structuredClone(document)
   try {
     for (const op of patch) {
@@ -60,7 +63,7 @@ export const reference = (document, patch) => {
       else if (op.op === 'remove') take(doc, op.path)
       else if (op.op === 'replace') { take(doc, op.path); insert(doc, op.path, structuredClone(op.value)) }
       else if (op.op === 'move') insert(doc, op.path, take(doc, op.from))
-      else if (op.op === 'copy') insert(doc, op.path, structuredClone(read(doc, op.from)))
+      else if (op.op === 'copy') insert(doc, op.path, duplicate(read(doc, op.from)))
       else if (op.op === 'test') { if (!equal(read(doc, op.path), op.value)) fail('test') }
       else throw new Error(`unknown op ${op.op}`)
     }

@@ -1,8 +1,8 @@
 {
   "category": "http-server-routing",
   "task": "dispatch-requests",
-  "title": "Dispatch requests through an application with 100 routes",
-  "summary": "Hand in-memory requests to an application with 100 registered parameterized routes, await its answer, and return which handler ran and its parameters.",
+  "title": "Whole application: handle a request among 100 routes",
+  "summary": "The whole framework works. It is handed a request and awaited: it builds its own request and context, routes among the same 100 routes and runs the handler. Routing is one part of the cost. Frameworks whose router cannot be asked on its own are measured here.",
   "kind": "async-operation",
   "ecosystems": [
     "npm",
@@ -20,8 +20,8 @@
   "metrics": {
     "cpu": {
       "key": "cpuPerOperationUs",
-      "unit": "µs",
-      "headline": "µs of CPU per operation"
+      "unit": "\u00b5s",
+      "headline": "\u00b5s of CPU per operation"
     },
     "memory": {
       "key": "memoryMb",

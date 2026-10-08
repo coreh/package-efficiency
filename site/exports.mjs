@@ -51,7 +51,7 @@ export function resultRows(data, ctx) {
       per_cpu_second: e.metrics.operationsPerCpuSecond ?? e.metrics.requestsPerCpuSecond,
       throughput_per_second: e.metrics.throughputOps ?? e.metrics.throughputRps,
       latency_p99_ms: e.metrics.latencyP99Ms,
-      benchmark_source: `benchmarks/${data.task.id}/${adapterIdOf(e)}`,
+      benchmark_source: `benchmarks/${data.task.adaptersFrom ?? data.task.id}/${adapterIdOf(e)}`,
       ...(ctx ? {
         cpu_medal: MEDAL_NAMES[won.cpu] ?? '',
         memory_medal: MEDAL_NAMES[won.memory] ?? '',
@@ -100,9 +100,13 @@ const ENTRY_HEAD = (data) => ['Entry', 'Version', 'Settings', `CPU per ${unitOf(
 
 export function taskMarkdown(data, ctx) {
   const { url = (path) => path, edition } = ctx
+  // A strict task and its lenient task name each other (task.json `strictness`, `pairedWith`).
+  const pair = data.task.strictness && data.task.pairedWith ? (data.task.strictness === 'lenient'
+    ? `\n\nThis is the lenient task of a pair. It runs the adapters of the strict task, ${data.task.pairedWith} (${url(`/${data.task.pairedWith}/index.md`)}), on the same inputs, with a check that leaves out or forgives one stated kind of difference (task.md, below). An entry that passes here and not there says so in its note.`
+    : `\n\nThis is the strict task of a pair. The lenient task, ${data.task.pairedWith} (${url(`/${data.task.pairedWith}/index.md`)}), runs the same adapters on the same inputs with a check that forgives one stated kind of difference; an entry that does not pass here may have a class there.`) : ''
   return `# ${data.task.title}: Package Efficiency Labels
 
-${data.task.summary}
+${data.task.summary}${pair}
 
 ${READING(data)}
 

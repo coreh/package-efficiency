@@ -197,6 +197,11 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   const task = await readJson(fromRoot(taskFile))
   const taskId = `${task.category}/${task.task}`
   const taskDir = fromRoot(path.dirname(taskFile))
+  // A task can run the adapters of another task (task.json `adaptersFrom`, as
+  // a lenient task does with those of its strict task): the adapter's record
+  // and its type check are that task's, the results are this one's.
+  const adaptersTask = task.adaptersFrom ?? taskId
+  const adaptersDir = fromRoot('benchmarks', adaptersTask)
   const runtimes = {}
   let machine = null
 
@@ -208,7 +213,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   for (const file of resultFiles) {
     const result = await readJson(fromRoot('results', taskId, file))
     const baseline = result.baseline ?? await readJson(fromRoot('results/_baseline', `${result.runtime}.json`))
-    const sharedAdapter = await readJson(path.join(taskDir, result.ecosystem, result.package, 'adapter.json'))
+    const sharedAdapter = await readJson(path.join(adaptersDir, result.ecosystem, result.package, 'adapter.json'))
     const adapter = {...sharedAdapter,...sharedAdapter.versions?.[result.version]}
     machine ??= result.machine
 
@@ -234,9 +239,13 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       continue
     }
 
-    const checked = rustCheck.crates[`${taskId}/cargo/${result.package}`]
+    // In the lenient task of a pair, an entry that does not pass the strict
+    // task on this runtime says so before its note, which holds the reason.
+    const strictResult = task.strictness === 'lenient' && task.pairedWith ? await readJson(fromRoot('results', task.pairedWith, result.ecosystem, result.package, result.version ?? '_', `${result.runtime}.json`), null) : null
+    const failsStrict = Boolean(strictResult?.status) && strictResult.status !== 'ok' && strictResult.status !== 'unsupported'
+    const checked = rustCheck.crates[`${adaptersTask}/cargo/${result.package}`]
     // data/native-checks.json holds binary megabytes.
-    const storedNative = nativeChecks.adapters[`${taskId}/${result.ecosystem}/${result.package}`]
+    const storedNative = nativeChecks.adapters[`${adaptersTask}/${result.ecosystem}/${result.package}`]
     const native = storedNative && { ...storedNative, memoryMb: storedNative.memoryMb * MIB_TO_MB }
     const nativeInfo = native && {
       tool: native.tool, metricKey: native.language, language: native.language,
@@ -283,7 +292,8 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
         review: adapter.review,
         reviewed: adapter.reviewed ?? null,
         tags: adapter.tags ?? [],
-        notes: [adapter.notes, result.harness < 2 ? 'Historical measurement: predates the full same-process warm-up; not directly comparable with current measurements.' : null].filter(Boolean).join(' ') || null,
+        ...(failsStrict ? { strict: { task: task.pairedWith, passes: false } } : {}),
+        notes: [failsStrict ? `Does not pass the strict task${adapter.notes ? ':' : '.'}` : null, adapter.notes, result.harness < 2 ? 'Historical measurement: predates the full same-process warm-up; not directly comparable with current measurements.' : null].filter(Boolean).join(' ') || null,
         runtimeNotes: adapter.runtimeNotes ?? {},
         // The long account of how the entry is set up; `notes` is the short one on the label.
         ...(adapter.details || installNote(result) ? { details: [adapter.details, installNote(result)].filter(Boolean).join(' ') } : {}),
@@ -364,7 +374,8 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
     edition: config.edition,
     generatedAt,
     machine,
-    task: { id: taskId, ...task },
+    // The other task of a strict and lenient pair is named only once it has results, and so a page.
+    task: { id: taskId, ...task, ...(task.pairedWith && !globSync('**/*.json', { cwd: fromRoot('results', task.pairedWith) }).length ? { pairedWith: undefined } : {}) },
     reference: config.reference,
     metrics,
     runtimeMetrics,

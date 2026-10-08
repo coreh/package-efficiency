@@ -7,5 +7,5 @@
   },
   "review": "unreviewed",
   "notes": "html2md(html) with default options. Not passing: the space between two adjacent inline elements is lost, as in <code>x</code> <a>y</a> giving `x`[y](...).",
-  "details": "Fixtures 4 to 10 fail. Whitespace between a code span and a following link, or after a code span, is dropped in the output, so two words are joined. No option was found that changes this, so there is no variant."
+  "details": "Fixtures 4 to 10 fail. Whitespace between a code span and a following link, or after a code span, is dropped in the output, so two words are joined. No option was found that changes this, so there is no variant. It does not pass the lenient task (documents-lenient) either, which forgives that space: in a code block it decodes entities twice, so &amp;amp; in the HTML of fixtures 4 and 6 to 9 (the text &amp;) comes out as &."
 }

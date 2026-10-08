@@ -1,0 +1,37 @@
+{
+  "category": "css-selector-matching",
+  "task": "document-queries-lenient",
+  "title": "Selector queries on a parsed document, lenient",
+  "summary": "Compile one CSS selector and list every matching element of an already parsed HTML document, in document order. The lenient form of the strict task: Selectors Level 3 only, without the two Level 4 selectors.",
+  "kind": "sync-operation",
+  "strictness": "lenient",
+  "pairedWith": "css-selector-matching/document-queries",
+  "adaptersFrom": "css-selector-matching/document-queries",
+  "draft": true,
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "pypi",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuPerOperationUs",
+      "unit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryMb",
+      "unit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4
+    }
+  },
+  "fixtureCount": 42
+}

@@ -1,0 +1,18 @@
+{
+  "category": "json-patch",
+  "task": "apply-patch-lenient",
+  "title": "Apply an RFC 6902 patch, lenient",
+  "summary": "Apply a valid JSON Patch (RFC 6902) of add, remove, replace, move, copy and test operations to a JSON document and return the result. The lenient form of the strict task: no patch has to be rejected, and a copy may share its value with the source.",
+  "kind": "sync-operation",
+  "strictness": "lenient",
+  "pairedWith": "json-patch/apply-patch",
+  "adaptersFrom": "json-patch/apply-patch",
+  "draft": true,
+  "ecosystems": ["npm", "cargo", "pypi", "rubygems", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+  },
+  "fixtureCount": 30
+}

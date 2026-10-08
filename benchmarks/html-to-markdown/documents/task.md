@@ -79,3 +79,10 @@ Left out: `showdown` (needs a DOM implementation in Node), `rehype-remark` and
 external program), `kramdown` (Ruby; converts HTML to Kramdown syntax, a
 different dialect), and `markitdown` (a document converter that calls other
 packages).
+
+## The lenient task
+
+This is the strict task of a pair. [documents-lenient](../documents-lenient/task.md) runs the same
+adapters on the same inputs with a check that leaves out or forgives one
+stated kind of difference. It has the same 12 fragments and does not compare white space inside an inline element or beside one. `html2text` and `reverse_markdown` pass there; `html-to-md` (it also decodes entities in a code block twice) and `html-to-markdown-rs` do not.
+See "Strict and lenient tasks" in the [shared methodology](../../README.md).
