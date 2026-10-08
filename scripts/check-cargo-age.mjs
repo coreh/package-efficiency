@@ -49,7 +49,7 @@ if (tooNew.length) {
     })
     const { versions } = await res.json()
     const older = versions
-      .filter((v) => !v.yanked && !v.num.includes('-') && (now - new Date(v.created_at)) / DAY_MS >= MIN_RELEASE_AGE_DAYS)
+      .filter((v) => !v.yanked && !v.num.split('+')[0].includes('-') && (now - new Date(v.created_at)) / DAY_MS >= MIN_RELEASE_AGE_DAYS)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       // Stay on the same major line (or minor line for 0.x) so dependents still resolve.
       .find((v) => v.num.split('.').slice(0, version.startsWith('0.') ? 2 : 1).join('.') === version.split('.').slice(0, version.startsWith('0.') ? 2 : 1).join('.'))

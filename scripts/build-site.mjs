@@ -97,7 +97,7 @@ const packages = new Map()
 const runtimes = new Map()
 for (const data of tasks) {
   for (const runtime of data.runtimes) {
-    runtimes.set(runtime.id, { id: runtime.id, title: runtime.title, version: runtime.version })
+    runtimes.set(runtime.id, { id: runtime.id, title: runtime.title, version: runtime.version, garbageCollected: runtime.garbageCollected })
     for (const entry of runtime.entries) {
       const key = `${entry.ecosystem}/${entry.package}`
       if (!packages.has(key)) {

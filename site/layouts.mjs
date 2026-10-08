@@ -5,7 +5,7 @@
 // so they do not rely on the site's typeface being loaded: every line of text
 // is given the width it must take.
 import { labelIcon } from './icons.mjs'
-import { CLASSES, LEAST, RANKINGS, asInstalled, classColor, formatAtLeast, formatBytes, formatNumber, inkOn, labelSite, metricFor, previousVersion, resultShortLink, shortLinkOf } from './label.mjs'
+import { CLASSES, LEAST, RANKINGS, asInstalled, classColor, collectorFree, formatAtLeast, formatBytes, formatNumber, inkOn, labelSite, metricFor, previousVersion, resultShortLink, shortLinkOf } from './label.mjs'
 
 // Names and big figures are set at 80% width, as on the full label; a face
 // without that axis draws them at its normal width.
@@ -97,7 +97,7 @@ const figureOf = (entry, data, rankingId) => {
 }
 // `summary` marks a runtime's summary label in place of one result's: it
 // carries the label's own lines (`context`, `subtitle`) and its page (`address`).
-const measured = (rankingId, data, entry, summary) => summary ? metricFor(data, entry, rankingId).headline : ({ cpu: data.task.kind === 'server-startup' ? 'CPU to start' : `CPU per ${data.task.kind === 'http-server' ? 'request' : 'operation'}`, memory: 'memory after GC, above baseline', types: 'type-check cost' })[rankingId]
+const measured = (rankingId, data, entry, summary, runtime) => collectorFree(runtime, summary ? metricFor(data, entry, rankingId).headline : ({ cpu: data.task.kind === 'server-startup' ? 'CPU to start' : `CPU per ${data.task.kind === 'http-server' ? 'request' : 'operation'}`, memory: 'memory after GC, above baseline', types: 'type-check cost' })[rankingId])
 const versionOf = (entry, runtime) => (entry.builtin ? `Built into ${runtime.title}` : entry.version ? `Version ${entry.version}` : '')
 const summaryOf = (entry) => Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => `${RANKINGS[id].title} ${letterOf(entry.grades[id])}`).join(', ')
 // The link on a shape turns blue when pointed at, as it does on the full label.
@@ -119,7 +119,7 @@ export function compactLabel({ entry, data, runtime, rankingId, summary }) {
 ${scale(rankingId, letterOf(grade), { x: 10, y: 52, row: 13, gap: 2.5, first: 44, step: 11, right: W - 10, pointer: 40 }, change)}
 <path d="M0 166.500H${W}" stroke="#000"/>
 <text x="${W / 2}" y="193" font-size="25" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="3" font-size="12" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
-<text x="${W / 2}" y="207" font-size="9.5" font-weight="500" text-anchor="middle">${esc(measured(rankingId, data, entry, summary))}</text>
+<text x="${W / 2}" y="207" font-size="9.5" font-weight="500" text-anchor="middle">${esc(measured(rankingId, data, entry, summary, runtime))}</text>
 ${changeLine(change, W / 2, 219, 8.5, Math.min(4.3, (W - 34) / (change.text?.length ?? 1)))}
 ${link ? `<path d="M0 ${215.5 + more}H${W}" stroke="#000"/>${mark(10, 221 + more, 0.45)}<a href="${esc(link)}"><text x="27" y="${229 + more}" font-size="8.500" font-weight="600" text-decoration="underline"${fitted(link, 4.4, W - 37)} style="font-stretch:88%">${esc(link)}</text></a>` : ''}
 </svg>`
@@ -132,13 +132,13 @@ export function wideLabel({ entry, data, runtime, rankingId, summary }) {
   if (!grade) return null
   const W = 520, H = 152, figure = figureOf(entry, data, rankingId), link = linkOf(data, runtime, entry, summary), change = compare(entry, runtime, rankingId, summary)
   const title = cut(entry.title, 26), context = cut(summary ? summary.context : `${rankingId === 'types' ? 'Type check' : data.task.title}, ${runtime.title} ${runtime.version}`, 46)
-  return `${open(W, H, `${entry.title}: ${classSaid(grade)} for ${RANKINGS[rankingId].title}, ${figure.text} ${figure.unit} ${measured(rankingId, data, entry, summary)}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
+  return `${open(W, H, `${entry.title}: ${classSaid(grade)} for ${RANKINGS[rankingId].title}, ${figure.text} ${figure.unit} ${measured(rankingId, data, entry, summary, runtime)}. ${summary ? summary.context : `${data.task.title}, ${runtime.title} ${runtime.version}`}.${change.text ? ` ${change.text}.` : ''}`)}
 <rect x=".75" y=".75" width="${W - 1.5}" height="${H - 1.5}" rx="6" fill="#fff" stroke="#000" stroke-width="1.5"/>
 <text x="14" y="27" font-size="20" font-weight="800" style="font-stretch:80%"${fitted(title, 11, 262)}>${esc(title)}</text>
 <text x="14" y="43" font-size="11" font-weight="500">${esc(summary ? summary.subtitle : versionOf(entry, runtime))}</text>
 <text x="14" y="57" font-size="11" font-weight="500"${fitted(context, 5.6, 262)}>${esc(context)}</text>
 <text x="14" y="${change.text ? 93 : 98}" font-size="36" font-weight="800" style="font-stretch:80%">${esc(figure.text)}${figure.unit ? `<tspan dx="4" font-size="16" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>
-<text x="14" y="${change.text ? 106 : 114}" font-size="11" font-weight="500">${esc(measured(rankingId, data, entry, summary))}</text>
+<text x="14" y="${change.text ? 106 : 114}" font-size="11" font-weight="500">${esc(measured(rankingId, data, entry, summary, runtime))}</text>
 ${change.text ? `${change.down === null ? '' : triangle(14, 111.500, 7.500, change.down)}<text x="${change.down === null ? 14 : 25}" y="119" font-size="10.500" font-weight="600"${fitted(change.text, 5.4, 250)}>${esc(change.text)}</text>` : ''}
 <path d="M290.500 0V${H - 26}" stroke="#000"/>
 ${scale(rankingId, letterOf(grade), { x: 302, y: 11, row: 12, gap: 3.500, first: 62, step: 14, right: W - 12, pointer: 44 }, change)}
@@ -259,7 +259,7 @@ export function overviewLabel({ entry, data, runtime, summary }) {
   // the figure underneath.
   const panel = (rankingId, x, y, w, h) => {
     const grade = entry.grades[rankingId], figure = figureOf(entry, data, rankingId), change = compare(entry, runtime, rankingId, summary)
-    const what = summary || h > 200 ? measured(rankingId, data, entry, summary) : short[rankingId] ?? measured(rankingId, data, entry, summary)
+    const what = summary || h > 200 ? measured(rankingId, data, entry, summary, runtime) : short[rankingId] ?? measured(rankingId, data, entry, summary, runtime)
     said.push(`${RANKINGS[rankingId].title} ${classSaid(grade)}, ${figure.text}${figure.unit ? ` ${figure.unit}` : ''}`)
     const name = `<text x="${x + 12}" y="${y + 19}" font-size="13" font-weight="800">${esc(RANKINGS[rankingId].title)}</text>`
     // A type-check cost is a product; the CPU time and memory it is made of go under it.

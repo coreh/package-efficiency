@@ -104,13 +104,16 @@ function versionsOf(name) {
 }
 // A version without a publish time in the index is treated as too new.
 const eligible = (v) => !v.yanked && oldEnough(v.pubtime)
+// A prerelease has a hyphen before any build metadata (1.0.0-rc.1); the
+// metadata after a plus sign can hold one too (1.1.2+spec-1.1.0) and is not one.
+const prerelease = (vers) => vers.split('+')[0].includes('-')
 const parse = (v) => v.split('+')[0].split('-')[0].split('.').map(Number)
 const cmp = (a, b) => parse(a).reduce((r, n, i) => r || n - parse(b)[i], 0)
 // Same semver-compatible line: major, or minor for 0.x, or patch for 0.0.x.
 const line = (v) => { const [a, b, c] = parse(v); return a ? `${a}` : b ? `0.${b}` : `0.0.${c}` }
 
 async function pickVersion(name, wanted) {
-  const versions = (await versionsOf(name)).filter((v) => eligible(v) && !v.vers.includes('-'))
+  const versions = (await versionsOf(name)).filter((v) => eligible(v) && !prerelease(v.vers))
   return versions.find((v) => v.vers === wanted)?.vers ?? versions.sort((a, b) => cmp(b.vers, a.vers))[0]?.vers ?? null
 }
 
@@ -127,7 +130,7 @@ async function enforceAge(dir) {
     }
     if (tooNew.length === 0) return pinned
     for (const { name, version } of tooNew) {
-      const older = (await versionsOf(name)).filter((v) => eligible(v) && !v.vers.includes('-') && line(v.vers) === line(version)).sort((a, b) => cmp(b.vers, a.vers))[0]
+      const older = (await versionsOf(name)).filter((v) => eligible(v) && !prerelease(v.vers) && line(v.vers) === line(version)).sort((a, b) => cmp(b.vers, a.vers))[0]
       if (!older) throw new Error(`release-age gate: no ${name} release on the ${line(version)} line is ${MIN_RELEASE_AGE_DAYS} days old (locked ${version})`)
       // Pinning one crate back can already have moved another on this list
       // (a derive crate locked to its parent's version): then it is gone from

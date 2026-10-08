@@ -33,6 +33,13 @@ export const RANKINGS = {
 export const metricFor = (data, entry, rankingId) =>
   rankingId === 'types' ? data.typeChecks[entry.types?.metricKey ?? (entry.ecosystem === 'cargo' ? 'cargo' : 'typescript')] : data.metrics[rankingId]
 
+// What a label says of memory, for a runtime without a garbage collector:
+// the same words with the collection left out.
+export const collectorFree = (runtime, text) =>
+  runtime?.garbageCollected === false
+    ? text.replace(' after GC, above baseline', ' above baseline').replace(' after task and GC', ' after task').replace(' after the task and a garbage collection', ' after the task').replace(' after GC', '')
+    : text
+
 export const classColor = (rankingId, letter) => RANKINGS[rankingId].colors[CLASSES.indexOf(letter)]
 
 // Black or white, whichever reads better on `hex`.
@@ -328,7 +335,8 @@ export function asInstalled(entry, runtime, rankingId) {
 export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalone = false, context: contextLine, subtitle: subtitleLine, address }) {
   const grade = entry.grades[rankingId]
   if (!grade) return null
-  const metric = metricFor(data, entry, rankingId)
+  const found = metricFor(data, entry, rankingId)
+  const metric = found?.headline ? { ...found, headline: collectorFree(runtime, found.headline) } : found
 
   const context = contextLine ?? (rankingId === 'types' ? `Type check, ${metric.tool}` : `${data.task.title}, ${runtime.title} ${runtime.version}`)
   const subtitle = subtitleLine ?? (entry.builtin ? `Built into ${runtime.title}` : entry.version ? `Version ${entry.version}` : '')

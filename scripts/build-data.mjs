@@ -243,6 +243,8 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       title: (config.runtimes[result.runtime] ?? config.toolchains[result.runtime]).title,
       version: result.runtimeVersion,
       language: (config.runtimes[result.runtime] ?? config.toolchains[result.runtime]).language ?? (result.runtime === 'rust' ? 'rust' : 'javascript'),
+      // False for a language without a garbage collector: its labels do not speak of one.
+      garbageCollected: (config.runtimes[result.runtime] ?? config.toolchains[result.runtime]).garbageCollected ?? true,
       heapDescription: (config.runtimes[result.runtime] ?? config.toolchains[result.runtime]).heapDescription ?? 'Runtime-reported heap plus external allocations (Rust: counted live allocations).',
       baselineHeapKb: round(median(baseline.runs.map(r => r.heapUsedBytes)) === null ? null : median(baseline.runs.map(r => r.heapUsedBytes)) / KB),
       baselineMb: round(median(baseline.runs.map((r) => r.rssBytes)) / MB),

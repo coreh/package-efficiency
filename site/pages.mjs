@@ -5,7 +5,7 @@ import { activeReleaseRows } from '../scripts/lib/releases.mjs'
 import { assistantIcon, groupIcon, inlineIcon } from './icons.mjs'
 import { adapterIdOf, adapterSource, adaptersTaskOf, taskSource } from './source.mjs'
 import { overviewLabel } from './layouts.mjs'
-import { CLASSES, LEAST, RANKINGS, classColor, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
+import { CLASSES, LEAST, RANKINGS, classColor, collectorFree, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
 
 const esc = (text) => String(text ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 const plural = (n, word) => `${n} ${n === 1 ? word : word.endsWith('y') ? `${word.slice(0, -1)}ies` : `${word}s`}`
@@ -1793,7 +1793,7 @@ function runtimeSummary(s, tasks, scope, basis, scopeKey) {
     types: { icon: s.runtime.id },
     typeCaption: 'times the best type-check cost',
     metrics: { importMs: null },
-    adapter: { notes: `Memory is all that the process holds after the task and a garbage collection, runtime included. ${basis === 'typical' ? 'The figure is the geometric mean of every entry on this runtime.' : tasks.length > 1 ? 'The figure is the geometric mean of the best result in each task.' : ''}${tasks.length > 1 ? ` It covers ${s.tasks} of ${tasks.length} tasks. Tasks without a result are not counted.` : ''}` },
+    adapter: { notes: `${collectorFree(s.runtime, 'Memory is all that the process holds after the task and a garbage collection, runtime included.')} ${basis === 'typical' ? 'The figure is the geometric mean of every entry on this runtime.' : tasks.length > 1 ? 'The figure is the geometric mean of the best result in each task.' : ''}${tasks.length > 1 ? ` It covers ${s.tasks} of ${tasks.length} tasks. Tasks without a result are not counted.` : ''}` },
     flags: [],
   }
   const data = {
@@ -1879,7 +1879,7 @@ function runtimeTable(tasks, model, highlight) {
     'Medals: each task has three events (CPU, memory, type check). In each event, the entries on all runtimes compete. The best three figures get gold, silver and bronze, and equal figures share a medal. A runtime gets each medal that an entry won on it. Hover over a medal for the list. The column sorts by most golds, then silvers, then bronzes.',
     'Best is the geometric mean of the best entry in each task. Tasks without a result are not counted. The Tasks column shows how many are covered.',
     'Typical is the geometric mean of every entry on the runtime. This includes tuned variants, and APIs of other runtimes that run through a compatibility layer.',
-    'Runtime memory is all that the process holds after the task and a garbage collection, runtime included. Package memory labels subtract the same runtime with a do-nothing adapter on the same inputs.',
+    'Runtime memory is all that the process holds after the task, and after a garbage collection on the runtimes that have a collector, runtime included. Package memory labels subtract the same runtime with a do-nothing adapter on the same inputs.',
     'Type check compares the type-check cost of the packages on each runtime. The checkers are different (TypeScript, mypy, Sorbet, the Go checker, cargo check), so the comparison shows what type checking costs in each ecosystem. It does not show which checker is better. Built-ins are not counted when a runtime has packages.',
   ])}</caption>
 <thead><tr><th scope="col">Runtime or language</th>${MEDALS_HEAD.replace('data-first="descending"', 'data-first="descending" aria-sort="descending"')}${sortable('Entries')}${sortable('Tasks')}${['CPU, best', 'CPU, typical', 'Total memory, best', 'Total memory, typical', 'Type check, best', 'Type check, typical'].map((t) => sortable(t, ' class="marked"')).join('')}</tr></thead>
