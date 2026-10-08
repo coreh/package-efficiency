@@ -14,7 +14,8 @@
 // packages and nothing else:
 //   go.mod:   module probe / require <module> <version>
 //   probe.go: package probe; import ( _ "<package>" ... )
-// The packages are the module root when it is a package; otherwise the
+// The packages are the module root when it is a package (with more than a
+// doc.go); otherwise the
 // module's packages that are not `main`, not under internal/, testdata/,
 // vendor/ or example(s)/ and have non-test files, the 20 shallowest (then
 // alphabetical). `packages` records them, `packagesInModule` how many there
@@ -29,6 +30,8 @@
 //          compiled: scripts/sweep-types/gomod-typecheck.go over the output
 //          of `go list -deps -json`, one fresh process, one thread. This is
 //          what `cargo check` is to `cargo build`. It keeps no cache, so every
+//          `checkSplit` says how much of one run's time went to the standard
+//          library's packages and how much to the modules'. Every
 //          run is a first check: --runs runs, or --cold-runs when one takes
 //          more than three CPU-seconds; medians.
 //   build  `go build -mod=readonly .` of the probe package with an empty
@@ -236,7 +239,8 @@ async function measureModule({ name }) {
     const importable = own.filter((p) => p.Name !== 'main' && ((p.GoFiles?.length ?? 0) + (p.CgoFiles?.length ?? 0) > 0 || p.Error) && !skipped(p.ImportPath, name))
     // cgo is off, so a package that is only cgo has no file left.
     const cgoOnly = (p) => /build constraints exclude all Go files|C source files not allowed|cgo/.test(p.Error?.Err ?? '')
-    const root = importable.find((p) => p.ImportPath === name)
+    // A root that is only a doc.go says nothing of the module: its packages are used.
+    const root = importable.find((p) => p.ImportPath === name && !(p.GoFiles ?? []).every((f) => f === 'doc.go'))
     const depth = (p) => p.ImportPath.split('/').length
     const usableOnes = importable.filter((p) => !p.Error || !cgoOnly(p))
     const chosen = (root && (!root.Error || !cgoOnly(root)) ? [root] : usableOnes.sort((a, b) => depth(a) - depth(b) || a.ImportPath.localeCompare(b.ImportPath)).slice(0, PACKAGE_LIMIT)).map((p) => p.ImportPath)
@@ -283,6 +287,9 @@ async function measureModule({ name }) {
     const graded = figures[GRADED]
     if (!graded || graded.failed) return { status: 'check-failed', ...result, detail: `build: ${graded?.failed}`, ...figures }
     result.files = measured.summary.files
+    // Elapsed time inside the checker, split: how much of the figure is the
+    // standard library the tree imports, and how much the modules themselves.
+    result.checkSplit = { standardLibraryMs: round(measured.summary.standardLibraryMs, 1), modulesMs: round(measured.summary.otherMs, 1) }
     return {
       status: 'ok',
       ...result,
@@ -323,7 +330,7 @@ await sweep({
     const free = await freeGb()
     return free < MIN_FREE_GB ? `only ${free.toFixed(1)} GB of disk free (the sweep stops under ${MIN_FREE_GB} GB)` : null
   },
-  summary: (r) => (r.status === 'ok' ? `check +${r.check.cpuMs} ms CPU (spread ${r.check.cpuSpreadMs}), +${r.check.memoryMb} MB${r.build?.cpuMs !== undefined ? `; build +${(r.build.cpuMs / 1000).toFixed(2)} CPU-s, +${r.build.memoryMb} MB` : r.build?.failed ? '; build failed' : ''}; ${r.packages.length}/${r.packagesInModule} packages, tree ${r.treePackages} (${r.standardLibraryPackages} std), ${r.modules} modules` : `${r.status}: ${r.detail}`) + ` ${r.version ?? ''}`,
+  summary: (r) => (r.status === 'ok' ? `check +${r.check.cpuMs} ms CPU (spread ${r.check.cpuSpreadMs}), +${r.check.memoryMb} MB${r.build?.cpuMs !== undefined ? `; build +${(r.build.cpuMs / 1000).toFixed(2)} CPU-s, +${r.build.memoryMb} MB` : r.build?.failed ? '; build failed' : ''}; ${r.packages.length}/${r.packagesInModule} packages, tree ${r.treePackages} (${r.standardLibraryPackages} std; check time std ${r.checkSplit.standardLibraryMs} ms, modules ${r.checkSplit.modulesMs} ms), ${r.modules} modules` : `${r.status}: ${r.detail}`) + ` ${r.version ?? ''}`,
 })
 if (!has('keep')) {
   await clearCaches()

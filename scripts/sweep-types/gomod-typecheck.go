@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 type listed struct {
@@ -61,6 +62,8 @@ func main() {
 	checked := map[string]*types.Package{"unsafe": types.Unsafe}
 	packages, files, failures, stdFailures := 0, 0, 0, 0
 	first := []string{}
+	// Where the time goes: the standard library's packages, and the rest.
+	var standardLibrary, others time.Duration
 	for {
 		var pkg listed
 		if err := decoder.Decode(&pkg); err == io.EOF {
@@ -72,6 +75,7 @@ func main() {
 		if pkg.ImportPath == "unsafe" {
 			continue
 		}
+		started := time.Now()
 		var parsed []*ast.File
 		for _, name := range pkg.GoFiles {
 			f, err := parser.ParseFile(fset, filepath.Join(pkg.Dir, name), nil, parser.SkipObjectResolution)
@@ -106,10 +110,15 @@ func main() {
 		}
 		result, _ := config.Check(pkg.ImportPath, fset, parsed, nil)
 		checked[pkg.ImportPath] = result
+		if pkg.Standard {
+			standardLibrary += time.Since(started)
+		} else {
+			others += time.Since(started)
+		}
 		packages++
 		files += len(parsed)
 	}
-	json.NewEncoder(os.Stdout).Encode(map[string]any{"packages": packages, "files": files, "errors": failures, "standardLibraryErrors": stdFailures, "first": first})
+	json.NewEncoder(os.Stdout).Encode(map[string]any{"packages": packages, "files": files, "errors": failures, "standardLibraryErrors": stdFailures, "first": first, "standardLibraryMs": float64(standardLibrary.Microseconds()) / 1000, "otherMs": float64(others.Microseconds()) / 1000})
 	if failures > 0 {
 		os.Exit(1)
 	}
