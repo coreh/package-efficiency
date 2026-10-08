@@ -102,7 +102,7 @@ const measured = (rankingId, data, entry, summary, runtime) => collectorFree(run
 const versionOf = (entry, runtime) => (entry.builtin ? `Built into ${runtime.title}` : entry.version ? `Version ${entry.version}` : '')
 const summaryOf = (entry) => Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => `${RANKINGS[id].title} ${letterOf(entry.grades[id])}`).join(', ')
 // The link on a shape turns blue when pointed at, as it does on the full label.
-const open = (width, height, label) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${esc(label)}" font-family="${FACE}"><style>a:hover text{fill:#1558d6}</style>`
+const open = (width, height, label) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${esc(label)}" font-family="${FACE}">`
 const linkOf = (data, runtime, entry, summary) => (!labelSite.host ? '' : summary ? shortLinkOf(summary.address) : resultShortLink(data.task.id, runtime.id, entry))
 
 // A small label: name, scale, figure. 180 wide.
