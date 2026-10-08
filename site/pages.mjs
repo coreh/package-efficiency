@@ -7,7 +7,8 @@ import { adapterIdOf, adapterSource, adaptersTaskOf, taskSource } from './source
 import { overviewLabel } from './layouts.mjs'
 import { apiPage, apiSideNav } from './api.mjs'
 import { LICENSE_KINDS, licenseKind } from './licenses.mjs'
-import { CLASSES, LEAST, RANKINGS, classColor, collectorFree, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
+import { cpuDisplayUnit, cpuShown, kilobytes, megabytes, toDisplay } from './units.mjs'
+import { CLASSES, LEAST, RANKINGS, classColor, collectorFree, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, shownValue, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
 
 const esc = (text) => String(text ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 const plural = (n, word) => `${n} ${n === 1 ? word : word.endsWith('y') ? `${word.slice(0, -1)}ies` : `${word}s`}`
@@ -84,10 +85,10 @@ const TYPE_KEY = `<p class="soft key">Type check: added CPU time, added memory, 
 const communityMark = (types) => types?.community ? `<span class="community" title="Checked with community types${types.from ? ` (${esc(types.from)})` : ''}, not types from the package's authors">*</span>` : ''
 const typeCost = (cost, grade = cost) => {
   if (!cost) return cell(null, NA)
-  const score = grade?.value ?? cost.score ?? cost.value
+  const score = grade?.value ?? cost.costMbS
   // The score and its two ingredients. Elapsed time is not part of the score, so it is a tooltip.
-  const figures = ` data-time="${cost.cpuMs ?? ''}" data-memory="${cost.memoryMb ?? ''}" data-score="${score ?? ''}"`
-  return gradedCell(grade, `<span class="type-cost" title="${formatNumber(cost.timeMs)} ms elapsed"><span>${communityMark(cost)}${cost.cpuMs < 10 ? '&lt; 10' : formatNumber(cost.cpuMs)} ms</span><span>${esc(formatAtLeast(cost.memoryMb, LEAST.memory))} MB</span><span class="type-cost-score">${score === null || score === undefined ? '' : `${esc(formatAtLeast(score, LEAST.types))} <span class="unit">MB·s</span>`}</span><span class="type-cost-grade">${chip('types', grade)}</span></span>`, figures)
+  const figures = ` data-time="${cost.cpuMs ?? ''}" data-memory="${cost.memoryBytes ?? ''}" data-score="${score ?? ''}"`
+  return gradedCell(grade, `<span class="type-cost" title="${formatNumber(cost.timeMs)} ms elapsed"><span>${communityMark(cost)}${cost.cpuMs < 10 ? '&lt; 10' : formatNumber(cost.cpuMs)} ms</span><span>${esc(formatAtLeast(megabytes(cost.memoryBytes), LEAST.memory))} MB</span><span class="type-cost-score">${score === null || score === undefined ? '' : `${esc(formatAtLeast(score, LEAST.types))} <span class="unit">MB·s</span>`}</span><span class="type-cost-grade">${chip('types', grade)}</span></span>`, figures)
 }
 const sortable = (text, attrs = '') => `<th scope="col"${attrs}><button type="button" data-sort>${text}</button></th>`
 // A graded column has one sort control that steps through several orders:
@@ -332,8 +333,8 @@ function card({ entry, data, runtime, rankingId, model, caption, linkPackage = t
   // A type-check figure with no class (the only package of its category that
   // has one) still gets its label, with no pointer. It has no file of its own
   // and no other shapes, so nothing to embed.
-  const unclassed = rankingId === 'types' && !entry.grades.types && entry.types?.value != null
-  if (unclassed) entry = { ...entry, grades: { ...entry.grades, types: { class: null, value: entry.types.value } }, adapter: { ...entry.adapter, notes: ['No class: it is the only package in its category with a type-check figure.', entry.adapter?.notes].filter(Boolean).join(' ') } }
+  const unclassed = rankingId === 'types' && !entry.grades.types && entry.types?.costMbS != null
+  if (unclassed) entry = { ...entry, grades: { ...entry.grades, types: { class: null, value: entry.types.costMbS } }, adapter: { ...entry.adapter, notes: ['No class: it is the only package in its category with a type-check figure.', entry.adapter?.notes].filter(Boolean).join(' ') } }
   const drawn = renderLabel({ entry, data, runtime, rankingId })
   if (!drawn) return ''
   const pkg = model.packageOf(entry)
@@ -482,9 +483,11 @@ ${typeRows.map(([language, text, metric], i) => `<tr>${i === 0 ? `<th scope="row
 const unitOf = (data) => data.task.kind === 'sync-operation' || data.task.kind === 'async-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request'
 // A startup task's figure is the CPU time of one launch, in milliseconds;
 // every other task's is per operation or request, in microseconds.
-const cpuOf = (m) => m.startupCpuMs ?? m.cpuPerOperationUs ?? m.cpuPerRequestUs
-const cpuUnit = (m) => (m.startupCpuMs != null ? ' ms' : ' µs')
-const rateOf = (m) => (m.startupCpuMs != null ? null : m.operationsPerCpuSecond ?? m.requestsPerCpuSecond)
+// CPU for one unit of work as it is shown (µs, or ms for a start), and the unit after it.
+const cpuOf = cpuShown
+const cpuUnit = (m) => ` ${cpuDisplayUnit(m)}`
+// A start is not counted per second of CPU.
+const rateOf = (m) => (m.startupMs != null ? null : m.perCpuSecond)
 
 function rankingTable(data, runtime, entries, model) {
   const isRust = runtime.id === 'rust'
@@ -494,23 +497,23 @@ function rankingTable(data, runtime, entries, model) {
   const markOf = marker(entries.map((e) => ({ data, entry: e, row: e })), 'entries')
   const rows = entries.map((e) => {
     const m = e.metrics
-    const growth = e.flags.includes('grows-with-use') ? ` (+${formatNumber(m.leakBytesPerOperation ?? m.leakBytesPerRequest)} B per ${unitOf(data)})` : ''
+    const growth = e.flags.includes('grows-with-use') ? ` (+${formatNumber(m.leakBytesPerUnit)} B per ${unitOf(data)})` : ''
     const mark = (key) => markOf([{ data, entry: e }], key)
     const typeCells = isRust
-      ? typeCost(e.types, e.grades.types) + cell(e.types?.coldCpuS, num(e.types?.coldCpuS, ' s'))
+      ? typeCost(e.types, e.grades.types) + cell(e.types?.coldCpuMs, num(toDisplay(e.types?.coldCpuMs, 's'), ' s'))
       : isAll ? typeCost(e.types?.compilers?.[data.typesCompiler] ?? e.types, e.grades.types) : isNative ? typeCost(e.types, e.grades.types) : compilers.map((id) => typeCost(e.types?.compilers[id])).join('')
     const marks = medalBadges(['cpu', 'memory', ...(isRust || isAll || isNative ? ['types'] : compilers)].map(mark))
     return `<tr${e.reference ? ' data-reference' : ''}><td><a href="${urls.package(model.packageOf(e))}">${esc(e.title)}</a>${verified(e.adapter)}<span class="ver">${e.builtin ? 'built in' : esc(e.version ?? '')}</span>${marks}</td>
 ${isAll ? `<td class="l">${esc(languageTitle(languageOf(e.selectedRuntime.id)))}</td>` : ''}
 ${runtime.best ? `<td class="l">${inlineIcon(e.selectedRuntime.id)}${esc(e.selectedRuntime.title)}</td>` : ''}
 ${gradedCell(e.grades.cpu, `${num(cpuOf(m), cpuUnit(m), LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
-${gradedCell(e.grades.memory, `<span class="memory-cost"><span>${num(m.memoryMb, ' MB', LEAST.memory)}</span><span class="memory-cost-grade">${chip('memory', e.grades.memory)}</span><span class="memory-cost-detail">${num(m.settledRssMb, ' MB')} total after GC</span><span class="memory-cost-detail">${num(m.peakRssMb, ' MB')} lifetime peak</span></span>`)}
-${cell(m.heapAboveBaselineKb, num(m.heapAboveBaselineKb, ' KB'))}
-${isRust ? cell(m.heapPeakMb, num(m.heapPeakMb, ' MB')) : cell(m.retainedKb, num(m.retainedKb, ' KB') + growth)}
+${gradedCell(e.grades.memory, `<span class="memory-cost"><span>${num(megabytes(m.memoryBytes), ' MB', LEAST.memory)}</span><span class="memory-cost-grade">${chip('memory', e.grades.memory)}</span><span class="memory-cost-detail">${num(megabytes(m.totalMemoryBytes), ' MB')} total after GC</span><span class="memory-cost-detail">${num(megabytes(m.peakMemoryBytes), ' MB')} lifetime peak</span></span>`)}
+${cell(m.heapAboveBaselineBytes, num(kilobytes(m.heapAboveBaselineBytes), ' KB'))}
+${isRust ? cell(m.heapPeakBytes, num(megabytes(m.heapPeakBytes), ' MB')) : cell(m.heapRetainedBytes, num(kilobytes(m.heapRetainedBytes), ' KB') + growth)}
 ${isRust ? '' : cell(m.importMs, num(m.importMs, ' ms'))}
 ${typeCells}
 ${cell(rateOf(m), num(rateOf(m)))}
-${cell((m.throughputOps ?? m.throughputRps), num((m.throughputOps ?? m.throughputRps)))}
+${cell(m.throughputPerSecond, num(m.throughputPerSecond))}
 ${cell(m.latencyP99Ms, num(m.latencyP99Ms, ' ms'))}
 <td class="l"><a href="${urls.source(data.task.id, adapterIdOf(e))}">Source</a></td></tr>`
   })
@@ -518,7 +521,7 @@ ${cell(m.latencyP99Ms, num(m.latencyP99Ms, ' ms'))}
     ? sortableTypes('cargo check') + sortable('cargo check, first run, CPU')
     : isAll ? sortableTypes('Type check') : isNative ? sortableTypes(`Type check, ${esc(data.typeChecks[runtime.language]?.tool ?? runtime.language)}`) : compilers.map((id) => sortableTypes(`Type check, ${id} ${esc(data.compilers[id])}`)).join('')
   return `<div class="scroll"><table class="sortable">
-<caption>${runtime.every ? 'Every entry on every runtime of the selected languages. Each row shows the figures from its own runtime. Package memory is the amount above the runtime baseline. The total, runtime included, is below it.' : runtime.best ? 'The best runtime for each package, for the selected ranking and languages. The other figures in a row come from the same runtime. Package memory is the amount above the runtime baseline. The total, runtime included, is below it.' : `All figures are for ${esc(runtime.title)} ${esc(runtime.version)}. Package memory is the memory that the process holds after the last round and a garbage collection, above the ${esc(runtime.title)} baseline. Below it are the total after the task and the lifetime peak. The peak has no class. Runtime labels use the total. These figures include JIT code and allocator memory that the process still holds. They are not live heap size. ${data.task.kind === 'sync-operation' ? 'Throughput is the wall-clock speed of a batch. Latency per operation is not measured.' : 'Throughput and latency depend on the load generator and have no class.'} Heap over baseline uses the accounting of the runtime (baseline ${num(runtime.baselineHeapKb, ' KB')}): ${esc(runtime.heapDescription)} Do not compare heap figures between engines.`}</caption>
+<caption>${runtime.every ? 'Every entry on every runtime of the selected languages. Each row shows the figures from its own runtime. Package memory is the amount above the runtime baseline. The total, runtime included, is below it.' : runtime.best ? 'The best runtime for each package, for the selected ranking and languages. The other figures in a row come from the same runtime. Package memory is the amount above the runtime baseline. The total, runtime included, is below it.' : `All figures are for ${esc(runtime.title)} ${esc(runtime.version)}. Package memory is the memory that the process holds after the last round and a garbage collection, above the ${esc(runtime.title)} baseline. Below it are the total after the task and the lifetime peak. The peak has no class. Runtime labels use the total. These figures include JIT code and allocator memory that the process still holds. They are not live heap size. ${data.task.kind === 'sync-operation' ? 'Throughput is the wall-clock speed of a batch. Latency per operation is not measured.' : 'Throughput and latency depend on the load generator and have no class.'} Heap over baseline uses the accounting of the runtime (baseline ${num(kilobytes(runtime.baselineHeapBytes), ' KB')}): ${esc(runtime.heapDescription)} Do not compare heap figures between engines.`}</caption>
 <thead><tr><th scope="col">Package</th>
 ${isAll ? sortable('Language', ' class="l"') : ''}${runtime.best ? sortable('Runtime', ' class="l"') : ''}${sortableGraded(`CPU per ${unitOf(data)}`)}${sortableGraded('Memory')}${sortable('Heap over baseline')}${sortable(isRust ? 'Peak heap, exact' : 'Heap retained after load')}
 ${isRust ? '' : sortable('Import time')}
@@ -543,12 +546,12 @@ function anchorNote(data, runtime, rankingId, entries) {
   const { anchor } = metric
   const best = entries[0]
   const holder = `${esc(anchor.title)}${anchor.version ? ` ${esc(anchor.version)}` : ''} on ${esc(anchor.runtime)}`
-  const times = Math.max(best.grades[rankingId].value, metric.floor) / anchor.value
+  const times = Math.max(shownValue(metric, best.grades[rankingId].value), shownValue(metric, metric.floor)) / shownValue(metric, anchor.value)
   // "All" and "Best" are views over several runtimes, not a runtime.
   const gap = runtime.best
     ? (times < 1.05 ? 'The best entry shown here is equal to it.' : `The best entry shown here, ${esc(best.title)} on ${esc(best.selectedRuntime?.title ?? '')}, uses ${formatNumber(times)} times as much.`)
     : times < 1.05 ? `${esc(runtime.title)} is equal to it.` : `The best on ${esc(runtime.title)}, ${esc(best.title)}, uses ${formatNumber(times)} times as much.`
-  return `<p class="note">The best result in any language sets class A: ${holder}, at ${formatNumber(anchor.value)} ${esc(metric.headline)}. ${gap}</p>`
+  return `<p class="note">The best result in any language sets class A: ${holder}, at ${formatNumber(shownValue(metric, anchor.value))} ${esc(metric.headline)}. ${gap}</p>`
 }
 
 // It opens on its widest view: every language and every runtime where there
@@ -651,14 +654,14 @@ ${taskSource(data.task.id).map((f) => sourceFile(f, model, { open: false, id: `s
 
 function typeDetail(data, entry) {
   // A figure from a sweep of whole packages (scripts/sweep-types/).
-  if (entry.types.swept) return `<p>Measured with ${esc(entry.types.tool)}. ${esc(entry.types.basis)} The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time and ${formatNumber(entry.types.memoryMb)} MB of memory.${entry.types.community ? ` The types come from a community package${entry.types.from ? ` (${esc(entry.types.from)})` : ''}, not from the authors of this package.` : ''}</p>`
-  if (entry.types.metricKey) return `<p>Measured with ${esc(entry.types.tool)} ${esc(entry.types.version)}: ${esc(entry.types.notes)} The workload and the baseline each run eleven times, each time in a new process. The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB of peak resident memory. A figure below the baseline counts as zero. Added CPU time below 10 ms counts as 10 ms and added memory below 0.25 MB as 0.25 MB (5 MB for Go).</p>`
+  if (entry.types.swept) return `<p>Measured with ${esc(entry.types.tool)}. ${esc(entry.types.basis)} The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time and ${formatNumber(megabytes(entry.types.memoryBytes))} MB of memory.${entry.types.community ? ` The types come from a community package${entry.types.from ? ` (${esc(entry.types.from)})` : ''}, not from the authors of this package.` : ''}</p>`
+  if (entry.types.metricKey) return `<p>Measured with ${esc(entry.types.tool)} ${esc(entry.types.version)}: ${esc(entry.types.notes)} The workload and the baseline each run eleven times, each time in a new process. The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(megabytes(entry.types.memoryBytes))} MB of peak resident memory. A figure below the baseline counts as zero. Added CPU time below 10 ms counts as 10 ms and added memory below 0.25 MB as 0.25 MB (5 MB for Go).</p>`
   if (entry.types.tool === 'cargo') {
-    return `<p>Measured with ${esc(data.typeChecks.cargo.tool)}. The first check of the crate and its dependencies takes ${formatNumber(entry.types.coldCpuS)} s of CPU time. A second check of the adapter adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB, compared with an empty program.</p>`
+    return `<p>Measured with ${esc(data.typeChecks.cargo.tool)}. The first check of the crate and its dependencies takes ${formatNumber(toDisplay(entry.types.coldCpuMs, 's'))} s of CPU time. A second check of the adapter adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(megabytes(entry.types.memoryBytes))} MB, compared with an empty program.</p>`
   }
   const rows = Object.entries(entry.types.compilers)
     .filter(([, c]) => c)
-    .map(([id, c]) => `<tr><td>${id} ${esc(data.compilers[id])}</td>${cell(c.cpuMs, `${formatNumber(c.cpuMs)} ms CPU`)}${cell(c.timeMs, `${formatNumber(c.timeMs)} ms`)}${cell(c.memoryMb, `${formatNumber(c.memoryMb)} MB`)}${cell(c.score, `${formatNumber(c.score)} MB·s${chip('types', c)}`)}${cell(c.symbols, c.symbols.toLocaleString('en-US'))}${cell(c.files, c.files)}</tr>`)
+    .map(([id, c]) => `<tr><td>${id} ${esc(data.compilers[id])}</td>${cell(c.cpuMs, `${formatNumber(c.cpuMs)} ms CPU`)}${cell(c.timeMs, `${formatNumber(c.timeMs)} ms`)}${cell(c.memoryBytes, `${formatNumber(megabytes(c.memoryBytes))} MB`)}${cell(c.costMbS, `${formatNumber(c.costMbS)} MB·s${chip('types', c)}`)}${cell(c.symbols, c.symbols.toLocaleString('en-US'))}${cell(c.files, c.files)}</tr>`)
   return `<div class="scroll"><table class="narrow sortable">
 <caption>The types come from ${esc(entry.types.from === 'bundled' ? 'the package itself' : entry.types.from)}. For both compilers, a class compares the entry with the lowest-cost package in its category, in any language.</caption>
 <thead><tr><th scope="col">Compiler</th><th scope="col">CPU added</th><th scope="col">Elapsed added</th><th scope="col">Memory added</th><th scope="col">Cost</th><th scope="col">Symbols</th><th scope="col">Files</th></tr></thead>
@@ -683,8 +686,8 @@ function versionHistory(pkg, data, viewing) {
 <tbody>${[...all].sort(byCpu)
     .map(({ runtime, entry: e, ranked }) => `<tr${e.version === viewing ? ' class="here"' : ''}><td><a href="${urls.package(pkg, e.version===pkg.version ? null : e.version)}">${esc(e.version)}</a>${ranked ? '<span class="ver">ranked</span>' : ''}${medalBadges(['cpu', 'memory'].map((key) => markOf([{ data, entry: e }], key)))}</td><td class="l">${inlineIcon(runtime.id)}${esc(runtime.title)}</td>
 ${gradedCell(e.grades.cpu, `${num(cpuOf(e.metrics), cpuUnit(e.metrics), LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
-${gradedCell(e.grades.memory, `${num(e.metrics.memoryMb, ' MB', LEAST.memory)}${chip('memory', e.grades.memory)}`)}
-${cell(e.metrics.retainedKb, num(e.metrics.retainedKb, ' KB'))}
+${gradedCell(e.grades.memory, `${num(megabytes(e.metrics.memoryBytes), ' MB', LEAST.memory)}${chip('memory', e.grades.memory)}`)}
+${cell(e.metrics.heapRetainedBytes, num(kilobytes(e.metrics.heapRetainedBytes), ' KB'))}
 ${cell(e.metrics.importMs, num(e.metrics.importMs, ' ms'))}</tr>`)
     .join('\n')}</tbody></table></div>`
 }
@@ -694,7 +697,7 @@ const byCpu = (a, b) => (cpuOf(a.entry.metrics) ?? Infinity) - (cpuOf(b.entry.me
 
 // The package at its best in a task: the runtime and entry with the lowest
 // CPU cost, then the least memory.
-export const bestResult = (rows) => [...rows].sort((a, b) => byCpu(a, b) || a.entry.metrics.memoryMb - b.entry.metrics.memoryMb)[0]
+export const bestResult = (rows) => [...rows].sort((a, b) => byCpu(a, b) || a.entry.metrics.memoryBytes - b.entry.metrics.memoryBytes)[0]
 
 // All measured versions of a package, newest first.
 export const versionsOf = (pkg) =>
@@ -775,7 +778,7 @@ ${views.map(([view, rows]) => (view ? `<div class="settings-view" data-settings=
           .filter((a) => a.entry.grades[rankingId])
           .sort((a, b) => CLASSES.indexOf(a.entry.grades[rankingId].class) - CLASSES.indexOf(b.entry.grades[rankingId].class) || a.entry.grades[rankingId].ratio - b.entry.grades[rankingId].ratio)
         // Each label's place among this package's own results in the task.
-        const place = placeTags(ranked, (a) => `${a.entry.grades[rankingId].class} ${formatNumber(a.entry.grades[rankingId].value)}`)
+        const place = placeTags(ranked, (a) => `${a.entry.grades[rankingId].class} ${formatNumber(shownValue(metricFor(data, a.entry, rankingId), a.entry.grades[rankingId].value))}`)
         return shelf(ranked.map((a) => card({ entry: a.entry, data, runtime: a.runtime, rankingId, model, caption: a.runtime.title, linkPackage: false, older: !a.entry.activeRelease, place: place(a) })), { limit: Infinity })
       }
       // The package at its best in this task: the runtime and entry with the
@@ -807,8 +810,8 @@ ${['cpu', 'memory'].map((id) => `<div class="ranked-panel" data-ranking="${id}">
 <tbody>${[...rows].sort(byCpu)
         .map(({ runtime, entry: e }) => `<tr><td>${esc(runtime.title)}<span class="ver">${esc(runtime.version)}</span>${medalBadges(['cpu', 'memory'].map((key) => markOf([{ data, entry: e }], key)))}</td><td class="l">${esc(e.title)}</td>
 ${gradedCell(e.grades.cpu, `${num(cpuOf(e.metrics), cpuUnit(e.metrics), LEAST.cpu)}${chip('cpu', e.grades.cpu)}`)}
-${gradedCell(e.grades.memory, `${num(e.metrics.memoryMb, ' MB', LEAST.memory)}${chip('memory', e.grades.memory)}`)}
-${cell(e.metrics.retainedKb, num(e.metrics.retainedKb, ' KB'))}
+${gradedCell(e.grades.memory, `${num(megabytes(e.metrics.memoryBytes), ' MB', LEAST.memory)}${chip('memory', e.grades.memory)}`)}
+${cell(e.metrics.heapRetainedBytes, num(kilobytes(e.metrics.heapRetainedBytes), ' KB'))}
 ${cell(e.metrics.importMs, num(e.metrics.importMs, ' ms'))}
 ${cell(rateOf(e.metrics), num(rateOf(e.metrics)))}
 ${cell(e.metrics.latencyP99Ms, num(e.metrics.latencyP99Ms, ' ms'))}</tr>`)
@@ -937,7 +940,7 @@ function packageGrade(pkg, runtimeId, rankingId) {
   if (hits.length === 0) return null
   if (hits.length === 1) {
     const [{ data, entry, isDefault }] = hits
-    const text = (e) => `${formatNumber(e.grades[rankingId].value)} ${metricFor(data, e, rankingId).unit}`
+    const text = (e) => `${formatNumber(shownValue(metricFor(data, e, rankingId), e.grades[rankingId].value))} ${metricFor(data, e, rankingId).displayUnit}`
     const variant = isDefault ? tuned.get(data)?.entry : null
     return { grade: entry.grades[rankingId], text: text(entry), pairs: [{ data, entry }], tuned: variant && variant.grades[rankingId].value < entry.grades[rankingId].value ? { grade: variant.grades[rankingId], text: text(variant), title: variant.title, pairs: [{ data, entry: variant }] } : null }
   }
@@ -1027,7 +1030,7 @@ function packageTable(packages, model, { showEcosystem, everyPackage = false, re
       const [installedMarks, tunedMarks] = [medalBadges(marksFor('installed')), medalBadges(marksFor('tuned'))]
       const marks = installedMarks === tunedMarks ? installedMarks : `<span class="as-installed">${installedMarks}</span><span class="as-tuned">${tunedMarks}</span>`
       const typeCells = isRust
-        ? typeCost(typed?.types, typed?.grades.types) + cell(typed?.types?.coldCpuS, num(typed?.types?.coldCpuS, ' s'))
+        ? typeCost(typed?.types, typed?.grades.types) + cell(typed?.types?.coldCpuMs, num(toDisplay(typed?.types?.coldCpuMs, 's'), ' s'))
         : rt.language === 'all' ? typeCost(typed?.types?.compilers?.[model.tasks[0].typesCompiler] ?? typed?.types, typed?.grades.types) : nativeLanguage ? typeCost(typed?.types, typed?.grades.types) : compilers.map((id) => typeCost(typed?.types.compilers[id])).join('')
       return `<tr${pkg === highlight || (highlight && pkg.ecosystem === highlight.ecosystem && pkg.name === highlight.name) ? ' class="here"' : ''}${everyPackage ? ' data-status="Measured"' : ''}${here.length && here.every((a) => a.entry.reference) ? ' data-reference' : ''}><td><a href="${urls.package(pkg,pkg.version===pkg.defaultVersion?null:pkg.version)}">${esc(pkg.title)}</a><span class="ver">${esc(pkg.version ?? '')}</span>${marks}</td>
 ${metricCell(pkg, 'cpu', selected.id)}${metricCell(pkg, 'memory', selected.id)}${typeCells}
@@ -1187,8 +1190,8 @@ function packageOverall(pkg, model) {
     flags: [],
   }
   const data = {
-    metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } },
-    typeChecks: { typescript: { unit: '×', headline: 'times the lowest type-check cost' } },
+    metrics: { cpu: { displayUnit: '×', headline: 'times the best CPU result' }, memory: { displayUnit: '×', headline: 'times the best memory result' } },
+    typeChecks: { typescript: { displayUnit: '×', headline: 'times the lowest type-check cost' } },
   }
   // One label for each measure, side by side.
   entry.adapter.notes = `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.`
@@ -1218,7 +1221,7 @@ function overallLabels(category, packages, model) {
   })
   if (rows.length < 2) return ''
   const name = `rank-overall-${category.id.replace(/[^a-z0-9]+/gi, '-')}`
-  const data = { metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best memory result' } }, typeChecks: {} }
+  const data = { metrics: { cpu: { displayUnit: '×', headline: 'times the best CPU result' }, memory: { displayUnit: '×', headline: 'times the best memory result' } }, typeChecks: {} }
   return `<h3>Overall</h3>
 <div class="ranked">
 <style>${rankings.map((id) => `.ranked:has(#${name}-${id}:checked) .ranked-panel[data-ranking="${id}"]`).join(',')}{display:block}</style>
@@ -1599,7 +1602,6 @@ const PLACE_MARKS = {
 // doubled when another package shows the same figure. `key` is a ranking
 // (cpu, memory, types) or a TypeScript compiler id for its own column.
 const gradeFor = (e, key) => e.grades[key] ?? e.types?.compilers?.[key] ?? null
-const figureOf = (g) => `${g.class} ${formatNumber(g.value ?? g.score)}`
 // In tables the same marks as on the tags sit together after the name in the
 // first column. Hovering one says what it is for.
 const PLACE_TEXT = { best: 'Best', second: 'Second best', third: 'Third best', 'second-worst': 'Second to last', worst: 'Last place' }
@@ -1806,8 +1808,8 @@ function runtimeSummary(s, tasks, scope, basis, scopeKey) {
     flags: [],
   }
   const data = {
-    metrics: { cpu: { unit: '×', headline: 'times the best CPU result' }, memory: { unit: '×', headline: 'times the best after-task memory' } },
-    typeChecks: { typescript: { unit: '×', headline: 'times the best type-check cost' } },
+    metrics: { cpu: { displayUnit: '×', headline: 'times the best CPU result' }, memory: { displayUnit: '×', headline: 'times the best after-task memory' } },
+    typeChecks: { typescript: { displayUnit: '×', headline: 'times the best type-check cost' } },
   }
   return { entry, data, runtime: s.runtime, subtitle: `Version ${s.runtime.version}`, context: `${scope}, ${basis === 'typical' ? 'typical entry' : 'best'} across ${plural(s.tasks, 'task')}`, address: urls.summary(s.runtime.id, scopeKey) }
 }
@@ -2289,7 +2291,7 @@ const NO_CLASS = '<span class="cls none" title="No class: there is nothing to co
 // where its category gives it one.
 function typeCell(types) {
   if (!types) return cell(null, NA)
-  const html = `<span class="type-cost"><span>${communityMark(types)}${types.cpuMs < 10 ? '&lt; 10' : formatNumber(types.cpuMs)} ms</span><span>${esc(formatAtLeast(types.memoryMb, LEAST.memory))} MB</span><span class="type-cost-score">${esc(formatAtLeast(types.cost, LEAST.types))} <span class="unit">MB·s</span></span><span class="type-cost-grade">${types.grade ? chip('types', types.grade) : NO_CLASS}</span></span>`
+  const html = `<span class="type-cost"><span>${communityMark(types)}${types.cpuMs < 10 ? '&lt; 10' : formatNumber(types.cpuMs)} ms</span><span>${esc(formatAtLeast(megabytes(types.memoryBytes), LEAST.memory))} MB</span><span class="type-cost-score">${esc(formatAtLeast(types.cost, LEAST.types))} <span class="unit">MB·s</span></span><span class="type-cost-grade">${types.grade ? chip('types', types.grade) : NO_CLASS}</span></span>`
   return types.grade ? gradedCell({ ...types.grade, value: types.cost }, html) : `<td data-v="${types.cost}" data-value="${types.cost}">${html}</td>`
 }
 function catalogTable(items, model, { showEcosystem = false, caption }) {
@@ -2383,15 +2385,15 @@ ${item.firstReleasedAt ? `<tr><th scope="row">First release</th><td class="l">${
 </table>
 ${types ? `<h2>Type check</h2>
 <ul class="shelf"><li>${renderLabel({
-    entry: { title: item.name, grades: { types: types.grade ?? { class: null, value: types.cost } }, types: { icon: types.icon ?? 'typescript', cpuMs: types.cpuMs, memoryMb: types.memoryMb, community: types.community }, metrics: { importMs: null }, adapter: { notes: `${types.grade ? `Class A is the lowest-cost package in ${category.title}: ${types.anchor.title}${types.anchor.version ? ` ${types.anchor.version}` : ''}.` : noClass} This package has no benchmark yet, so it has no CPU or memory class.` }, flags: [] },
-    data: { metrics: {}, typeChecks: { typescript: { unit: 'MB·s', headline: 'MB·s of type-check cost (CPU seconds × MB)', tool: types.tool } } },
+    entry: { title: item.name, grades: { types: types.grade ?? { class: null, value: types.cost } }, types: { icon: types.icon ?? 'typescript', cpuMs: types.cpuMs, memoryBytes: types.memoryBytes, community: types.community }, metrics: { importMs: null }, adapter: { notes: `${types.grade ? `Class A is the lowest-cost package in ${category.title}: ${types.anchor.title}${types.anchor.version ? ` ${types.anchor.version}` : ''}.` : noClass} This package has no benchmark yet, so it has no CPU or memory class.` }, flags: [] },
+    data: { metrics: {}, typeChecks: { typescript: { displayUnit: 'MB·s', headline: 'MB·s of type-check cost (CPU seconds × MB)', tool: types.tool } } },
     runtime: { id: 'node', title: '', version: '' },
     rankingId: 'types',
     subtitle: item.version ? `Version ${item.version}` : '',
     context: `Type check, ${types.tool}`,
     address: catalogUrl(item),
   })}</li></ul>
-<p>With ${esc(types.tool)}, the types of this package add ${formatNumber(types.cpuMs)} ms of compiler CPU time and ${formatNumber(types.memoryMb)} MB of compiler memory. That is a cost of <b>${formatNumber(types.cost)} MB·s</b>. ${types.community ? `* The types come from a community package${types.from ? ` (${esc(types.from)})` : ''}, not from the authors of this package. ` : ''}${types.grade ? `Its class compares it with the lowest-cost package in <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, which is <b>${esc(types.anchor.title)}</b>${types.anchor.version ? ` ${esc(types.anchor.version)}` : ''}.` : esc(noClass)}</p>
+<p>With ${esc(types.tool)}, the types of this package add ${formatNumber(types.cpuMs)} ms of compiler CPU time and ${formatNumber(megabytes(types.memoryBytes))} MB of compiler memory. That is a cost of <b>${formatNumber(types.cost)} MB·s</b>. ${types.community ? `* The types come from a community package${types.from ? ` (${esc(types.from)})` : ''}, not from the authors of this package. ` : ''}${types.grade ? `Its class compares it with the lowest-cost package in <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, which is <b>${esc(types.anchor.title)}</b>${types.anchor.version ? ` ${esc(types.anchor.version)}` : ''}.` : esc(noClass)}</p>
 ${TYPE_KEY}` : ''}
 </main>`,
   })

@@ -76,7 +76,7 @@ language alike, and the task says so.
 The site reports the median of round costs, then the median across fresh
 processes. These are repeated, cache-hot microbenchmarks of deliberately narrow
 contracts; they do not rank a library's entire API. Tiny differences and memory
-near the 4 MiB grading floor should not be over-interpreted. CPU grading uses
+near the 4 MB grading floor should not be over-interpreted. CPU grading uses
 four decimal places for microsecond operation costs to avoid zero anchors.
 
 New adapter versions use the existing seven-day release-age filter, disabled
@@ -418,7 +418,11 @@ benchmarks/<category>/<task>/builtin/<name>/adapter.json, adapter.py | adapter.r
 ```
 
 Lower `warmup` and `operationsPerRound` when one operation is slow (the
-warm-up also ends after two seconds). Copy `metrics` from an existing task.
+warm-up also ends after two seconds). Copy `metrics` from an existing task: `key` names the graded field of the
+data (`cpuMs`, `memoryBytes`: every time in the data is in milliseconds and
+every memory figure in bytes), `displayUnit` and `headline` are what a
+person reads on the pages (µs, ms, MB), and a `floor` is given as it is
+stored, in ms or bytes (`4000000` is 4 MB).
 
 `scenario.mjs` exports `cases` (`{ input, expected }`, inputs plain JSON),
 `verifyResults(outputs)` (strict, used for every language), `consume(result)`
@@ -1367,7 +1371,7 @@ adapter, here it provides the adapter's peer.
   recorded refusal fails.
 - **One operation is one exchange**: a request and its whole response, turned
   into the value the task names (a parsed document, a reply). It is counted
-  as a request (`cpuPerRequestUs`).
+  as a request (the task's data has `cpuPer: "request"`).
 - **Concurrency is the task's.** `load.concurrency` is how many exchanges are
   in flight, on that many lanes. A lane performs an exchange, waits for all
   of its result, and only then starts its next one. In a round of `count`
@@ -1512,7 +1516,7 @@ everything outside the script, and it gets a test in
    `connections`, `warmup`, `rounds` (3), `requestsPerRound`. Both counts are
    multiples of the number of fixtures. Choose `requestsPerRound` so that the
    slowest adapter's round takes under ten seconds (a phase times out at
-   thirty). `metrics` as in the example (`cpuPerRequestUs`). `fixtureCount`
+   thirty). `metrics` as in the example (`key: "cpuMs"`, shown as µs of CPU per request). `fixtureCount`
    is the number of fixtures. `notes` says in one or two sentences that the
    server is the harness's and what the task fixes.
 4. `scenario.mjs` exports `peer = { program, script }` (a peer from the table
@@ -1765,9 +1769,9 @@ the task, including the runtime itself. Lifetime peak RSS remains an ungraded
 diagnostic: it includes startup and warm-up and is not a task-only peak. The
 footprint after GC includes retained allocator pages and JIT code, not only
 live objects. We do not claim to measure peak task demand.
-The detailed table shows both. `memoryAboveBaselineMb` retains the signed
+The detailed table shows both. `memoryAboveBaselineBytes` retains the signed
 incremental difference, while negative package deltas are clamped for grading.
-`heapAboveBaselineKb` is an additional ungraded
+`heapAboveBaselineBytes` is an additional ungraded
 settled-heap delta; subtracting a baseline does not make different heap
 accounting systems equivalent. JS includes heap and external allocations;
 Rust counts requested live allocator bytes; Go uses HeapAlloc; Ruby uses

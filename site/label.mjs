@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto'
 // reproducing any official label's marks.
 
 import { labelIcon } from './icons.mjs'
+import { megabytes, toDisplay } from './units.mjs'
 
 export const CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
@@ -79,6 +80,9 @@ export const formatBytes = (bytes) => (bytes >= 999_500 ? `${formatNumber(bytes 
 
 // A figure too small to measure is shown as less than the smallest amount
 // that can be told apart, not as zero: "< 0.001".
+// A stored figure of a metric (ms, bytes) as the number its labels and tables
+// show, in the metric's display unit. A multiple or a cost is shown as it is.
+export const shownValue = (metric, value) => toDisplay(value, metric?.displayUnit)
 export const LEAST = { cpu: 0.0001, memory: 0.01, types: 0.001 }
 export const formatAtLeast = (value, least) => (value !== null && value !== undefined && least && value < least ? `< ${formatNumber(least)}` : formatNumber(value))
 
@@ -309,7 +313,7 @@ const STYLE = `
 .l-flag{font:700 12.5px Archivo,'Archivo Narrow','Helvetica Neue',Helvetica,Arial,'Liberation Sans',sans-serif;fill:#fff}
 `.replace(/\n/g, '')
 
-// `data` is a task's normalized data; `rankingId` picks which metric the
+// `data` is a task's data; `rankingId` picks which metric the
 // class arrows and headline show. The other metrics become the small figures.
 // Returns null when the entry has no class in that ranking.
 // `context` and `subtitle` replace the two lines under the name, for labels
@@ -366,7 +370,7 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
     .filter((id) => id !== rankingId && entry.grades[id])
     .map((id) => ({
       caption: RANKINGS[id].caption,
-      text: `${formatAtLeast(entry.grades[id].value, metricFor(data, entry, id).unit === '×' ? 0 : LEAST[id])} ${metricFor(data, entry, id).unit}`.trim(),
+      text: `${formatAtLeast(shownValue(metricFor(data, entry, id), entry.grades[id].value), metricFor(data, entry, id).displayUnit === '×' ? 0 : LEAST[id])} ${metricFor(data, entry, id).displayUnit}`.trim(),
       rankingId: id,
       grade: entry.grades[id],
     }))
@@ -417,7 +421,7 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   // A type-check cost is a product: the CPU time and the memory it is made
   // of are said in small text under it.
   const cost = rankingId === 'types' ? (entry.types?.compilers?.[data.typesCompiler] ?? entry.types) : null
-  const parts = cost?.cpuMs != null && cost?.memoryMb != null ? `${cost.cpuMs < 10 ? '< 10' : formatNumber(cost.cpuMs)} ms CPU × ${formatAtLeast(cost.memoryMb, LEAST.memory)} MB${cost.community ? ' *' : ''}` : null
+  const parts = cost?.cpuMs != null && cost?.memoryBytes != null ? `${cost.cpuMs < 10 ? '< 10' : formatNumber(cost.cpuMs)} ms CPU × ${formatAtLeast(megabytes(cost.memoryBytes), LEAST.memory)} MB${cost.community ? ' *' : ''}` : null
   const partsBase = unitBase + 16
   const changeBase = (parts ? partsBase : unitBase) + 19
   const bigEnd = (change ? changeBase : parts ? partsBase : unitBase) + PAD
@@ -434,12 +438,12 @@ export function renderLabel({ entry, data, runtime, rankingId = 'cpu', standalon
   // The unit sits beside the big figure, and the line under it says what was
   // measured without repeating it ("µs of CPU per request" becomes "µs" and
   // "CPU per request"). A multiple of the best result has no unit to show.
-  const unitLed = rankingId !== 'types' && metric.unit && metric.unit !== '×' && metric.headline.startsWith(`${metric.unit} `)
-  const bigUnit = rankingId === 'types' ? !entry.typeCaption && metric.unit : unitLed
-  const rest = unitLed ? metric.headline.slice(metric.unit.length + 1) : metric.headline
+  const unitLed = rankingId !== 'types' && metric.displayUnit && metric.displayUnit !== '×' && metric.headline.startsWith(`${metric.displayUnit} `)
+  const bigUnit = rankingId === 'types' ? !entry.typeCaption && metric.displayUnit : unitLed
+  const rest = unitLed ? metric.headline.slice(metric.displayUnit.length + 1) : metric.headline
   const bigCaption = !unitLed ? rest : rest.startsWith('of ') ? rest.slice(3) : rankingId === 'memory' ? `memory ${rest}` : rest
   const rule = (y) => `<line x1="0" y1="${y.toFixed(1)}" x2="${WIDTH}" y2="${y.toFixed(1)}" stroke="#000" stroke-width="1.5"/>`
-  const summary = `${entry.title}: ${grade.class ? `class ${grade.class}` : grade.reference ? `reference, not graded (${grade.ratio}× the best graded entry)` : 'no class'} for ${RANKINGS[rankingId].title}, ${formatNumber(grade.value)} ${metric.headline}${parts ? ` (${parts})` : ''}. ${context}.${change ? ` ${change.text}${previous.grades[rankingId].class !== grade.class ? `, which was class ${previous.grades[rankingId].class}` : ''}.` : ''}`
+  const summary = `${entry.title}: ${grade.class ? `class ${grade.class}` : grade.reference ? `reference, not graded (${grade.ratio}× the best graded entry)` : 'no class'} for ${RANKINGS[rankingId].title}, ${formatNumber(shownValue(metric, grade.value))} ${metric.headline}${parts ? ` (${parts})` : ''}. ${context}.${change ? ` ${change.text}${previous.grades[rankingId].class !== grade.class ? `, which was class ${previous.grades[rankingId].class}` : ''}.` : ''}`
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${height}" role="img" aria-label="${esc(summary)}"${standalone ? ` width="${WIDTH}" height="${height}"` : ''}>
 <style>${standalone ? FONT_IMPORT : ''}${STYLE}</style>
@@ -452,7 +456,7 @@ ${contextLines.map((line, i) => `<text x="${SIDE}" y="${(contextBase + i * 17).t
 ${rule(headerEnd)}
 ${scale(rankingId, grade.class, scaleTop, previous?.grades[rankingId].class, installed ? ['DEFAULT', 'SETTINGS'] : undefined, !contextLine && (entry.adapter?.tags ?? []).includes('non-default-options'), grade.reference ? grade.ratio : null)}
 ${rule(scaleEnd)}
-<text x="${WIDTH / 2}" y="${bigBase.toFixed(1)}" class="l-big" text-anchor="middle">${esc(formatAtLeast(grade.value, metric.unit === '×' ? 0 : LEAST[rankingId]))}${bigUnit ? BIG_UNIT(esc(metric.unit)) : ''}</text>
+<text x="${WIDTH / 2}" y="${bigBase.toFixed(1)}" class="l-big" text-anchor="middle">${esc(formatAtLeast(shownValue(metric, grade.value), metric.displayUnit === '×' ? 0 : LEAST[rankingId]))}${bigUnit ? BIG_UNIT(esc(metric.displayUnit)) : ''}</text>
 <text x="${WIDTH / 2}" y="${unitBase.toFixed(1)}" class="l-unit" text-anchor="middle">${esc(rankingId === 'types' ? (entry.typeCaption ?? (entry.ecosystem === 'cargo' ? 'cargo check cost' : 'type-check cost')) : bigCaption)}</text>
 ${parts ? `<text x="${WIDTH / 2}" y="${partsBase.toFixed(1)}" class="l-parts" text-anchor="middle">${esc(parts)}</text>` : ''}
 ${change ? (() => {

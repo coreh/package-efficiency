@@ -18,8 +18,8 @@
   },
   "metrics": {
     "cpu": {
-      "key": "cpuPerRequestUs",
-      "unit": "µs",
+      "key": "cpuMs",
+      "displayUnit": "µs",
       "headline": "µs of CPU per request",
       "scale": [
         1.25,
@@ -31,10 +31,10 @@
       ]
     },
     "memory": {
-      "key": "memoryMb",
-      "unit": "MB",
+      "key": "memoryBytes",
+      "displayUnit": "MB",
       "headline": "MB after GC, above baseline",
-      "floor": 4
+      "floor": 4000000
     }
   },
   "notes": "The requests are three in equal parts: a plain-text route, a JSON route with a parameter, and a JSON POST."

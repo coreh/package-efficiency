@@ -2,9 +2,11 @@
 // JSON, and Markdown that reads well when pasted into a language model.
 import { CLASSES, formatBytes, formatNumber } from './label.mjs'
 import { adapterIdOf, adapterSource, taskSource } from './source.mjs'
+import { cpuDisplayUnit, cpuShown, megabytes, toDisplay } from './units.mjs'
 
-const cpuOf = (m) => m.startupCpuMs ?? m.cpuPerOperationUs ?? m.cpuPerRequestUs
-const cpuUnit = (m) => (m.startupCpuMs != null ? ' ms' : ' µs')
+// The Markdown shows the units a person reads: CPU in µs (ms for a start), memory in MB.
+const cpuOf = cpuShown
+const cpuUnit = (m) => ` ${cpuDisplayUnit(m)}`
 const unitOf = (data) => (data.task.kind === 'sync-operation' || data.task.kind === 'async-operation' ? 'operation' : data.task.kind === 'server-startup' ? 'start' : 'request')
 const isTuned = (entry) => (entry.adapter.tags ?? []).includes('non-default-options')
 
@@ -20,10 +22,10 @@ export function resultRows(data, ctx) {
     runtime.entries.map((e) => {
       const won = medals?.get(`${runtime.id}/${e.id}`) ?? {}
       const listed = ctx?.model?.packageOf(e)?.listed
-      // Every time in milliseconds and every memory figure in bytes, whatever
-      // the task: the entry's figures as scripts/build-data.mjs converted them.
-      const n = e.normalized
-      if (!n) throw new Error(`${data.task.id}: ${e.id} has no normalized figures; run scripts/build-data.mjs`)
+      // The entry's own figures: every time in milliseconds, every memory figure in bytes.
+      const m = e.metrics
+      // A TypeScript check has a figure for each compiler; the graded one is the task's.
+      const checked = e.types?.costMbS != null ? (e.types.compilers ? e.types.compilers[data.typesCompiler] : e.types) : null
       return {
       category: data.task.category,
       task: data.task.id,
@@ -35,27 +37,27 @@ export function resultRows(data, ctx) {
       language: runtime.language,
       runtime: runtime.title,
       runtime_version: runtime.version,
-      cpu_ms: n.cpuMs,
-      cpu_per: n.cpuPer,
+      cpu_ms: m.cpuMs,
+      cpu_per: data.task.cpuPer,
       cpu_class: e.grades.cpu?.class ?? '',
       cpu_times_best: e.grades.cpu?.ratio ?? '',
-      memory_bytes: n.memoryBytes,
+      memory_bytes: m.memoryBytes,
       memory_class: e.grades.memory?.class ?? '',
       memory_times_best: e.grades.memory?.ratio ?? '',
-      type_check_cost_mb_s: n.typeCheckCostMbS ?? '',
-      type_check_cpu_ms: n.typeCheckCpuMs ?? '',
-      type_check_memory_bytes: n.typeCheckMemoryBytes ?? '',
+      type_check_cost_mb_s: e.types?.costMbS ?? '',
+      type_check_cpu_ms: checked?.cpuMs ?? '',
+      type_check_memory_bytes: checked?.memoryBytes ?? '',
       type_check_class: e.grades.types?.class ?? '',
       type_check_times_best: e.grades.types?.ratio ?? '',
-      total_memory_bytes: n.totalMemoryBytes,
-      peak_memory_bytes: n.peakMemoryBytes,
-      heap_retained_bytes: n.heapRetainedBytes ?? null,
+      total_memory_bytes: m.totalMemoryBytes,
+      peak_memory_bytes: m.peakMemoryBytes,
+      heap_retained_bytes: m.heapRetainedBytes ?? null,
       import_ms: e.metrics.importMs,
       install_bytes: e.metrics.installBytes ?? null,
       install_packages: e.metrics.installPackages ?? null,
       install_kind: e.metrics.installKind ?? null,
-      per_cpu_second: e.metrics.operationsPerCpuSecond ?? e.metrics.requestsPerCpuSecond,
-      throughput_per_second: e.metrics.throughputOps ?? e.metrics.throughputRps,
+      per_cpu_second: m.perCpuSecond,
+      throughput_per_second: m.throughputPerSecond,
       latency_p99_ms: e.metrics.latencyP99Ms,
       benchmark_source: `benchmarks/${data.task.adaptersFrom ?? data.task.id}/${adapterIdOf(e)}`,
       ...(ctx ? {
@@ -90,7 +92,7 @@ const byCpu = (a, b) => CLASSES.indexOf(a.grades.cpu?.class ?? 'G') - CLASSES.in
 
 const READING = (data) => `Classes go from A (best) to G. A class shows how many times the best result in the task an entry costs, in any language or runtime. CPU is CPU time per ${unitOf(data)} (user and system, all threads). Memory is what the process holds after the task and a garbage collection (its physical footprint, not its resident size). The same runtime with a do-nothing adapter on the same inputs is subtracted. Type-check cost is added compiler CPU time multiplied by added compiler memory, in MB·s. Each of its class boundaries is the CPU boundary multiplied by the memory boundary. Its class compares a package with the lowest-cost package in its category, not only in the task. The memory scale is narrower than the CPU scale (G is above 16 times the best, compared with 50 for CPU), because memory results are closer together. No class uses elapsed time. A "tuned" entry uses documented settings that are not the default. A "default" entry is the package as installed.`
 
-const scaleLine = (name, metric) => (metric?.scale ? `- ${name}: class boundaries at ${metric.scale.join(', ')} times the best${metric.anchor ? `, which is ${metric.anchor.title}${metric.anchor.runtime ? ` on ${metric.anchor.runtime}` : ''} at ${formatNumber(metric.anchor.value)} ${metric.unit}` : ''}.` : null)
+const scaleLine = (name, metric) => (metric?.scale ? `- ${name}: class boundaries at ${metric.scale.join(', ')} times the best${metric.anchor ? `, which is ${metric.anchor.title}${metric.anchor.runtime ? ` on ${metric.anchor.runtime}` : ''} at ${formatNumber(toDisplay(metric.anchor.value, metric.displayUnit))} ${metric.displayUnit}` : ''}.` : null)
 
 // "gold CPU, silver memory": the medals an entry took in its task's events.
 const medalText = (ctx, data, runtime, e) => {
@@ -101,7 +103,7 @@ const MEDALS_NOTE = 'Medals: each task has three events (CPU, memory, type check
 // Size once installed, with how many packages that is; for Rust, what the
 // crate adds to the compiled binary.
 const installText = (m) => m.installBytes == null ? '' : `${formatBytes(m.installBytes)}${m.installKind === 'binary' ? ' added to the binary' : m.installPackages ? ` in ${m.installPackages} ${m.installPackages === 1 ? 'package' : 'packages'}` : ''}`
-const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : ''), e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', graded(cpuOf(e.metrics), e.grades.cpu, cpuUnit(e.metrics)), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), cellText(e.metrics.importMs, ' ms'), installText(e.metrics), cellText(e.metrics.latencyP99Ms, ' ms')]
+const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : ''), e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', graded(cpuOf(e.metrics), e.grades.cpu, cpuUnit(e.metrics)), graded(megabytes(e.metrics.memoryBytes), e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), cellText(e.metrics.importMs, ' ms'), installText(e.metrics), cellText(e.metrics.latencyP99Ms, ' ms')]
 const ENTRY_HEAD = (data) => ['Entry', 'Version', 'Settings', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Import time', 'Size on disk', 'Latency p99']
 
 export function taskMarkdown(data, ctx) {
@@ -318,7 +320,7 @@ ${READING(category.tasks[0])}
 ${PROVISIONAL(ctx)}
 
 ${category.tasks
-  .map((data) => `## ${data.task.title}\n\n${data.task.summary} Each package on the runtime where it uses the least CPU; every runtime is in ${ctx.url(`/${data.task.id}/index.md`)}.\n\n${mdTable(['Entry', 'Version', 'Settings', 'Best on', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Medals'], bestPerPackage(data).map(({ entry: e, runtime }) => [e.title, e.version ?? '', e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', runtime.title, graded(cpuOf(e.metrics), e.grades.cpu, cpuUnit(e.metrics)), graded(e.metrics.memoryMb, e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), medalText(ctx, data, runtime, e)]))}`)
+  .map((data) => `## ${data.task.title}\n\n${data.task.summary} Each package on the runtime where it uses the least CPU; every runtime is in ${ctx.url(`/${data.task.id}/index.md`)}.\n\n${mdTable(['Entry', 'Version', 'Settings', 'Best on', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Medals'], bestPerPackage(data).map(({ entry: e, runtime }) => [e.title, e.version ?? '', e.builtin ? 'built in' : isTuned(e) ? 'tuned' : 'default', runtime.title, graded(cpuOf(e.metrics), e.grades.cpu, cpuUnit(e.metrics)), graded(megabytes(e.metrics.memoryBytes), e.grades.memory, ' MB'), graded(e.grades.types?.value, e.grades.types), medalText(ctx, data, runtime, e)]))}`)
   .join('\n\n')}
 
 ## Packages
@@ -488,7 +490,7 @@ ${eco.title} package${item.version ? `, latest version ${item.version}` : ''}. N
 
 **${status}.** ${item.category ? `Category: [${item.category.title}](${ctx.url(ctx.categoryHref(item.category.id, ctx.model))}).` : 'No category yet.'}${item.category?.benchmarkIdea ? ` Candidate task: ${item.category.benchmarkIdea}` : ''}
 
-- Registry: ${eco.registry(item.name)}${item.repository ? `\n- Repository: ${item.repository}` : ''}${item.typeCheck ? `\n- Type check: adds ${formatNumber(item.typeCheck.cpuMs)} ms of compiler CPU time and ${formatNumber(item.typeCheck.memoryMb)} MB of compiler memory with ${item.typeCheck.tool}, a cost of ${formatNumber(item.typeCheck.cost)} MB·s (ungraded: a class needs a shared task)` : ''}
+- Registry: ${eco.registry(item.name)}${item.repository ? `\n- Repository: ${item.repository}` : ''}${item.typeCheck ? `\n- Type check: adds ${formatNumber(item.typeCheck.cpuMs)} ms of compiler CPU time and ${formatNumber(megabytes(item.typeCheck.memoryBytes))} MB of compiler memory with ${item.typeCheck.tool}, a cost of ${formatNumber(item.typeCheck.cost)} MB·s (ungraded: a class needs a shared task)` : ''}
 
 ${footer(ctx, ctx.catalogUrl(item), false)}`
   return { markdown, rows: null }

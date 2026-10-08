@@ -7,10 +7,17 @@ import { globSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fromRoot, median, readJson, writeJson } from './lib/util.mjs'
+import { toDisplay, toStored } from '../site/units.mjs'
 
 // Every size on the site is decimal: 1 MB is 1,000,000 bytes and 1 KB is
-// 1,000. Measurements arrive in bytes, except two files that store binary
-// megabytes (2^20 bytes) and are converted with MIB_TO_MB.
+// 1,000. Measurements arrive in bytes, except the checker files, which store
+// binary megabytes (2^20 bytes) and are converted with MIB_TO_MB.
+//
+// What is written holds every time in milliseconds and every memory figure in
+// bytes, whatever the task. A figure is first rounded in the unit it is shown
+// in (µs or ms, MB, KB), as it always was, and that rounded figure is what is
+// stored (`held`), so a page shows exactly the number that was graded.
+// Classes are worked out on the shown figures (`shown`) for the same reason.
 const MB = 1e6
 const KB = 1e3
 const MIB_TO_MB = 2 ** 20 / MB
@@ -44,7 +51,7 @@ const TYPE_MEMORY_FLOOR_MB = 0.25
 const GO_MEMORY_FLOOR_MB = 5
 const TYPE_RATIO_SCALE = DEFAULT_RATIO_SCALE.map((times, i) => times * MEMORY_RATIO_SCALE[i])
 const TYPES_METRIC = {
-  unit: 'MB·s',
+  displayUnit: 'MB·s',
   headline: 'MB·s of type-check cost (CPU seconds × MB)',
   absolute: false,
   scale: TYPE_RATIO_SCALE,
@@ -53,7 +60,7 @@ const TYPES_METRIC = {
 }
 // Rust type checking is a different tool with different costs, so crates are
 // graded only against each other: multiples of the best crate in the task.
-const CARGO_CHECK_METRIC = { unit: 'MB·s', headline: 'MB·s of cargo check cost (CPU seconds × MB)', scale: TYPE_RATIO_SCALE, absolute: false, floor: 0.0025 }
+const CARGO_CHECK_METRIC = { displayUnit: 'MB·s', headline: 'MB·s of cargo check cost (CPU seconds × MB)', scale: TYPE_RATIO_SCALE, absolute: false, floor: 0.0025 }
 // The compiler the type-check class is based on.
 const TYPES_COMPILER = 'tsgo'
 // Retained heap growing faster than this per request is flagged as a leak.
@@ -62,6 +69,15 @@ const LEAK_BYTES_PER_REQUEST = 8
 const CLASSES = 'ABCDEFG'
 const classFor = (value, scale) => CLASSES[scale.findIndex((limit) => value <= limit)] ?? 'G'
 const round = (n, digits = 1) => (n === null || n === undefined ? null : Number(n.toFixed(digits)))
+// A figure rounded in the unit it is shown in, as it is stored. The way back
+// must give the same figure again, or a page would show another number.
+function held(figure, unit) {
+  if (figure === null || figure === undefined) return null
+  const stored = toStored(figure, unit)
+  if (toDisplay(stored, unit) !== figure) throw new Error(`${figure} ${unit} does not survive being stored as ${stored}`)
+  return stored
+}
+const shown = toDisplay
 const stripAnsi = (text) => text?.replace(/\u001b\[[\d;]*m/g, '') ?? null
 
 // One number per measurement: the median across rounds, then across runs.
@@ -73,7 +89,7 @@ function summarize(result, baseline, kind) {
   // have it (see `footprintBytes` in the supervisor); older results have only
   // the resident size.
   const footprint = result.runs.every((r) => r.footprintAfterLoadBytes != null) && baseline.runs.every((r) => r.footprintBytes != null)
-  const held = (r) => (footprint ? r.footprintAfterLoadBytes : r.rssAfterLoadBytes)
+  const memoryHeld = (r) => (footprint ? r.footprintAfterLoadBytes : r.rssAfterLoadBytes)
   const baseRss = median(baseline.runs.map((r) => (footprint ? r.footprintBytes : r.rssBytes)))
 
   const operations = result.runs[0].rounds[0].operations !== undefined
@@ -86,27 +102,31 @@ function summarize(result, baseline, kind) {
   })
   const heapPeak = perRun((r) => r.heap.peakBytes)
 
+  const startup = kind === 'server-startup'
   return {
     metrics: {
-      [operations ? 'cpuPerOperationUs' : 'cpuPerRequestUs']: round(cpuPerRequestUs, operations ? 4 : 1),
-      // A startup task's round is one launch: its CPU time and its time to the first page.
-      ...(kind === 'server-startup' ? { startupCpuMs: round(perRound((r) => r.cpuMs), 1), startupMs: round(perRound((r) => r.wallMs), 1) } : {}),
-      [operations ? 'operationsPerCpuSecond' : 'requestsPerCpuSecond']: Math.round(1e6 / cpuPerRequestUs),
-      memoryMb: round(Math.max(0, (perRun(held) - baseRss) / MB)),
-      memoryAboveBaselineMb: round((perRun(held) - baseRss) / MB),
-      settledRssMb: round(perRun(held) / MB),
+      // CPU time for one unit of work: an operation, a request, or, in a
+      // startup task (whose round is one launch), a start.
+      cpuMs: startup ? round(perRound((r) => r.cpuMs), 1) : held(round(cpuPerRequestUs, operations ? 4 : 1), 'µs'),
+      // A startup task's time to the first page.
+      ...(startup ? { startupMs: round(perRound((r) => r.wallMs), 1) } : {}),
+      perCpuSecond: Math.round(1e6 / cpuPerRequestUs),
+      memoryBytes: held(round(Math.max(0, (perRun(memoryHeld) - baseRss) / MB)), 'MB'),
+      memoryAboveBaselineBytes: held(round((perRun(memoryHeld) - baseRss) / MB), 'MB'),
+      totalMemoryBytes: held(round(perRun(memoryHeld) / MB), 'MB'),
       memoryKind: footprint ? 'footprint' : 'rss',
-      peakRssMb: round(perRun((r) => r.peakRssBytes) / MB),
-      heapPeakMb: round(heapPeak === null ? null : heapPeak / MB, 2),
-      retainedKb: round(perRun((r) => r.rounds.at(-1).heapUsedBytes == null || r.heap.readyBytes == null ? null : (r.rounds.at(-1).heapUsedBytes - r.heap.readyBytes) / KB), 0),
-      heapAboveBaselineKb: baseHeap === null ? null : round(perRun(r => r.rounds.at(-1).heapUsedBytes == null ? null : (r.rounds.at(-1).heapUsedBytes - baseHeap) / KB), 1),
-      [operations ? 'leakBytesPerOperation' : 'leakBytesPerRequest']: round(leak, 2),
+      peakMemoryBytes: held(round(perRun((r) => r.peakRssBytes) / MB), 'MB'),
+      heapPeakBytes: held(round(heapPeak === null ? null : heapPeak / MB, 2), 'MB'),
+      heapRetainedBytes: held(round(perRun((r) => r.rounds.at(-1).heapUsedBytes == null || r.heap.readyBytes == null ? null : (r.rounds.at(-1).heapUsedBytes - r.heap.readyBytes) / KB), 0), 'KB'),
+      heapAboveBaselineBytes: baseHeap === null ? null : held(round(perRun(r => r.rounds.at(-1).heapUsedBytes == null ? null : (r.rounds.at(-1).heapUsedBytes - baseHeap) / KB), 1), 'KB'),
+      // Heap growth from the first round to the last, for one unit of work.
+      leakBytesPerUnit: round(leak, 2),
       importMs: round(perRun((r) => r.importMs)),
       // Size on disk once installed (or added to a Rust binary); see scripts/lib/install-size.mjs.
       installBytes: result.install?.bytes ?? null,
       installPackages: result.install?.packages ?? null,
       installKind: result.install?.kind ?? null,
-      [operations ? 'throughputOps' : 'throughputRps']: Math.round(perRound((r) => (count(r) * 1000) / r.wallMs)),
+      throughputPerSecond: Math.round(perRound((r) => (count(r) * 1000) / r.wallMs)),
       latencyP50Ms: round(perRound((r) => r.latencyP50Ms), 2),
       latencyP99Ms: round(perRound((r) => r.latencyP99Ms), 2),
     },
@@ -114,35 +134,20 @@ function summarize(result, baseline, kind) {
   }
 }
 
-// An entry's figures in one pair of units whatever the task, for whoever reads
-// the data from outside the site: every time in milliseconds and every memory
-// figure in bytes. They are the entry's own figures (`metrics`, `types`)
-// converted, not measured again, so they agree with what the pages show. A
-// figure the entry lacks is left out.
-// The megabytes of `metrics` are decimal (bytes / 1e6, above). So are those of
-// a type check: the checker files store the binary megabytes of
-// harness/checkers/time.py, and each is converted where it is read.
-const SWEPT_MEMORY_BYTES = MB
-const fine = (n) => Number(n.toFixed(7))
-function normalizedFigures(entry, task) {
-  const m = entry.metrics
-  const startup = task.kind === 'server-startup' && m.startupCpuMs != null
-  const perUnitUs = m.cpuPerOperationUs ?? m.cpuPerRequestUs
-  const types = entry.types?.value != null ? entry.types : null
-  // A TypeScript check has a figure for each compiler; the graded one is TYPES_COMPILER's.
-  const checked = types && (types.compilers ? types.compilers[TYPES_COMPILER] : types)
-  const out = {
-    cpuMs: startup ? m.startupCpuMs : fine(perUnitUs / 1000),
-    cpuPer: startup ? 'start' : task.kind === 'sync-operation' || task.kind === 'async-operation' ? 'operation' : 'request',
-    memoryBytes: Math.round(m.memoryMb * MB),
-    totalMemoryBytes: Math.round(m.settledRssMb * MB),
-    peakMemoryBytes: Math.round(m.peakRssMb * MB),
-    heapRetainedBytes: m.retainedKb == null ? null : Math.round(m.retainedKb * KB),
-    typeCheckCpuMs: checked?.cpuMs ?? null,
-    typeCheckMemoryBytes: checked?.memoryMb == null ? null : Math.round(checked.memoryMb * (types.swept ? SWEPT_MEMORY_BYTES : MB)),
-    typeCheckCostMbS: types?.value ?? null,
+// A type check as it is stored: its memory in bytes, its cost named with its
+// unit, and the time of a first cargo check in milliseconds like every other
+// time. The checkers below work in megabytes, the unit the cost is made of.
+function storedCheck(check) {
+  if (!check) return check
+  const { memoryMb, value, score, coldCpuS, compilers, adapter, ...rest } = check
+  return {
+    ...rest,
+    ...(compilers ? { compilers: Object.fromEntries(Object.entries(compilers).map(([id, compiler]) => [id, storedCheck(compiler)])) } : {}),
+    ...(adapter !== undefined ? { adapter: storedCheck(adapter) } : {}),
+    ...(memoryMb !== undefined ? { memoryBytes: held(memoryMb, 'MB') } : {}),
+    ...(coldCpuS !== undefined ? { coldCpuMs: held(coldCpuS, 's') } : {}),
+    ...(value !== undefined || score !== undefined ? { costMbS: value ?? score ?? null } : {}),
   }
-  return Object.fromEntries(Object.entries(out).filter(([, value]) => value !== null && value !== undefined))
 }
 
 const config = await readJson(fromRoot('runtimes.json'))
@@ -279,8 +284,8 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       // False for a language without a garbage collector: its labels do not speak of one.
       garbageCollected: (config.runtimes[result.runtime] ?? config.toolchains[result.runtime]).garbageCollected ?? true,
       heapDescription: (config.runtimes[result.runtime] ?? config.toolchains[result.runtime]).heapDescription ?? 'Runtime-reported heap plus external allocations (Rust: counted live allocations).',
-      baselineHeapKb: round(median(baseline.runs.map(r => r.heapUsedBytes)) === null ? null : median(baseline.runs.map(r => r.heapUsedBytes)) / KB),
-      baselineMb: round(median(baseline.runs.map((r) => r.rssBytes)) / MB),
+      baselineHeapBytes: held(round(median(baseline.runs.map(r => r.heapUsedBytes)) === null ? null : median(baseline.runs.map(r => r.heapUsedBytes)) / KB), 'KB'),
+      baselineBytes: held(round(median(baseline.runs.map((r) => r.rssBytes)) / MB), 'MB'),
       entries: [],
       // Other versions of ranked packages: graded on the same scale, never ranked.
       history: [],
@@ -357,7 +362,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
           .filter(([name]) => name !== result.package)
           .map(([name, version]) => `${name}@${version}`),
       },
-      types: gradedTypes,
+      types: storedCheck(gradedTypes),
     })
   }
 
@@ -365,9 +370,11 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   // runtime, so a class means the same thing everywhere it appears.
   const metrics = {}
   for (const [metricId, spec] of Object.entries(task.metrics)) {
+    // task.json gives the floor as it is stored, in ms or bytes.
     const floor = spec.floor ?? 0
     const scale = spec.scale ?? (metricId === 'memory' ? MEMORY_RATIO_SCALE : DEFAULT_RATIO_SCALE)
-    const value = (entry) => Math.max(entry.metrics[spec.key], floor)
+    // The figure as shown, which is what a class compares.
+    const value = (entry) => Math.max(shown(entry.metrics[spec.key], spec.displayUnit), shown(floor, spec.displayUnit))
     const all = Object.values(runtimes).flatMap((runtime) => runtime.entries.map((entry) => ({ entry, runtime })))
     if (all.length === 0) continue
     // Reference entries do not set class A, unless there is nothing else.
@@ -390,11 +397,11 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       }
     }
     metrics[metricId] = {
-      unit: spec.unit,
+      displayUnit: spec.displayUnit,
       headline: spec.headline,
       scale,
       floor,
-      anchor: { id: best.entry.id, title: best.entry.title, version: best.entry.version, runtime: best.runtime.title, value: value(best.entry) },
+      anchor: { id: best.entry.id, title: best.entry.title, version: best.entry.version, runtime: best.runtime.title, value: Math.max(best.entry.metrics[spec.key], floor) },
     }
   }
   // Runtime comparisons include the runtime itself; package comparisons
@@ -402,11 +409,11 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   // Reference entries do not set the best here either, unless there is nothing else.
   const everyMemoryEntry = Object.values(runtimes).flatMap(runtime => runtime.entries)
   const totalMemoryEntries = everyMemoryEntry.some(entry => !entry.reference) ? everyMemoryEntry.filter(entry => !entry.reference) : everyMemoryEntry
-  const totalMemoryBest = Math.min(...totalMemoryEntries.map(entry => entry.metrics.settledRssMb))
+  const totalMemoryBest = Math.min(...totalMemoryEntries.map(entry => entry.metrics.totalMemoryBytes))
   for (const runtime of Object.values(runtimes)) {
     for (const entry of [...runtime.entries, ...runtime.history]) {
-      const ratio = entry.metrics.settledRssMb / totalMemoryBest
-      entry.runtimeGrades = { memory: { class: classFor(ratio, metrics.memory.scale), ratio: round(ratio, 2), value: entry.metrics.settledRssMb } }
+      const ratio = shown(entry.metrics.totalMemoryBytes, 'MB') / shown(totalMemoryBest, 'MB')
+      entry.runtimeGrades = { memory: { class: classFor(ratio, metrics.memory.scale), ratio: round(ratio, 2), value: entry.metrics.totalMemoryBytes } }
     }
   }
   const runtimeMetrics = { memory: { ...metrics.memory, headline: 'MB after task and GC', floor: 0, anchor: { value: totalMemoryBest } } }
@@ -414,7 +421,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   // classes are set after the loop, over the task's whole category.
   const everyEntry = Object.values(runtimes).flatMap((runtime) => runtime.entries)
   const everyVersion = [...everyEntry, ...Object.values(runtimes).flatMap((runtime) => runtime.history)]
-  const scored = everyEntry.filter((e) => e.types?.value != null)
+  const scored = everyEntry.filter((e) => e.types?.costMbS != null)
   const typeChecks = { typescript: { ...TYPES_METRIC, tool: `TypeScript ${types.compilers[TYPES_COMPILER]}` } }
   if (rustCheck.rust) typeChecks.cargo = { ...CARGO_CHECK_METRIC, tool: `cargo check, Rust ${rustCheck.rust}` }
   for (const [language, checker] of Object.entries(nativeChecks.checkers)) {
@@ -431,7 +438,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
     generatedAt,
     machine,
     // The other task of a strict and lenient pair is named only once it has results, and so a page.
-    task: { id: taskId, ...task, ...(task.pairedWith && !globSync('**/*.json', { cwd: fromRoot('results', task.pairedWith) }).length ? { pairedWith: undefined } : {}) },
+    task: { id: taskId, ...task, cpuPer: task.kind === 'server-startup' ? 'start' : task.kind === 'sync-operation' || task.kind === 'async-operation' ? 'operation' : 'request', ...(task.pairedWith && !globSync('**/*.json', { cwd: fromRoot('results', task.pairedWith) }).length ? { pairedWith: undefined } : {}) },
     reference: config.reference,
     metrics,
     runtimeMetrics,
@@ -507,13 +514,13 @@ for (const id of Object.keys(SWEPT)) {
   }
 }
 for (const { taxonomy: category, scored, typeChecks } of pending) {
-  for (const e of scored.filter((e) => !e.builtin)) offer(category, { key: e.package ?? e.name ?? e.title, title: e.title, version: e.version, tool: typeChecks[e.types.metricKey ?? (e.ecosystem === 'cargo' ? 'cargo' : 'typescript')]?.tool, value: e.types.value })
+  for (const e of scored.filter((e) => !e.builtin)) offer(category, { key: e.package ?? e.name ?? e.title, title: e.title, version: e.version, tool: typeChecks[e.types.metricKey ?? (e.ecosystem === 'cargo' ? 'cargo' : 'typescript')]?.tool, value: e.types.costMbS })
 }
 index.typeAnchors = {}
 for (const { taskId, data, taxonomy: category, scored, everyVersion, typeChecks } of pending) {
   // A category of built-ins alone is graded against the lowest of them.
   const alone = (typedIn.get(category)?.size ?? 0) === 1
-  const best = alone ? null : lowest.get(category) ?? (scored.length ? scored.map((e) => ({ title: e.title, version: e.version, tool: null, value: e.types.value })).reduce((a, b) => (typeValue(a.value) <= typeValue(b.value) ? a : b)) : null)
+  const best = alone ? null : lowest.get(category) ?? (scored.length ? scored.map((e) => ({ title: e.title, version: e.version, tool: null, value: e.types.costMbS })).reduce((a, b) => (typeValue(a.value) <= typeValue(b.value) ? a : b)) : null)
   if (best) {
     const bestValue = typeValue(best.value)
     const grade = (score) => {
@@ -521,16 +528,15 @@ for (const { taskId, data, taxonomy: category, scored, everyVersion, typeChecks 
       return { class: classFor(ratio, TYPES_METRIC.scale), ratio: round(ratio, 2) }
     }
     for (const e of everyVersion) {
-      if (e.types?.value != null) e.grades.types = { ...grade(e.types.value), value: e.types.value }
+      if (e.types?.costMbS != null) e.grades.types = { ...grade(e.types.costMbS), value: e.types.costMbS }
       // Each TypeScript compiler's own figure is graded on the same scale.
       for (const compiler of Object.values(e.types?.compilers ?? {})) {
-        if (compiler?.score != null) Object.assign(compiler, grade(compiler.score))
+        if (compiler?.costMbS != null) Object.assign(compiler, grade(compiler.costMbS))
       }
     }
     const anchor = { title: best.title, version: best.version, tool: best.tool, value: bestValue, category: taxonomy.categories.find((c) => c.id === category)?.title ?? category }
     for (const check of Object.values(typeChecks)) check.anchor = anchor
   }
-  for (const e of everyVersion) e.normalized = normalizedFigures(e, data.task)
   await writeJson(fromRoot('dist/data', `${taskId}.json`), data)
 }
 // For the listed packages that are not measured: the same anchors, by category.

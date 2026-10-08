@@ -5,7 +5,8 @@
 // so they do not rely on the site's typeface being loaded: every line of text
 // is given the width it must take.
 import { labelIcon } from './icons.mjs'
-import { CLASSES, LEAST, RANKINGS, asInstalled, classColor, collectorFree, formatAtLeast, formatBytes, formatNumber, inkOn, labelSite, metricFor, previousVersion, resultShortLink, shortLinkOf } from './label.mjs'
+import { megabytes } from './units.mjs'
+import { CLASSES, LEAST, RANKINGS, asInstalled, classColor, collectorFree, formatAtLeast, formatBytes, formatNumber, inkOn, labelSite, metricFor, previousVersion, shownValue, resultShortLink, shortLinkOf } from './label.mjs'
 
 // Names and big figures are set at 80% width, as on the full label; a face
 // without that axis draws them at its normal width.
@@ -93,7 +94,7 @@ function scale(rankingId, letter, { x, y, row, gap, first, step, right, pointer 
 
 const figureOf = (entry, data, rankingId) => {
   const metric = metricFor(data, entry, rankingId)
-  return { text: formatAtLeast(entry.grades[rankingId].value, LEAST[rankingId]), unit: metric.unit === '×' ? '' : (metric.unit ?? '') }
+  return { text: formatAtLeast(shownValue(metric, entry.grades[rankingId].value), LEAST[rankingId]), unit: metric.displayUnit === '×' ? '' : (metric.displayUnit ?? '') }
 }
 // `summary` marks a runtime's summary label in place of one result's: it
 // carries the label's own lines (`context`, `subtitle`) and its page (`address`).
@@ -264,7 +265,7 @@ export function overviewLabel({ entry, data, runtime, summary }) {
     const name = `<text x="${x + 12}" y="${y + 19}" font-size="13" font-weight="800">${esc(RANKINGS[rankingId].title)}</text>`
     // A type-check cost is a product; the CPU time and memory it is made of go under it.
     const cost = rankingId === 'types' && !summary ? (entry.types?.compilers?.[data.typesCompiler] ?? entry.types) : null
-    const parts = cost?.cpuMs != null && cost?.memoryMb != null ? `${cost.cpuMs < 10 ? '< 10' : formatAtLeast(cost.cpuMs, 0)} ms CPU × ${formatAtLeast(cost.memoryMb, LEAST.memory)} MB` : null
+    const parts = cost?.cpuMs != null && cost?.memoryBytes != null ? `${cost.cpuMs < 10 ? '< 10' : formatAtLeast(cost.cpuMs, 0)} ms CPU × ${formatAtLeast(megabytes(cost.memoryBytes), LEAST.memory)} MB` : null
     const number = (cx, base, size) => `<text x="${cx}" y="${base}" font-size="${size}" font-weight="800" style="font-stretch:80%" text-anchor="middle">${esc(figure.text)}${figure.unit ? `<tspan dx="${(size * 0.1).toFixed(1)}" font-size="${(size * 0.45).toFixed(1)}" font-weight="600">${esc(figure.unit)}</tspan>` : ''}</text>`
     const partsLine = (cx, base, size, room) => (parts ? `<text x="${cx}" y="${base}" font-size="${size}" font-weight="500" fill="#444" text-anchor="middle"${fitted(parts, size * 0.5, room)}>${esc(parts)}</text>` : '')
     if (h > 200) {

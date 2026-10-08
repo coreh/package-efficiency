@@ -7,8 +7,8 @@
   "ecosystems": ["npm", "cargo"],
   "load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
   "metrics": {
-    "cpu": { "key": "cpuPerOperationUs", "unit": "µs", "headline": "µs of CPU per operation" },
-    "memory": { "key": "memoryMb", "unit": "MB", "headline": "MB after GC, above baseline", "floor": 4 }
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
   },
   "fixtureCount": 4,
   "notes": "A task on the file system: the trees are real directories, created anew before each process and already in the operating system's cache, so no disk is read. CPU time includes the time the kernel spends answering the lookups. locate-path, path-exists and lilconfig do not walk up, and findpython and hike do another job."
