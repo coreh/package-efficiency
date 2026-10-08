@@ -16,7 +16,7 @@ import {
   packagesPage,
   runtimePage,
   runtimesPage,
-  searchIndex, statsPage, statsMarkdown, advancedSearchIndex, searchPage,
+  searchIndex, statsPage, statsMarkdown, advancedSearchIndex, searchPage, apiReferencePage,
   bestResult,
   runtimeSummaries,
   categoryIconFiles,
@@ -38,6 +38,7 @@ import {
   versionsOf,
 } from '../site/pages.mjs'
 import { adapterIdOf } from '../site/source.mjs'
+import { openApiSpec } from '../site/api.mjs'
 import { iconFile, iconFiles, iconScales } from '../site/icons.mjs'
 import { embedFiles } from '../site/layouts.mjs'
 import * as exportsOf from '../site/exports.mjs'
@@ -144,7 +145,7 @@ labelSite.host = siteUrl.replace(/^https?:\/\//, '')
 const exported = { url: (to) => `${siteUrl}${to}`, edition: index.edition }
 // The stylesheet and script are addressed with a mark of their content, so a
 // page never meets an older copy of them that a browser or the CDN still holds.
-const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/app.js'))).digest('hex').slice(0, 10)
+const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).digest('hex').slice(0, 10)
 const model = {
   index,
   assets,
@@ -448,6 +449,10 @@ await write(dist('search.json'), JSON.stringify(searchIndex(model)))
 await page('/search/', searchPage(model))
 await write(dist('search-full.json'), JSON.stringify(advancedSearchIndex(model)))
 await write(dist('search.js'), await readFile(fromRoot('site/search.js')))
+// The machine-readable files as an API: the specification, and its page.
+const apiSpec = openApiSpec(model)
+await write(dist('openapi.json'), JSON.stringify(apiSpec, null, 1))
+await page('/api/', apiReferencePage(model, apiSpec))
 const allRows = tasks.flatMap((data) => resultRows(data, ctx))
 await write(dist('data/results.csv'), toCsv(allRows))
 await write(dist('data/results.json'), JSON.stringify(allRows))
@@ -473,7 +478,7 @@ for (const [id, svg] of Object.entries(iconFiles())) await write(dist('icons', `
 for (const id of [...Object.keys(ECOSYSTEMS).map((id) => `eco-${id}`), ...model.runtimes.map((rt) => rt.id)]) if (iconFile(id)) await write(dist('icons/s', `${id}.svg`), iconFile(id))
 for (const [file, svg] of Object.entries(categoryIconFiles())) await write(dist('icons/cat', file), svg)
 // The search results' marks are images, so their optical sizes are rules keyed on the file.
-await write(dist('styles.css'), `${await readFile(fromRoot('site/styles.css'), 'utf8')}\n${Object.entries(iconScales).map(([id, scale]) => `#q-results img[src$="/s/${id}.svg"] { transform: scale(${scale}); }`).join('\n')}\n`)
+await write(dist('styles.css'), `${await readFile(fromRoot('site/styles.css'), 'utf8')}\n${await readFile(fromRoot('site/api.css'), 'utf8')}\n${Object.entries(iconScales).map(([id, scale]) => `#q-results img[src$="/s/${id}.svg"] { transform: scale(${scale}); }`).join('\n')}\n`)
 await write(dist('app.js'), await readFile(fromRoot('site/app.js')))
 
 

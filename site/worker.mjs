@@ -18,7 +18,9 @@ export default {
     const url = new URL(request.url)
     if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405 })
     let path = url.pathname
-    try { path = decodeURI(path) } catch {}
+    // decodeURI leaves an escaped @ alone, and the sitemap and some clients
+    // write a scoped package's address that way.
+    try { path = decodeURI(path).replace(/%40/gi, '@') } catch {}
     // A short link to a result: its code at the root, as labels print it, or
     // after /r/, as they did at first. Built pages are answered before this
     // Worker runs, so a code cannot hide one.

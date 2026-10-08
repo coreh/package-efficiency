@@ -24,6 +24,9 @@ try {
 const input = document.getElementById('q')
 const results = document.getElementById('q-results')
 const keyHint = document.querySelector('.search-key')
+// The link to the advanced search takes along what is typed in the field.
+const advanced = document.querySelector('.search-advanced')
+advanced?.addEventListener('click', () => { if (input.value.trim()) advanced.href = `/search/?q=${encodeURIComponent(input.value.trim())}` })
 const RESULT_LIMIT = 40
 let entries = null
 let active = -1

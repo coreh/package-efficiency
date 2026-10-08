@@ -174,8 +174,7 @@ const sources = {
   async gomod(p) {
     const proxy = (path) => `https://proxy.golang.org/${path.replace(/[A-Z]/g, (c) => `!${c.toLowerCase()}`)}/@v`
     // A module listed without a version still has a license and a first version.
-    const info = p.version ? await get(`${proxy(p.name)}/${p.version}.info`) : {}
-    if (!info) throw new Error('not on the module proxy')
+    const info = p.version ? await get(`${proxy(p.name)}/${p.version}.info`) : null
     // The module's first major versions live at another path: …/v5 began at
     // the path without the suffix, gopkg.in/x.v3 at gopkg.in/x.v1.
     const major = /^(.*?)(?:\/v|(\.v))(\d+)$/.exec(p.name)
@@ -188,7 +187,8 @@ const sources = {
         if (time) return time
       }
     }))
-    return { ...(await repositoryLicense(p)), releasedAt: iso(info.Time), firstReleasedAt: earliest(firsts) }
+    if (p.version && !info && !firsts.some(Boolean)) throw new Error('not on the module proxy')
+    return { ...(await repositoryLicense(p)), releasedAt: iso(info?.Time), firstReleasedAt: earliest(firsts) }
   },
 }
 

@@ -5,14 +5,14 @@ const form = document.getElementById('adv-form')
 const count = document.getElementById('adv-count')
 const table = document.getElementById('adv-results')
 const body = table.tBodies[0]
-const more = document.getElementById('adv-more')
 const config = JSON.parse(document.getElementById('adv-config').textContent)
-const PAGE = 100
-const MULTI = ['lang', 'reg', 'rt']
+const PAGE_SIZE = 30
+const MULTI = ['lang', 'reg', 'rt', 'kind']
 const SINGLE = ['q', 'in', 'cpu', 'memory', 'types', 'lic', 'from', 'to', 'sort']
 let index = []
 let found = []
-let shown = 0
+let page = 0
+let all = false
 
 // Address to form.
 function restore() {
@@ -78,6 +78,7 @@ function search() {
     if (s.measured && !item.m) continue
     if (['cpu', 'memory', 'types'].some((id) => s[id] && !(item.k?.[id] <= s[id]))) continue
     if (license && !(item.l ?? '').toLowerCase().includes(license)) continue
+    if (s.kind.length && !s.kind.includes(item.lk)) continue
     if ((s.from && !(item.f >= s.from)) || (s.to && !(item.f <= s.to))) continue
     const rank = score(item, words, whole)
     if (rank !== null) found.push({ item, rank })
@@ -92,8 +93,7 @@ function search() {
     old: (a, b) => (a.item.f ?? '9').localeCompare(b.item.f ?? '9') || byName(a, b),
   }
   found.sort(order[s.sort] ?? order[''])
-  body.replaceChildren()
-  shown = 0
+  page = 0
   show()
 }
 
@@ -128,17 +128,52 @@ function row({ item }) {
     pair.append(chip)
     classes.append(pair)
   }
-  tr.append(name, kind, el('td', item.c ?? '', 'l wrap'), classes, el('td', item.l ?? '', 'l'), el('td', item.f ?? '', 'l'))
+  const license = el('td', item.l ?? '', 'l')
+  if (item.lk) license.append(el('small', config.licenseKinds[item.lk], 'adv-desc'))
+  tr.append(name, kind, el('td', item.c ?? '', 'l wrap'), classes, license, el('td', item.f ?? '', 'l'))
   return tr
 }
 
+// The site's own pager (see app.js), above and below the results.
+const head = document.querySelector('.adv-head')
+const pagers = ['above', 'below'].map((place) => {
+  const nav = el('nav', null, `pager ${place}`)
+  nav.setAttribute('aria-label', `Result pages, ${place} the results`)
+  const control = (text, action) => {
+    const button = el('button', text)
+    button.type = 'button'
+    button.addEventListener('click', () => { action(); show(); if (place === 'below') head.scrollIntoView({ block: 'nearest' }) })
+    nav.append(button)
+    return button
+  }
+  const previous = control('Previous', () => page--)
+  const status = el('span', null, 'status')
+  nav.append(status)
+  const next = control('Next', () => page++)
+  const everything = control('', () => { all = !all; page = 0 })
+  everything.className = 'all'
+  return { nav, previous, status, next, everything }
+})
+head.classList.add('has-pager')
+head.append(pagers[0].nav)
+table.closest('.scroll').after(pagers[1].nav)
+
 function show() {
-  const next = found.slice(shown, shown + PAGE)
-  body.append(...next.map(row))
-  shown += next.length
-  table.hidden = !found.length
-  more.hidden = shown >= found.length
-  count.textContent = found.length ? `${found.length.toLocaleString('en-US')} ${found.length === 1 ? 'result' : 'results'}${shown < found.length ? `, the first ${shown.toLocaleString('en-US')} shown` : ''}.` : 'Nothing matches. Remove a filter or use fewer words.'
+  const total = found.length
+  const pages = Math.ceil(total / PAGE_SIZE)
+  page = Math.max(0, Math.min(page, pages - 1))
+  const start = all ? 0 : page * PAGE_SIZE
+  const end = all ? total : Math.min(start + PAGE_SIZE, total)
+  body.replaceChildren(...found.slice(start, end).map(row))
+  table.hidden = !total
+  for (const pager of pagers) {
+    pager.nav.hidden = total <= PAGE_SIZE
+    pager.status.textContent = `${(start + 1).toLocaleString('en-US')}–${end.toLocaleString('en-US')} of ${total.toLocaleString('en-US')}`
+    pager.previous.disabled = all || page === 0
+    pager.next.disabled = all || page >= pages - 1
+    pager.everything.textContent = all ? `Show ${PAGE_SIZE} at a time` : 'Show all'
+  }
+  count.textContent = total ? `${total.toLocaleString('en-US')} ${total === 1 ? 'result' : 'results'}` : 'Nothing matches. Remove a filter or use fewer words.'
 }
 
 let timer
@@ -147,7 +182,6 @@ form.addEventListener('input', soon)
 form.addEventListener('change', search)
 form.addEventListener('submit', (event) => { event.preventDefault(); search() })
 form.addEventListener('reset', () => setTimeout(() => { for (const box of form.querySelectorAll('input[type="checkbox"]')) box.checked = false; search() }))
-more.addEventListener('click', show)
 addEventListener('popstate', () => { restore(); search() })
 
 restore()

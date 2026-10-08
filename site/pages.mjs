@@ -5,6 +5,8 @@ import { activeReleaseRows } from '../scripts/lib/releases.mjs'
 import { assistantIcon, groupIcon, inlineIcon } from './icons.mjs'
 import { adapterIdOf, adapterSource, adaptersTaskOf, taskSource } from './source.mjs'
 import { overviewLabel } from './layouts.mjs'
+import { apiPage, apiSideNav } from './api.mjs'
+import { LICENSE_KINDS, licenseKind } from './licenses.mjs'
 import { CLASSES, LEAST, RANKINGS, classColor, collectorFree, formatAtLeast, formatNumber, inkOn, metricFor, renderLabel, resultPath, resultShort, resultShortLink, shortLinkOf } from './label.mjs'
 
 const esc = (text) => String(text ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
@@ -189,7 +191,7 @@ function sidebar(model, path, context) {
 // The links of the top bar. A narrow screen has no room for them there, so the
 // opened menu starts with the same links: nothing in the bar is out of reach.
 const GITHUB_MARK = '<svg class="gh" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>'
-const TOP_LINKS = [['/categories/', 'Categories'], ['/tasks/', 'Tasks'], ['/packages/', 'Packages'], ['/runtimes/', 'Languages/Runtimes'], ['/stats/', 'Statistics'], ['/search/', 'Search']]
+const TOP_LINKS = [['/categories/', 'Categories'], ['/tasks/', 'Tasks'], ['/packages/', 'Packages'], ['/runtimes/', 'Languages/Runtimes'], ['/stats/', 'Statistics'], ['/api/', 'API']]
 const topLinks = (model) => TOP_LINKS.map(([href, text]) => `<a href="${href}">${text}</a>`).join('') + (model.repository?.url ? `<a class="repo-link" href="${esc(model.repository.url)}" rel="noopener">${GITHUB_MARK}GitHub</a>` : '')
 
 // A table's explanatory text is written as its <caption>, but shown beneath
@@ -236,11 +238,11 @@ ${FONTS}
 <header class="top">
 <label for="menu" class="menu-button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 3h14v2H1zM1 7h14v2H1zM1 11h14v2H1z" fill="currentColor"/></svg>Browse</label>
 <a class="name" href="/">${LOGO()}Package Efficiency Labels</a>
-<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><kbd class="search-key" hidden></kbd><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
+<div class="search" role="search"><label for="q">Search</label><input id="q" type="search" role="combobox" aria-expanded="false" aria-controls="q-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search packages, tasks and categories"><kbd class="search-key" hidden></kbd><a class="search-advanced" href="/search/" title="Search with filters">Advanced…</a><ul id="q-results" role="listbox" aria-label="Search results" hidden></ul></div>
 <nav aria-label="Indexes">${topLinks(model)}</nav>
 </header>
 <div class="frame">
-${sidebar(model, path, context)}
+${context.side ? `<nav class="side side-own" aria-label="${esc(context.sideLabel ?? 'This page')}">\n<div class="side-indexes">${topLinks(model)}</div>\n${context.side}\n</nav>` : sidebar(model, path, context)}
 <div class="content">
 ${trail}
 ${body}
@@ -880,7 +882,7 @@ ${adapterList}`
     actions: feedback(model, { scope: 'package', about: pkg.title, pkg: `${pkg.ecosystem}/${pkg.name}`, category: pkg.appearances[0]?.data.task.category, page: urls.package(pkg, older ? version : null), vouch: pkg.ecosystem !== 'builtin' , top: true }),
     body: `<main>
 <h1>${esc(pkg.title)}${verifiedAll(shown.map((a) => a.entry))}${version ? ` <span class="ver">${esc(version)}</span>` : ''}</h1>
-<p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.module ?? pkg.name)}">View on the registry</a>.` : ''}</p>
+<p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.module ?? pkg.name)}">View on the registry</a>.` : ''}</p>${pkg.listed?.license || pkg.listed?.releasedAt ? `\n<p class="soft">${[pkg.listed.license && `License: ${licenseSaid(pkg.listed.license)}.`, pkg.listed.releasedAt && `Version ${esc(pkg.listed.version ?? pkg.version)} was released on ${dateSaid(pkg.listed.releasedAt)}${pkg.listed.firstReleasedAt ? `, the first version on ${dateSaid(pkg.listed.firstReleasedAt)}` : ''}.`].filter(Boolean).join(' ')}</p>` : ''}
 
 ${measuredIn.length ? `<ul class="tiles">${measuredIn.map((c) => `<li><a href="${urls.category(c.id)}">${categoryIcon(c.id)}<span><b>${esc(c.title)}</b><small>${plural(c.tasks.length, 'task')}, ${plural(model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === c.id)).length, 'package')} measured</small></span></a></li>`).join('')}</ul>` : ''}
 ${related}
@@ -2374,6 +2376,9 @@ export function catalogPackagePage(item, model) {
 <tr><th scope="row">Category</th><td class="l">${category ? `<a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>` : NA}</td></tr>
 ${category?.benchmarkIdea ? `<tr><th scope="row">Candidate task</th><td class="l wrap">${esc(category.benchmarkIdea)}</td></tr>` : ''}
 <tr><th scope="row">Registry</th><td class="l"><a href="${eco.registry(item.name)}">${esc(eco.title)}</a>${item.repository ? `, <a href="${esc(item.repository)}">source repository</a>` : ''}</td></tr>
+${item.license ? `<tr><th scope="row">License</th><td class="l">${licenseSaid(item.license)}</td></tr>` : ''}
+${item.releasedAt ? `<tr><th scope="row">Released</th><td class="l">${item.version ? `Version ${esc(item.version)} on ` : ''}${dateSaid(item.releasedAt)}</td></tr>` : ''}
+${item.firstReleasedAt ? `<tr><th scope="row">First release</th><td class="l">${dateSaid(item.firstReleasedAt)}</td></tr>` : ''}
 </tbody>
 </table>
 ${types ? `<h2>Type check</h2>
@@ -2563,6 +2568,11 @@ export function searchIndex(model) {
   ]
 }
 
+// What the registry says of a package beyond its name: its license, and when
+// the listed version and the first one were published.
+const licenseSaid = (license) => (license ? `${esc(license)}${licenseKind(license) ? ` <span class="soft">(${LICENSE_KINDS[licenseKind(license)].toLowerCase()})</span>` : ''}` : null)
+const dateSaid = (iso) => (iso ? `<time datetime="${esc(String(iso).slice(0, 10))}">${esc(String(iso).slice(0, 10))}</time>` : null)
+
 // --- Advanced search --------------------------------------------------------
 
 // The language a registry's packages are written for, as the filter names it.
@@ -2575,7 +2585,8 @@ const without = (object) => Object.fromEntries(Object.entries(object).filter(([,
 // y: p package, t task, c category, r runtime, e registry. t title, u address,
 // d description, e registry id, g languages, rt runtimes with a result,
 // c category, m measured, r rank in its registry, k best class for each
-// measure, l license, f date of the listed release, a other names.
+// measure, l license, lk its kind (site/licenses.mjs), f date of the listed
+// release, a other names.
 export function advancedSearchIndex(model) {
   const bestClasses = (appearances) =>
     without(Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, appearances.map((a) => a.entry.grades[id]?.class).filter(Boolean).sort()[0]])))
@@ -2585,11 +2596,11 @@ export function advancedSearchIndex(model) {
     return without({
       y: 'p', t: p.title, u: urls.package(p), e: p.ecosystem, g: p.ecosystem === 'builtin' ? [...new Set(p.appearances.map((a) => languageOf(a.runtime.id)))] : [REGISTRY_LANGUAGE[p.ecosystem]],
       rt: [...new Set(p.appearances.map((a) => a.runtime.id))], c: [...new Set(p.appearances.map((a) => categoryTitle.get(a.data.task.category) ?? a.data.task.category))].join(', '),
-      d: listed.description, m: 1, r: listed.rank, k: bestClasses(p.appearances), v: p.version, l: listed.license, f: day(listed.releasedAt),
+      d: listed.description, m: 1, r: listed.rank, k: bestClasses(p.appearances), v: p.version, l: listed.license, lk: licenseKind(listed.license), f: day(listed.releasedAt),
     })
   })
   const unmeasured = Object.values(model.catalog.byEcosystem).flat().filter((item) => !item.measured).map((item) =>
-    without({ y: 'p', t: item.name, u: catalogUrl(item), e: item.ecosystem, g: [REGISTRY_LANGUAGE[item.ecosystem]], c: item.category?.title, d: item.description, r: item.rank, v: item.version, l: item.license, f: day(item.releasedAt), k: item.typeCheck?.grade ? { types: item.typeCheck.grade.class } : undefined }))
+    without({ y: 'p', t: item.name, u: catalogUrl(item), e: item.ecosystem, g: [REGISTRY_LANGUAGE[item.ecosystem]], c: item.category?.title, d: item.description, r: item.rank, v: item.version, l: item.license, lk: licenseKind(item.license), f: day(item.releasedAt), k: item.typeCheck?.grade ? { types: item.typeCheck.grade.class } : undefined }))
   const tasks = model.tasks.map((d) => {
     const runtimes = d.runtimes.filter((rt) => rt.entries.length).map((rt) => rt.id)
     return without({ y: 't', t: d.task.title, u: urls.task(d.task.id), c: categoryTitle.get(d.task.category) ?? d.task.category, d: d.task.summary, m: 1, rt: runtimes, g: [...new Set(runtimes.map(languageOf))] })
@@ -2630,21 +2641,29 @@ ${group('Language', languages.map((id) => check('lang', id, LANGUAGE_TITLE[id] ?
 ${group('Registry', Object.entries(ECOSYSTEMS).map(([id, e]) => check('reg', id, e.title)).join(''))}
 ${group('Has a result on', model.runtimes.map((rt) => check('rt', rt.id, rt.title)).join(''))}
 ${group('Results', `${check('measured', '1', 'Only what has been measured')}${['cpu', 'memory', 'types'].map(classSelect).join('')}`)}
-${group('License and release', `<label class="adv-field">License <input type="text" name="lic" list="adv-licenses" placeholder="Any" autocomplete="off" spellcheck="false"></label><datalist id="adv-licenses">${commonLicenses.map((id) => `<option value="${esc(id)}">`).join('')}</datalist>
-<label class="adv-field">Released on or after <input type="date" name="from"></label>
+${group('License', `${Object.entries(LICENSE_KINDS).map(([id, title]) => check('kind', id, title)).join('')}<label class="adv-field">Named <input type="text" name="lic" list="adv-licenses" placeholder="Any" autocomplete="off" spellcheck="false"></label><datalist id="adv-licenses">${commonLicenses.map((id) => `<option value="${esc(id)}">`).join('')}</datalist>`)}
+${group('Release', `<label class="adv-field">Released on or after <input type="date" name="from"></label>
 <label class="adv-field">Released on or before <input type="date" name="to"></label>`)}
 </div>
 <p class="adv-bar"><label class="adv-field">Sort by <select name="sort"><option value="">Best match</option><option value="used">Most used</option><option value="name">Name</option><option value="new">Newest release</option><option value="old">Oldest release</option></select></label> <button type="reset">Clear all</button></p>
 </form>
-<p id="adv-count" class="adv-count" role="status" aria-live="polite">Loading the index.</p>
+<div class="switches adv-head"><p id="adv-count" class="adv-count" role="status" aria-live="polite">Loading the index.</p></div>
 <noscript><p class="note">This search runs in the browser and needs JavaScript. The <a href="/packages/">packages</a>, <a href="/tasks/">tasks</a> and <a href="/categories/">categories</a> pages list everything without it.</p></noscript>
 <div class="scroll"><table class="adv-results" id="adv-results" hidden>
 <thead><tr><th scope="col" class="l">Name</th><th scope="col" class="l">Kind</th><th scope="col" class="l">Category</th><th scope="col" class="l">Best classes</th><th scope="col" class="l">License</th><th scope="col" class="l">Released</th></tr></thead>
 <tbody></tbody>
 </table></div>
-<p><button type="button" id="adv-more" hidden>Show more</button></p>
-<script type="application/json" id="adv-config">${JSON.stringify({ kinds: { p: 'Package', t: 'Task', c: 'Category', r: 'Runtime', e: 'Registry' }, registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])), measures: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])) }).replace(/</g, '\\u003c')}</script>
+<script type="application/json" id="adv-config">${JSON.stringify({ kinds: { p: 'Package', t: 'Task', c: 'Category', r: 'Runtime', e: 'Registry' }, registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])), licenseKinds: LICENSE_KINDS, measures: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])) }).replace(/</g, '\\u003c')}</script>
 <script type="module" src="/search.js"></script>
 </main>`,
   })
+}
+
+// --- API reference ------------------------------------------------------------
+
+// The page is drawn from the same object that is published as /openapi.json
+// (site/api.mjs), so the two cannot disagree.
+export function apiReferencePage(model, spec) {
+  const { title, description, body } = apiPage(model, spec)
+  return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, body: `<main class="api">${body}</main>` })
 }

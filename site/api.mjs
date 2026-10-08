@@ -797,7 +797,7 @@ export function apiPage(model, spec = openApiSpec(model)) {
     ex.goMeasured ? `<li>A measured Go module has a short name of its own: <code>${esc(ex.goMeasured.module)}</code> is at ${at(`${urls.package(ex.goMeasured)}results.json`)}. The field <code>module</code> of its entries has the path.</li>` : '',
     ex.goListed ? `<li>A Go module that is listed and not measured is named by its path, with its slashes: ${at(`/${ex.goListed.ecosystem}/${ex.goListed.name}/index.md`)}.</li>` : '',
     `<li>Do not write a slash of a name as <code>%2F</code>. Each one is a separator of the address like any other.</li>`,
-    `<li>Write <code>@</code> as it is, and follow redirects (<code>curl -L</code>). For a file that the build wrote, the server answers an address that has <code>@</code> with a redirect to the same address with <code>%40</code>. The files that are put together on request (single results, labels, embeds, adapter source, packages that are not measured) answer only to <code>@</code> as it is.</li>`,
+    `<li>Write <code>@</code> as it is, and follow redirects (<code>curl -L</code>). For a file that the build wrote, the server answers an address that has <code>@</code> with a redirect to the same address with <code>%40</code>. The files that are put together on request (single results, labels, embeds, adapter source, packages that are not measured) answer both spellings.</li>`,
     `<li>An address of a page ends in a slash. Without it, the server redirects to the address with it.</li>`,
   ].filter(Boolean)
 
@@ -832,14 +832,6 @@ ${names.join('\n')}
 <li>A "times best" figure, or <code>ratio</code>, is that multiple of the best: 1 is the best, 2 costs twice as much.</li>
 </ul>
 
-<nav class="api-toc" aria-label="Kinds of address">
-<h2 id="api-contents">Contents</h2>
-<ul>
-${groups.map((group) => `<li><a href="#${slug(group.name)}">${esc(group.name)}</a> <span class="soft">${group.operations.length}</span></li>`).join('\n')}
-<li><a href="#fields">Fields</a> <span class="soft">${Object.keys(spec.components.schemas).length}</span></li>
-</ul>
-</nav>
-
 ${groups.map((group) => `<h2 id="${slug(group.name)}">${esc(group.name)}</h2>
 <p>${prose(group.description)}</p>
 <ul class="api-list">
@@ -864,4 +856,15 @@ ${COPY_SCRIPT}`
     description: 'The addresses of the JSON, CSV, Markdown and SVG files behind every page of results, with their parameters, fields and units.',
     body,
   }
+}
+
+// The page's own menu, shown where the other pages have the catalog: the
+// sections of the introduction, then every address under its group.
+export function apiSideNav(spec) {
+  const groups = spec.tags.map((tag) => ({ ...tag, operations: Object.entries(spec.paths).filter(([, item]) => item.get.tags[0] === tag.name) })).filter((group) => group.operations.length)
+  return `<h2><a href="#api-basics">Basics</a></h2>
+<ul><li><a href="#api-names">Names in addresses</a></li><li><a href="#api-figures">Figures</a></li><li><a href="/openapi.json">openapi.json</a></li></ul>
+${groups.map((group) => `<h2><a href="#${slug(group.name)}">${esc(group.name)}</a></h2>
+<ul>${group.operations.map(([path, item]) => `<li><a href="#${esc(slug(item.get.operationId))}" title="${esc(item.get.summary ?? path)}"><code>${esc(path)}</code></a></li>`).join('')}</ul>`).join('\n')}
+<h2><a href="#fields">Fields</a></h2>`
 }
