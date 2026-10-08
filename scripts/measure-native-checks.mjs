@@ -1,7 +1,7 @@
 // Check actual adapter bodies with annotation-only wrappers; each tool has its
 // own baseline and grades. Run serially, without competing benchmarks.
 import {execFileSync} from 'node:child_process'
-import {globSync,readFileSync} from 'node:fs'
+import {globSync,readFileSync,rmSync} from 'node:fs'
 import {mkdir,readFile,writeFile} from 'node:fs/promises'
 import path from 'node:path'
 import {createHash} from 'node:crypto'
@@ -69,7 +69,11 @@ for(const file of globSync(fromRoot('benchmarks/*/*/{pypi,rubygems,gomod}/*/adap
   }
  }catch(error){console.error(`${id}: its package could not be installed for the check: ${String(error.message).trim().split('\n')[0]}`)}
 }
-await writeJson(`${work}/exports.json`,exports)
+// One file for each run: several --verify runs can be going at once, and a
+// shared file would leave this run's checker without its packages.
+const exportsFile=`${work}/exports-${process.pid}.json`
+process.on('exit',()=>{try{rmSync(exportsFile,{force:true})}catch{}})
+await writeJson(exportsFile,exports)
 const sorbet=fromRoot(`.cache/checkers/ruby/gems/sorbet-static-${lock.sorbet}-${lock.sorbetPlatform}/libexec/sorbet`)
 if(!sorbet)throw new Error('Run node scripts/setup-checkers.mjs first')
 const tools={
@@ -77,7 +81,7 @@ const tools={
   // Adapters are plain scripts: an empty container with no declared element type, a value that may be None and a standard module newer than the stubs are not what is being measured.
   '--disable-error-code=var-annotated','--disable-error-code=union-attr','--disable-error-code=import-untyped','--disable-error-code=import-not-found'],baseline:'pass\n',bad:'def bad() -> int:\n    return "wrong"\n',notes:'mypy strict checks annotated adapter bodies and bundled typeshed, targeting Python 3.12 shared by CPython/PyPy. HTTP adapters use framework types where available; Waitress uses a minimal local API stub; dynamic request payloads have explicit Any boundaries. Fresh checker processes; no incremental cache. Checker runs on CPython, independently of the benchmark runtime.'},
  ruby:{tool:'sorbet',version:lock.sorbet,ext:'rb',command:[sorbet,'--no-config',fromRoot('harness/checkers/stdlib.rbi')],baseline:'# typed: strict\n',bad:'# typed: strict\nextend T::Sig\nsig { returns(Integer) }\ndef bad; "wrong"; end\n',notes:'Sorbet checks adapter bodies with explicit input/output signatures and bundled core RBI. JSON payload elements remain T.untyped; CGI API signatures are provided locally; JSON uses bundled RBI. HTTP routing uses a minimal local Roda RBI; its DSL, Rack input and JSON contents remain dynamic. Shared by CRuby and YJIT; checker runs as a native executable.'},
- go:{tool:'go-types',version:config.toolchains.go.version,ext:'go',command:[`${work}/go-types`,`${work}/exports.json`],baseline:'package main\n',bad:'package main\nfunc bad() int { return "wrong" }\n',notes:'go/types checks the actual adapter source, including parsing and loading prepared standard-library and framework export data. Preparing export data, compilation, code generation and linking are excluded.'},
+ go:{tool:'go-types',version:config.toolchains.go.version,ext:'go',command:[`${work}/go-types`,exportsFile],baseline:'package main\n',bad:'package main\nfunc bad() int { return "wrong" }\n',notes:'go/types checks the actual adapter source, including parsing and loading prepared standard-library and framework export data. Preparing export data, compilation, code generation and linking are excluded.'},
 }
 // `packages` is the folder a PyPI adapter's package is installed in: mypy reads the package's own types from there.
 async function once(args,packages){const raw=execFileSync('/opt/homebrew/bin/python3',[fromRoot('harness/checkers/time.py'),...args],{encoding:'utf8',maxBuffer:16<<20,env:{...process.env,MYPYPATH:fromRoot('harness/checkers/stubs'),PYTHONPATH:packages??fromRoot('.cache/http-servers/python')}});return JSON.parse(raw)}
