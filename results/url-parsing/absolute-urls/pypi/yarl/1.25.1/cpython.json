@@ -1,0 +1,128 @@
+{
+  "task": "url-parsing/absolute-urls",
+  "ecosystem": "pypi",
+  "package": "yarl",
+  "version": "1.25.1",
+  "dependencies": {
+    "idna": "3.20",
+    "multidict": "7.0.0",
+    "propcache": "0.5.4"
+  },
+  "install": {
+    "kind": "install",
+    "bytes": 1223015,
+    "packages": 4,
+    "prebuilt": [
+      "multidict",
+      "propcache",
+      "yarl"
+    ]
+  },
+  "runtime": "cpython",
+  "runtimeVersion": "3.14.3",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "9ae2943c4e91e3e9",
+    "task": "77a661fde68dc3da",
+    "adapters": "4094376f893c8e57",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/url": "2.5.8",
+      "npm/fast-uri": "4.2.1",
+      "npm/uri-js": "4.4.1",
+      "npm/whatwg-url": "17.1.2",
+      "pypi/hyperlink": "21.0.0",
+      "pypi/idna": "3.20",
+      "pypi/rfc3986": "2.0.0",
+      "pypi/yarl": "1.25.1",
+      "rubygems/addressable": "2.9.0",
+      "rubygems/fuzzyurl": "0.9.0",
+      "rubygems/uri": "1.1.1"
+    }
+  },
+  "measuredAt": "2026-10-08T08:10:21.343Z",
+  "source": "16d3fa23204845dc",
+  "baseline": {
+    "runtime": "cpython",
+    "runtimeVersion": "3.14.3",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "9ae2943c4e91e3e9",
+      "task": "77a661fde68dc3da",
+      "adapters": "4094376f893c8e57",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/url": "2.5.8",
+        "npm/fast-uri": "4.2.1",
+        "npm/uri-js": "4.4.1",
+        "npm/whatwg-url": "17.1.2",
+        "pypi/hyperlink": "21.0.0",
+        "pypi/idna": "3.20",
+        "pypi/rfc3986": "2.0.0",
+        "pypi/yarl": "1.25.1",
+        "rubygems/addressable": "2.9.0",
+        "rubygems/fuzzyurl": "0.9.0",
+        "rubygems/uri": "1.1.1"
+      }
+    },
+    "measuredAt": "2026-10-08T08:09:42.153Z",
+    "kind": "warm",
+    "task": "url-parsing/absolute-urls",
+    "runs": [
+      {
+        "rssBytes": 16269312,
+        "footprintBytes": 8389040,
+        "heapUsedBytes": null,
+        "peakRssBytes": 16351232
+      },
+      {
+        "rssBytes": 16236544,
+        "footprintBytes": 8356272,
+        "heapUsedBytes": null,
+        "peakRssBytes": 16318464
+      },
+      {
+        "rssBytes": 15990784,
+        "footprintBytes": 8110512,
+        "heapUsedBytes": null,
+        "peakRssBytes": 16072704
+      }
+    ]
+  },
+  "status": "verify-failed",
+  "error": "fixture 3: http://user@www.example.org:3000/users/42/posts/1001/comments?redirect=https%3A%2F%2Fexample.com%2Fx#!/route/a\n+ actual - expected\n\n  {\n    fragment: '!/route/a',\n    host: 'www.example.org',\n    path: '/users/42/posts/1001/comments',\n    port: '3000',\n+   query: 'redirect=https://example.com/x',\n-   query: 'redirect=https%3A%2F%2Fexample.com%2Fx',\n    scheme: 'http',\n    userinfo: 'user'\n  }\n"
+}

@@ -1,0 +1,123 @@
+{
+  "task": "typed-object-mapping/nested-records",
+  "ecosystem": "rubygems",
+  "package": "virtus",
+  "version": "2.0.0",
+  "dependencies": {
+    "axiom-types": "0.1.1",
+    "coercible": "1.0.0",
+    "descendants_tracker": "0.0.4",
+    "ice_nine": "0.11.2",
+    "thread_safe": "0.3.6"
+  },
+  "install": {
+    "kind": "install",
+    "bytes": 973641,
+    "packages": 6
+  },
+  "runtime": "ruby",
+  "runtimeVersion": "4.0.1",
+  "machine": {
+    "os": "darwin 27.0.0",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "cores": 12
+  },
+  "harness": 6,
+  "inputs": {
+    "harness": "9ae2943c4e91e3e9",
+    "task": "9b40439abff7976e",
+    "adapters": "848032f3307d1992",
+    "runtimes": {
+      "node": "24.16.0",
+      "bun": "1.4.2",
+      "deno": "2.9.6",
+      "cpython": "3.14.3",
+      "pypy": "8.0.0",
+      "ruby": "4.0.1",
+      "ruby-yjit": "4.0.1",
+      "rust": "1.96.1",
+      "go": "1.25.3"
+    },
+    "machine": "f232e1123c8b16f8",
+    "pins": {
+      "cargo/serde_json": "1.0.151",
+      "npm/class-transformer": "0.5.1",
+      "npm/reflect-metadata": "0.2.2",
+      "npm/serializr": "3.0.5",
+      "pypi/dataclasses-json": "0.6.7",
+      "pypi/marshmallow": "3.26.2",
+      "pypi/typedload": "2.41",
+      "rubygems/dry-struct": "1.8.1",
+      "rubygems/dry-types": "1.9.1",
+      "rubygems/virtus": "2.0.0"
+    }
+  },
+  "measuredAt": "2026-10-08T08:07:59.399Z",
+  "source": "c9f39c67e8417266",
+  "baseline": {
+    "runtime": "ruby",
+    "runtimeVersion": "4.0.1",
+    "machine": {
+      "os": "darwin 27.0.0",
+      "arch": "arm64",
+      "cpu": "Apple M3 Pro",
+      "cores": 12
+    },
+    "harness": 6,
+    "inputs": {
+      "harness": "9ae2943c4e91e3e9",
+      "task": "9b40439abff7976e",
+      "adapters": "848032f3307d1992",
+      "runtimes": {
+        "node": "24.16.0",
+        "bun": "1.4.2",
+        "deno": "2.9.6",
+        "cpython": "3.14.3",
+        "pypy": "8.0.0",
+        "ruby": "4.0.1",
+        "ruby-yjit": "4.0.1",
+        "rust": "1.96.1",
+        "go": "1.25.3"
+      },
+      "machine": "f232e1123c8b16f8",
+      "pins": {
+        "cargo/serde_json": "1.0.151",
+        "npm/class-transformer": "0.5.1",
+        "npm/reflect-metadata": "0.2.2",
+        "npm/serializr": "3.0.5",
+        "pypi/dataclasses-json": "0.6.7",
+        "pypi/marshmallow": "3.26.2",
+        "pypi/typedload": "2.41",
+        "rubygems/dry-struct": "1.8.1",
+        "rubygems/dry-types": "1.9.1",
+        "rubygems/virtus": "2.0.0"
+      }
+    },
+    "measuredAt": "2026-10-08T08:07:39.913Z",
+    "kind": "warm",
+    "task": "typed-object-mapping/nested-records",
+    "runs": [
+      {
+        "rssBytes": 19644416,
+        "footprintBytes": 12026360,
+        "heapUsedBytes": 1234712,
+        "peakRssBytes": 19660800
+      },
+      {
+        "rssBytes": 19496960,
+        "footprintBytes": 11878904,
+        "heapUsedBytes": 1234712,
+        "peakRssBytes": 19513344
+      },
+      {
+        "rssBytes": 19480576,
+        "footprintBytes": 11862520,
+        "heapUsedBytes": 1234712,
+        "peakRssBytes": 19496960
+      }
+    ]
+  },
+  "status": "verify-failed",
+  "error": "fixture 0: the round trip must equal the input\n+ actual - expected\n\n  {\n+   customer: '#<Customer:0x00000001220e4688>',\n-   customer: {\n-     active: true,\n-     age: 18,\n-     name: 'amber birch',\n-     nickname: null,\n-     score: 0.5\n-   },\n    id: 1000,\n    lines: [\n+     '#<Line:0x00000001220e21d0>'\n-     {\n-       comment: 'note 0 for amber',\n-       gift: true,\n-       price: 0.25,\n-       qty: 1,\n-       sku: 'SKU-amber-0'\n-     }\n    ],\n    note: null,\n    paid: false,\n    ref: 'ORD-00000-amber',\n    tags: [],\n"
+}
