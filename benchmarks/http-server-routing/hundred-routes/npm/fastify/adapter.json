@@ -1,0 +1,11 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "fastify.routing(req, res) with minimal {method, url, headers} objects: find-my-way lookup plus Fastify's Request and Reply and its hook chain. Handlers record and do not reply; the not-found handler is a no-op.",
+  "details": "Fastify has no public call that returns the matched route for a path (findRoute returns the parameters but not the route). So the request goes through fastify.routing, the documented entry to the internal router: URL sanitizing, find-my-way lookup, then Fastify builds its Request and Reply objects and runs the (empty) hook chain before the handler. The handler records the route and request.params and does not reply, so no response is serialized. setNotFoundHandler is given a handler that does nothing; with the default one Fastify would serialize and send a JSON 404 for every miss."
+}

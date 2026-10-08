@@ -1,0 +1,11 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "app.fetch(request) with a Request made once per fixture; it returns synchronously here. Elysia has no single public matcher (static paths and its Memoirist tree are separate), so its context is included; handlers return one shared Response.",
+  "details": "Elysia keeps static paths in a map and parameterized ones in a Memoirist tree, and only the compiled fetch function combines them, so the request is dispatched through app.fetch. With synchronous handlers it returns a Response, not a promise (the adapter throws if it ever gets a promise). Included besides the lookup: reading the path from the request URL, creating the context, decoding parameters. Each handler records the route and params and returns one Response created at start-up. On a miss Elysia builds its own 404 Response."
+}
