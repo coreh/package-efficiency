@@ -206,7 +206,7 @@ for (const id of ecosystemIds) {
     const typed = id === 'npm' || id === 'jsr' ? typeData.packages[p.name] : null
     const tsgo = typed?.status === 'ok' ? typed.tsgo : null
     const swept = sweptTypes[id]?.packages?.[p.name]
-    const added = swept?.status === 'ok' ? { ...swept.added, cpuMs: Math.max(0, swept.added.cpuMs - (id === 'cargo' && cargoStartup ? cargoStartup.perCrateCpuMs * (swept.compiledCrates ?? 0) : 0)) } : null
+    const added = swept?.status === 'ok' ? { ...swept.added, memoryMb: swept.added.memoryMb * (2 ** 20 / 1e6), cpuMs: Math.max(0, swept.added.cpuMs - (id === 'cargo' && cargoStartup ? cargoStartup.perCrateCpuMs * (swept.compiledCrates ?? 0) : 0)) } : null
     const item = {
       ecosystem: id,
       name: p.name,

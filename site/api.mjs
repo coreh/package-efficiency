@@ -86,10 +86,12 @@ function jsonSample(value, indent = '') {
   return JSON.stringify(value)
 }
 const shorten = (text, length = 96) => (typeof text === 'string' && text.length > length ? `${text.slice(0, length).replace(/\s+\S*$/, '')} …` : text)
-const ROW_KEYS = ['task', 'ecosystem', 'package', 'version', 'runtime', 'cpu_unit', 'cpu', 'cpu_class', 'cpu_times_best', 'memory_mb', 'memory_class', 'type_check_cost', 'type_check_class']
+const ROW_KEYS = ['task', 'ecosystem', 'package', 'version', 'runtime', 'cpu_ms', 'cpu_per', 'cpu_class', 'cpu_times_best', 'memory_bytes', 'memory_class', 'type_check_cost_mb_s', 'type_check_class']
 const rowsSample = (rows, keys, total = rows?.length) => (rows?.length ? jsonSample(first(rows, 1, (row) => pick(Object.fromEntries(Object.entries(row).map(([k, v]) => [k, shorten(v)])), keys), total)) : undefined)
 // A CSV file's heading and first row: its first columns only, long cells cut.
 function csvSample(rows, columns = 7) {
+  // Result rows start with ten columns of names, so a few more are shown to reach the figures.
+  if (rows?.[0] && 'cpu_ms' in rows[0]) columns = 15
   if (!rows?.length) return undefined
   const keys = Object.keys(rows[0])
   const [head, line] = exportsOf.toCsv([Object.fromEntries(keys.slice(0, columns).map((key) => [key, shorten(rows[0][key], 44)]))]).trimEnd().split('\n')
@@ -100,13 +102,12 @@ function csvSample(rows, columns = 7) {
 const markdownSample = (text, lines = 5) => (text ? `${text.split('\n').filter((line, at, all) => line || all[at - 1]).slice(0, lines).map((line) => shorten(line, 150)).join('\n')}\n${MORE}` : undefined)
 
 function taskDataSample(data, runtime, entry) {
-  const cpuKey = data.task.metrics.cpu.key
   return jsonSample(pick(data, ['edition', 'generatedAt'], {
     task: pick(data.task, ['id', 'title', 'kind']),
     metrics: { cpu: pick(data.metrics.cpu, ['unit', 'headline', 'scale', 'anchor']), [MORE]: 'memory, in the same form' },
     runtimes: first([runtime], 1, (r) => pick(r, ['id', 'title', 'version'], {
       entries: first([entry, ...r.entries.filter((e) => e !== entry)], 1, (e) => pick(e, ['id', 'ecosystem', 'package', 'version'], {
-        metrics: pick(e.metrics, [cpuKey, 'memoryMb', 'settledRssMb']),
+        normalized: e.normalized,
         grades: e.grades,
       })),
     }), data.runtimes.length),
@@ -129,6 +130,7 @@ const S = {
   object: (description, properties, more = {}) => ({ type: 'object', description, properties, ...more }),
 }
 const CLASS = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+// Where the product in a type-check cost uses another megabyte than the bytes do.
 const classCell = (what) => ({ type: 'string', enum: [...CLASS, ''], description: `Class for ${what}, from A (best) to G. An empty string when the entry has no class.` })
 const medalCell = (what) => ({ type: 'string', enum: ['gold', 'silver', 'bronze', ''], description: `Medal in the task's ${what} event, among the entries on all runtimes. An empty string for none.` })
 
@@ -220,7 +222,7 @@ function schemasOf(model) {
       adaptersFrom: S.string('Id of the task whose adapters this one runs.'),
     }, { required: ['id', 'category', 'task', 'title', 'summary', 'kind'] }),
 
-    Metric: S.object('One graded measure of a task.', {
+    Metric: S.object('One graded measure of a task. Its figures are in the task\'s working unit, which `unit` names; the scale itself is in multiples of the best and has no unit.', {
       unit: S.string('Unit of the figure: `µs` or `ms` for CPU, `MB` for memory.'),
       headline: S.string('The unit in words, for example "µs of CPU per operation".'),
       scale: scale('result'),
@@ -282,6 +284,7 @@ function schemasOf(model) {
       builtin: S.boolean('Whether it is part of the runtime and not a package.'),
       reference: S.boolean('True for a reference entry, which is shown for comparison and has no class.'),
       flags: S.list({ type: 'string' }, 'Remarks from the measurement, for example `grows-with-use`.'),
+      normalized: S.ref('NormalizedFigures'),
       metrics: S.ref('EntryMetrics'),
       grades: S.object('The entry\'s class in each measure.', {
         cpu: grade('the task\'s CPU unit (µs of CPU per operation or per request, or ms of CPU per start)'),
@@ -291,11 +294,12 @@ function schemasOf(model) {
       runtimeGrades: S.object('Classes for comparing runtimes.', { memory: grade('MB of the whole process after the task and a garbage collection') }),
       types: {
         type: ['object', 'null'],
-        description: 'The type-check measurement. Null when nothing was checked.',
+        description: 'The type-check measurement, in the site\'s working units; `normalized` has it in ms and bytes. Null when nothing was checked.',
         properties: {
           value: S.number('Type-check cost, in MB·s.'),
           cpuMs: S.number('Added compiler CPU time, in ms.'),
-          memoryMb: S.number('Added compiler memory, in MB.'),
+          memoryMb: S.number('Added compiler memory, in MB of 1,000,000 bytes; where `swept` is true, in MiB of 1,048,576 bytes.'),
+          swept: S.boolean('True when the figure is of the whole package, from a sweep of its registry, and not of the adapter.'),
           timeMs: S.number('Added elapsed time of the type checker, in ms.'),
           tool: S.string('The type checker.'),
           from: S.string('Where the types come from: `bundled` with the package, or the package that has them.'),
@@ -325,9 +329,21 @@ function schemasOf(model) {
         dependencies: S.list({ type: 'string' }, 'Other packages installed with it, as `name@version`.'),
         strict: S.object('In a lenient task: the strict task of the pair, and whether the entry passes it.', { task: S.string('Task id.'), passes: S.boolean('Whether it passes.') }),
       }),
-    }, { required: ['id', 'ecosystem', 'name', 'package', 'title', 'version', 'metrics', 'grades'] }),
+    }, { required: ['id', 'ecosystem', 'name', 'package', 'title', 'version', 'normalized', 'metrics', 'grades'] }),
 
-    EntryMetrics: S.object('The figures of one result. Each is the median of the rounds of a run, then of the runs. A task has either the fields per operation or the fields per request.', {
+    NormalizedFigures: S.object('The figures of one result in the same units whatever the task: every time in milliseconds, every memory figure in bytes. These are the fields to read. They are the figures of `metrics` and `types` converted, so they agree with the pages. A figure the entry lacks is left out.', {
+      cpuMs: S.number('CPU time for one unit of work, in ms: user and system time, all threads. An operation of 23.6 µs is 0.0236.'),
+      cpuPer: S.string('The unit of work that `cpuMs` is for.', { enum: ['operation', 'request', 'start'] }),
+      memoryBytes: S.integer('Memory held after the task and a garbage collection, above the do-nothing adapter, in bytes. Never below 0. This is the graded figure.'),
+      totalMemoryBytes: S.integer('All the memory the process holds after the task and a garbage collection, in bytes.'),
+      peakMemoryBytes: S.integer('Highest resident size during the run, in bytes.'),
+      heapRetainedBytes: S.integer('Heap still held after the last round, above the heap when the adapter was ready, in bytes.'),
+      typeCheckCpuMs: S.number('CPU time the package adds to a type check, in ms, before the minimum.'),
+      typeCheckMemoryBytes: S.integer('Memory the package adds to a type check, in bytes, before the minimum.'),
+      typeCheckCostMbS: S.number(`Type-check cost, in MB·s: \`typeCheckCpuMs / 1000 * typeCheckMemoryBytes / 1e6\`, after the minimums: CPU time below 10 ms counts as 10 ms, and memory below 0.25 MB as 0.25 MB (5 MB for a Go module).`),
+    }, { required: ['cpuMs', 'cpuPer', 'memoryBytes', 'totalMemoryBytes', 'peakMemoryBytes'] }),
+
+    EntryMetrics: S.object('The site\'s working figures of one result, each in a unit of its own that the field\'s name gives (µs, ms, MB, kB); `normalized` has the same figures in ms and bytes. A megabyte here is 1,000,000 bytes and a kB is 1,000. Each figure is the median of the rounds of a run, then of the runs. A task has either the fields per operation or the fields per request.', {
       cpuPerOperationUs: S.number('CPU time per operation, in µs: user and system time, all threads.'),
       cpuPerRequestUs: S.number('CPU time per request, in µs: user and system time, all threads.'),
       startupCpuMs: S.number('In a startup task, CPU time to start and serve one page, in ms.'),
@@ -357,12 +373,12 @@ function schemasOf(model) {
     Grade: S.object('A class in one measure.', {
       class: { type: ['string', 'null'], enum: [...CLASS, null], description: 'Class from A (best) to G. Null for a reference entry.' },
       ratio: S.number('Multiple of the best result: 1 is the best, 2 costs twice as much.'),
-      value: S.number('The graded figure, in the unit of the measure.'),
+      value: S.number('The graded figure, in the working unit of the measure (µs or ms of CPU, MB, MB·s). The entry\'s `normalized` has it in ms and bytes.'),
       reference: S.boolean('True for a reference entry, which has no class.'),
       overhead: S.object('For a framework, its multiple of the same runtime\'s server without a framework.', { ratio: S.number('Multiple of that server.'), title: S.string('Name of that server.') }),
     }, { required: ['class', 'ratio'] }),
 
-    ResultRow: S.object('One result as a flat row: an entry on one runtime in one task. The CSV files have the same columns in the same order.', {
+    ResultRow: S.object('One result as a flat row: an entry on one runtime in one task. Every time is in milliseconds and every memory figure in bytes, whatever the task, and each field\'s name ends in its unit. The CSV files have the same columns in the same order.', {
       category: S.string('Category id.'),
       task: S.string('Task id, `<category>/<task>`.'),
       ecosystem: S.string('Registry id.', { enum: registries }),
@@ -373,19 +389,21 @@ function schemasOf(model) {
       language: S.string('Language of the adapter.'),
       runtime: S.string('Title of the runtime.'),
       runtime_version: S.string('Version of the runtime.'),
-      cpu_unit: S.string('Unit of `cpu`: `µs per operation`, `µs per request` or `ms per start`.'),
-      cpu: S.number('CPU time for one unit of work, in `cpu_unit`: user and system time, all threads.'),
+      cpu_ms: S.number('CPU time for one unit of work, in ms, whatever the task: user and system time, all threads. An operation of 23.6 µs is 0.0236.'),
+      cpu_per: S.string('The unit of work that `cpu_ms` is for.', { enum: ['operation', 'request', 'start'] }),
       cpu_class: classCell('CPU'),
       cpu_times_best: S.orEmpty('number', 'CPU time as a multiple of the best result in the task.'),
-      memory_mb: S.number('Memory held after the task and a garbage collection, above the do-nothing adapter, in MB.'),
+      memory_bytes: S.integer('Memory held after the task and a garbage collection, above the do-nothing adapter, in bytes.'),
       memory_class: classCell('memory'),
       memory_times_best: S.orEmpty('number', 'Memory as a multiple of the best result in the task.'),
-      type_check_cost: S.orEmpty('number', 'Type-check cost, in MB·s: added compiler CPU time in seconds multiplied by added compiler memory in MB.'),
+      type_check_cost_mb_s: S.orEmpty('number', `Type-check cost, in MB·s: \`type_check_cpu_ms / 1000 * type_check_memory_bytes / 1e6\`, after the minimums: CPU time below 10 ms counts as 10 ms, and memory below 0.25 MB as 0.25 MB (5 MB for a Go module).`),
+      type_check_cpu_ms: S.orEmpty('number', 'CPU time the package adds to a type check, in ms, before the minimum.'),
+      type_check_memory_bytes: S.orEmpty('integer', 'Memory the package adds to a type check, in bytes, before the minimum.'),
       type_check_class: classCell('type-check cost'),
       type_check_times_best: S.orEmpty('number', 'Type-check cost as a multiple of the lowest-cost package in the category.'),
-      total_memory_after_gc_mb: S.number('All the memory the process holds after the task and a garbage collection, in MB.'),
-      peak_memory_mb: S.number('Highest resident size during the run, in MB.'),
-      heap_retained_kb: S.maybe('number', 'Heap still held after the last round, in kB.'),
+      total_memory_bytes: S.integer('All the memory the process holds after the task and a garbage collection, in bytes.'),
+      peak_memory_bytes: S.integer('Highest resident size during the run, in bytes.'),
+      heap_retained_bytes: S.maybe('integer', 'Heap still held after the last round, in bytes.'),
       import_ms: S.maybe('number', 'Time to load the package, in ms.'),
       install_bytes: S.maybe('integer', 'Size on disk once installed, in bytes; for Rust, what the crate adds to the binary.'),
       install_packages: S.maybe('integer', 'Number of packages installed with it, itself included.'),
@@ -400,7 +418,7 @@ function schemasOf(model) {
       registry_rank: S.orEmpty('integer', 'Rank of the package in its registry by use.'),
       use: S.orEmpty('number', 'Use of the package, counted as `use_measure` says.'),
       use_measure: S.string('What `use` counts, for example "downloads per month".'),
-    }, { required: ['category', 'task', 'ecosystem', 'package', 'entry', 'runtime', 'cpu_unit', 'cpu', 'memory_mb'] }),
+    }, { required: ['category', 'task', 'ecosystem', 'package', 'entry', 'runtime', 'cpu_ms', 'cpu_per', 'memory_bytes', 'total_memory_bytes', 'peak_memory_bytes'] }),
 
     CatalogRow: S.object('One listed package, measured or not.', {
       ecosystem: S.string('Title of the registry, for example "crates.io".'),
@@ -498,6 +516,13 @@ const TAGS = [
   ['Runtimes', 'Runtimes compared across tasks, and the results of one runtime.'],
   ['Labels and embeds', 'Labels as SVG images, in several shapes, for a result, for a package\'s best result in a task, and for a runtime\'s summary.'],
 ]
+// What each named schema is, in a few words: its `title`, and how the page
+// names its fields ("Fields of a result row").
+const SCHEMA_TITLES = {
+  Index: 'the index', TaskData: 'a task\'s data file', Task: 'a task', Metric: 'a graded measure', TypeCheckMetric: 'a type-check measure', Runtime: 'a runtime in a task', Entry: 'an entry',
+  NormalizedFigures: 'an entry\'s figures in ms and bytes', EntryMetrics: 'an entry\'s working figures', Grade: 'a class', ResultRow: 'a result row', CatalogRow: 'a listed package',
+  CategoryRow: 'a category row', TaskRow: 'a task row', RuntimeScoreRow: 'a runtime row', Catalog: 'the catalog file', SearchIndex: 'a search item',
+}
 const MEDIA = { json: 'application/json', csv: 'text/csv', md: 'text/markdown', svg: 'image/svg+xml', text: 'text/plain' }
 // The name of each format, as the page's chooser and `x-format` have it.
 const FORMATS = { json: 'JSON', csv: 'CSV', md: 'Markdown', svg: 'SVG', text: 'Text', redirect: 'Redirect' }
@@ -579,11 +604,11 @@ export function openApiSpec(model) {
     if (titles.has(title)) throw new Error(`two entries are called ${title}`)
     titles.add(title)
     const formats = new Set(variants.filter((v) => !v.sameAs).map((v) => v.format))
-    for (const { path, id: operationId, format, note, schema, sample, returns, redirect, sameAs } of variants) {
+    for (const { path, id: operationId, format, note, schema, rows: rowSchema, sample, returns, redirect, sameAs } of variants) {
       if (used.has(operationId)) throw new Error(`two operations are called ${operationId}`)
       used.add(operationId)
       const names = [...path.matchAll(/\{(\w+)\}/g)].map(([, name]) => name)
-      const content = { ...(schema ? { schema } : format === 'json' ? {} : { schema: { type: 'string' } }), ...(sample ? { 'x-sample': sample } : {}) }
+      const content = { ...(schema ? { schema } : format === 'json' ? {} : { schema: { type: 'string' } }), ...(rowSchema ? { 'x-rows': rowSchema } : {}), ...(sample ? { 'x-sample': sample } : {}) }
       const summary = `${title}${formats.size > 1 ? `, as ${FORMATS[format]}` : ''}.`
       paths[path] = {
         get: {
@@ -608,7 +633,7 @@ export function openApiSpec(model) {
   // The three forms of a list at one base address.
   const three = (base, name, { schema, json, csv, markdown, keys, notes = {} }) => [
     { path: `${base}results.json`, id: `${name}Json`, format: 'json', note: notes.json, schema: typeof schema === 'string' ? rowsOf(schema) : schema, sample: rowsSample(json, keys) },
-    { path: `${base}results.csv`, id: `${name}Csv`, format: 'csv', note: notes.csv ?? 'The same rows as the JSON, under a heading row.', sample: csvSample(csv ?? json) },
+    { path: `${base}results.csv`, id: `${name}Csv`, format: 'csv', note: notes.csv ?? 'The same rows as the JSON, under a heading row.', rows: typeof schema === 'string' ? rowsOf(schema) : schema, sample: csvSample(csv ?? json) },
     { path: `${base}index.md`, id: `${name}Markdown`, format: 'md', note: notes.md ?? 'The page in Markdown, with its tables.', sample: markdownSample(markdown) },
   ]
 
@@ -637,7 +662,7 @@ export function openApiSpec(model) {
   resource('Tasks', 'List the tasks', 'Every measured task, with its category, how many entries it has and the runtimes it ran on.', three('/tasks/', 'getTasks', { schema: 'TaskRow', json: rows.tasks.rows, markdown: rows.tasks.markdown, keys: TASK_KEYS }))
   resource('Tasks', 'Get every result of a task', 'Every entry of one task on every runtime. The JSON is the task\'s data file: it is at an address of another shape than the CSV and the Markdown, under `/data/`, and it holds more than they do.', [
     { path: '/data/{category}/{task}.json', id: 'getTaskData', format: 'json', note: 'The file the task\'s page is drawn from: the scales and the best results that classes come from, and every entry with all its figures, its classes and its adapter\'s notes. There is no `results.json` beside the CSV.', schema: S.ref('TaskData'), sample: taskDataSample(ex.data, ex.runtime, ex.entry) },
-    { path: '/{category}/{task}/results.csv', id: 'getTaskResultsCsv', format: 'csv', note: 'One flat row for each entry on each runtime, under a heading row. The columns are those of `ResultRow`.', sample: csvSample(rows.task) },
+    { path: '/{category}/{task}/results.csv', id: 'getTaskResultsCsv', format: 'csv', rows: rowsOf('ResultRow'), note: 'One flat row for each entry on each runtime, under a heading row.', sample: csvSample(rows.task) },
     { path: '/{category}/{task}/index.md', id: 'getTaskResultsMarkdown', format: 'md', note: 'The task\'s page in Markdown: a table for each runtime, then the benchmark source and every adapter.', sample: markdownSample(exportsOf.taskMarkdown(ex.data, ctx)) },
   ])
   resource('Tasks', 'Read the benchmark source of a task', 'The rules of the task, its load settings and the scenario that checks every adapter, with a list of the adapters.', [{ path: '/source/{category}/{task}/index.md', id: 'getTaskSourceMarkdown', format: 'md', sample: markdownSample(exportsOf.taskSourceExport(ctx, ex.data).markdown, 3) }])
@@ -659,8 +684,8 @@ export function openApiSpec(model) {
   resource('Results', 'Get every result of every task', 'All the results in one file: a row for each entry on each runtime.', [
     { path: '/data/results.json', id: 'getAllResultsJson', format: 'json', schema: rowsOf('ResultRow'), sample: rowsSample(rows.task, ROW_KEYS, total) },
     { path: '/results.json', id: 'getAllResultsAtRootJson', format: 'json', sameAs: '/data/results.json', schema: rowsOf('ResultRow') },
-    { path: '/data/results.csv', id: 'getAllResultsCsv', format: 'csv', note: 'The same rows as the JSON, under a heading row.', sample: csvSample(rows.task)?.replace(/^… \d+ more rows?/m, `${MORE} ${total - 1} more rows`) },
-    { path: '/results.csv', id: 'getAllResultsAtRootCsv', format: 'csv', sameAs: '/data/results.csv' },
+    { path: '/data/results.csv', id: 'getAllResultsCsv', format: 'csv', rows: rowsOf('ResultRow'), note: 'The same rows as the JSON, under a heading row.', sample: csvSample(rows.task)?.replace(/^… \d+ more rows?/m, `${MORE} ${total - 1} more rows`) },
+    { path: '/results.csv', id: 'getAllResultsAtRootCsv', format: 'csv', rows: rowsOf('ResultRow'), sameAs: '/data/results.csv' },
   ])
   resource('Results', 'Get one result', 'An entry at one version on one runtime, with its figures and its adapter\'s source. The address stays the same when a newer version is measured, so it can be cited.', [{ path: '/results/{category}/{task}/{runtime}/{registry}/{result}/index.md', id: 'getResultMarkdown', format: 'md', sample: markdownSample(exportsOf.resultExport(ctx, ex.data, ex.runtime, ex.entry, ex.address).markdown, 3) }])
   resource('Results', 'Resolve a short link', 'A label prints a short code. Its address redirects to the page of the result, or of the runtime\'s summary, that the code stands for.', [
@@ -688,8 +713,8 @@ export function openApiSpec(model) {
         `The results of ${site.replace(/^https?:\/\//, '')} as files: JSON, CSV, Markdown and SVG labels. Every address answers a plain GET (or HEAD) and needs no key. The files are written when the site is built, so there are no query parameters, no paging and no filtering: take the file and filter it yourself. This description was made from the data of ${day}.`,
         'Names in addresses. A name appears as its registry writes it. A scoped name (`@scope/name`) and a Go module path contain slashes, and each slash is a separator of the address like any other: do not write it as `%2F`. Write `@` as it is, and follow redirects: for a file that the build wrote, the server answers an address that has `@` with a redirect to the same address with `%40`. The files that are put together on request (single results, labels, embeds, adapter source, packages that are not measured) answer both spellings. A parameter that can take more than one segment is marked `x-multi-segment`.',
         'Two families of addresses have the same shape: `/{category}/…` and `/{registry}/…`, and under them `/{category}/{task}/…` and `/{registry}/{package}/…`. The first segment tells them apart: it is a registry id, or else a category id. No category has the id of a registry.',
-        'Figures. CPU is CPU time for one unit of work, in µs per operation or per request (ms per start in a startup task). Memory is in MB, above the same runtime with a do-nothing adapter. Type-check cost is in MB·s. A class goes from A (best) to G, and a "times best" figure is a multiple of the best result: 1 is the best. The results are provisional and come from one machine.',
-        'Extensions. The reference page shows one entry for each thing a reader can ask for, with a chooser for its format, and it is put together from these: `x-resource` names the entry an operation belongs to, `x-task` is the entry\'s title, `x-format` its format, `x-about` the entry\'s description, `x-note` what is particular to this format, and `x-same-as` the address of the same file elsewhere. A media type object may carry `x-sample`: a real response cut short, as text.',
+        'Figures. Every time is in milliseconds and every memory figure in bytes, in every JSON and CSV file, whatever the task; a field\'s name ends in its unit (`cpu_ms`, `memory_bytes`). CPU is CPU time for one unit of work (an operation, a request or a start, as `cpu_per` says). Memory is what the process holds above the same runtime with a do-nothing adapter. Type-check cost is in MB·s. A class goes from A (best) to G, and a "times best" figure is a multiple of the best result: 1 is the best. In a task\'s data file the fields to read are in each entry\'s `normalized`; its other figures are the site\'s working figures, in units of their own. Markdown and the pages show the units a person reads (µs, ms, MB). The results are provisional and come from one machine.',
+        'Extensions. The reference page shows one entry for each thing a reader can ask for, with a chooser for its format, and it is put together from these: `x-resource` names the entry an operation belongs to, `x-task` is the entry\'s title, `x-format` its format, `x-about` the entry\'s description, `x-note` what is particular to this format, and `x-same-as` the address of the same file elsewhere. A media type object may carry `x-sample`, a real response cut short, as text, and for a CSV file `x-rows`, the schema its rows have as JSON.',
       ].join('\n\n'),
       version: `${model.index.edition}+${day.replace(/-/g, '')}`,
     },
@@ -700,7 +725,8 @@ export function openApiSpec(model) {
     components: {
       parameters,
       responses: { NotFound: { description: 'No file at this address. The body is the site\'s "not found" page.', content: { 'text/html': { schema: { type: 'string' } } } } },
-      schemas: schemasOf(model),
+      // A row has every one of its fields, in JSON as in CSV; a cell with nothing to say is empty or null.
+      schemas: Object.fromEntries(Object.entries(schemasOf(model)).map(([name, schema]) => [name, { title: SCHEMA_TITLES[name] ?? name, ...schema, ...(name.endsWith('Row') ? { required: Object.keys(schema.properties) } : {}) }])),
     },
   }
 }
@@ -723,8 +749,8 @@ export function exampleAddress(spec, path) {
 
 // A schema's type in a few words. `named` writes the name of a named schema:
 // a link to its fields on the page, the bare name in Markdown.
-const linked = (name) => `<a href="#schema-${slug(name)}">${esc(name)}</a>`
-function typeText(schema, named = linked) {
+const plain = (name) => name
+function typeText(schema, named = plain) {
   if (!schema) return ''
   if (schema.$ref) return named(refName(schema))
   if (schema.anyOf) return schema.anyOf.map((one) => typeText(one, named)).join(' or ')
@@ -732,7 +758,6 @@ function typeText(schema, named = linked) {
   if (schema.type === 'object' && schema.additionalProperties && !Object.keys(schema.properties ?? {}).length) return `map of ${typeText(schema.additionalProperties, named) || 'values'}`
   return [schema.type ?? 'any'].flat().join(' or ')
 }
-const plain = (name) => name
 const table = (kind, head, body) => `<div class="scroll"><table class="api-table api-${kind}"><thead><tr>${head.map((h) => `<th scope="col"${h === head[0] ? '' : ' class="l"'}>${h}</th>`).join('')}</tr></thead><tbody>\n${body.join('\n')}\n</tbody></table></div>`
 const mdTable = (head, rows) => [`| ${head.join(' | ')} |`, `| ${head.map(() => '---').join(' | ')} |`, ...rows.map((row) => `| ${row.map((cell) => String(cell).replace(/\|/g, '\\|')).join(' | ')} |`)].join('\n')
 // A file as a fenced block, as the site's other Markdown pages write one.
@@ -773,6 +798,36 @@ export function apiEntries(spec) {
 }
 const groupsOf = (spec, entries = apiEntries(spec)) => spec.tags.map((tag) => ({ ...tag, entries: entries.filter((entry) => entry.tag === tag.name) })).filter((group) => group.entries.length)
 
+// The named schemas a schema refers to, in the order met.
+function namesIn(schema, found = []) {
+  if (!schema || typeof schema !== 'object') return found
+  if (schema.$ref) { if (!found.includes(refName(schema))) found.push(refName(schema)); return found }
+  for (const value of Object.values(schema)) namesIn(value, found)
+  return found
+}
+// The shapes an entry returns, each spelled out inside the entry: what each
+// of its formats answers with (a CSV has the fields of its rows), then every
+// named schema those refer to. Each says which formats it belongs to.
+function shapesOf(spec, entry) {
+  const shapes = new Map()
+  const add = (name, format) => {
+    const held = shapes.get(name) ?? shapes.set(name, { name, schema: spec.components.schemas[name], formats: [] }).get(name)
+    if (held.formats.includes(format)) return
+    held.formats.push(format)
+    for (const inner of namesIn(held.schema)) add(inner, format)
+  }
+  for (const { op, format } of entry.variants) {
+    const content = Object.values(op.responses[200]?.content ?? {})[0]
+    for (const name of namesIn(content?.schema ?? {}).concat(namesIn(content?.['x-rows'] ?? {}))) add(name, format)
+  }
+  return [...shapes.values()].map((shape) => {
+    const fields = fieldsOf(shape.schema.type === 'array' ? shape.schema.items : shape.schema)
+    return { ...shape, fields, heading: `Fields of ${shape.schema.title} (${fields.length})`, about: `${entry.variants.length > 1 ? `In ${shape.formats.join(' and ')}. ` : ''}${schemaIntro(shape.schema)}` }
+  })
+}
+const schemaIntro = (schema) => `${schema.description ?? ''}${schema.type === 'array' ? ' Each item:' : ''}`
+const OPTIONAL = 'A field marked optional is missing where it does not apply. A file can have more fields than are listed.'
+
 // What one address of an entry says, for the page and for its Markdown.
 function variantFacts(spec, { path, op, also }) {
   const status = op.responses[200] ? 200 : 308
@@ -791,7 +846,7 @@ function variantFacts(spec, { path, op, also }) {
     // `named` as in typeText.
     returns: (how) => (status === 308
       ? 'Answers `308` with the page\'s address in `Location`, and `404` for a code that was not given out.'
-      : `Returns \`${media}\`${named ? `: ${typeText(schema, how)}` : ''}. An address that does not exist answers \`404\`.`),
+      : `Returns \`${media}\`${named ? `: ${typeText(schema, how)}` : content?.['x-rows'] ? `: a row for each ${namesIn(content['x-rows']).map(how).join(' or ')}, under a heading row` : ''}. An address that does not exist answers \`404\`.`),
   }
 }
 const MULTI = 'Can take more than one segment.'
@@ -810,12 +865,12 @@ ${entry.variants.map((variant) => {
       many ? `#### ${variant.format}` : '',
       `\`GET ${variant.path}\``,
       [facts.note, facts.twins].filter(Boolean).join(' '),
-      facts.params.length ? mdTable(['Parameter', 'Type', 'Description', 'Example'], facts.params.map((p) => [`\`${p.name}\``, typeText(p.schema, plain), `${p.description}${p['x-multi-segment'] ? ` ${MULTI}` : ''}`, `\`${p.example}\``])) : '',
-      facts.returns(plain),
+      facts.params.length ? mdTable(['Parameter', 'Type', 'Description', 'Example'], facts.params.map((p) => [`\`${p.name}\``, typeText(p.schema), `${p.description}${p['x-multi-segment'] ? ` ${MULTI}` : ''}`, `\`${p.example}\``])) : '',
+      facts.returns((name) => name),
       facts.sample ? `Example, cut short:\n\n${fenced(LANGUAGE[facts.media] ?? '', facts.sample)}` : '',
       fenced('sh', facts.curl),
     ].filter(Boolean).join('\n\n')
-  }).join('\n\n')}`
+  }).concat(shapesOf(spec, entry).map((shape) => `#### ${shape.heading}\n\n\`${shape.name}\`. ${shape.about}\n\n${mdTable(['Field', 'Type', 'Description'], shape.fields.map((field) => [`\`${field.name}\`${field.optional ? ' (optional)' : ''}`, typeText(field.schema), field.description]))}`)).join('\n\n')}`
 }
 
 const pathHtml = (path) => esc(path).replace(/\{(\w+)\}/g, '<span class="api-param">{$1}</span>')
@@ -833,7 +888,7 @@ ${entry.variants.length > 1 ? `<h4 class="api-format">${esc(format)}</h4>` : ''}
 <p class="api-sig"><span class="api-method">GET</span> <code class="api-path">${pathHtml(path)}</code></p>
 ${facts.note || twins ? `<p>${prose(facts.note)}${twins}</p>` : ''}
 ${facts.params.length ? table('params', ['Parameter', 'Type', 'Description', 'Example'], facts.params.map((p) => `<tr><td><code>${esc(p.name)}</code></td><td class="l api-type">${typeText(p.schema)}</td><td class="l api-wrap">${prose(p.description)}${p['x-multi-segment'] ? ` <span class="soft">${MULTI}</span>` : ''}</td><td class="l"><code>${esc(p.example)}</code></td></tr>`)) : ''}
-<p class="api-returns">${prose(facts.returns((name) => `\u0000${name}\u0000`)).replace(/\u0000(\w+)\u0000/g, (_, name) => linked(name))}</p>
+<p class="api-returns">${prose(facts.returns((name) => `\u0000${name}\u0000`)).replace(/\u0000(\w+)\u0000/g, (_, name) => `<a href="#${esc(entry.id)}-${slug(name)}">${esc(name)}</a>`)}</p>
 ${facts.sample ? `<pre class="api-sample" tabindex="0" aria-label="Example response, cut short"><code>${esc(facts.sample)}</code></pre>` : ''}${figure}
 <p class="api-curl"><code>${esc(facts.curl)}</code></p>
 </div>`
@@ -855,6 +910,11 @@ ${many ? `<p class="api-choose"><label for="format-${esc(entry.id)}">Format</lab
 </div>
 <template class="api-markdown">${esc(entryMarkdown(spec, entry))}</template>
 ${entry.variants.map((variant) => variantHtml(spec, entry, variant)).join('\n')}
+${shapesOf(spec, entry).map((shape) => `<details class="api-fields-of" id="${esc(entry.id)}-${slug(shape.name)}" data-formats="${esc(shape.formats.map(slug).join(' '))}"${shape.fields.length <= 12 ? ' open' : ''}>
+<summary>${esc(shape.heading)} <code class="soft">${esc(shape.name)}</code></summary>
+<p>${prose(shape.about)}</p>
+${table('fields', ['Field', 'Type', 'Description'], shape.fields.map((field) => `<tr><td><code>${esc(field.name)}</code>${field.optional ? ' <span class="soft">optional</span>' : ''}</td><td class="l api-type">${typeText(field.schema, (name) => `<a href="#${esc(entry.id)}-${slug(name)}">${esc(name)}</a>`)}</td><td class="l api-wrap">${prose(field.description)}</td></tr>`))}
+</details>`).join('\n')}
 </section>`
 }
 
@@ -870,6 +930,7 @@ const PAGE_SCRIPT = `<script>
     const variants = [...entry.querySelectorAll('.api-variant')]
     if (!variants.some((variant) => variant.dataset.format === format)) return
     for (const variant of variants) variant.classList.toggle('api-on', variant.dataset.format === format)
+    for (const fields of entry.querySelectorAll('.api-fields-of')) fields.hidden = !fields.dataset.formats.split(' ').includes(format)
     const select = entry.querySelector('.api-choose select')
     if (select) select.value = format
   }
@@ -905,6 +966,7 @@ const PAGE_SCRIPT = `<script>
   const follow = () => {
     let target = null
     try { target = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null } catch {}
+    if (target && target.matches('details')) target.open = true
     const variant = target && target.closest('.api-variant')
     if (!variant) return
     show(variant.closest('.api-entry'), variant.dataset.format)
@@ -929,6 +991,7 @@ function introOf(model, spec) {
       ['Files', `Written when the site is built, not worked out for each request. There is no paging and no filtering: take the file and filter it yourself. The data here is of ${day}, edition ${model.index.edition}.`],
       ['Other sites', 'The server sends no CORS headers, so a script on another site cannot read these files in a browser. A label works on any site as an image.'],
       ['Caching', 'Labels, embeds, single results and the other files that are put together on request can be kept for five minutes (`max-age=300`).'],
+      ['Fields', `Each entry lists the fields of what it returns, for JSON and for CSV. ${OPTIONAL}`],
       ['Errors', 'An address that does not exist answers `404` with the site\'s "not found" page as HTML, also where JSON was asked for.'],
       ['Status', 'Provisional. All results come from one developer laptop, and the fields can change as the site does.'],
     ],
@@ -943,17 +1006,17 @@ function introOf(model, spec) {
     ].filter(Boolean),
     shapes: `Two families of addresses have the same shape: \`/{category}/…\` and \`/{registry}/…\`. The first segment tells them apart: it is a registry id (${Object.keys(ECOSYSTEMS).map((id) => `\`${id}\``).join(', ')}), or else a category id. No category has the id of a registry.`,
     figures: [
-      'CPU is CPU time for one unit of work: µs of CPU per operation or per request, and ms per start in a startup task. It counts user and system time on all threads.',
-      'Memory is in MB: what the process holds after the task and a garbage collection, above the same runtime with a do-nothing adapter on the same inputs.',
-      'Type-check cost is in MB·s: added compiler CPU time in seconds multiplied by added compiler memory in MB.',
+      'Every time is in milliseconds and every memory figure in bytes, in every JSON and CSV file, whatever the task. A field\'s name ends in its unit: `cpu_ms`, `memory_bytes`. Bytes are bytes: no megabyte of either kind is involved.',
+      'Markdown and the pages show the units a person reads: µs, ms and MB (of 1,000,000 bytes).',
+      'CPU is CPU time for one unit of work, and `cpu_per` says which: an operation, a request, or a start in a startup task. It counts user and system time on all threads. An operation of 23.6 µs is 0.0236 ms.',
+      'Memory is what the process holds after the task and a garbage collection, above the same runtime with a do-nothing adapter on the same inputs.',
+      'Type-check cost is in MB·s: added compiler CPU time in seconds multiplied by added compiler memory in MB. Both parts are published beside it, in ms and in bytes.',
+      'In a task\'s data file, read each entry\'s `normalized`. The other figures there (`metrics`, `grades.*.value`, `types`) are the site\'s working figures, each in a unit of its own that its name or the task\'s `metrics` gives.',
       'A class goes from A (best) to G. It says how many times the best result an entry costs.',
-      'A "times best" figure, or `ratio`, is that multiple of the best: 1 is the best, 2 costs twice as much.',
+      'A "times best" figure, or `ratio`, is that multiple of the best: 1 is the best, 2 costs twice as much. It has no unit.',
     ],
-    fields: 'What the JSON files hold. A field marked optional is missing where it does not apply. A file can have more fields than are listed here.',
   }
 }
-const schemaIntro = (schema) => `${schema.description ?? ''}${schema.type === 'array' ? ' Each item:' : ''}`
-
 /**
  * The reference page, drawn from `openApiSpec(model)`. Returns the page's
  * title and description, and `body`: the HTML that goes inside <main>.
@@ -990,14 +1053,6 @@ ${groups.map((group) => `<h2 id="${slug(group.name)}">${esc(group.name)}</h2>
 ${group.entries.map((entry) => `<li><a href="#${esc(entry.id)}">${esc(entry.title)}</a></li>`).join('\n')}
 </ul>
 ${group.entries.map((entry) => entryHtml(spec, entry)).join('\n')}`).join('\n\n')}
-
-<h2 id="fields">Fields</h2>
-<p>${prose(intro.fields)}</p>
-${Object.entries(spec.components.schemas).map(([name, schema]) => `<section class="api-schema" id="schema-${slug(name)}">
-<h3><code>${esc(name)}</code></h3>
-<p>${prose(schemaIntro(schema))}</p>
-${table('fields', ['Field', 'Type', 'Description'], fieldsOf(schema.type === 'array' ? schema.items : schema).map((field) => `<tr><td><code>${esc(field.name)}</code>${field.optional ? ' <span class="soft">optional</span>' : ''}</td><td class="l api-type">${typeText(field.schema)}</td><td class="l api-wrap">${prose(field.description)}</td></tr>`))}
-</section>`).join('\n')}
 ${PAGE_SCRIPT}`
 
   return {
@@ -1043,16 +1098,6 @@ ${group.description}
 
 ${group.entries.map((entry) => entryMarkdown(spec, entry)).join('\n\n')}`).join('\n\n')}
 
-## Fields
-
-${intro.fields}
-
-${Object.entries(spec.components.schemas).map(([name, schema]) => `### ${name}
-
-${schemaIntro(schema)}
-
-${mdTable(['Field', 'Type', 'Description'], fieldsOf(schema.type === 'array' ? schema.items : schema).map((field) => [`\`${field.name}\`${field.optional ? ' (optional)' : ''}`, typeText(field.schema, plain), field.description]))}`).join('\n\n')}
-
 ## More
 
 - Page: ${site}/api/
@@ -1097,6 +1142,5 @@ export function apiSideNav(spec) {
   return `<h2><a href="#api-basics">Basics</a></h2>
 <ul><li><a href="#api-names">Names in addresses</a></li><li><a href="#api-figures">Figures</a></li></ul>
 ${groupsOf(spec).map((group) => `<h2><a href="#${slug(group.name)}">${esc(group.name)}</a></h2>
-<ul>${group.entries.map((entry) => `<li><a href="#${esc(entry.id)}" title="${esc(entry.title)}">${esc(SHORT_TITLES[entry.title] ?? entry.title)}</a></li>`).join('')}</ul>`).join('\n')}
-<h2><a href="#fields">Fields</a></h2>`
+<ul>${group.entries.map((entry) => `<li><a href="#${esc(entry.id)}" title="${esc(entry.title)}"><span class="api-get" aria-hidden="true">GET</span>${esc(SHORT_TITLES[entry.title] ?? entry.title)}</a></li>`).join('')}</ul>`).join('\n')}`
 }

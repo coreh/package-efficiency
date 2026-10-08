@@ -114,6 +114,37 @@ function summarize(result, baseline, kind) {
   }
 }
 
+// An entry's figures in one pair of units whatever the task, for whoever reads
+// the data from outside the site: every time in milliseconds and every memory
+// figure in bytes. They are the entry's own figures (`metrics`, `types`)
+// converted, not measured again, so they agree with what the pages show. A
+// figure the entry lacks is left out.
+// The megabytes of `metrics` are decimal (bytes / 1e6, above). So are those of
+// a type check: the checker files store the binary megabytes of
+// harness/checkers/time.py, and each is converted where it is read.
+const SWEPT_MEMORY_BYTES = MB
+const fine = (n) => Number(n.toFixed(7))
+function normalizedFigures(entry, task) {
+  const m = entry.metrics
+  const startup = task.kind === 'server-startup' && m.startupCpuMs != null
+  const perUnitUs = m.cpuPerOperationUs ?? m.cpuPerRequestUs
+  const types = entry.types?.value != null ? entry.types : null
+  // A TypeScript check has a figure for each compiler; the graded one is TYPES_COMPILER's.
+  const checked = types && (types.compilers ? types.compilers[TYPES_COMPILER] : types)
+  const out = {
+    cpuMs: startup ? m.startupCpuMs : fine(perUnitUs / 1000),
+    cpuPer: startup ? 'start' : task.kind === 'sync-operation' || task.kind === 'async-operation' ? 'operation' : 'request',
+    memoryBytes: Math.round(m.memoryMb * MB),
+    totalMemoryBytes: Math.round(m.settledRssMb * MB),
+    peakMemoryBytes: Math.round(m.peakRssMb * MB),
+    heapRetainedBytes: m.retainedKb == null ? null : Math.round(m.retainedKb * KB),
+    typeCheckCpuMs: checked?.cpuMs ?? null,
+    typeCheckMemoryBytes: checked?.memoryMb == null ? null : Math.round(checked.memoryMb * (types.swept ? SWEPT_MEMORY_BYTES : MB)),
+    typeCheckCostMbS: types?.value ?? null,
+  }
+  return Object.fromEntries(Object.entries(out).filter(([, value]) => value !== null && value !== undefined))
+}
+
 const config = await readJson(fromRoot('runtimes.json'))
 const types = await readJson(fromRoot('data/types.json'), { compilers: {}, packages: {} })
 // The version of each npm package that the edition ranks. Results for other
@@ -161,7 +192,8 @@ const startCpuMs = (ecosystemId, found) => (ecosystemId === 'cargo' && cargoStar
 function sweptCheck(ecosystemId, name) {
   const file = sweeps[ecosystemId], found = file?.packages?.[name]
   if (found?.status !== 'ok' || !found.added) return null
-  const cpuMs = round(Math.max(0, found.added.cpuMs - startCpuMs(ecosystemId, found)), 1), memoryMb = round(Math.max(0, found.added.memoryMb), 2)
+  // The sweeps store binary megabytes, like the other checker files.
+  const cpuMs = round(Math.max(0, found.added.cpuMs - startCpuMs(ecosystemId, found)), 1), memoryMb = round(Math.max(0, found.added.memoryMb) * MIB_TO_MB, 2)
   return { tool: [file.checker?.tool, file.checker?.version].filter(Boolean).join(' '), version: found.version ?? null, from: found.typesFrom ?? null, community: !!found.communityTypes, cpuMs, memoryMb, value: round((Math.max(memoryMb, ecosystemId === 'gomod' ? GO_MEMORY_FLOOR_MB : TYPE_MEMORY_FLOOR_MB) * Math.max(cpuMs, 10)) / 1000, 5) }
 }
 
@@ -498,6 +530,7 @@ for (const { taskId, data, taxonomy: category, scored, everyVersion, typeChecks 
     const anchor = { title: best.title, version: best.version, tool: best.tool, value: bestValue, category: taxonomy.categories.find((c) => c.id === category)?.title ?? category }
     for (const check of Object.values(typeChecks)) check.anchor = anchor
   }
+  for (const e of everyVersion) e.normalized = normalizedFigures(e, data.task)
   await writeJson(fromRoot('dist/data', `${taskId}.json`), data)
 }
 // For the listed packages that are not measured: the same anchors, by category.

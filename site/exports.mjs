@@ -20,6 +20,10 @@ export function resultRows(data, ctx) {
     runtime.entries.map((e) => {
       const won = medals?.get(`${runtime.id}/${e.id}`) ?? {}
       const listed = ctx?.model?.packageOf(e)?.listed
+      // Every time in milliseconds and every memory figure in bytes, whatever
+      // the task: the entry's figures as scripts/build-data.mjs converted them.
+      const n = e.normalized
+      if (!n) throw new Error(`${data.task.id}: ${e.id} has no normalized figures; run scripts/build-data.mjs`)
       return {
       category: data.task.category,
       task: data.task.id,
@@ -31,19 +35,21 @@ export function resultRows(data, ctx) {
       language: runtime.language,
       runtime: runtime.title,
       runtime_version: runtime.version,
-      cpu_unit: `${cpuUnit(e.metrics).trim()} per ${unitOf(data)}`,
-      cpu: cpuOf(e.metrics),
+      cpu_ms: n.cpuMs,
+      cpu_per: n.cpuPer,
       cpu_class: e.grades.cpu?.class ?? '',
       cpu_times_best: e.grades.cpu?.ratio ?? '',
-      memory_mb: e.metrics.memoryMb,
+      memory_bytes: n.memoryBytes,
       memory_class: e.grades.memory?.class ?? '',
       memory_times_best: e.grades.memory?.ratio ?? '',
-      type_check_cost: e.grades.types?.value ?? '',
+      type_check_cost_mb_s: n.typeCheckCostMbS ?? '',
+      type_check_cpu_ms: n.typeCheckCpuMs ?? '',
+      type_check_memory_bytes: n.typeCheckMemoryBytes ?? '',
       type_check_class: e.grades.types?.class ?? '',
       type_check_times_best: e.grades.types?.ratio ?? '',
-      total_memory_after_gc_mb: e.metrics.settledRssMb,
-      peak_memory_mb: e.metrics.peakRssMb,
-      heap_retained_kb: e.metrics.retainedKb,
+      total_memory_bytes: n.totalMemoryBytes,
+      peak_memory_bytes: n.peakMemoryBytes,
+      heap_retained_bytes: n.heapRetainedBytes ?? null,
       import_ms: e.metrics.importMs,
       install_bytes: e.metrics.installBytes ?? null,
       install_packages: e.metrics.installPackages ?? null,
@@ -601,7 +607,7 @@ ${model.packages.map((p) => `- [${p.title}](${url(`/${p.ecosystem}/${p.name}/ind
 
 ## Data
 
-- [All results, CSV](${url('/data/results.csv')}): one row per entry per runtime, every task
+- [All results, CSV](${url('/data/results.csv')}): one row per entry per runtime, every task. Every time is in milliseconds and every memory figure in bytes, and each column's name ends in its unit
 - [All results, JSON](${url('/data/results.json')}): the same rows
 - [Index of tasks and categories, JSON](${url('/data/index.json')})
 `
