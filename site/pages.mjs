@@ -2353,7 +2353,7 @@ const SETTINGS_FILES = new Set(['adapter.json', 'package.json', 'Cargo.toml', 'g
 function sourceFile(file, model, { open = true, id = file.name } = {}) {
   const numbers = Array.from({ length: file.lines }, (_, i) => i + 1).join('\n')
   return `<details class="source" id="${esc(id)}"${open ? ' open' : ''}>
-<summary><span class="name">${esc(file.name)}</span><span class="soft">${plural(file.lines, 'line')}</span><a href="${repoUrl(model, 'blob', file.path)}">View on GitHub</a></summary>
+<summary title="Option-click to open or close every file"><span class="name">${esc(file.name)}</span><span class="soft">${plural(file.lines, 'line')}</span><a href="${repoUrl(model, 'blob', file.path)}">View on GitHub</a></summary>
 <div class="code"><pre class="numbers" aria-hidden="true">${numbers}</pre><pre><code>${file.html}</code></pre></div>
 </details>`
 }

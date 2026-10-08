@@ -53,10 +53,18 @@ const sorted = (files) =>
 // adapter is run against. Adapter folders are not included.
 export const taskSource = (taskId) => sorted(walk(`benchmarks/${taskId}`, { deep: false }).map((file) => load(file, `benchmarks/${taskId}`)))
 
+// The task whose folders hold the adapters of a task: itself, or the task it
+// borrows them from (task.json `adaptersFrom`, as a lenient task does with
+// the adapters of its strict task).
+export const adaptersTaskOf = (taskId) => JSON.parse(readFileSync(path.join(ROOT, 'benchmarks', taskId, 'task.json'), 'utf8')).adaptersFrom ?? taskId
+
 // One adapter's files. A variant has only settings of its own and runs the
 // code of the adapter it is a variant of; `shared` holds that adapter's files.
+// The files are shown from where they are: for a task that borrows its
+// adapters that is the other task's folder.
 export function adapterSource(taskId, adapterId) {
-  const dir = `benchmarks/${taskId}/${adapterId}`
+  const adaptersTask = adaptersTaskOf(taskId)
+  const dir = `benchmarks/${adaptersTask}/${adapterId}`
   const files = sorted(walk(dir).map((file) => load(file, dir)))
   const { variantOf, app } = JSON.parse(readFileSync(path.join(ROOT, dir, 'adapter.json'), 'utf8'))
   // An entry that runs a shared application (adapter.json `app`) has only a
@@ -65,7 +73,7 @@ export function adapterSource(taskId, adapterId) {
   const appFiles = appDir ? { dir: appDir, files: sorted(walk(appDir).filter((file) => !APP_SKIP.test(file)).map((file) => load(file, appDir))) } : null
   if (!variantOf) return { dir, files, variantOf: null, shared: [], app: appFiles }
   const siblingId = `${adapterId.slice(0, adapterId.lastIndexOf('/'))}/${variantOf}`
-  const sibling = `benchmarks/${taskId}/${siblingId}`
+  const sibling = `benchmarks/${adaptersTask}/${siblingId}`
   return { dir, files, variantOf: siblingId, shared: sorted(walk(sibling).map((file) => load(file, sibling))).filter((f) => f.name !== 'adapter.json'), app: appFiles }
 }
 

@@ -1369,3 +1369,14 @@ for (const holder of document.querySelectorAll('[data-label]')) {
   actions.append(menu)
   over.append(actions)
 }
+
+// Option (Alt) and a click on a source file's heading opens or closes every
+// source file of the page at once, as on GitHub.
+document.addEventListener('click', (event) => {
+  if (!event.altKey) return
+  const summary = event.target.closest('details.source > summary')
+  if (!summary) return
+  event.preventDefault()
+  const open = !summary.parentElement.open
+  for (const file of document.querySelectorAll('details.source')) file.open = open
+})
