@@ -1,6 +1,16 @@
 {
-  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-07" },
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-07"
+  },
   "review": "unreviewed",
-  "language": "python", "runtimes": ["cpython", "pypy"],
-  "notes": "get_tld(host, fix_protocol=True, as_object=True) (a bare host has no scheme); returns [subdomain, fld, tld], None when it raises TldDomainNotFound."
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "notes": "get_tld(host, fix_protocol=True, as_object=True); returns fld, None on TldDomainNotFound or when fld equals tld.",
+  "details": "fix_protocol is needed because a bare host has no scheme. For a host that is only a suffix, tld returns the suffix itself as fld; the adapter maps that to None."
 }

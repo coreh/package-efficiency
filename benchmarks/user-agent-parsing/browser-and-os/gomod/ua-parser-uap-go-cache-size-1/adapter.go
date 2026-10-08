@@ -3,7 +3,7 @@ package main
 import "github.com/ua-parser/uap-go/uaparser"
 
 var parser = func() *uaparser.Parser {
-	p, err := uaparser.New()
+	p, err := uaparser.New(uaparser.WithCacheSize(1))
 	if err != nil {
 		panic(err)
 	}

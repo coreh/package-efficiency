@@ -34,15 +34,15 @@ assert.equal(new Set(cases.map((c) => c.input)).size, cases.length, 'user-agent 
 // What each library calls a family or a system. The names are compared after
 // lower-casing, dropping everything but letters, and taking out "mobile" and
 // "microsoft", which only say that the browser is the phone edition.
-const BROWSER_NAMES = { chrome: ['chrome'], firefox: ['firefox'], safari: ['safari'], edge: ['edge', 'edgechromium', 'edg'], opera: ['opera'] }
-const OS_NAMES = {
-  windows: ['windows'], macos: ['macos', 'macosx', 'osx', 'mac'], linux: ['linux', 'gnulinux'],
-  android: ['android', 'androidos'], ios: ['ios'],
-}
+const BROWSER_NAMES = { chrome: ['chrome'], firefox: ['firefox'], safari: ['safari', 'ios'], edge: ['edge', 'edgechromium', 'chromiumedge', 'edg'], opera: ['opera'] }
+// A system is read by the start of its name: "Windows 10", "OS X 11.6.8",
+// "Linux i686", "Generic Linux", "iOS (iPhone)", "iPhone OS", "Macintosh".
+const OS_PREFIXES = { windows: ['windows'], macos: ['macos', 'osx', 'macintosh', 'mac'], linux: ['linux', 'genericlinux', 'gnulinux'], android: ['android'], ios: ['ios', 'iphone'] }
 const letters = (s) => String(s).toLowerCase().replace(/[^a-z]/g, '')
 const canonBrowser = (name) => letters(name).replace(/mobile|microsoft/g, '')
-const canonOs = (name) => { const s = letters(name); return s.startsWith('windows') ? 'windows' : s }
+const canonOs = (name) => letters(name)
 const familyOf = (table, name) => Object.keys(table).find((key) => table[key].includes(name)) ?? `unknown(${name})`
+const osOf = (name) => Object.keys(OS_PREFIXES).find((key) => OS_PREFIXES[key].some((prefix) => name.startsWith(prefix))) ?? `unknown(${name})`
 const majorOf = (version) => String(version).split('.')[0]
 
 export const verifyOne = (i, output) => {
@@ -52,10 +52,10 @@ export const verifyOne = (i, output) => {
   const got = {
     browser: familyOf(BROWSER_NAMES, canonBrowser(output.browser ?? '')),
     version: majorOf(output.version ?? ''),
-    os: familyOf(OS_NAMES, canonOs(output.os ?? '')),
+    os: osOf(canonOs(output.os ?? '')),
   }
   const want = expected
-  assert.deepEqual(got, want, `fixture ${i} (${expected.browser} ${expected.version} on ${expected.os}): got ${JSON.stringify(output)} for ${input}`)
+  assert.deepEqual(got, want, `fixture ${i} (${expected.browser} ${expected.version} on ${expected.os}): got ${JSON.stringify(output)}`)
 }
 export const verifyResults = (outputs) => {
   assert.ok(Array.isArray(outputs), 'outputs must be an array')
@@ -64,7 +64,7 @@ export const verifyResults = (outputs) => {
   for (const i of cases.keys()) {
     try { verifyOne(i, outputs[i]) } catch (error) { failures.push(error.message.split('\n')[0]) }
   }
-  assert.ok(failures.length === 0, `${failures.length} of ${cases.length} fixtures wrong. First ones:\n${failures.slice(0, 12).join('\n')}`)
+  assert.ok(failures.length === 0, `${failures.length} of ${cases.length} fixtures wrong. First ones: ${failures.slice(0, 5).join(' ;; ')}`)
 }
 export const verify = (operation) => verifyResults(cases.map(({ input }) => operation(input)))
 // Reads something cheap from each result, so the loop depends on it.

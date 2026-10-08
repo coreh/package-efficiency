@@ -29,7 +29,8 @@ for(const file of adapters){
  if(registry==='gomod')test(`${id}: named for its module, pinned, with go.mod and go.sum`,(t)=>{
   assert.equal(packageName,goPackageName(meta.module))
   if(!existsSync(path.join(dir,'go.mod')))return t.skip('not resolved yet')
-  const required=new RegExp(`^require ${meta.module.replaceAll('.','\\.')} (\\S+)$`,'m').exec(readFileSync(path.join(dir,'go.mod'),'utf8'))
+  // On a line of its own, or inside a require ( ... ) block when the adapter imports more than one module.
+  const required=new RegExp(`^(?:require |\\t)${meta.module.replaceAll('.','\\.')} (\\S+)$`,'m').exec(readFileSync(path.join(dir,'go.mod'),'utf8'))
   assert.ok(required,'go.mod requires the module')
   assert.equal(required[1],pins.gomod[packageName])
   assert.ok(readFileSync(path.join(dir,'go.sum'),'utf8').includes(`${meta.module} ${required[1]} h1:`))

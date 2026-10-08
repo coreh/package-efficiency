@@ -6,4 +6,5 @@ def operation(host):
         r = get_tld(host, fix_protocol=True, as_object=True)
     except TldDomainNotFound:
         return None
-    return [r.subdomain, r.fld, r.tld]
+    # A host that is only a suffix comes back as its own "fld": no registrable domain.
+    return None if r.fld == r.tld else r.fld

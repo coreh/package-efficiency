@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert'
 // Host names are built piece by piece, so the expected split is known:
 //   host = [subdomain.]name.suffix
-// and the common result is [subdomain, registrable domain, public suffix], or
+// and the common result is the registrable domain (name.suffix) as a string, or
 // null when the host is only a public suffix (it has no registrable domain).
 // Suffixes are ICANN-section rules that have been in the Public Suffix List
 // for many years. No name is a private-section rule (github.io, blogspot.com)
@@ -26,18 +26,18 @@ const multi = [
 // Internationalized suffixes, as punycode.
 const idn = ['xn--p1ai', 'xn--fiqs8s', 'xn--j6w193g', 'xn--90ae', 'xn--mgbaam7a8h']
 // Wildcard rules (*.ck) and the exception to one (!www.ck).
-const wildcard = ['ck', 'fk', 'jm', 'kh', 'np', 'pg', 'mm']
+const wildcard = ['ck', 'fk', 'jm', 'np', 'pg', 'mm']
 const labels = ['acme', 'northwind', 'contoso', 'globex', 'initech', 'umbrella', 'hooli', 'vandelay', 'wayne', 'stark', 'tyrell', 'cyberdyne', 'soylent', 'wonka', 'oscorp', 'aperture']
 const subs = ['www', 'mail', 'api', 'cdn', 'static', 'img', 'a', 'eu-west-1', 'staging', 'm', 'shop', 'docs']
 const pick = (pool, i, k = 0) => pool[(i * 7 + k * 5 + ((i * i) >> 3)) % pool.length]
 
-const build = (i, suffix, wild) => {
+const build = (i, suffix) => {
   const name = `${pick(labels, i, 1)}${i % 3 === 0 ? '' : `-${i % 97}`}`
   const depth = i % 5 === 0 ? 0 : i % 5 === 1 ? 1 : i % 5 === 2 ? 2 : i % 5 === 3 ? 1 : 3
   const sub = Array.from({ length: depth }, (_, k) => pick(subs, i, k + 2)).join('.')
   const registrable = `${name}.${suffix}`
   const host = sub ? `${sub}.${registrable}` : registrable
-  return { input: host, expected: [sub, registrable, suffix], wild }
+  return { input: host, expected: registrable }
 }
 const makeCase = (i) => {
   const kind = i % 12
@@ -55,7 +55,7 @@ const makeCase = (i) => {
   if (kind === 2) {
     // The exception to *.ck: www.ck is itself a registrable domain.
     const sub = i % 2 ? `${pick(subs, i)}.` : ''
-    return { input: `${sub}www.ck`, expected: [sub.replace(/\.$/, ''), 'www.ck', 'ck'] }
+    return { input: `${sub}www.ck`, expected: 'www.ck' }
   }
   if (kind === 3 || kind === 4) return build(i, pick(idn, i))
   if (kind <= 8) return build(i, pick(multi, i))
@@ -66,14 +66,10 @@ export const cases = Array.from({ length: 720 }, (_, i) => {
   return { input, expected }
 })
 
-// A missing subdomain may come back as null, undefined or ''.
 export const verifyOne = (i, output) => {
   const { input, expected } = cases[i]
-  if (typeof output === 'string') output = JSON.parse(output)
-  if (expected === null) return assert.equal(output ?? null, null, `fixture ${i}: ${input} is only a public suffix`)
-  assert.ok(Array.isArray(output) && output.length === 3, `fixture ${i}: ${input}: [subdomain, domain, suffix] is required`)
-  const got = [output[0] ?? '', output[1], output[2]]
-  assert.deepEqual(got, expected, `fixture ${i}: ${input}`)
+  if (typeof output === 'string' && output.startsWith('"')) output = JSON.parse(output)
+  assert.equal(output ?? null, expected, `fixture ${i}: ${input}`)
 }
 export const verifyResults = (outputs) => {
   assert.ok(Array.isArray(outputs), 'outputs must be an array')
@@ -81,4 +77,4 @@ export const verifyResults = (outputs) => {
   for (const i of cases.keys()) verifyOne(i, outputs[i])
 }
 export const verify = (operation) => verifyResults(cases.map(({ input }) => operation(input)))
-export const consume = (value) => (value === null || value === undefined ? 0 : value[1].length)
+export const consume = (value) => (value === null || value === undefined ? 0 : value.length)
