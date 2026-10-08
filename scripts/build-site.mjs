@@ -142,10 +142,10 @@ labelSite.shortUrl = (settings.shortUrl ?? '').replace(/\/$/, '')
 labelSite.host = siteUrl.replace(/^https?:\/\//, '')
 // Links inside the Markdown and llms.txt exports: absolute once site.json
 // names the address the site is published at, relative until then.
-const exported = { url: (to) => `${siteUrl}${to}`, edition: index.edition }
+const exported = { url: (to) => `${siteUrl}${to}` }
 // The stylesheet and script are addressed with a mark of their content, so a
 // page never meets an older copy of them that a browser or the CDN still holds.
-const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).digest('hex').slice(0, 10)
+const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).update(await readFile(fromRoot('site/api.js'))).update(await readFile(fromRoot('site/search.js'))).digest('hex').slice(0, 10)
 const model = {
   index,
   assets,
@@ -449,6 +449,8 @@ await write(dist('search.json'), JSON.stringify(searchIndex(model)))
 await page('/search/', searchPage(model))
 await write(dist('search-full.json'), JSON.stringify(advancedSearchIndex(model)))
 await write(dist('search.js'), await readFile(fromRoot('site/search.js')))
+// The API page's own script: the format and language pickers, and the try box.
+await write(dist('api.js'), await readFile(fromRoot('site/api.js')))
 // The machine-readable files as an API: the specification, and its page.
 const apiSpec = openApiSpec(model)
 await write(dist('openapi.json'), JSON.stringify(apiSpec, null, 1))

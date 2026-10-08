@@ -55,7 +55,7 @@ function examplesOf(model) {
 function contextOf(model) {
   const site = (model.site?.url ?? '').replace(/\/$/, '')
   const medals = new Map()
-  return { url: (to) => `${site}${to}`, edition: model.index.edition, model, ecosystems: ECOSYSTEMS, runtimeScores, statusOf, categoryHref, catalogUrl, allKnownPackages, eventMedals: (data) => medals.get(data) ?? medals.set(data, eventMedals(data)).get(data), runtimeMedals }
+  return { url: (to) => `${site}${to}`, model, ecosystems: ECOSYSTEMS, runtimeScores, statusOf, categoryHref, catalogUrl, allKnownPackages, eventMedals: (data) => medals.get(data) ?? medals.set(data, eventMedals(data)).get(data), runtimeMedals }
 }
 
 // --- Samples: a real response, cut down to what shows its shape ----------------
@@ -102,7 +102,7 @@ function csvSample(rows, columns = 7) {
 const markdownSample = (text, lines = 5) => (text ? `${text.split('\n').filter((line, at, all) => line || all[at - 1]).slice(0, lines).map((line) => shorten(line, 150)).join('\n')}\n${MORE}` : undefined)
 
 function taskDataSample(data, runtime, entry) {
-  return jsonSample(pick(data, ['edition', 'generatedAt'], {
+  return jsonSample(pick(data, ['generatedAt'], {
     task: pick(data.task, ['id', 'title', 'kind', 'cpuPer']),
     metrics: { cpu: pick(data.metrics.cpu, ['displayUnit', 'headline', 'scale', 'floor', 'anchor']), [MORE]: 'memory, in the same form' },
     runtimes: first([runtime], 1, (r) => pick(r, ['id', 'title', 'version'], {
@@ -151,7 +151,6 @@ function schemasOf(model) {
   })
   return {
     Index: S.object('The tasks and categories that have results, and where each task\'s data file is.', {
-      edition: S.string('Edition of the results.'),
       generatedAt: S.string('When the data was built.', { format: 'date-time' }),
       compilers: S.object('Versions of the TypeScript compilers used for type-check cost, by name.', {}, { additionalProperties: { type: 'string' } }),
       categories: S.list(S.object('A measured category.', {
@@ -184,10 +183,9 @@ function schemasOf(model) {
       }),
       typeScale: scale('type-check cost'),
       typeFloor: S.number('Type-check cost below this counts as this, in MB·s.'),
-    }, { required: ['edition', 'generatedAt', 'categories', 'tasks'] }),
+    }, { required: ['generatedAt', 'categories', 'tasks'] }),
 
     TaskData: S.object('Everything measured in one task: the scales, and every entry on every runtime.', {
-      edition: S.string('Edition of the results.'),
       generatedAt: S.string('When the data was built.', { format: 'date-time' }),
       machine: S.object('The machine that ran the task.', {
         os: S.string('Operating system and its version.'),
@@ -203,7 +201,7 @@ function schemasOf(model) {
       compilers: S.object('Versions of the TypeScript compilers, by name.', {}, { additionalProperties: { type: 'string' } }),
       typesCompiler: S.string('The TypeScript compiler whose figures give the class.'),
       runtimes: S.list(S.ref('Runtime'), 'Each runtime the task ran on, with its entries.'),
-    }, { required: ['edition', 'generatedAt', 'machine', 'task', 'metrics', 'runtimes'] }),
+    }, { required: ['generatedAt', 'machine', 'task', 'metrics', 'runtimes'] }),
 
     Task: S.object('A task: one job that every package of a category does the same way.', {
       id: S.string('Task id, `<category>/<task>`.'),
@@ -516,7 +514,7 @@ const EMBED_SHAPES = 'The shapes: `overview.svg` (all measures on one label), `b
 
 /**
  * The OpenAPI 3.1 description of the site's files.
- * Reads from `model`: `site.url`, `index` (edition, generatedAt, and as the
+ * Reads from `model`: `site.url`, `index` (generatedAt, and as the
  * sample of /data/index.json), `tasks`, `categories`, `packages`, `runtimes`,
  * `packageOf`, `repository`, and `catalog` (groups, categories, byEcosystem,
  * byCategory, categoryShare, aliases).
@@ -531,23 +529,27 @@ export function openApiSpec(model) {
   const shapes = ['overview.svg', 'badge.svg', 'badge.flat.svg', ...measures.flatMap((m) => [`badge.${m}.svg`, `badge.${m}.flat.svg`]), ...['button', 'compact', 'wide'].flatMap((shape) => measures.map((m) => `${shape}.${m}.svg`))]
   const id = { type: 'string', pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' }
   const param = (name, description, schema, example, more = {}) => ({ name, in: 'path', required: true, description, schema, example, ...more })
+  // A few real values of a parameter, for the try box of the page (`x-suggestions`).
+  const some = (values, example) => ({ 'x-suggestions': [...new Set([example, ...values])].filter((value) => value !== undefined && value !== null).slice(0, 12) })
+  const inTask = [...new Set(ex.data.runtimes.flatMap((r) => r.entries))]
+  const sameRegistry = inTask.filter((e) => e.ecosystem === ex.registry)
   // A name with slashes takes several segments of the address; OpenAPI has no
   // word for that, so such a parameter is marked.
   const spans = { 'x-multi-segment': true }
 
   const parameters = {
-    category: param('category', 'Category id, as in `/data/index.json`.', id, ex.category),
-    task: param('task', 'The task\'s name inside its category: the part of the task id after the slash.', id, ex.task),
+    category: param('category', 'Category id, as in `/data/index.json`.', id, ex.category, { 'x-suggestions': model.categories.map((c) => c.id) }),
+    task: param('task', 'The task\'s name inside its category: the part of the task id after the slash.', id, ex.task, some(model.tasks.filter((d) => d.task.category === ex.category).map((d) => d.task.task), ex.task)),
     group: param('group', 'Id of a group of categories.', { type: 'string', enum: model.catalog.groups.map((g) => g.id) }, ex.group?.id),
     registry: param('registry', `Registry id: ${registries.map((r) => `\`${r}\` (${ECOSYSTEMS[r].title})`).join(', ')}.`, { type: 'string', enum: registries }, ex.registry),
-    package: param('package', 'Package name, as its registry writes it. A scoped name (`@scope/name`) keeps its slash and takes two segments of the address. A measured Go module has a short name of its own; a Go module that is listed and not measured is named by its module path, slashes included.', { type: 'string' }, ex.pkg.name, spans),
-    version: param('version', 'A version of the package that has results, as its registry writes it.', { type: 'string' }, ex.version),
+    package: param('package', 'Package name, as its registry writes it. A scoped name (`@scope/name`) keeps its slash and takes two segments of the address. A measured Go module has a short name of its own; a Go module that is listed and not measured is named by its module path, slashes included.', { type: 'string' }, ex.pkg.name, { ...spans, ...some(sameRegistry.map((e) => e.package), ex.pkg.name) }),
+    version: param('version', 'A version of the package that has results, as its registry writes it.', { type: 'string' }, ex.version, some(versionsOf(ex.pkg), ex.version)),
     runtime: param('runtime', `Runtime id: ${model.runtimes.map((rt) => `\`${rt.id}\` (${rt.title})`).join(', ')}.`, { type: 'string', enum: model.runtimes.map((rt) => rt.id) }, ex.runtime.id),
-    entry: param('entry', 'The entry\'s id without its registry: the package name, or the name of a variant of it. A scoped name keeps its slash. For a result kept for an earlier version, `@` and the version follow.', { type: 'string' }, ex.entryName, spans),
-    result: param('result', 'The entry\'s name, then `@` and the version measured. A built-in has no version, so its name stands alone. A scoped name keeps its slash.', { type: 'string' }, ex.result, spans),
-    adapter: param('adapter', 'The adapter\'s name in its registry\'s folder: most often the package name. A scoped name keeps its slash.', { type: 'string' }, ex.adapter, spans),
+    entry: param('entry', 'The entry\'s id without its registry: the package name, or the name of a variant of it. A scoped name keeps its slash. For a result kept for an earlier version, `@` and the version follow.', { type: 'string' }, ex.entryName, { ...spans, ...some(ex.runtime.entries.filter((e) => e.ecosystem === ex.registry).map((e) => e.id.slice(e.ecosystem.length + 1)), ex.entryName) }),
+    result: param('result', 'The entry\'s name, then `@` and the version measured. A built-in has no version, so its name stands alone. A scoped name keeps its slash.', { type: 'string' }, ex.result, { ...spans, ...some(ex.runtime.entries.filter((e) => e.ecosystem === ex.registry).map((e) => resultPath(ex.data.task.id, ex.runtime.id, e).slice(`/results/${ex.data.task.id}/${ex.runtime.id}/${e.ecosystem}/`.length, -1)), ex.result) }),
+    adapter: param('adapter', 'The adapter\'s name in its registry\'s folder: most often the package name. A scoped name keeps its slash.', { type: 'string' }, ex.adapter, { ...spans, ...some(sameRegistry.map((e) => adapterIdOf(e)).map((id) => id.slice(id.indexOf('/') + 1)), ex.adapter) }),
     measure: param('measure', 'The measure: `cpu` (CPU time), `memory`, or `types` (type-check cost).', { type: 'string', enum: measures }, 'cpu'),
-    scope: param('scope', 'What the summary covers: `all` for every category, a category id, or a task id (`<category>/<task>`, two segments) in a category with more than one task.', { type: 'string' }, ex.scope, spans),
+    scope: param('scope', 'What the summary covers: `all` for every category, a category id, or a task id (`<category>/<task>`, two segments) in a category with more than one task.', { type: 'string' }, ex.scope, { ...spans, ...some(['all', ex.category, ...(ex.categoryOf.tasks.length > 1 ? [ex.data.task.id] : [])], ex.scope) }),
     basis: param('basis', 'Which entry of the runtime the summary shows: its best one, or the typical one (the geometric mean of all its entries).', { type: 'string', enum: ['best', 'typical'] }, 'best'),
     file: param('file', `The shape of the label. ${EMBED_SHAPES}`, { type: 'string', enum: shapes }, 'badge.svg'),
     summaryFile: param('file', `The shape of the label: \`label.<measure>.svg\` for the full label, or one of the shapes of a result. ${EMBED_SHAPES}`, { type: 'string', enum: [...measures.map((m) => `label.${m}.svg`), ...shapes] }, 'label.cpu.svg'),
@@ -625,7 +627,7 @@ export function openApiSpec(model) {
   // Catalog
   resource('Catalog', 'List the tasks and categories that have results', 'Start here: each task names its data file, and the ids fill the `{category}` and `{task}` of the other addresses.', [{
     path: '/data/index.json', id: 'getIndex', format: 'json', schema: S.ref('Index'),
-    sample: jsonSample(pick(model.index, ['edition', 'generatedAt'], { categories: first(model.index.categories, 1, (c) => ({ ...c, summary: shorten(c.summary) })), tasks: first(model.index.tasks, 1, (t) => ({ ...t, summary: shorten(t.summary) })) })),
+    sample: jsonSample(pick(model.index, ['generatedAt'], { categories: first(model.index.categories, 1, (c) => ({ ...c, summary: shorten(c.summary) })), tasks: first(model.index.tasks, 1, (t) => ({ ...t, summary: shorten(t.summary) })) })),
   }])
   resource('Catalog', 'List the packages that are not measured yet', 'The listed packages that have no results, packed as lists of values for the site\'s package table. `/packages/results.json` has every listed package with named fields.', [{
     path: '/data/catalog.json', id: 'getCatalog', format: 'json', schema: S.ref('Catalog'),
@@ -699,9 +701,10 @@ export function openApiSpec(model) {
         'Names in addresses. A name appears as its registry writes it. A scoped name (`@scope/name`) and a Go module path contain slashes, and each slash is a separator of the address like any other: do not write it as `%2F`. Write `@` as it is, and follow redirects: for a file that the build wrote, the server answers an address that has `@` with a redirect to the same address with `%40`. The files that are put together on request (single results, labels, embeds, adapter source, packages that are not measured) answer both spellings. A parameter that can take more than one segment is marked `x-multi-segment`.',
         'Two families of addresses have the same shape: `/{category}/…` and `/{registry}/…`, and under them `/{category}/{task}/…` and `/{registry}/{package}/…`. The first segment tells them apart: it is a registry id, or else a category id. No category has the id of a registry.',
         'Figures. Every time is in milliseconds and every memory figure in bytes, in every JSON and CSV file, whatever the task; a field\'s name ends in its unit (`cpu_ms`, `memory_bytes`). CPU is CPU time for one unit of work (an operation, a request or a start, as `cpu_per` says). Memory is what the process holds above the same runtime with a do-nothing adapter. Type-check cost is in MB·s. A class goes from A (best) to G, and a "times best" figure is a multiple of the best result: 1 is the best. A task\'s data file is in the same units: `metrics.cpuMs`, `metrics.memoryBytes`. Markdown and the pages show the units a person reads (µs, ms, MB). The results are provisional and come from one machine.',
-        'Extensions. The reference page shows one entry for each thing a reader can ask for, with a chooser for its format, and it is put together from these: `x-resource` names the entry an operation belongs to, `x-task` is the entry\'s title, `x-format` its format, `x-about` the entry\'s description, `x-note` what is particular to this format, and `x-same-as` the address of the same file elsewhere. A media type object may carry `x-sample`, a real response cut short, as text, and for a CSV file `x-rows`, the schema its rows have as JSON.',
+        'Extensions. The reference page shows one entry for each thing a reader can ask for, with a chooser for its format, and it is put together from these: `x-resource` names the entry an operation belongs to, `x-task` is the entry\'s title, `x-format` its format, `x-about` the entry\'s description, `x-note` what is particular to this format, and `x-same-as` the address of the same file elsewhere. A media type object may carry `x-sample`, a real response cut short, as text, and for a CSV file `x-rows`, the schema its rows have as JSON. A parameter may carry `x-suggestions`: a few real values, for the try box of the page.',
       ].join('\n\n'),
-      version: `${model.index.edition}+${day.replace(/-/g, '')}`,
+      // The day the data was built: the description has no other version.
+      version: day,
     },
     externalDocs: { description: 'The reference page', url: `${site}/api/` },
     servers: [{ url: site }],
@@ -858,109 +861,126 @@ ${entry.variants.map((variant) => {
   }).concat(shapesOf(spec, entry).map((shape) => `#### ${shape.heading}\n\n\`${shape.name}\`. ${shape.about}\n\n${mdTable(['Field', 'Type', 'Description'], shape.fields.map((field) => [`\`${field.name}\`${field.optional ? ' (optional)' : ''}`, typeText(field.schema), field.description]))}`)).join('\n\n')}`
 }
 
-const pathHtml = (path) => esc(path).replace(/\{(\w+)\}/g, '<span class="api-param">{$1}</span>')
+// The path with each part to fill in set off. The script writes what is typed
+// in the try box into these parts.
+const pathHtml = (path) => esc(path).replace(/\{(\w+)\}/g, '<span class="api-param" data-name="$1">{$1}</span>')
 
-// One address of an entry: the path, what is particular to it, its
-// parameters, what it answers with, a sample and a command.
+// The same request in each language of the picker: a few lines that run as
+// they are, with nothing to install (Python and Ruby use their standard
+// libraries). For a redirect the example prints where it leads.
+const LANGUAGES = [['curl', 'curl'], ['javascript', 'JavaScript'], ['python', 'Python'], ['ruby', 'Ruby']]
+function requestExamples({ url, status, media }) {
+  const json = media === MEDIA.json, redirect = status === 308
+  return {
+    curl: `curl ${redirect ? '-sI' : '-sL'} ${url}`,
+    javascript: redirect
+      ? `const response = await fetch('${url}')\nconsole.log(response.url)`
+      : `const response = await fetch('${url}')\nconst ${json ? 'data' : 'text'} = await response.${json ? 'json' : 'text'}()`,
+    // The site's host refuses the name urllib gives itself, so the example gives another.
+    python: `import ${json ? 'json, ' : ''}urllib.request\n\nrequest = urllib.request.Request('${url}', headers={'User-Agent': 'my-script'})\nwith urllib.request.urlopen(request) as response:\n    ${redirect ? 'print(response.url)' : json ? 'data = json.load(response)' : 'text = response.read().decode(\'utf-8\')'}`,
+    // open-uri does not follow a 308, so the redirect is read from its header.
+    ruby: redirect
+      ? `require 'net/http'\n\nputs Net::HTTP.get_response(URI('${url}'))['location']`
+      : json
+        ? `require 'json'\nrequire 'open-uri'\n\ndata = JSON.parse(URI.open('${url}').read)`
+        : `require 'open-uri'\n\ntext = URI.open('${url}').read`,
+  }
+}
+
+// A field of the try box for one parameter: a select where the values are a
+// short fixed list, otherwise a text field, with a few real values offered.
+function tryField(entry, op, p) {
+  const id = `try-${slug(op.operationId)}-${p.name}`
+  const control = p.schema.enum
+    ? `<select id="${id}" name="${esc(p.name)}">${p.schema.enum.map((value) => `<option${value === p.example ? ' selected' : ''}>${esc(value)}</option>`).join('')}</select>`
+    : `<input id="${id}" name="${esc(p.name)}" value="${esc(p.example)}" spellcheck="false" autocomplete="off" autocapitalize="off"${p['x-suggestions']?.length ? ` list="api-values-${esc(p.name)}"` : ''}>`
+  return `<label for="${id}"><code>${esc(p.name)}</code></label>${control}`
+}
+
+// One address of an entry, the part that describes it: the path, what is
+// particular to it, its parameters, what it answers with, and the try box.
 function variantHtml(spec, entry, variant) {
   const { path, op, format, also } = variant
   const facts = variantFacts(spec, variant)
-  const figure = facts.media === MEDIA.svg ? `<p><img class="api-figure" src="${esc(facts.address)}" alt="The example: ${esc(entry.title.toLowerCase())}" loading="lazy"></p>` : ''
   // The address of the same file elsewhere keeps the anchor it had as an entry of its own.
   const twins = also.length ? ` The same ${facts.status === 308 ? 'redirect' : 'file'} is at ${also.map((twin) => `<code id="${esc(slug(twin.op.operationId))}">${esc(twin.path)}</code>`).join(' and ')}.` : ''
-  return `<div class="api-variant" id="${esc(slug(op.operationId))}" data-format="${esc(slug(format))}" data-address="${esc(facts.url)}">
+  return `<div class="api-variant" id="${esc(slug(op.operationId))}" data-format="${esc(slug(format))}" data-path="${esc(path)}" data-site="${esc(spec.servers[0].url)}" data-address="${esc(facts.url)}">
 ${entry.variants.length > 1 ? `<h4 class="api-format">${esc(format)}</h4>` : ''}
 <p class="api-sig"><span class="api-method">GET</span> <code class="api-path">${pathHtml(path)}</code></p>
 ${facts.note || twins ? `<p>${prose(facts.note)}${twins}</p>` : ''}
 ${facts.params.length ? table('params', ['Parameter', 'Type', 'Description', 'Example'], facts.params.map((p) => `<tr><td><code>${esc(p.name)}</code></td><td class="l api-type">${typeText(p.schema)}</td><td class="l api-wrap">${prose(p.description)}${p['x-multi-segment'] ? ` <span class="soft">${MULTI}</span>` : ''}</td><td class="l"><code>${esc(p.example)}</code></td></tr>`)) : ''}
 <p class="api-returns">${prose(facts.returns((name) => `\u0000${name}\u0000`)).replace(/\u0000(\w+)\u0000/g, (_, name) => `<a href="#${esc(entry.id)}-${slug(name)}">${esc(name)}</a>`)}</p>
-${facts.sample ? `<pre class="api-sample" tabindex="0" aria-label="Example response, cut short"><code>${esc(facts.sample)}</code></pre>` : ''}${figure}
-<p class="api-curl"><code>${esc(facts.curl)}</code></p>
+<form class="api-try" hidden>
+<h4>Try it</h4>
+${facts.params.length ? `<div class="api-try-fields">${facts.params.map((p) => tryField(entry, op, p)).join('\n')}</div>` : ''}
+<p class="api-try-send"><button type="submit">Send</button> <span class="soft">Asks this site for the address and shows the answer.</span></p>
+</form>
 </div>`
 }
 
-// One entry: its task as the title, and its addresses. Every format is in
-// the page; the script at the end shows one at a time, chosen with the
-// select. The buttons copy what is already in the page: the entry's Markdown
-// from the template, and the command and address of the format that is shown.
+// The same address, the part beside the description: the request in each
+// language, where the answer of the try box appears, and a sample answer.
+function requestHtml(spec, entry, variant) {
+  const facts = variantFacts(spec, variant)
+  const examples = requestExamples(facts)
+  const figure = facts.media === MEDIA.svg ? `<p><img class="api-figure" src="${esc(facts.address)}" alt="The example: ${esc(entry.title.toLowerCase())}" loading="lazy"></p>` : ''
+  return `<div class="api-request" data-format="${esc(slug(variant.format))}">
+${entry.variants.length > 1 ? `<h4 class="api-format">${esc(variant.format)}</h4>` : ''}
+<div class="api-box">
+<div class="api-box-head"><span class="api-box-title">Request</span><span class="api-tabs" role="group" aria-label="Language" hidden>${LANGUAGES.map(([id, name]) => `<button type="button" data-language="${id}">${name}</button>`).join('')}</span><button type="button" class="api-copy" hidden title="Copy the example that is shown">Copy</button></div>
+${LANGUAGES.map(([id, name]) => `<div class="api-code" data-language="${id}"><h5 class="api-language">${name}</h5><pre tabindex="0"><code>${esc(examples[id])}</code></pre></div>`).join('\n')}
+</div>
+<div class="api-box api-result" hidden aria-live="polite"></div>
+${facts.sample || figure ? `<div class="api-box">
+<div class="api-box-head"><span class="api-box-title">Example response${facts.sample ? ', cut short' : ''}</span></div>
+${facts.sample ? `<pre class="api-sample" tabindex="0"><code>${esc(facts.sample)}</code></pre>` : ''}${figure}
+</div>` : ''}
+</div>`
+}
+
+// One entry: its task as the title, then two columns where there is room.
+// On the left what it is and what to send; on the right, staying in view,
+// how to ask and what comes back; under the left column the fields of the
+// answer. In one column the order is the same: description, examples, fields.
+// Every format and every language is in the page; the script (site/api.js)
+// shows one at a time. The buttons copy what is already in the page.
 function entryHtml(spec, entry) {
   const many = entry.variants.length > 1
-  const which = many ? ' of the format that is shown' : ''
   return `<section class="api-entry" id="${esc(entry.id)}">
 <h3>${esc(entry.title)}</h3>
+<div class="api-cols">
+<div class="api-main">
 <p>${prose(entry.about, true)}</p>
 <div class="api-bar" hidden>
 ${many ? `<p class="api-choose"><label for="format-${esc(entry.id)}">Format</label> <select id="format-${esc(entry.id)}">${entry.variants.map((variant) => `<option value="${esc(slug(variant.format))}">${esc(variant.format)}</option>`).join('')}</select></p>` : ''}
-<p class="api-actions menu"><button type="button" data-copy="markdown" title="Copy this entry as Markdown${many ? ', with all its formats' : ''}">Copy as Markdown</button><button type="button" data-copy="curl" title="Copy the curl command${which}">Copy curl</button><button type="button" data-copy="address" title="Copy the example address${which}">Copy address</button></p>
+<p class="api-actions menu"><button type="button" data-copy="markdown" title="Copy this entry as Markdown${many ? ', with all its formats' : ''}">Copy as Markdown</button><button type="button" data-copy="address" title="Copy the address${many ? ' of the format that is shown' : ''}, with what is typed in the try box">Copy address</button></p>
 </div>
 <template class="api-markdown">${esc(entryMarkdown(spec, entry))}</template>
 ${entry.variants.map((variant) => variantHtml(spec, entry, variant)).join('\n')}
-${shapesOf(spec, entry).map((shape) => `<details class="api-fields-of" id="${esc(entry.id)}-${slug(shape.name)}" data-formats="${esc(shape.formats.map(slug).join(' '))}"${shape.fields.length <= 12 ? ' open' : ''}>
+</div>
+<div class="api-side"><div class="api-sticky">
+${entry.variants.map((variant) => requestHtml(spec, entry, variant)).join('\n')}
+</div></div>
+<div class="api-fields">
+${shapesOf(spec, entry).map((shape) => `<details class="api-fields-of" id="${esc(entry.id)}-${slug(shape.name)}" data-formats="${esc(shape.formats.map(slug).join(' '))}" open>
 <summary>${esc(shape.heading)} <code class="soft">${esc(shape.name)}</code></summary>
 <p>${prose(shape.about)}</p>
 ${table('fields', ['Field', 'Type', 'Description'], shape.fields.map((field) => `<tr><td><code>${esc(field.name)}</code>${field.optional ? ' <span class="soft">optional</span>' : ''}</td><td class="l api-type">${typeText(field.schema, (name) => `<a href="#${esc(entry.id)}-${slug(name)}">${esc(name)}</a>`)}</td><td class="l api-wrap">${prose(field.description)}</td></tr>`))}
 </details>`).join('\n')}
+</div>
+</div>
 </section>`
 }
 
-// Shows one format of each entry, and copies. Every format is in the page as
-// HTML, so without scripts all of them are shown, one after the other under
-// its name, the buttons stay hidden, and a click on a command selects all of
-// it. A choice of format applies to every entry that has that format, and is
-// kept for the next visit when the browser allows it.
-const PAGE_SCRIPT = `<script>
-(() => {
-  const entries = [...document.querySelectorAll('.api-entry')]
-  const show = (entry, format) => {
-    const variants = [...entry.querySelectorAll('.api-variant')]
-    if (!variants.some((variant) => variant.dataset.format === format)) return
-    for (const variant of variants) variant.classList.toggle('api-on', variant.dataset.format === format)
-    for (const fields of entry.querySelectorAll('.api-fields-of')) fields.hidden = !fields.dataset.formats.split(' ').includes(format)
-    const select = entry.querySelector('.api-choose select')
-    if (select) select.value = format
-  }
-  const showAll = (format) => { for (const entry of entries) show(entry, format) }
-  const texts = {
-    markdown: (entry) => entry.querySelector('.api-markdown').content.textContent,
-    curl: (entry) => entry.querySelector('.api-on .api-curl code').textContent,
-    address: (entry) => entry.querySelector('.api-on').dataset.address,
-  }
-  for (const entry of entries) {
-    show(entry, entry.querySelector('.api-variant').dataset.format)
-    entry.classList.add('api-live')
-    entry.querySelector('.api-bar').hidden = false
-    const select = entry.querySelector('.api-choose select')
-    if (select) select.addEventListener('change', () => {
-      // Entries above this one change height: keep the select where it is.
-      const before = select.getBoundingClientRect().top
-      showAll(select.value)
-      scrollBy(0, select.getBoundingClientRect().top - before)
-      try { localStorage.setItem('api-format', select.value) } catch {}
-    })
-    for (const button of entry.querySelectorAll('.api-actions button')) {
-      if (!navigator.clipboard) { button.hidden = true; continue }
-      const label = button.textContent
-      button.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(texts[button.dataset.copy](entry)); button.textContent = 'Copied' } catch { button.textContent = 'Not copied' }
-        setTimeout(() => { button.textContent = label }, 1500)
-      })
-    }
-  }
-  try { const kept = localStorage.getItem('api-format'); if (kept) showAll(kept) } catch {}
-  // A link to one address of an entry shows that address.
-  const follow = () => {
-    let target = null
-    try { target = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null } catch {}
-    if (target && target.matches('details')) target.open = true
-    const variant = target && target.closest('.api-variant')
-    if (!variant) return
-    show(variant.closest('.api-entry'), variant.dataset.format)
-    variant.closest('.api-entry').scrollIntoView()
-  }
-  addEventListener('hashchange', follow)
-  follow()
-})()
-</script>`
+// A few real values for the text fields of the try box, one list for each
+// parameter that has some (`x-suggestions` in the description).
+const suggestionLists = (spec) => Object.values(spec.components.parameters).filter((p) => p['x-suggestions']?.length && !p.schema.enum).map((p) => `<datalist id="api-values-${esc(p.name)}">${p['x-suggestions'].map((value) => `<option value="${esc(value)}">`).join('')}</datalist>`).join('\n')
+
+// The page's script: site/api.js, which the build copies beside the pages.
+// Without it every format and every language is shown, one after the other
+// under its name; the try box and the copy buttons, which would do nothing,
+// stay hidden.
+const PAGE_SCRIPT = '<script type="module" src="/api.js"></script>'
 
 // The sentences of the introduction, with \`code\` in backticks: the page and
 // its Markdown both print these.
@@ -973,7 +993,7 @@ function introOf(model, spec) {
     basics: [
       ['Base address', `\`${spec.servers[0].url}\``],
       ['Requests', '`GET` and `HEAD` only. No key, no account, no query parameters.'],
-      ['Files', `Written when the site is built, not worked out for each request. There is no paging and no filtering: take the file and filter it yourself. The data here is of ${day}, edition ${model.index.edition}.`],
+      ['Files', `Written when the site is built, not worked out for each request. There is no paging and no filtering: take the file and filter it yourself. The data here is of ${day}.`],
       ['Other sites', 'The server sends no CORS headers, so a script on another site cannot read these files in a browser. A label works on any site as an image.'],
       ['Caching', 'Labels, embeds, single results and the other files that are put together on request can be kept for five minutes (`max-age=300`).'],
       ['Fields', `Each entry lists the fields of what it returns, for JSON and for CSV. ${OPTIONAL}`],
@@ -1038,6 +1058,7 @@ ${groups.map((group) => `<h2 id="${slug(group.name)}">${esc(group.name)}</h2>
 ${group.entries.map((entry) => `<li><a href="#${esc(entry.id)}">${esc(entry.title)}</a></li>`).join('\n')}
 </ul>
 ${group.entries.map((entry) => entryHtml(spec, entry)).join('\n')}`).join('\n\n')}
+${suggestionLists(spec)}
 ${PAGE_SCRIPT}`
 
   return {

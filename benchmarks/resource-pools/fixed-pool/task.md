@@ -53,7 +53,7 @@ Executors, as recorded with each result:
 
 Not compared here: `bytebufferpool` (Go), an unbounded pool of byte buffers
 with no maximum size and no waiting, which is another job; `puddle` and
-`connection_pool` are not entered in this edition, the decision for this task
+`connection_pool` are not entered here, the decision for this task
 being deadpool plus the standard-library entries.
 
 See [shared methodology](../../README.md) for timing and reproduction.

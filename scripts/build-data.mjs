@@ -152,7 +152,7 @@ function storedCheck(check) {
 
 const config = await readJson(fromRoot('runtimes.json'))
 const types = await readJson(fromRoot('data/types.json'), { compilers: {}, packages: {} })
-// The version of each npm package that the edition ranks. Results for other
+// The version of each npm package that is ranked. Results for other
 // versions are kept as that package's history.
 const versionPins = await readJson(fromRoot('versions.json'), {npm:{},jsr:{}})
 const pinned = versionPins.npm
@@ -247,7 +247,7 @@ function cargoCheck(stored) {
 await mkdir(fromRoot('dist'), { recursive: true })
 
 const generatedAt = new Date().toISOString()
-const index = { edition: config.edition, generatedAt, compilers: types.compilers, categories: [], tasks: [], planned: [] }
+const index = { generatedAt, compilers: types.compilers, categories: [], tasks: [], planned: [] }
 
 const unmeasured = []
 const pending = []
@@ -434,7 +434,6 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   }
   const order = [...Object.keys(config.runtimes), ...Object.keys(config.toolchains)]
   const data = {
-    edition: config.edition,
     generatedAt,
     machine,
     // The other task of a strict and lenient pair is named only once it has results, and so a page.

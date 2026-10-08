@@ -4,14 +4,29 @@
 /* What a group has, by the title of each entry, before the entries. */
 .api-list { list-style: none; padding: 0; max-width: none; columns: 2 22rem; column-gap: 28px; margin: 0 0 10px; }
 .api-list li { break-inside: avoid; padding: 1px 0; }
-.api-path, .api-sample code, .api-curl code { font: 0.75rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
+.api-path, .api-sample code, .api-code code, .api-asked { font: 0.75rem/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; }
 
-/* One entry: a task, and the addresses that answer it. A link to it leaves
-   room for the bar at the top of the page. */
-.api-entry { margin: 0; padding: 14px 0 6px; border-top: 1px solid var(--rule); scroll-margin-top: 56px; }
-.api-entry > h3 { margin-top: 0; font-size: 0.9375rem; }
+/* One entry: a task, and the addresses that answer it. It starts at a rule,
+   under its title, and reads as one unit. A link to it leaves room for the
+   bar at the top of the page. */
+.api-entry { margin: 26px 0 0; padding: 12px 0 10px; border-top: 2px solid var(--ink); scroll-margin-top: 56px; container-type: inline-size; }
+.api-list + .api-entry { margin-top: 14px; }
+.api-entry > h3 { margin: 0 0 8px; font-size: 1.0625rem; font-weight: 800; font-stretch: 90%; }
 .api-entry:target > h3 { box-shadow: -4px 0 0 var(--bg), -8px 0 0 var(--mark); }
-.api-entry > p, .api-variant > p { max-width: 86ch; }
+.api-main > p, .api-variant > p { max-width: 86ch; }
+/* Two columns where the entry is wide enough for the examples to be of use
+   beside the description (about 24rem): what it is and what to send on the
+   left with the fields of the answer under it, how to ask and what comes back
+   on the right, staying in view while the entry is read. The width is the
+   entry's own, so the site's menu beside the page is already taken off.
+   In one column the examples come between the parameters and the fields. */
+.api-side { margin: 4px 0 12px; }
+@container (min-width: 58rem) {
+  .api-cols { display: grid; grid-template-columns: minmax(0, 3fr) minmax(24rem, 2fr); column-gap: 32px; align-items: start; }
+  .api-main, .api-fields { grid-column: 1; min-width: 0; }
+  .api-side { grid-column: 2; grid-row: 1 / span 2; align-self: stretch; min-width: 0; margin: 0; }
+  .api-sticky { position: sticky; top: 56px; max-height: calc(100vh - 68px); overflow-y: auto; scrollbar-width: thin; }
+}
 /* The format chooser and the copy buttons, on one line where there is room. */
 .api-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 0 0 12px; }
 .api-bar[hidden] { display: none; }
@@ -34,13 +49,15 @@
 /* Every format is in the page. With scripts one is shown at a time, and the
    name over each is not needed; without, they follow each other. */
 .api-format { margin: 14px 0 6px; font-size: 0.8125rem; font-weight: 700; }
-.api-live .api-format, .api-live .api-variant:not(.api-on) { display: none; }
+.api-live .api-format, .api-live .api-variant:not(.api-on), .api-live .api-request:not(.api-on) { display: none; }
 /* The method and the path: a long path scrolls sideways inside its own box. */
 .api-sig { display: flex; align-items: stretch; gap: 0; margin: 0 0 8px; max-width: 100%; font-size: 0.8125rem; }
 .api-method { flex: none; display: grid; place-items: center; padding: 0 9px; background: var(--ink); color: var(--bg); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.02em; }
 .api-path { flex: 0 1 auto; min-width: 0; padding: 5px 10px; border: 1px solid var(--ink); border-left: 0; background: var(--bg); font-weight: 600; white-space: nowrap; overflow-x: auto; scrollbar-width: thin; }
 /* A part of the path to fill in. */
 .api-param { font-weight: 400; color: var(--soft); }
+/* The same part once the try box has a value for it. */
+.api-param.api-filled { color: var(--ink); background: color-mix(in srgb, var(--mark) 35%, transparent); }
 .api-returns { color: var(--soft); margin-bottom: 6px; }
 .api-returns a { color: var(--ink); }
 
@@ -65,24 +82,69 @@
 .api-fields-of > p { max-width: 86ch; margin: 4px 0 6px; }
 .api-fields-of:target > summary { box-shadow: -4px 0 0 var(--bg), -8px 0 0 var(--mark); }
 
-/* A sample of the answer, and the command that asks for it. */
-.api-sample { margin: 0 0 8px; padding: 8px 12px; max-width: 86ch; max-height: 22rem; overflow: auto; background: var(--band); border: 1px solid var(--rule); tab-size: 2; }
-.api-sample code { display: block; width: max-content; min-width: 100%; font-weight: 400; white-space: pre; }
-.api-figure { display: block; max-width: 100%; max-height: 220px; width: auto; height: auto; margin: 0 0 8px; }
-.api-curl { display: flex; max-width: 86ch; margin: 0 0 12px; }
-.api-curl code { flex: 1 1 auto; min-width: 0; padding: 5px 10px; border: 1px solid var(--rule); background: var(--band); color: var(--ink); font-weight: 400; white-space: nowrap; overflow-x: auto; scrollbar-width: thin; user-select: all; -webkit-user-select: all; }
+/* The try box: a field for each part of the address, and a button that asks. */
+.api-try { margin: 12px 0 14px; padding: 10px 12px 12px; border: 1px solid var(--rule); max-width: 86ch; }
+.api-try[hidden] { display: none; }
+.api-try h4 { margin: 0 0 8px; font-size: 0.8125rem; font-weight: 700; }
+.api-try-fields { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; align-items: center; margin: 0 0 10px; }
+.api-try-fields label { font-size: 0.8125rem; }
+.api-try-send { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0; max-width: none; font-size: 0.8125rem; }
+/* Fields and buttons drawn in full, so that they are the same in every browser. */
+.api-try input, .api-try select {
+  -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 100%; min-width: 0; height: 2rem; margin: 0; padding: 0 10px;
+  font: 0.8125rem/1.2 ui-monospace, 'SF Mono', Menlo, Consolas, monospace; color: var(--ink); background-color: var(--bg); border: 1px solid var(--soft); border-radius: 0;
+}
+.api-try select {
+  padding-right: 28px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 14px center, right 9px center; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.api-try button, .api-more, .api-copy { -webkit-appearance: none; appearance: none; box-sizing: border-box; font: inherit; font-size: 0.8125rem; font-weight: 700; color: var(--ink); background: var(--bg); border: 1px solid var(--ink); border-radius: 0; cursor: pointer; }
+.api-try button { height: 2rem; padding: 0 18px; }
+.api-try button:hover, .api-more:hover, .api-copy:hover { background: var(--mark); color: #000; border-color: #000; }
+
+/* Beside the description: boxes of code on the band colour, each under a
+   thin head with its name. The languages are plain words in a row, the one
+   on show underlined. */
+.api-box { margin: 0 0 12px; border: 1px solid var(--rule); background: var(--band); }
+.api-box[hidden] { display: none; }
+.api-box-head { display: flex; align-items: center; gap: 4px 14px; flex-wrap: wrap; min-height: 2rem; padding: 0 0 0 12px; border-bottom: 1px solid var(--rule); background: var(--bg); font-size: 0.8125rem; }
+.api-box-title { font-weight: 700; margin-right: auto; padding: 5px 0; }
+.api-tabs { display: flex; gap: 0 12px; }
+.api-tabs[hidden] { display: none; }
+.api-tabs button { -webkit-appearance: none; appearance: none; font: inherit; color: var(--soft); background: none; border: 0; border-radius: 0; padding: 6px 0 4px; border-bottom: 2px solid transparent; cursor: pointer; }
+.api-tabs button:hover { color: var(--ink); }
+.api-tabs button[aria-pressed='true'] { color: var(--ink); font-weight: 700; border-bottom-color: var(--ink); }
+.api-copy { align-self: stretch; padding: 0 12px; min-width: 4.2rem; border-width: 0 0 0 1px; border-color: var(--rule); }
+.api-copy[hidden] { display: none; }
+.api-box-head > :last-child:not(.api-copy) { margin-right: 12px; }
+.api-language { margin: 0; padding: 6px 12px 0; font-size: 0.75rem; font-weight: 700; color: var(--soft); }
+.api-live .api-language, .api-live .api-code:not(.api-on) { display: none; }
+.api-code pre, .api-box .api-sample { margin: 0; padding: 9px 12px; border: 0; background: none; max-width: none; overflow: auto; scrollbar-width: thin; tab-size: 2; }
+.api-code code, .api-sample code { display: block; width: max-content; min-width: 100%; font-weight: 400; white-space: pre; }
+.api-box .api-sample { max-height: 22rem; }
+.api-figure { display: block; max-width: calc(100% - 24px); max-height: 220px; width: auto; height: auto; margin: 10px 12px; }
+.api-box > p { margin: 0; }
+/* What came back: the status first, then the body. */
+.api-result { border-color: var(--ink); }
+.api-asked { margin-right: 12px; font-weight: 400; color: var(--soft); overflow-wrap: anywhere; }
+.api-status { margin: 0; padding: 8px 12px 0; max-width: none; font-size: 0.8125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.api-status:last-child { padding-bottom: 9px; }
+.api-failed { background: var(--mark); color: #000; padding: 0 4px; }
+.api-more { display: block; width: 100%; height: 2rem; border-width: 1px 0 0; border-color: var(--rule); }
 
 @media (max-width: 760px) {
   .api-list { columns: 1; }
   .api-table td.api-wrap { min-width: 13rem; }
-  .api-sample { max-height: 18rem; }
+  .api-box .api-sample { max-height: 18rem; }
 }
 @media print {
-  .api-bar { display: none; }
-  .api-sample { max-height: none; }
-  /* On paper every format is shown, under its name. */
-  .api-live .api-format { display: block; }
-  .api-live .api-variant:not(.api-on) { display: block; }
+  .api-bar, .api-try, .api-tabs, .api-copy, .api-result { display: none; }
+  .api-box .api-sample { max-height: none; }
+  .api-sticky { position: static; max-height: none; }
+  /* On paper every format and every language is shown, under its name. */
+  .api-live .api-format, .api-live .api-language { display: block; }
+  .api-live .api-variant:not(.api-on), .api-live .api-request:not(.api-on), .api-live .api-code:not(.api-on) { display: block; }
   .api-fields-of[hidden] { display: block; }
 }
 

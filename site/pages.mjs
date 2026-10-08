@@ -2659,7 +2659,7 @@ ${group('Release', `<label class="adv-field">Released on or after <input type="d
 <tbody></tbody>
 </table></div>
 <script type="application/json" id="adv-config">${JSON.stringify({ kinds: { p: 'Package', t: 'Task', c: 'Category', r: 'Runtime', e: 'Registry' }, registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])), licenseKinds: LICENSE_KINDS, measures: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])) }).replace(/</g, '\\u003c')}</script>
-<script type="module" src="/search.js"></script>
+<script type="module" src="/search.js?v=${model.assets ?? ''}"></script>
 </main>`,
   })
 }
@@ -2669,6 +2669,8 @@ ${group('Release', `<label class="adv-field">Released on or after <input type="d
 // The page is drawn from the same object that is published as /openapi.json
 // (site/api.mjs), so the two cannot disagree.
 export function apiReferencePage(model, spec) {
-  const { title, description, body } = apiPage(model, spec)
+  const page = apiPage(model, spec)
+  const { title, description } = page
+  const body = page.body.replace('src="/api.js"', `src="/api.js?v=${model.assets ?? ''}"`)
   return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, formats: { data: false, download: { href: '/openapi.json', title: 'Download OpenAPI', detail: 'The same addresses as an OpenAPI 3.1 description' } }, body: `<main>\n<div class="api">${body}</div></main>` })
 }

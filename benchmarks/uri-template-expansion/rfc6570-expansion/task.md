@@ -52,7 +52,7 @@ fixture outside the timed call, which is the same footing.
   bytes of UTF-8 where the RFC counts characters.
 
 Not included: `@fedify/uri-template` (JSR) has only pre-release versions, which
-the edition does not install. PyPI `uritemplate` and `uri-template` can be added
+this site does not install. PyPI `uritemplate` and `uri-template` can be added
 when PyPI packages can be adapters; the fixtures need no change.
 
 See [shared methodology](../../README.md) for timing and reproduction.

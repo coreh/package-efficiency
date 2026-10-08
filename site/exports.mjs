@@ -107,7 +107,7 @@ const entryRow = (data, e) => [e.title, e.version ?? (e.builtin ? 'built in' : '
 const ENTRY_HEAD = (data) => ['Entry', 'Version', 'Settings', `CPU per ${unitOf(data)}`, 'Memory', 'Type-check cost', 'Import time', 'Size on disk', 'Latency p99']
 
 export function taskMarkdown(data, ctx) {
-  const { url = (path) => path, edition } = ctx
+  const { url = (path) => path } = ctx
   // A strict task and its lenient task name each other (task.json `strictness`, `pairedWith`).
   const pair = data.task.strictness && data.task.pairedWith ? (data.task.strictness === 'lenient'
     ? `\n\nThis is the lenient task of a pair. It runs the adapters of the strict task, ${data.task.pairedWith} (${url(`/${data.task.pairedWith}/index.md`)}), on the same inputs, with a check that leaves out or forgives one stated kind of difference (task.md, below). An entry that passes here and not there says so in its note.`
@@ -154,7 +154,7 @@ ${(() => {
 }
 
 export function packageMarkdown(pkg, ecosystemTitle, ctx) {
-  const { url = (path) => path, edition } = ctx
+  const { url = (path) => path } = ctx
   const registry = ctx.ecosystems?.[pkg.ecosystem]?.registry?.(pkg.module ?? pkg.name)
   const tasks = [...new Set(pkg.appearances.map((a) => a.data))]
   const path = `/${pkg.ecosystem}/${pkg.name}/`
@@ -451,7 +451,11 @@ ${SCORES} ${PROVISIONAL(ctx)}
 ${sections.map(([scope]) => `## ${scope}\n\n${scoreTableMd(rows.filter((r) => r.scope === scope))}`).join('\n\n')}
 
 ${footer(ctx, '/runtimes/', true)}`
-  return { markdown, rows }
+  // The files give each multiple to two decimal places, like the ratios of
+  // a result row. The Markdown above is made from the unrounded figures, as
+  // the page is.
+  const rounded = (value) => (typeof value === 'number' ? Number(value.toFixed(2)) : value)
+  return { markdown, rows: rows.map((row) => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, key.endsWith('_times') ? rounded(value) : value]))) }
 }
 
 export function runtimeExport(ctx, rt) {
