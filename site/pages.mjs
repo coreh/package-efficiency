@@ -893,6 +893,10 @@ function packageTable(packages, model, { showEcosystem, everyPackage = false, re
       const ordered = candidates.sort((a,b) => coverage(b)-coverage(a) || CLASSES.indexOf(packageGrade(pkg,a.id,'cpu').grade.class)-CLASSES.indexOf(packageGrade(pkg,b.id,'cpu').grade.class) || packageGrade(pkg,a.id,'cpu').grade.ratio-packageGrade(pkg,b.id,'cpu').grade.ratio)
       return (rt.every ? ordered : ordered.slice(0, 1)).map((selected) => ({ pkg, selected }))
     })
+    // The table opens with the lowest CPU cost first (its multiple of the best
+    // result, the mean one over several tasks), then by name.
+    const cpuRatio = (row) => packageGrade(row.pkg, row.selected.id, 'cpu')?.grade.ratio ?? Infinity
+    pairs.sort((a, b) => cpuRatio(a) - cpuRatio(b) || a.pkg.title.localeCompare(b.pkg.title))
     // Places are held among the rows of this table, once for each setting of
     // the Settings switch, since tuned figures change who is first and last.
     const scopeOf = (rankingId, view) => pairs.flatMap((row) => {
