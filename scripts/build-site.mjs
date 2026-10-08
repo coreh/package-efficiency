@@ -55,7 +55,25 @@ const MANIFEST = fromRoot('.cache/site-manifest.json')
 const before = await readJson(MANIFEST, {})
 const produced = {}
 let rewritten = 0
+// A large page repeats the same inline icon thousands of times (one for each
+// row of a table). Each icon that repeats is drawn once, in a sprite at the
+// top of the page, and every place it appeared refers to it. This keeps the
+// longest pages under the 25 MiB a file may have on Cloudflare.
+const ICON = /<svg class="ico"([^>]*)>(.*?)<\/svg>/gs
+function shareIcons(html) {
+  const seen = new Map()
+  for (const [, , inner] of html.matchAll(ICON)) seen.set(inner, (seen.get(inner) ?? 0) + 1)
+  const shared = new Map([...seen].filter(([inner, count]) => count > 8 && inner.length > 200 && !inner.startsWith('<use ')).map(([inner], index) => [inner, `ico-${index}`]))
+  if (!shared.size) return html
+  const at = html.indexOf('>', html.indexOf('<body')) + 1
+  if (at === 0) return html
+  const sprite = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[...shared].map(([inner, id]) => `<g id="${id}">${inner}</g>`).join('')}</defs></svg>`
+  const body = html.slice(at).replace(ICON, (whole, attributes, inner) => (shared.has(inner) ? `<svg class="ico"${attributes}><use href="#${shared.get(inner)}"/></svg>` : whole))
+  return html.slice(0, at) + sprite + body
+}
+
 async function write(file, content) {
+  if (typeof content === 'string' && content.length > 1_000_000 && file.endsWith('.html')) content = shareIcons(content)
   const key = path.relative(dist(), file)
   const hash = createHash('sha1').update(content).digest('base64')
   produced[key] = hash
