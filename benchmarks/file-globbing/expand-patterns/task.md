@@ -45,8 +45,15 @@ pattern that itself starts with a literal dot does (`**/.gitignore` finds
 files of the hidden directory `.config`, and `**/*.json` finds none of the
 `.eslintrc.json` or `.config/settings.json` files). This is what Node's
 `fs.globSync`, `glob`, `tinyglobby`, `fast-glob`, `globby`, Python's `glob`,
-Ruby's `Dir.glob` and the shell do by default, and the trees hold hidden names
-so that a library which ignores the rule returns too much and fails.
+Ruby's `Dir.glob` and the shell do by default.
+
+Other packages follow the opposite convention: a wildcard matches a hidden
+name like any other (Rust's `glob` and `globwalk`, Go's `doublestar` and
+`zglob`, Deno's `@std/fs`). Both are accepted. A result must follow one
+convention for every pattern of a fixture, not a mix, and the trees hold
+hidden names so that the two answers differ. A package of the second kind
+returns more paths for some patterns, so it does a little more work in this
+task.
 
 ## What is checked
 

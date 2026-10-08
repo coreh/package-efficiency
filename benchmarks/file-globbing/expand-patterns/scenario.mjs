@@ -110,6 +110,9 @@ const expand = (root, pattern, dot = false) => { const re = toRegExp(pattern, do
 export const cases = Object.entries(patterns).map(([root, list]) => ({
   input: { root: `${scratch}/${root}`, patterns: list },
   expected: list.map((pattern) => expand(root, pattern)),
+  // The same with names that start with a dot matched by wildcards too: the
+  // other convention packages follow (see check).
+  expectedDot: list.map((pattern) => expand(root, pattern, true)),
 }))
 
 // The fixtures must be able to tell the right answer from the common wrong
@@ -125,7 +128,21 @@ cases.forEach(({ input, expected }, i) => {
 // patterns. Each list may be in any order; a path may be absolute or relative
 // to the root, with or without a leading `./`. Nothing else is forgiven: every
 // matching file exactly once, and nothing that does not match.
-function check({ input, expected }, result, i) {
+// Packages follow one of two conventions for names that start with a dot:
+// wildcards skip them (the shell's rule) or match them. Either is accepted,
+// but one of them for every pattern of a fixture, never a mix.
+function check(fixture, result, i) {
+  try {
+    checkAgainst(fixture, fixture.expected, result, i)
+  } catch (shellRule) {
+    try {
+      checkAgainst(fixture, fixture.expectedDot, result, i)
+    } catch {
+      throw shellRule
+    }
+  }
+}
+function checkAgainst({ input }, expected, result, i) {
   assert.ok(Array.isArray(result), `fixture ${i}: a list of results is required`)
   assert.equal(result.length, input.patterns.length, `fixture ${i}: one list per pattern is required`)
   result.forEach((list, j) => {

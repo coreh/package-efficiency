@@ -100,7 +100,7 @@ export async function fetchJson(url, headers = {}) {
 
 // The resumable loop every sweep shares: skip what has a result, save after
 // every package, finish the package in hand on Ctrl-C.
-export async function sweep({ out, header, targets, force, retryFailed, measureOne, summary, allowOkWithoutAdded = false }) {
+export async function sweep({ out, header, targets, force, retryFailed, measureOne, summary, allowOkWithoutAdded = false, stopWhen = null }) {
   const previous = await readJson(out, null)
   // Results are comparable only under the same checker and method; a file made
   // under another is started again.
@@ -121,6 +121,14 @@ export async function sweep({ out, header, targets, force, retryFailed, measureO
   const started = Date.now()
   let done = 0
   for (let target; !stopping && (target = queue.shift()); ) {
+    // A sweep can ask to stop between packages (disk nearly full, say); what
+    // is left is measured by running the same command again.
+    const reason = stopWhen ? await stopWhen(done) : null
+    if (reason) {
+      console.error(`Stopping: ${reason}. Run the same command again to carry on.`)
+      queue.unshift(target)
+      break
+    }
     const t0 = Date.now()
     let result
     try {

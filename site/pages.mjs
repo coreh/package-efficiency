@@ -771,6 +771,14 @@ ${adapterList}`
 
   const runsOn = [...new Set(shown.map((a) => a.runtime.title))]
   const status = older ? (pkg.appearances.some(a=>a.entry.version===version) ? `${/-/.test(version) ? 'A pre-release, measured with the default' : 'A second current release line, measured with the default'}; the default is ${esc(pkg.version)}.` : `An earlier version. It is not in the rankings. The default full release is ${esc(pkg.version)}.`) : versions.length > 1 ? 'The default full release. Rankings use this version.' : ''
+  // The categories this package is measured in, as tiles under its name, and
+  // at the foot of the page every package of those categories in one table,
+  // with this package's rows marked.
+  const measuredIn = model.categories.filter((c) => pkg.appearances.some((a) => a.data.task.category === c.id))
+  const peers = model.packages.filter((p) => p.appearances.some((a) => measuredIn.some((c) => c.id === a.data.task.category)))
+  const comparison = peers.length > 1
+    ? `<h2 id="compare">How it compares</h2>\n<p class="soft">Every package measured in ${measuredIn.map((c) => `<a href="${urls.category(c.id)}">${esc(c.title)}</a>`).join(' and ')}, on all of that category's tasks. ${esc(pkg.title)} is marked.</p>\n${packageTable(peers.map((p) => ({ ...p, appearances: p.appearances.filter((a) => measuredIn.some((c) => c.id === a.data.task.category)) })), model, { showEcosystem: true, references: true, highlight: pkg, settings: !hasSettings })}`
+    : ''
   return layout({
     title: `${pkg.title}${version ? ` ${version}` : ''}: Package Efficiency Labels`,
     description: `Efficiency labels for ${pkg.title}${version ? ` ${version}` : ''} on ${runsOn.join(', ')}.`,
@@ -785,10 +793,12 @@ ${adapterList}`
 <h1>${esc(pkg.title)}${verifiedAll(shown.map((a) => a.entry))}${version ? ` <span class="ver">${esc(version)}</span>` : ''}</h1>
 <p class="intro">${pkg.ecosystem === 'builtin' ? 'Built into its runtime' : `${esc(eco.title)} package`}. Measured on ${esc(runsOn.join(', '))} in ${plural(new Set(shown.map((a) => a.data)).size, 'task')}. ${status}${eco.registry ? ` <a href="${eco.registry(pkg.module ?? pkg.name)}">View on the registry</a>.` : ''}</p>
 
+${measuredIn.length ? `<ul class="tiles">${measuredIn.map((c) => `<li><a href="${urls.category(c.id)}">${categoryIcon(c.id)}<span><b>${esc(c.title)}</b><small>${plural(c.tasks.length, 'task')}, ${plural(model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === c.id)).length, 'package')} measured</small></span></a></li>`).join('')}</ul>` : ''}
 ${versionNav}
 ${hasSettings ? `<div class="switches package-settings">${switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')}</div>` : ''}
 ${failures.length ? `<section class="compatibility" aria-label="Benchmark compatibility">${failures.map(({runtime,entry})=>`<div class="compatibility-item"><p><strong>${esc(runtime.title)} unavailable.</strong> ${esc(entry.notes ?? 'This version of the package did not complete the task on this runtime.')}</p><details><summary>Details</summary><pre>${esc(entry.error)}</pre></details></div>`).join('')}</section>` : ''}
 ${sections}
+${comparison}
 </main>`,
   })
 }
@@ -857,7 +867,9 @@ function packageGrade(pkg, runtimeId, rankingId) {
 // `references` keeps reference entries (and their switch): only a category's
 // own table has them. Elsewhere those results are left out, and a package
 // with nothing else is not listed.
-function packageTable(packages, model, { showEcosystem, everyPackage = false, references = false }) {
+// `highlight` marks one package's rows, on that package's own page; `settings`
+// off leaves the Settings switch to the page, which already has one.
+function packageTable(packages, model, { showEcosystem, everyPackage = false, references = false, highlight = null, settings: ownSettings = true }) {
   packages = activeReleaseRows(packages)
   if (!references) packages = packages.map((p) => (p.appearances.some((a) => a.entry.reference) ? { ...p, appearances: p.appearances.filter((a) => !a.entry.reference) } : p)).filter((p) => p.appearances.length)
   const actualRuntimes = model.runtimes.filter((rt) => packages.some((p) => p.appearances.some((a) => a.runtime.id === rt.id)))
@@ -920,7 +932,7 @@ function packageTable(packages, model, { showEcosystem, everyPackage = false, re
       const typeCells = isRust
         ? typeCost(typed?.types, typed?.grades.types) + cell(typed?.types?.coldCpuS, num(typed?.types?.coldCpuS, ' s'))
         : rt.language === 'all' ? typeCost(typed?.types?.compilers?.[model.tasks[0].typesCompiler] ?? typed?.types, typed?.grades.types) : nativeLanguage ? typeCost(typed?.types, typed?.grades.types) : compilers.map((id) => typeCost(typed?.types.compilers[id])).join('')
-      return `<tr${everyPackage ? ' data-status="Measured"' : ''}${here.length && here.every((a) => a.entry.reference) ? ' data-reference' : ''}><td><a href="${urls.package(pkg,pkg.version===pkg.defaultVersion?null:pkg.version)}">${esc(pkg.title)}</a><span class="ver">${esc(pkg.version ?? '')}</span>${marks}</td>
+      return `<tr${pkg === highlight || (highlight && pkg.ecosystem === highlight.ecosystem && pkg.name === highlight.name) ? ' class="here"' : ''}${everyPackage ? ' data-status="Measured"' : ''}${here.length && here.every((a) => a.entry.reference) ? ' data-reference' : ''}><td><a href="${urls.package(pkg,pkg.version===pkg.defaultVersion?null:pkg.version)}">${esc(pkg.title)}</a><span class="ver">${esc(pkg.version ?? '')}</span>${marks}</td>
 ${metricCell(pkg, 'cpu', selected.id)}${metricCell(pkg, 'memory', selected.id)}${typeCells}
 <td>${new Set(here.map((a) => a.data)).size}</td>
 ${pkg.listed ? `<td data-v="${pkg.listed.share}" title="Number ${pkg.listed.rank} on ${esc(ECOSYSTEMS[pkg.ecosystem].title)}, ${esc(pkg.listed.popularity.label)}">${compact(pkg.listed.popularity.value)}</td>` : cell(null, NA)}
@@ -941,7 +953,7 @@ ${TYPE_KEY}
   const hasTuned = packages.some((p) => p.appearances.some((a) => a.entry.name !== a.entry.package))
   if (runtimes.length === 1 && !hasTuned) return panels[0]
   const rules = runtimes.map((rt) => `.pick:has(#runtime-${rt.id}:checked) .panel[data-runtime="${rt.id}"]`)
-  const settings = hasTuned
+  const settings = hasTuned && ownSettings
     ? switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')
     : ''
   return `<div class="pick"${everyPackage ? ' data-catalog' : ''}>
