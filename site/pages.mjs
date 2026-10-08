@@ -521,7 +521,7 @@ function anchorNote(data, runtime, rankingId, entries) {
     const how = runtime.language === 'all'
       ? 'Each language has its own checker, and the checkers do different amounts of work. The comparison shows what type checking costs in each ecosystem. It does not show which checker is better.'
       : `Measured with ${esc(metric.tool)}${metric.notes ? `: ${esc(metric.notes)}` : '.'}`
-    return `<p class="note">Type-check cost is the CPU time that the checker adds, multiplied by the memory that it adds. Added CPU time below 10 ms counts as 10 ms.${holder} ${how}</p>`
+    return `<p class="note">Type-check cost is the CPU time that the checker adds, multiplied by the memory that it adds. Added CPU time below 10 ms counts as 10 ms and added memory below 0.25 MB as 0.25 MB (5 MB for Go, whose memory varies more between runs): less than that is not measured reliably.${holder} ${how}</p>`
   }
   const { anchor } = metric
   const best = entries[0]
@@ -635,7 +635,7 @@ ${taskSource(data.task.id).map((f) => sourceFile(f, model, { open: false, id: `s
 function typeDetail(data, entry) {
   // A figure from a sweep of whole packages (scripts/sweep-types/).
   if (entry.types.swept) return `<p>Measured with ${esc(entry.types.tool)}. ${esc(entry.types.basis)} The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time and ${formatNumber(entry.types.memoryMb)} MB of memory.${entry.types.community ? ` The types come from a community package${entry.types.from ? ` (${esc(entry.types.from)})` : ''}, not from the authors of this package.` : ''}</p>`
-  if (entry.types.metricKey) return `<p>Measured with ${esc(entry.types.tool)} ${esc(entry.types.version)}: ${esc(entry.types.notes)} The workload and the baseline each run eleven times, each time in a new process. The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB of peak resident memory. A figure below the baseline counts as zero. Added CPU time below 10 ms counts as 10 ms.</p>`
+  if (entry.types.metricKey) return `<p>Measured with ${esc(entry.types.tool)} ${esc(entry.types.version)}: ${esc(entry.types.notes)} The workload and the baseline each run eleven times, each time in a new process. The package adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB of peak resident memory. A figure below the baseline counts as zero. Added CPU time below 10 ms counts as 10 ms and added memory below 0.25 MB as 0.25 MB (5 MB for Go).</p>`
   if (entry.types.tool === 'cargo') {
     return `<p>Measured with ${esc(data.typeChecks.cargo.tool)}. The first check of the crate and its dependencies takes ${formatNumber(entry.types.coldCpuS)} s of CPU time. A second check of the adapter adds ${formatNumber(entry.types.cpuMs)} ms of CPU time, ${formatNumber(entry.types.timeMs)} ms of elapsed time and ${formatNumber(entry.types.memoryMb)} MB, compared with an empty program.</p>`
   }
@@ -1513,7 +1513,7 @@ const geomean = (values) => Math.exp(values.reduce((sum, v) => sum + Math.log(v)
 // The type-check boundaries: each class's CPU boundary times its memory
 // boundary (see build-data.mjs).
 const TYPE_RUNTIME_SCALE = [1.5, 3, 6, 12, 25, 50].map((times, i) => times * [1.5, 2.5, 4, 6.5, 10, 16][i])
-const typeScore = (e) => (e.grades.types?.value == null ? null : Math.max(e.grades.types.value, 0.001))
+const typeScore = (e) => (e.grades.types?.value == null ? null : Math.max(e.grades.types.value, 0.0025))
 function typeCheckRatios(data, entries) {
   const scores = (list) => {
     const packages = list.filter((e) => !e.builtin).map(typeScore).filter((v) => v !== null)

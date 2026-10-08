@@ -2,7 +2,7 @@
 // scripts/measure-types.mjs. Writes data/cargo/types.json.
 //
 // Usage: node scripts/sweep-types/cargo.mjs <crate>... | --top=N
-//        [--force] [--retry-failed] [--runs=11] [--cold-runs=3] [--graded=cold|warm] [--keep] [--out=file]
+//        [--force] [--retry-failed] [--runs=11] [--cold-runs=3] [--graded=cold|warm] [--features=default|docs] [--keep] [--out=file]
 // --top=N takes the N most used of data/cargo/packages.json and everything in
 // data/cargo/picked.json. A run can be stopped and started again: the results
 // file is written after every crate, crates already in it are skipped
@@ -13,11 +13,13 @@
 // fixed name so the library's own name need not be known:
 //   [dependencies] pkg = { package = "<name>", version = "=<version>", features = [...] }
 //   src/main.rs:   use pkg as _;  fn main() {}
-// Features: the crate's defaults, plus the features its own documentation is
-// built with when the crate says so in a machine-readable way
-// ([package.metadata.docs.rs] `features`, `all-features`,
-// `no-default-features`). If the check fails with those, the defaults alone
-// are used. `features` in the result says which were used.
+// Features: the crate's defaults, as a plain `cargo add` gives and as every
+// other registry's sweep measures a package. With --features=docs, also the
+// features its own documentation is built with when the crate says so in a
+// machine-readable way ([package.metadata.docs.rs] `features`,
+// `all-features`, `no-default-features`), falling back to the defaults if the
+// check fails with those; that is often every feature and several times the
+// tree. `features` in the result says which were used.
 //
 // Command: cargo check --locked --offline --quiet, CARGO_INCREMENTAL=0 (no
 // incremental state is ever written or reused).
@@ -66,6 +68,8 @@ const RUNS = Number(value('runs', 11))
 const COLD_RUNS = Number(value('cold-runs', 3))
 // Which figure is the entry's `added`.
 const GRADED = value('graded', 'cold')
+const FEATURES = value('features', 'default')
+if (!['default', 'docs'].includes(FEATURES)) throw new Error('--features must be default or docs')
 if (!['warm', 'cold'].includes(GRADED)) throw new Error('--graded must be warm or cold')
 // A check that runs longer than this is a failure (an all-features tree can be enormous).
 const CHECK_TIMEOUT_MS = 15 * 60_000
@@ -214,7 +218,7 @@ async function measurePackage({ name }) {
     const docs = pkg.metadata?.docs?.rs ?? pkg.metadata?.['docs.rs'] ?? null
     const declared = Object.keys(pkg.features ?? {}).filter((f) => f !== 'default')
     let features = null
-    if (docs && (docs['all-features'] || docs.features?.length || docs['no-default-features'])) {
+    if (FEATURES === 'docs' && docs && (docs['all-features'] || docs.features?.length || docs['no-default-features'])) {
       const list = docs['all-features'] ? declared : (docs.features ?? []).filter((f) => declared.includes(f))
       if (list.length || docs['no-default-features']) features = { list, noDefault: Boolean(docs['no-default-features']) && !docs['all-features'], source: docs['all-features'] ? 'docs.rs all-features' : 'docs.rs features' }
     }
@@ -275,7 +279,7 @@ async function measurePackage({ name }) {
 
 const header = {
   checker: { tool: GRADED === 'warm' ? 'cargo check, dependencies already checked' : 'cargo check', version: rust },
-  method: { program: MAIN, features: 'default plus docs.rs metadata', graded: GRADED, env: { CARGO_INCREMENTAL: '0' } },
+  method: { program: MAIN, features: FEATURES === 'docs' ? 'default plus docs.rs metadata' : 'default', graded: GRADED, env: { CARGO_INCREMENTAL: '0' } },
   minReleaseAgeDays: MIN_RELEASE_AGE_DAYS,
   memoryKind: 'peak RSS of the largest process in the cargo tree (rustc)',
   scoreBasis: 'added process CPU ms * added peak RSS MB',

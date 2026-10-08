@@ -33,19 +33,27 @@ const MEMORY_RATIO_SCALE = [1.5, 2.5, 4, 6.5, 10, 16]
 // each class's CPU boundary times its memory boundary. Like CPU and memory it
 // is graded as a multiple of the best entry in the task, separately for each
 // compiler. Time below `timeFloorMs` is run-to-run noise and counts as the
-// floor.
+// floor. So does memory below TYPE_MEMORY_FLOOR_MB: most checkers are measured
+// by the peak memory of their process, and the runs of one empty baseline
+// differ by 0.3 to 0.6 MB (mypy, rbs), so a median of them resolves about a
+// quarter of a megabyte. The lowest cost there can be is the product of the
+// two, 0.0025 MB·s. The Go checker's peak memory depends on when its garbage
+// collector runs: the runs of one module differ by 8 MB (median), and a third
+// of the modules measure below the reference, so its floor is higher.
+const TYPE_MEMORY_FLOOR_MB = 0.25
+const GO_MEMORY_FLOOR_MB = 5
 const TYPE_RATIO_SCALE = DEFAULT_RATIO_SCALE.map((times, i) => times * MEMORY_RATIO_SCALE[i])
 const TYPES_METRIC = {
   unit: 'MB·s',
   headline: 'MB·s of type-check cost (CPU seconds × MB)',
   absolute: false,
   scale: TYPE_RATIO_SCALE,
-  floor: 0.001,
+  floor: 0.0025,
   timeFloorMs: { tsc: 10, tsgo: 10 },
 }
 // Rust type checking is a different tool with different costs, so crates are
 // graded only against each other: multiples of the best crate in the task.
-const CARGO_CHECK_METRIC = { unit: 'MB·s', headline: 'MB·s of cargo check cost (CPU seconds × MB)', scale: TYPE_RATIO_SCALE, absolute: false, floor: 0.001 }
+const CARGO_CHECK_METRIC = { unit: 'MB·s', headline: 'MB·s of cargo check cost (CPU seconds × MB)', scale: TYPE_RATIO_SCALE, absolute: false, floor: 0.0025 }
 // The compiler the type-check class is based on.
 const TYPES_COMPILER = 'tsgo'
 // Retained heap growing faster than this per request is flagged as a leak.
@@ -153,7 +161,7 @@ function sweptCheck(ecosystemId, name) {
   const file = sweeps[ecosystemId], found = file?.packages?.[name]
   if (found?.status !== 'ok' || !found.added) return null
   const cpuMs = round(Math.max(0, found.added.cpuMs - startCpuMs(ecosystemId, found)), 1), memoryMb = round(Math.max(0, found.added.memoryMb), 2)
-  return { tool: [file.checker?.tool, file.checker?.version].filter(Boolean).join(' '), version: found.version ?? null, from: found.typesFrom ?? null, community: !!found.communityTypes, cpuMs, memoryMb, value: round((memoryMb * Math.max(cpuMs, 10)) / 1000, 5) }
+  return { tool: [file.checker?.tool, file.checker?.version].filter(Boolean).join(' '), version: found.version ?? null, from: found.typesFrom ?? null, community: !!found.communityTypes, cpuMs, memoryMb, value: round((Math.max(memoryMb, ecosystemId === 'gomod' ? GO_MEMORY_FLOOR_MB : TYPE_MEMORY_FLOOR_MB) * Math.max(cpuMs, 10)) / 1000, 5) }
 }
 
 function typeCheck(typesPackage, version) {
@@ -174,7 +182,7 @@ function typeCheck(typesPackage, version) {
     const memoryMb = round(Math.max(0, typed[id].memoryKb) / 1000, 2)
     const timeMs = round(Math.max(0, typed[id].timeMs), 1)
     const cpuMs = round(Math.max(0, typed[id].cpuMs ?? 0), 1)
-    const score = typed[id].cpuMs === undefined ? null : round((memoryMb * Math.max(cpuMs, TYPES_METRIC.timeFloorMs[id] ?? 10)) / 1000, 5)
+    const score = typed[id].cpuMs === undefined ? null : round((Math.max(memoryMb, TYPE_MEMORY_FLOOR_MB) * Math.max(cpuMs, TYPES_METRIC.timeFloorMs[id] ?? 10)) / 1000, 5)
     compilers[id] = { timeMs, cpuMs, memoryMb, score, symbols: typed[id].symbols, files: typed[id].files, ...(community ? { community } : {}) }
   }
   return {
@@ -192,7 +200,7 @@ function cargoCheck(stored) {
   const checked = { ...stored, addedMb: round(stored.addedMb * MIB_TO_MB, 1) }
   const timeMs = Math.max(0, checked.warmWallMs - rustCheck.baseline.warmWallMs)
   const cpuMs = Math.max(0, (checked.warmCpuMs ?? 0) - (rustCheck.baseline.warmCpuMs ?? 0))
-  return { tool: 'cargo', value: checked.warmCpuMs === undefined ? null : round((checked.addedMb * Math.max(cpuMs, 10)) / 1000, 5), timeMs, cpuMs, memoryMb: checked.addedMb, coldCpuS: checked.coldCpuS }
+  return { tool: 'cargo', value: checked.warmCpuMs === undefined ? null : round((Math.max(checked.addedMb, TYPE_MEMORY_FLOOR_MB) * Math.max(cpuMs, 10)) / 1000, 5), timeMs, cpuMs, memoryMb: checked.addedMb, coldCpuS: checked.coldCpuS }
 }
 
 // dist/ is updated in place: the site build writes only the files that
@@ -265,7 +273,7 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
       icon: { python: 'cpython', ruby: 'ruby', go: 'go' }[native.language],
       version: native.version, notes: nativeChecks.checkers[native.language].notes,
       cpuMs: round(native.cpuMs, 2), timeMs: round(native.timeMs, 2), memoryMb: round(native.memoryMb, 3),
-      value: round((native.memoryMb * Math.max(native.cpuMs, 10)) / 1000, 5),
+      value: round((Math.max(native.memoryMb, TYPE_MEMORY_FLOOR_MB) * Math.max(native.cpuMs, 10)) / 1000, 5),
     }
     const typeInfo =
       nativeInfo ? nativeInfo
