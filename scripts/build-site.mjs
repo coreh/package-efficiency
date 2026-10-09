@@ -16,7 +16,7 @@ import {
   packagesPage,
   runtimePage,
   runtimesPage,
-  searchIndex, statsPage, statsMarkdown, advancedSearchIndex, searchPage, apiReferencePage,
+  searchIndex, statsPage, statsMarkdown, advancedSearchIndex, searchPage, comparePage, apiReferencePage,
   bestResult,
   runtimeSummaries,
   categoryIconFiles,
@@ -145,7 +145,7 @@ labelSite.host = siteUrl.replace(/^https?:\/\//, '')
 const exported = { url: (to) => `${siteUrl}${to}` }
 // The stylesheet and script are addressed with a mark of their content, so a
 // page never meets an older copy of them that a browser or the CDN still holds.
-const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).update(await readFile(fromRoot('site/api.js'))).update(await readFile(fromRoot('site/search.js'))).digest('hex').slice(0, 10)
+const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).update(await readFile(fromRoot('site/api.js'))).update(await readFile(fromRoot('site/search.js'))).update(await readFile(fromRoot('site/compare.js'))).update(await readFile(fromRoot('site/units.mjs'))).digest('hex').slice(0, 10)
 const model = {
   index,
   assets,
@@ -447,6 +447,7 @@ if (siteUrl) {
 await write(dist('robots.txt'), indexable ? `User-agent: *\nAllow: /\n${siteUrl ? `Sitemap: ${siteUrl}/sitemap.xml\n` : ''}` : 'User-agent: *\nDisallow: /\n')
 await write(dist('search.json'), JSON.stringify(searchIndex(model)))
 await page('/search/', searchPage(model))
+await page('/compare/', comparePage(model))
 await write(dist('search-full.json'), JSON.stringify(advancedSearchIndex(model)))
 await write(dist('search.js'), await readFile(fromRoot('site/search.js')))
 // The API page's own script: the format and language pickers, and the try box.
@@ -490,6 +491,8 @@ await write(dist('app.js'), await readFile(fromRoot('site/app.js')))
 
 
 await write(dist('sort.mjs'), await readFile(fromRoot('site/sort.mjs')))
+await write(dist('compare.js'), await readFile(fromRoot('site/compare.js')))
+await write(dist('units.mjs'), await readFile(fromRoot('site/units.mjs')))
 
 // Remove what an earlier build left behind and this one did not produce. The
 // task data written by build-data.mjs just before this script is kept, and so

@@ -751,3 +751,27 @@ input[type="radio"]:checked::before { content: ""; width: 5px; height: 5px; bord
 input[type="checkbox"]:hover, input[type="radio"]:hover { background: color-mix(in srgb, var(--mark) 35%, var(--bg)); }
 input[type="checkbox"]:checked:hover, input[type="radio"]:checked:hover { background: var(--mark); }
 input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* The compare page: two labels side by side with the swap button between
+   them, and their figures in one table below. */
+.cmp-sides { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 16px; align-items: start; margin: 14px 0 20px; }
+.cmp-side { min-width: 0; }
+.cmp-pick { grid-template-columns: auto minmax(0, 1fr); margin-bottom: 12px; font-weight: 700; }
+.cmp-label { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.cmp-label svg { display: block; width: 100%; max-width: 320px; height: auto; }
+.cmp-empty { color: var(--soft); margin: 6px 0; }
+.cmp-open { font-weight: 700; }
+.cmp-swap { align-self: start; margin-top: 2px; height: 2rem; width: 2.25rem; font: inherit; font-size: 1.1rem; font-weight: 700; color: inherit; background: var(--bg); border: 1px solid var(--soft); border-radius: 2px; cursor: pointer; }
+.cmp-swap:hover, .cmp-copy:hover { background: var(--mark); color: #000; border-color: #000; }
+table.cmp-figures { width: 100%; max-width: 52rem; }
+.cmp-figures th, .cmp-figures td { text-align: right; font-variant-numeric: tabular-nums; }
+.cmp-figures th.l { text-align: left; font-weight: 600; }
+.cmp-figures thead th { white-space: normal; }
+.cmp-figures td .cls { margin: 0; }
+.cmp-figures td.cmp-less { font-weight: 800; }
+.cmp-ratio { color: var(--soft); }
+.cmp-copy { font: inherit; font-weight: 700; padding: 4px 12px; color: inherit; background: var(--bg); border: 1px solid var(--soft); border-radius: 2px; cursor: pointer; }
+@media (max-width: 640px) {
+  .cmp-sides { grid-template-columns: minmax(0, 1fr); }
+  .cmp-swap { justify-self: center; transform: rotate(90deg); }
+}

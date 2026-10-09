@@ -1065,6 +1065,7 @@ const ACTION_ICONS = {
   save: 'M7.250 1.500h1.500v6.700l2.200-2.200 1.050 1.050L8 11.050 4 7.050 5.050 6l2.200 2.200zM2.500 12.500h11V14h-11z',
   link: 'M6.500 4.500H4a3.500 3.500 0 0 0 0 7h2.500V10H4a2 2 0 0 1 0-4h2.500zM9.500 4.500H12a3.500 3.500 0 0 1 0 7H9.500V10H12a2 2 0 0 0 0-4H9.500zM5 7.250h6v1.500H5z',
   open: 'M3 3h5v1.500H4.500v7h7V8H13v5H3zM9.500 2H14v4.500h-1.500V4.560L8.530 8.530 7.470 7.470 11.440 3.500H9.500z',
+  compare: 'M1 2.500h6v11H1zm1.500 1.500v8h3V4zM9 2.500h6v11H9zm1.500 1.500v8h3V4z',
   embed: 'M5.500 4l1.060 1.060L3.620 8l2.940 2.940L5.500 12l-4-4zM10.500 4l4 4-4 4-1.060-1.060L12.380 8 9.440 5.060z',
 }
 const actionIcon = (id) => {
@@ -1318,8 +1319,18 @@ function embedDialog(holder) {
   }
   show(tabs.includes(ranking) ? ranking : 'all')
 }
-const LABEL_ICONS = { 'Copy as PNG': 'copy', 'Copy as SVG': 'copy', 'Save PNG': 'save', 'Save SVG': 'save', 'Copy link': 'link', 'Open SVG': 'open' }
+const LABEL_ICONS = { 'Compare…': 'compare', 'Copy as PNG': 'copy', 'Copy as SVG': 'copy', 'Save PNG': 'save', 'Save SVG': 'save', 'Copy link': 'link', 'Open SVG': 'open' }
+// The compare page for a label's file: /labels/<category>/<task>/<runtime>/<entry>.<ranking>.svg.
+function compareAddress(url) {
+  const parts = /^\/labels\/([^/]+\/[^/]+)\/([^/]+)\/(.+)\.([a-z]+)\.svg$/.exec(new URL(url, location.href).pathname)
+  if (!parts) return null
+  const [, task, runtime, entry, ranking] = parts
+  const query = new URLSearchParams({ t: task, a: `${runtime}:${entry}` })
+  if (ranking !== 'cpu') query.set('r', ranking)
+  return `/compare/?${query}`
+}
 const LABEL_ACTIONS = [
+  ['Compare…', (svg, url) => { const to = compareAddress(url); if (to) location.href = to }, true],
   ['Copy as PNG', (svg) => copy('image/png', labelPng(svg), 'Label copied as an image')],
   ['Copy as SVG', (svg) => copy('text/plain', labelSvg(svg, `@import url('${FONT_CSS.replace(/&/g, '&amp;')}');`).text, 'Label copied as SVG code')],
   ['Save PNG', async (svg) => save(await labelPng(svg), `${labelName(svg)}.png`)],

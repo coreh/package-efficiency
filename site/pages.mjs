@@ -2674,3 +2674,38 @@ export function apiReferencePage(model, spec) {
   const body = page.body.replace('src="/api.js"', `src="/api.js?v=${model.assets ?? ''}"`)
   return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, formats: { data: false, download: { href: '/openapi.json', title: 'Download OpenAPI', detail: 'The same addresses as an OpenAPI 3.1 description' } }, body: `<main>\n<div class="api">${body}</div></main>` })
 }
+
+// Two results of one task side by side. The page is one file: its script
+// (compare.js) reads the task's data and the two labels, and the address
+// keeps the choice, so a comparison can be shared.
+export function comparePage(model) {
+  const config = {
+    tasks: Object.fromEntries(model.tasks.map((d) => [d.task.id, { title: d.task.title, category: model.categories.find((c) => c.id === d.task.category)?.title ?? d.task.category }])),
+    rankings: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])),
+    registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])),
+    classes: CLASSES,
+  }
+  return layout({
+    title: 'Compare: Package Efficiency Labels',
+    description: 'Two results of the same task side by side: their labels and their figures.',
+    path: '/compare/',
+    crumbs: [['Compare']],
+    model,
+    formats: null,
+    body: `<main class="cmp">
+<h1>Compare</h1>
+<p class="intro" id="cmp-task">Pick two results of the same task to put them side by side. Open a label's menu and choose Compare to start from it.</p>
+<div class="switches" id="cmp-rankings" hidden></div>
+<div class="cmp-sides" id="cmp-sides" hidden>
+<section class="cmp-side" data-side="a"><label class="adv-field cmp-pick">First <select></select></label><div class="cmp-label"></div></section>
+<button type="button" class="cmp-swap" id="cmp-swap" title="Swap the two sides" aria-label="Swap the two sides">⇄</button>
+<section class="cmp-side" data-side="b"><label class="adv-field cmp-pick">Second <select></select></label><div class="cmp-label"></div></section>
+</div>
+<div class="scroll"><table class="cmp-figures" id="cmp-figures" hidden><thead><tr><th scope="col" class="l">Figure</th><th scope="col" id="cmp-head-a"></th><th scope="col" id="cmp-head-b"></th><th scope="col" title="The second figure divided by the first">Second ÷ first</th></tr></thead><tbody></tbody></table></div>
+<p class="cmp-link" id="cmp-link-row" hidden><button type="button" id="cmp-copy" class="cmp-copy">Copy link to this comparison</button></p>
+<noscript><p class="note">This page runs in the browser and needs JavaScript. Each task's page lists all of its results without it.</p></noscript>
+<script type="application/json" id="cmp-config">${JSON.stringify(config).replace(/</g, '\\u003c')}</script>
+<script type="module" src="/compare.js?v=${model.assets ?? ''}"></script>
+</main>`,
+  })
+}
