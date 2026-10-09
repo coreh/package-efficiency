@@ -38,7 +38,7 @@ reads from it:
 
 - the level, under `level`, `levelname`, `severity`, `lvl` or `@level` (or as an object
   with a `name`), in any case, as `info`, `warn`/`warning` or `error`/`err`
-  (slog writes `ERRO`);
+  (slog writes `ERRO`, log15 `eror`);
 - the message, under `message`, `msg`, `event`, `text` or `@message` (hclog
   writes `@level` and `@message`), at the top level or inside a nested object;
 - each of the five fields, at the top level or inside one nested object named

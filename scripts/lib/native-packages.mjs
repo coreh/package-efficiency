@@ -339,23 +339,59 @@ async function prepareGems({ target, meta, rt }) {
 // --- Go modules -------------------------------------------------------------
 
 // The module proxy the go command is given: proxy.golang.org seen through
-// the release-age rule. Lists of versions, .info and .mod files (metadata) are
-// passed on as they are. A module's source (.zip) is passed on only when the
-// proxy's own .info for that version says it was published at least seven
-// days ago. /sumdb/ is not served, so the go command verifies checksums with
-// sum.golang.org directly.
+// the release-age rule. .info and .mod files (metadata) are passed on as they
+// are. A module's source (.zip) is passed on only when the proxy's own .info
+// for that version says it was published at least seven days ago. The list of
+// versions and @latest, which the go command resolves an import with no
+// version (go mod tidy) from, hold only versions that old and that the pinned
+// Go can build (the `go` line of their go.mod), so "latest" is the newest
+// release old enough, as for npm and PyPI, and as pip passes over a release
+// that needs a newer interpreter. /sumdb/ is not served, so
+// the go command verifies checksums with sum.golang.org directly.
 const UPSTREAM = 'https://proxy.golang.org'
-let goProxyAddress = null
-export function goProxy() {
-  goProxyAddress ??= new Promise((resolve, reject) => {
+const publishedAt = new Map()
+const publishedTime = (base, version) => {
+  const key = `${base}/@v/${version}`
+  if (!publishedAt.has(key)) publishedAt.set(key, fetch(`${UPSTREAM}${key}.info`).then(async (r) => (r.ok ? Date.parse((await r.json()).Time) : NaN), () => NaN))
+  return publishedAt.get(key)
+}
+const oldEnough = (time) => time <= Date.now() - MIN_AGE_MS
+const needsGo = new Map()
+const buildableWith = async (base, version, goVersion) => {
+  const key = `${base}/@v/${version}`
+  if (!needsGo.has(key)) needsGo.set(key, fetch(`${UPSTREAM}${key}.mod`).then(async (r) => (r.ok ? /^go\s+(\d+(?:\.\d+)*)/m.exec(await r.text())?.[1] ?? null : '999'), () => '999'))
+  const needs = await needsGo.get(key)
+  if (!needs) return true
+  const a = needs.split('.').map(Number), b = goVersion.split('.').map(Number)
+  for (let i = 0; i < 3; i++) if ((a[i] ?? 0) !== (b[i] ?? 0)) return (a[i] ?? 0) < (b[i] ?? 0)
+  return true
+}
+// One proxy per Go version, since what that Go can build is part of the answer.
+const goProxyAddresses = new Map()
+export function goProxy(goVersion) {
+  if (!goProxyAddresses.has(goVersion)) goProxyAddresses.set(goVersion, new Promise((resolve, reject) => {
     const server = createServer(async (request, response) => {
       try {
-        const source = /^(\/.+\/@v\/.+)\.zip$/.exec(request.url)
+        const source = /^(\/.+)\/@v\/(.+)\.zip$/.exec(request.url)
+        const list = /^(\/.+)\/@v\/list$/.exec(request.url)
+        const latest = /^(\/.+)\/@latest$/.exec(request.url)
         if (request.method !== 'GET' || request.url.startsWith('/sumdb/')) return response.writeHead(404).end('not served')
-        if (source) {
-          const info = await fetch(`${UPSTREAM}${source[1]}.info`)
-          const published = info.ok ? Date.parse((await info.json()).Time) : NaN
-          if (!(published <= Date.now() - MIN_AGE_MS)) return response.writeHead(403).end(`refused: ${request.url} is less than ${MIN_RELEASE_AGE_DAYS} days old`)
+        if (source && !oldEnough(await publishedTime(source[1], source[2]))) return response.writeHead(403).end(`refused: ${request.url} is less than ${MIN_RELEASE_AGE_DAYS} days old`)
+        if (list) {
+          const upstream = await fetch(`${UPSTREAM}${request.url}`)
+          if (!upstream.ok) return response.writeHead(upstream.status).end(await upstream.text())
+          const versions = (await upstream.text()).split('\n').filter(Boolean)
+          const kept = (await Promise.all(versions.map(async (v) => (oldEnough(await publishedTime(list[1], v)) && await buildableWith(list[1], v, goVersion) ? v : null)))).filter(Boolean)
+          return response.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }).end(kept.map((v) => `${v}\n`).join(''))
+        }
+        if (latest) {
+          // The go command asks for @latest only when the list has no release;
+          // a commit too new is then not there to be had.
+          const upstream = await fetch(`${UPSTREAM}${request.url}`)
+          const body = await upstream.text()
+          if (upstream.ok && !oldEnough(Date.parse(JSON.parse(body).Time))) return response.writeHead(404).end(`not found: the latest version of ${latest[1].slice(1)} is less than ${MIN_RELEASE_AGE_DAYS} days old`)
+          if (upstream.ok && !(await buildableWith(latest[1], JSON.parse(body).Version, goVersion))) return response.writeHead(404).end(`not found: the latest version of ${latest[1].slice(1)} needs a newer Go than ${goVersion}`)
+          return response.writeHead(upstream.status, { 'content-type': upstream.headers.get('content-type') ?? 'application/json' }).end(body)
         }
         const upstream = await fetch(`${UPSTREAM}${request.url}`)
         // The body is read whole before anything is sent, so a download that
@@ -370,11 +406,11 @@ export function goProxy() {
     })
     server.on('error', reject)
     server.listen(0, '127.0.0.1', () => { server.unref(); resolve(`http://127.0.0.1:${server.address().port}`) })
-  })
-  return goProxyAddress
+  }))
+  return goProxyAddresses.get(goVersion)
 }
-const goEnv = async () => ({ ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOPATH: fromRoot('.cache/go-path'), GOMODCACHE: fromRoot('.cache/go-mod'), GOTOOLCHAIN: 'local', GOFLAGS: '', GOPROXY: await goProxy(), GONOSUMDB: '', GONOSUMCHECK: '', GONOPROXY: '', GOPRIVATE: '', GOINSECURE: '', GOSUMDB: 'sum.golang.org', GOWORK: 'off' })
-const goRun = async (rt, args, cwd) => exec(rt.bin, args, { cwd, env: await goEnv(), maxBuffer: 64 << 20 }).then((r) => r.stdout, (error) => { throw new Error(`go ${args[0]}: ${firstLine(error)}`) })
+const goEnv = async (rt) => ({ ...process.env, GOCACHE: fromRoot('.cache/go-build'), GOPATH: fromRoot('.cache/go-path'), GOMODCACHE: fromRoot('.cache/go-mod'), GOTOOLCHAIN: 'local', GOFLAGS: '', GOPROXY: await goProxy(rt.version), GONOSUMDB: '', GONOSUMCHECK: '', GONOPROXY: '', GOPRIVATE: '', GOINSECURE: '', GOSUMDB: 'sum.golang.org', GOWORK: 'off' })
+const goRun = async (rt, args, cwd) => exec(rt.bin, args, { cwd, env: await goEnv(rt), maxBuffer: 64 << 20 }).then((r) => r.stdout, (error) => { throw new Error(`go ${args[0]}: ${firstLine(error)}`) })
 const goEscape = (modulePath) => modulePath.replace(/[A-Z]/g, (c) => `!${c.toLowerCase()}`)
 const goBuildList = async (rt, dir, mode) => JSON.parse(`[${(await goRun(rt, ['list', '-m', '-json', `-mod=${mode}`, 'all'], dir)).trim().replace(/}\s*{/g, '},{')}]`)
 
@@ -424,6 +460,17 @@ async function newestGoVersion(modulePath, goVersion) {
   if (!releases.length) {
     const latest = await getJson(`https://proxy.golang.org/${goEscape(modulePath)}/@latest`)
     if (Date.parse(latest.Time) <= cutoff && await goCanBuild(modulePath, latest.Version, goVersion)) return latest.Version
+    // When that commit is too new, the newest commits from before the cutoff,
+    // which the proxy lists nowhere: for a GitHub repository, asked of GitHub,
+    // then resolved to versions by the proxy (a commit hash is a valid query).
+    const repo = /^github\.com\/([^/]+)\/([^/]+)/.exec(modulePath)
+    if (repo) {
+      const commits = await fetch(`https://api.github.com/repos/${repo[1]}/${repo[2]}/commits?until=${new Date(cutoff).toISOString()}&per_page=10`, { headers: { accept: 'application/vnd.github+json', 'user-agent': 'package-efficiency-bench' } }).then((r) => (r.ok ? r.json() : []), () => [])
+      for (const { sha } of commits) {
+        const info = await getJson(`https://proxy.golang.org/${goEscape(modulePath)}/@v/${sha}.info`).catch(() => null)
+        if (info && Date.parse(info.Time) <= cutoff && await goCanBuild(modulePath, info.Version, goVersion)) return info.Version
+      }
+    }
   }
   throw new Error(`no release of ${modulePath} is at least seven days old and builds with Go ${goVersion}`)
 }
