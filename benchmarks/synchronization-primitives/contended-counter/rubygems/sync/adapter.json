@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": ["ruby", "ruby-yjit"],
+  "executor": "Thread, 4 threads, one at a time under the interpreter lock",
+  "notes": "Sync.new and Sync#synchronize(:EX), the exclusive mode, around the counter update in four Thread workers, joined with Thread#value. The threads take turns under the interpreter lock. Sync is a two-mode (shared and exclusive) lock with a queue, so it does more per lock than Mutex."
+}

@@ -1,0 +1,10 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "title": "jackc/puddle v2",
+  "language": "go",
+  "runtimes": ["go"],
+  "module": "github.com/jackc/puddle/v2",
+  "executor": "goroutines, GOMAXPROCS=1",
+  "notes": "puddle.NewPool with MaxSize 10 and a constructor that returns an empty resource; Acquire checks out, Release returns. Like deadpool, puddle creates each resource on first use, up to the maximum, in a goroutine of its own. The pool is closed at the end of the operation. One goroutine per caller, a WaitGroup to wait, runtime.Gosched() to yield; v2 is the current major version of the module."
+}

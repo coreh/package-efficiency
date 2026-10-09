@@ -461,7 +461,7 @@ for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
 // built from the values their rows carry (data-status, data-ecosystem, ...).
 // A filter with only one value to choose from is left out.
 const FILTER_TITLES = { status: 'Show', ecosystem: 'Ecosystem', group: 'Group' }
-const STATUS_ORDER = ['Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task']
+const STATUS_ORDER = ['Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task']
 let filterCount = 0
 function buildFilters(table) {
   if (table.dataset.filtered) return

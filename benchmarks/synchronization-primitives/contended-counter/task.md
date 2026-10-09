@@ -33,7 +33,9 @@ condition variables, thread parking and async locks are other jobs and are not
 here. Left out: `parking_lot_core`, `parking`, `event-listener` and
 `async-lock` (building blocks or async notification, not a lock to take and
 release around a counter). `std::sync::Mutex` cannot be listed, as Rust has no
-standard-library entry yet. No npm or JSR package takes part. The Ruby `sync` gem and the Go module `moby/locker` do this job, but the harness runs PyPI, RubyGems and Go module adapters only in synchronous tasks, so they are not entered.
+standard-library entry yet. No npm or JSR package takes part. The Ruby `sync` gem (its exclusive mode)
+and the Go module `moby/locker` (one named lock) also take part; both do more
+per lock than a plain mutex, as their notes say.
 
 Threads, as recorded with each result:
 

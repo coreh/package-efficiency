@@ -1,7 +1,7 @@
 // Render the static site into dist/ from the data written by build-data.mjs.
 // Usage: node scripts/build-site.mjs
 import { createHash } from 'node:crypto'
-import { existsSync } from 'node:fs'
+import { existsSync, globSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { RANKINGS, issueShortLinks, labelSite, renderLabel, resultShort, shortCodes } from '../site/label.mjs'
@@ -185,12 +185,21 @@ const cargoStartup = await readJson(fromRoot('data/cargo/startup.json'), null)
 for (const id of ['pypi', 'rubygems', 'cargo', 'gomod']) sweptTypes[id] = await readJson(fromRoot('data', id, 'types.json'), null)
 // Every package that has a benchmark adapter in the repository, measured or
 // not, as `<registry>/<name>` (Go modules by their family, from `module`).
+// And of those, the ones that have run and whose output the task's check
+// rejected: the task and the reason, for a package with no passing result.
 const written = new Set()
+const failing = new Map()
 for (const taskId of taskIds()) {
   for (const adapter of await adaptersOf(taskId)) {
     const [registry, ...rest] = adapter.id.split('/')
     if (registry === 'builtin' || registry.startsWith('_')) continue
-    written.add(`${registry}/${registry === 'gomod' && adapter.module ? goFamily(adapter.module) : adapter.package ?? rest.join('/')}`)
+    const key = `${registry}/${registry === 'gomod' && adapter.module ? goFamily(adapter.module) : adapter.package ?? rest.join('/')}`
+    written.add(key)
+    if (failing.has(key)) continue
+    for (const file of globSync(`${adapter.id}/*/*.json`, { cwd: fromRoot('results', taskId) })) {
+      const result = await readJson(fromRoot('results', taskId, file), null)
+      if (result?.status === 'verify-failed') { failing.set(key, { task: taskId, error: String(result.error ?? '').split('\n')[0].replace(/^expected phase "\w+", got "verify-failed": /, '').slice(0, 200) }); break }
+    }
   }
 }
 for (const id of ecosystemIds) {
@@ -223,6 +232,7 @@ for (const id of ecosystemIds) {
       measured: (id === 'gomod' ? goMeasured.get(goFamily(p.name)) : null) ?? packages.get(`${id}/${p.name}`) ?? null,
       // An adapter for it is written, whether or not it has run (see statusOf).
       written: written.has(`${id}/${id === 'gomod' ? goFamily(p.name) : p.name}`),
+      failing: failing.get(`${id}/${id === 'gomod' ? goFamily(p.name) : p.name}`) ?? null,
       // Same cost as the graded packages: the root of added CPU time (at least 10 ms) times added memory.
       typeCheck: tsgo && Number.isFinite(tsgo.cpuMs) ? { tool: `tsgo ${typeData.compilers.tsgo}`, community: typed.communityTypes ?? (!!typed.typesFrom && typed.typesFrom !== 'self'), from: typed.typesFrom === 'self' ? null : typed.typesFrom ?? null, cpuMs: Math.max(0, tsgo.cpuMs), memoryBytes: Math.round(Math.max(0, tsgo.memoryKb) * 1000), cost: (Math.max(0.25, tsgo.memoryKb / 1000) * Math.max(tsgo.cpuMs, 10)) / 1000 } : added ? { community: !!swept.communityTypes, from: swept.typesFrom ?? null, tool: [sweptTypes[id].checker?.tool, sweptTypes[id].checker?.version].filter(Boolean).join(' '), icon: { pypi: 'cpython', rubygems: 'ruby', cargo: 'rust', gomod: 'go' }[id], cpuMs: Math.max(0, added.cpuMs), memoryBytes: Math.round(Math.max(0, added.memoryMb) * 1e6), cost: (Math.max(id === 'gomod' ? 5 : 0.25, added.memoryMb) * Math.max(added.cpuMs, 10)) / 1000 } : null,
     }

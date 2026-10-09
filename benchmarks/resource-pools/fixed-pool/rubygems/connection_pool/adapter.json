@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": ["ruby", "ruby-yjit"],
+  "executor": "Thread, one per caller, one at a time under the interpreter lock",
+  "notes": "ConnectionPool.new(size: 10) with a block that builds an empty resource (created on first use, up to the size); pool.with checks out and returns, with the default timeout. One Thread per caller, joined by the caller of the operation. Thread.pass yields. A connection_pool checkout belongs to the calling thread and cannot hold ten at once from one thread, so the last step is pool.shutdown, which yields every resource that is back in the pool: one never returned would be missing from the count."
+}

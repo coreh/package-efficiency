@@ -52,8 +52,9 @@ Executors, as recorded with each result:
   its threads are real and a thread switch costs more than a task switch.
 
 Not compared here: `bytebufferpool` (Go), an unbounded pool of byte buffers
-with no maximum size and no waiting, which is another job; `puddle` and
-`connection_pool` are not entered here, the decision for this task
-being deadpool plus the standard-library entries.
+with no maximum size and no waiting, which is another job. Besides deadpool
+and the standard-library entries, `puddle` (Go, v2) and `connection_pool`
+(Ruby) take part; both create each resource on first use, up to the size,
+as deadpool does.
 
 See [shared methodology](../../README.md) for timing and reproduction.

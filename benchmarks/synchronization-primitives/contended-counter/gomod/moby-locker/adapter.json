@@ -1,0 +1,10 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "title": "moby/locker",
+  "language": "go",
+  "runtimes": ["go"],
+  "module": "github.com/moby/locker",
+  "executor": "goroutines, GOMAXPROCS=4",
+  "notes": "A locker.Locker created per operation, with Lock and Unlock of one name (\"counter\") around the counter update in four goroutines joined with a WaitGroup. The Locker keeps a mutex per name and a reference count, behind its own mutex, so each lock and unlock does more than a plain sync.Mutex."
+}

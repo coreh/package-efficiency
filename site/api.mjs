@@ -411,7 +411,7 @@ function schemasOf(model) {
       use_measure: S.string('What `use` counts: downloads per month, downloads in total, downloads in the last 90 days, or repositories that depend on it.'),
       share_of_registry: S.number('Part of the listed use of its registry that goes to this package, from 0 to 1.'),
       category: S.string('Title of its category. An empty string when it has none.'),
-      status: S.string('Whether it has results.', { enum: ['Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'] }),
+      status: S.string('Whether it has results.', { enum: ['Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'] }),
       best_cpu_class: classCell('CPU, the best on any runtime and in any task'),
       best_memory_class: classCell('memory, the best on any runtime and in any task'),
       latest_version: S.string('Latest version listed.'),

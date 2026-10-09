@@ -1081,11 +1081,11 @@ ${EVERY_PACKAGE_NOTE}
 ${packageTable(model.packages, model, { showEcosystem: true, everyPackage: true })}
 <h2>By registry</h2>
 <div class="scroll"><table class="narrow sortable">
-<thead><tr><th scope="col">Ecosystem</th>${['Listed', 'Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((t) => sortable(t)).join('')}</tr></thead>
+<thead><tr><th scope="col">Ecosystem</th>${['Listed', 'Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((t) => sortable(t)).join('')}</tr></thead>
 <tbody>${Object.entries(model.catalog.byEcosystem)
       .map(([id, items]) => {
         const count = (status) => items.filter((item) => statusOf(item) === status).length
-        return `<tr><td>${inlineIcon(`eco-${id}`)}<a href="${urls.ecosystem(id)}">${esc(ECOSYSTEMS[id].title)}</a></td>${[items.length, count('Measured'), count('Benchmark not run yet'), count('No benchmark yet'), count('No comparable task')].map((n) => cell(n, n.toLocaleString('en-US'))).join('')}</tr>`
+        return `<tr><td>${inlineIcon(`eco-${id}`)}<a href="${urls.ecosystem(id)}">${esc(ECOSYSTEMS[id].title)}</a></td>${[items.length, count('Measured'), count('Fails the check'), count('Benchmark not run yet'), count('No benchmark yet'), count('No comparable task')].map((n) => cell(n, n.toLocaleString('en-US'))).join('')}</tr>`
       })
       .join('\n')}</tbody>
 </table></div>
@@ -2283,8 +2283,9 @@ export const categoryHref = (id, model) => {
 }
 export const catalogUrl = (item) => (item.measured ? urls.package(item.measured) : `/${item.ecosystem}/${item.name}/`)
 // "Benchmark not run yet": an adapter for the package is written, and it has no result yet.
-const STATUS_ORDER = ['Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task']
-export const statusOf = (item) => (item.measured ? 'Measured' : item.written ? 'Benchmark not run yet' : item.category?.benchmarkable ? 'No benchmark yet' : item.category && item.category.id !== 'other' ? 'No comparable task' : 'No benchmark yet')
+// "Fails the check": it has run, and the task's check rejected its output.
+const STATUS_ORDER = ['Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task']
+export const statusOf = (item) => (item.measured ? 'Measured' : item.failing ? 'Fails the check' : item.written ? 'Benchmark not run yet' : item.category?.benchmarkable ? 'No benchmark yet' : item.category && item.category.id !== 'other' ? 'No comparable task' : 'No benchmark yet')
 const compact = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(n >= 1e4 ? 0 : 1)}K` : String(n))
 
 // A measured package's best class for CPU and for memory, on any runtime and
@@ -2360,7 +2361,9 @@ export function catalogPackagePage(item, model) {
   const status = statusOf(item)
   const measuredCategory = category && model.categories.find((c) => c.taxonomy === category.id)
   const why =
-    status === 'Benchmark not run yet'
+    status === 'Fails the check'
+      ? `A benchmark adapter for this package is written and was run in <a href="${urls.task(item.failing.task)}">${esc(model.tasks.find((d) => d.task.id === item.failing.task)?.task.title ?? item.failing.task)}</a>, but its output did not pass the task's check, so there is no result to compare: ${esc(item.failing.error)}`
+      : status === 'Benchmark not run yet'
       ? 'A benchmark adapter for this package is written. It has not been run yet, so there is no result.'
       : status === 'No comparable task'
       ? `It is filed under <a href="${categoryHref(category.id, model)}">${esc(category.title)}</a>, a group that has no one task that all its members can run. Thus there is nothing to compare.`

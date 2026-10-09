@@ -414,6 +414,11 @@ async function newestGoVersion(modulePath, goVersion) {
   const numbers = (version) => version.slice(1).split('+')[0].split('.').map(Number)
   const releases = (await response.text()).split('\n').filter((v) => /^v\d+\.\d+\.\d+(\+incompatible)?$/.test(v))
     .sort((a, b) => { const x = numbers(a), y = numbers(b); return y[0] - x[0] || y[1] - x[1] || y[2] - x[2] })
+  // As go get @latest does: a +incompatible tag (a major version above 1 from
+  // before the module had a go.mod) is passed over once the newest regular
+  // release has a go.mod of its own. The proxy's @latest applies that rule.
+  const latest = await getJson(`https://proxy.golang.org/${goEscape(modulePath)}/@latest`).catch(() => null)
+  if (latest && !latest.Version.endsWith('+incompatible') && releases.some((v) => !v.endsWith('+incompatible'))) releases.splice(0, Infinity, ...releases.filter((v) => !v.endsWith('+incompatible')))
   for (const version of releases) if ((await goPublished(modulePath, version)) <= cutoff && await goCanBuild(modulePath, version, goVersion)) return version
   // A module with no tagged release is known to the proxy by its latest commit.
   if (!releases.length) {

@@ -384,7 +384,7 @@ ${marked('measured', catalogTableMdPlain(rows))}
 
 ## By registry
 
-${mdTable(['Ecosystem', 'Listed', 'Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'], Object.entries(model.catalog.byEcosystem).map(([id, items]) => [`[${ctx.ecosystems[id].title}](${ctx.url(`/${id}/index.md`)})`, items.length, ...['Measured', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((status) => items.filter((item) => ctx.statusOf(item) === status).length)]))}
+${mdTable(['Ecosystem', 'Listed', 'Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'], Object.entries(model.catalog.byEcosystem).map(([id, items]) => [`[${ctx.ecosystems[id].title}](${ctx.url(`/${id}/index.md`)})`, items.length, ...['Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((status) => items.filter((item) => ctx.statusOf(item) === status).length)]))}
 
 ${footer(ctx, '/packages/', true)}`
   return { markdown, rows }
