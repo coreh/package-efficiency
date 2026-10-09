@@ -8,7 +8,7 @@ import {createHash} from 'node:crypto'
 import {fromRoot,readJson,writeJson,median,loadConfig,machine} from './lib/util.mjs'
 import {wrapPython,wrapRuby,goImports} from './lib/native-wrappers.mjs'
 import { raisePriority } from './lib/util.mjs'
-import { NATIVE_REGISTRIES, lockNativePackage, prepareNativePackage } from './lib/native-packages.mjs'
+import { NATIVE_REGISTRIES, PACKAGE_TASK_KINDS, lockNativePackage, prepareNativePackage } from './lib/native-packages.mjs'
 import { existsSync } from 'node:fs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
@@ -48,19 +48,22 @@ for(const moduleFile of globSync(fromRoot('benchmarks/http-server/json-api/gomod
  const text=execFileSync(go,['list','-export','-deps','-f','{{.ImportPath}} {{.Export}}','.'],{cwd:path.dirname(moduleFile),env:goenv,encoding:'utf8'})
  Object.assign(exports,Object.fromEntries(text.trim().split('\n').map(l=>l.split(' ')).filter(([,p])=>p)))
 }
-// An adapter for a package from PyPI, RubyGems or the Go module proxy in a
-// synchronous task is checked against the package itself, installed (or
-// built) from the adapter's lock as for a measurement
-// (scripts/lib/native-packages.mjs). The HTTP servers have their own installs.
+// An adapter for a package from PyPI, RubyGems or the Go module proxy in an
+// operation task (synchronous or asynchronous) or a client task is checked
+// against the package itself, installed (or built) from the adapter's lock as
+// for a measurement (scripts/lib/native-packages.mjs), under the same rules.
+// A Go module of a client task is built with the client runner, as
+// scripts/measure.mjs builds it. The HTTP servers have their own installs.
 const packageOf=new Map()
 for(const file of globSync(fromRoot('benchmarks/*/*/{pypi,rubygems,gomod}/*/adapter.json')).filter(file=>!file.includes('/_shared/')&&chosen(file))){
  const [category,task,ecosystem,name]=path.relative(fromRoot('benchmarks'),path.dirname(file)).split(path.sep)
- if((await readJson(fromRoot('benchmarks',category,task,'task.json'))).kind!=='sync-operation')continue
+ const runner=PACKAGE_TASK_KINDS[(await readJson(fromRoot('benchmarks',category,task,'task.json'))).kind]
+ if(!runner)continue
  const target={ecosystem,name,dir:path.dirname(file)},meta=await readJson(file),id=`${category}/${task}/${ecosystem}/${name}`
  const runtimeId=NATIVE_REGISTRIES[ecosystem].runtimes[0]
  try{
   await lockNativePackage({target,meta,config})
-  const prepared=await prepareNativePackage({taskId:`${category}/${task}`,target,meta,runtimeId,rt:config.runtimes[runtimeId]??config.toolchains[runtimeId],config})
+  const prepared=await prepareNativePackage({taskId:`${category}/${task}`,target,meta,runtimeId,rt:config.runtimes[runtimeId]??config.toolchains[runtimeId],config,runner})
   packageOf.set(id,prepared)
   // Export data of the module's packages and all they import, from the program built for the task.
   if(prepared.workdir){

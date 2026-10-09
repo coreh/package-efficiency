@@ -75,17 +75,41 @@ export async function installPinned(dir, names, overrides = {}, { pin = true } =
   return versions
 }
 
+// Every version of a JSR package. The API answers in pages of at most 100,
+// newest first by version string, so a package with many prereleases (canary
+// builds) has its stable releases on later pages: all pages are read, and a
+// list shorter than the API's own total is an error rather than a smaller set.
+const JSR_PAGE = 100
+export async function jsrVersions(scope, pkg) {
+  const items = []
+  for (let page = 1; ; page++) {
+    const response = await fetch(`https://api.jsr.io/scopes/${scope}/packages/${pkg}/versions?limit=${JSR_PAGE}&page=${page}`)
+    if (!response.ok) throw new Error(`JSR metadata: ${response.status}`)
+    const { items: batch, total } = await response.json()
+    if (!Array.isArray(batch)) throw new Error(`JSR metadata for @${scope}/${pkg}: no version list`)
+    items.push(...batch)
+    if (batch.length < JSR_PAGE || (Number.isFinite(total) && items.length >= total)) {
+      if (Number.isFinite(total) && items.length !== total) throw new Error(`JSR metadata for @${scope}/${pkg}: ${items.length} versions read, ${total} listed`)
+      return items
+    }
+    if (page >= 1000) throw new Error(`JSR metadata for @${scope}/${pkg}: too many pages`)
+  }
+}
+
+// The stable versions of a JSR package published at least MIN_RELEASE_AGE_DAYS
+// ago and not yanked, newest first.
+export async function eligibleJsrVersions(scope, pkg) {
+  const cutoff = Date.now() - MIN_RELEASE_AGE_DAYS * 86400000
+  return (await jsrVersions(scope, pkg)).filter(v => !v.yanked && /^\d+\.\d+\.\d+$/.test(v.version) && Date.parse(v.createdAt) < cutoff)
+    .sort((a,b) => b.version.localeCompare(a.version,'en',{numeric:true}))
+}
+
 // Canonical JSR names are npm aliases only for transport. Registry identity
 // remains JSR in the edition manifest, results and UI.
 export async function installJsr(dir, name) {
   const [,scope,pkg] = /^@([^/]+)\/(.+)$/.exec(name) ?? []
   if (!scope) throw new Error(`Invalid JSR name: ${name}`)
-  const response = await fetch(`https://api.jsr.io/scopes/${scope}/packages/${pkg}/versions`)
-  if (!response.ok) throw new Error(`JSR metadata: ${response.status}`)
-  const metadata = await response.json()
-  const cutoff = Date.now() - MIN_RELEASE_AGE_DAYS * 86400000
-  const eligible = metadata.items.filter(v => !v.yanked && /^\d+\.\d+\.\d+$/.test(v.version) && Date.parse(v.createdAt) < cutoff)
-    .sort((a,b) => b.version.localeCompare(a.version,'en',{numeric:true}))
+  const eligible = await eligibleJsrVersions(scope, pkg)
   const version = manifest.jsr?.[name] ?? eligible[0]?.version
   if (!eligible.some(v => v.version === version)) throw new Error(`No eligible JSR version for ${name}`)
   await writeFile(path.join(dir,'.npmrc'), '@jsr:registry=https://npm.jsr.io\n')

@@ -1,0 +1,17 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "title": "eapache/go-resiliency retrier",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "module": "github.com/eapache/go-resiliency",
+  "executor": "calling goroutine, GOMAXPROCS=1",
+  "notes": "retrier.New(retrier.ConstantBackoff(attempts - 1, 0), nil).Run(job) for each call (nil classifier: every error is retried); an error after the last attempt gives a null value. Between attempts Run makes a time.NewTimer(0) and receives from it: with Go 1.23+ timers an expired timer is delivered at the receive, so nothing waits, but a timer is allocated each time."
+}

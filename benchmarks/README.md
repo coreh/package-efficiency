@@ -86,7 +86,9 @@ machine versions. Adapter metadata records authorship and unreviewed status.
 ## Adapters for PyPI, RubyGems and Go modules
 
 A synchronous task (`"kind": "sync-operation"`) takes third-party packages in
-Python, Ruby and Go beside the standard-library adapters under `builtin/`.
+Python, Ruby and Go beside the standard-library adapters under `builtin/`, and
+so do an asynchronous task (`"async-operation"`, below) and a client task
+(`"client"`, below), with the same install and the same rules.
 You write files in the task's folder only. The scripts choose the version,
 install it and record what they installed.
 
@@ -615,22 +617,25 @@ what the task defines. Do not measure (the command without `--check`) unless
 asked to.
 
 A package from PyPI, RubyGems or the Go module proxy is written as the section
-above says and is run by the same runners as the `builtin` entries here; no
-such adapter has been tried in a task of this kind yet.
+above says, installed (or built) from its lock in the same way, and run by the
+same runners as the `builtin` entries here: Python's asyncio runner (an
+`async def operation` is awaited, a plain `def` is called), Ruby's and Go's
+synchronous runners. `adapter.json` also has `"executor"`.
+`retry-policies/fail-then-succeed` and `async-concurrency/limited-jobs` have
+some.
 
-The `builtin` Python, Ruby and Go adapters must also pass their type
-checkers. This runs each once and records nothing; it must end with
-`0 rejected`:
+The Python, Ruby and Go adapters (`builtin` and packages) must also pass
+their type checkers, a package's adapter against the package installed from
+its lock. This runs each once and records nothing; it must end with
+`0 rejected` (with the exception of a gem without Sorbet signatures, as in
+the section above):
 
 ```sh
 node scripts/measure-native-checks.mjs --verify --only=<category>/<task>
 ```
 
 Not covered yet: a Rust standard-library entry (there is no `builtin` path
-for Rust, so `std::sync::mpsc` or `std::sync::Mutex` cannot be listed), and
-the type check of a PyPI, RubyGems or Go module adapter in a task of this
-kind (`scripts/measure-native-checks.mjs` takes those from synchronous tasks
-only).
+for Rust, so `std::sync::mpsc` or `std::sync::Mutex` cannot be listed).
 
 
 ## Tasks on the file system
@@ -1161,7 +1166,7 @@ asynchronous operations, c: files, d: a local peer).
 | `process-execution` | Run `/bin/echo` with arguments, collect output and status | Exact output (final newline optional) and status 0 | sync; the caller's CPU only | Written: `spawn-collect`. The asynchronous forms need b, same fixtures |
 | `expression-evaluation` | Parse one expression and evaluate it against 8 variable sets | Each value within 1e-9 of the scenario's own evaluation of the tree it generated | sync, 6 | To write. Arithmetic (`+ - * /`, unary minus, parentheses), comparisons, `min`, `max`, `abs`; every literal and variable a float. Left out because the libraries disagree: power (`^` or `**`), `and`/`or` spellings, integer division, modulo. npm `expr-eval`, `mathjs`, `jexl` (`evalSync`), `filtrex`; crates `evalexpr`, `meval`, `fasteval`. `cexpr`, `cfg-expr` and `boolean.py` do other jobs and stay out. `govaluate`, `cel-go`, `simpleeval` need a |
 | `pdf-generation` | Write 20 pages of positioned lines of text and a ruled table, standard Helvetica, A4 | Decoded: page count, page size within a point, and the text shown on each page (`Tj`, `TJ`, `'`, `"` strings of the inflated content streams, WinAnsi) equal to the fixture's lines in order | sync, 4 | To write. Lines come already broken and positioned, because line breaking differs. ASCII and Latin-1 text only, no embedded fonts. npm `jspdf`, crate `printpdf` now; `reportlab`, `fpdf2`, `prawn`, `gofpdf` need a; `pdfkit`, `pdf-lib`, `pdfmake` need b. HTML to PDF (`weasyprint`, `wicked_pdf`) is another job; `wicked_pdf` runs an external program and stays out. `combine_pdf` and `pydyf` (no text layout) stay out |
-| `chart-rendering` | Render a line chart of 5 series of 500 points to SVG at a given size | Parsed SVG: the size asked for; for each series one path or polyline of 500 vertices that is an affine image of the data (residual at most half a pixel) with the y axis flipped; one mapping for all series; everything inside the canvas | sync, 1 and 5 | To write; the hardest here. The reader must handle path commands (absolute and relative) and `transform` on groups. npm `echarts` (server-side SVG string), crates `plotters`, `charts-rs` now; `matplotlib`, `leather`, `gonum/plot` need a. PNG output is not benchmarkable: rasterizers and fonts differ and no pixel check is fair. `svgo` (drawing primitives), `sparklines` (terminal) and `seaborn` (a layer over matplotlib) stay out; `plotly` and `altair` need an external renderer for SVG |
+| `chart-rendering` | Render a line chart of 5 series of 500 points to SVG at a given size | Parsed SVG: the size asked for; for each series one path or polyline of 450 to 500 vertices that is an affine image of the data (residual at most one pixel, so whole-pixel coordinates pass) with the y axis flipped, and any point it leaves out within one pixel of the line drawn; one mapping for all series; everything inside the canvas | sync, 1 and 5 | To write; the hardest here. The reader must handle path commands (absolute and relative) and `transform` on groups. npm `echarts` (server-side SVG string), crates `plotters`, `charts-rs` now; `matplotlib`, `leather`, `gonum/plot` need a. PNG output is not benchmarkable: rasterizers and fonts differ and no pixel check is fair. `svgo` (drawing primitives), `sparklines` (terminal) and `seaborn` (a layer over matplotlib) stay out; `plotly` and `altair` need an external renderer for SVG |
 | `fake-data-generation` | With a given seed, generate 100 records of name, email, street and date | Every record has the shape (non-empty strings, an email by pattern, an ISO date in range); two fixtures with the same seed give the same records; different seeds differ; at least half the names are distinct | sync, 5 | To write. State that the libraries do not produce the same data. npm `@faker-js/faker`, `chance`; crate `fake`; `faker` (PyPI, RubyGems) and `ffaker` need a. `factory-boy` builds objects from factories and stays out; `@laura/testdata-generator` only if it can be seeded |
 | `dataframes` | On a 20,000-row table built once per fixture in `prepare`: filter, group by a key, sum and mean | Rows compared as a set by key; integer sums exact, means within 1e-9 | sync, 1 | To write. Building the table is not timed and `task.md` says so. npm `arquero`, `data-forge`, `nodejs-polars`; crate `polars`. `pandas`, `polars`, `pyarrow`, `duckdb`, `agate` need a; `@nshiab/simple-data-analysis` needs b. `arrow` alone has no group-by; `narwhals`, `pyspark`, `dask` stay out |
 | `embedded-script-interpreters` | Run one script in a fresh context and read its result back | Exact value (a number, a string) | sync, exact | To write, **one task per guest language**: the script is the input, so a Lua run is never compared with a JavaScript run. `javascript-guest`: `quickjs-emscripten`, crates `boa_engine`, `rquickjs`; `goja` needs a. `lua-guest`: `fengari`, crates `mlua`, `piccolo`; `gopher-lua` needs a. Starlark: crate `starlark`; `go.starlark.net` needs a. Scripts: recursive `fib(22)`, sorting 2,000 numbers, building a string. `@eyurtsev/pyodide-sandbox` runs Python, alone, asynchronously: out |
@@ -1596,11 +1601,13 @@ everything outside the script, and it gets a test in
    connection per thread keeps it. These runners are for blocking clients;
    an `async def` operation is not run yet.
 
-   **Go, standard library** (`builtin/<name>/adapter.go`, `package main`):
-   `func connect(host string, port int, lanes int)` once, and
-   `func operation(input any) any`, called from `lanes` goroutines.
-
-   Go modules are not run by client tasks yet (see "Not there yet" below).
+   **Go** (`builtin/<name>/adapter.go` for the standard library, or
+   `gomod/<name>/` for a module, named and built as in "Adapters for PyPI,
+   RubyGems and Go modules": the scripts write `go.mod` and `go.sum` beside the
+   adapter and build it, through their age-checking proxy, with the client
+   runner; `package main`): `func connect(host string, port int, lanes int)`
+   once, and `func operation(input any) any`, called from `lanes` goroutines.
+   There is no `prepare` in a client task.
 7. Every adapter fails an exchange that did not succeed (a status that is not
    the scripted one, an error reply), in its library's own way, and returns
    the value the task names. It does not cache, batch, pipeline or retry
@@ -1646,7 +1653,7 @@ running). None of that is built; this is the plan.
 | Category | Verdict |
 | --- | --- |
 | `http-client` | **Ready for the fan-out.** Two tasks exist (`get-json`, `post-json`) on the `http` peer. More adapters: npm gaxios, superagent, needle, the JSR clients; PyPI httpx (its blocking client), httplib2; RubyGems httparty, httpclient, faraday with a persistent adapter; crates isahc, attohttpc. More tasks need no harness work while they stay within what the peer speaks (a large body, many headers, a new connection per request with `keepAlive: false` and small rounds). |
-| `redis-client` | **Ready for the fan-out** for stateless commands, on the `redis` stub (`get-set` exists). PyPI `redis` and RubyGems `redis`, `redis-client` can be added now; Go's clients wait for Go modules in client tasks. Stateful tasks need the real server. |
+| `redis-client` | **Ready for the fan-out** for stateless commands, on the `redis` stub (`get-set` exists). PyPI `redis`, RubyGems `redis`, `redis-client` and Go modules can be added now. Stateful tasks need the real server. |
 | `websocket-messaging` | **Needs a stub peer** (about 250 lines), then ready: built-in `WebSocket` on the three JavaScript runtimes, npm ws, crates tungstenite and tokio-tungstenite, PyPI websockets and websocket-client. One lane per connection: send a message, wait for its echo. The in-memory codec idea in the backlog is a different, synchronous task. |
 | `smtp-client` | **Needs a stub peer** (about 200 lines), then ready: Python `smtplib` and Go `net/smtp` built in, npm nodemailer, RubyGems net-smtp, crate lettre. |
 | `socks-proxy-client` | **Needs a stub peer** (about 200 lines). Few packages (npm socks and socks-proxy-agent, PyPI pysocks, RubyGems socksify, Go modules); low priority. |
@@ -1662,10 +1669,6 @@ running). None of that is built; this is the plan.
 
 ### Not there yet
 
-- **Go modules** in client tasks. `scripts/lib/native-packages.mjs` builds a
-  Go module adapter with the synchronous runner; it needs the runner as a
-  parameter, then `prepareNativeClient` in `scripts/lib/client-tasks.mjs` can
-  use it as it uses PyPI and RubyGems.
 - **Asynchronous Python clients** (aiohttp, httpx's AsyncClient, asyncpg):
   `harness/python/client-runner.py` runs a lane as a thread. An asyncio mode
   (lanes as tasks on one loop when `operation` is a coroutine function) is

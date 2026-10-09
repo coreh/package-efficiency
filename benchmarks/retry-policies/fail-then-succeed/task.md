@@ -58,12 +58,25 @@ Not compared:
   the harness ("the operations wait instead of working": 1.3 ms of CPU in 462 ms).
   `backoff` has no attempt cap in its constant policy and its async retry also
   sleeps on a timer.
-- The PyPI, RubyGems and Go packages (`tenacity`, `backoff`, `retry`, `retriable`,
-  `cenkalti/backoff`, `eapache/go-resiliency`) do the job with zero waiting, but this
-  harness only installs such packages for synchronous tasks, so they cannot be
-  entered in an asynchronous one yet.
 - Circuit breakers (`pybreaker`, `gobreaker`, `hystrix-go`) are a different job.
 - `aiohttp-retry` retries HTTP requests of one client only.
+
+Python, Ruby and Go packages, and what each does between attempts with no waiting:
+
+- `tenacity` (`AsyncRetrying`) and `backoff` (`on_exception` on a coroutine) await
+  `asyncio.sleep(0)`, which is one pass of the event loop, not a timer.
+- `retrying` and `retry` have no asynchronous API: their function is a plain
+  function, called and not awaited, so they skip the awaiting the Python loop and
+  the two packages above pay. Between attempts they call `time.sleep(0)`, which
+  returns at once. `retry` is given `logger=None`, because its default writes a
+  warning per failed attempt to standard error.
+- `retriable` (RubyGems) is given its own `sleep_disabled: true` option and then
+  never sleeps.
+- `cenkalti/backoff` (v5, `ZeroBackOff` and `WithMaxTries`) and
+  `eapache/go-resiliency` (`retrier` with `ConstantBackoff(attempts - 1, 0)`)
+  start a `time.Timer` of zero between attempts and receive from it. With the
+  timers of Go 1.23 and later an expired timer is delivered at the receive, so
+  nothing waits, but the timer's cost is in their figures.
 
 The `builtin` entries are loops written by hand with the language's own exceptions:
 JavaScript `try`/`catch` around an `await`, Python `try`/`except` around an `await`,

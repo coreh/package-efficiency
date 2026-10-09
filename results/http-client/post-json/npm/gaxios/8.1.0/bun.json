@@ -23,7 +23,7 @@
   "inputs": {
     "harness": "f7ed1d8fd9a6aa43",
     "task": "09e6f0da2eaceb65",
-    "adapters": "20a6f77ecf71179d",
+    "adapters": "9bc187b483b8c807",
     "runtimes": {
       "node": "24.16.0",
       "bun": "1.4.2",
@@ -39,6 +39,11 @@
     "pins": {
       "cargo/reqwest": "0.12.28",
       "cargo/ureq": "3.4.2",
+      "gomod/franela-goreq": "v0.0.0-20171204163338-bcd34c9993f8",
+      "gomod/go-resty-resty": "v2.17.2",
+      "gomod/gopkg.in-resty": "v1.12.0",
+      "gomod/hashicorp-go-retryablehttp": "v0.7.8",
+      "gomod/valyala-fasthttp": "v1.74.0",
       "jsr/@exceptionless/fetchclient": "0.44.0",
       "npm/axios": "1.20.0",
       "npm/follow-redirects": "1.16.1",
@@ -58,7 +63,7 @@
       "rubygems/typhoeus": "1.6.0"
     }
   },
-  "measuredAt": "2026-10-09T05:36:08.940Z",
+  "measuredAt": "2026-10-09T16:11:14.385Z",
   "source": "d070c53f9c5d2909",
   "baseline": {
     "runtime": "bun",
@@ -130,192 +135,192 @@
   "runs": [
     {
       "status": "ok",
-      "importMs": 20.792917000000017,
-      "importCpuMs": 9.433,
+      "importMs": 20.097082999999998,
+      "importCpuMs": 9.007,
       "heap": {
-        "bootBytes": 967164,
-        "loadedBytes": 2380654,
-        "readyBytes": 3354906,
-        "warmBytes": 4084414,
+        "bootBytes": 968396,
+        "loadedBytes": 2380094,
+        "readyBytes": 3353900,
+        "warmBytes": 4088634,
         "peakBytes": null
       },
       "rounds": [
         {
           "requests": 24000,
-          "cpuMs": 474.592,
-          "wallMs": 238.55108300000006,
+          "cpuMs": 443.297,
+          "wallMs": 222.40495899999996,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4198510,
-          "peerCpuMs": 259.1489999999999
+          "heapUsedBytes": 4201274,
+          "peerCpuMs": 265.9330000000002
         },
         {
           "requests": 24000,
-          "cpuMs": 446.601,
-          "wallMs": 223.3795829999999,
+          "cpuMs": 498.425,
+          "wallMs": 262.1307499999998,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4200318,
-          "peerCpuMs": 240.4720000000002
+          "heapUsedBytes": 4203094,
+          "peerCpuMs": 299.0849999999998
         },
         {
           "requests": 24000,
-          "cpuMs": 449.66,
-          "wallMs": 224.50170900000012,
+          "cpuMs": 514.335,
+          "wallMs": 280.30266699999993,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4208622,
-          "peerCpuMs": 239.9369999999999
+          "heapUsedBytes": 4211462,
+          "peerCpuMs": 300.05999999999995
         }
       ],
       "warmupRounds": [
         {
           "requests": 24000,
-          "wallMs": 227.68174999999997,
-          "cpuMs": 468.127
+          "wallMs": 269.52304100000003,
+          "cpuMs": 519.474
         },
         {
           "requests": 24000,
-          "wallMs": 227.6165840000001,
-          "cpuMs": 462.346
+          "wallMs": 233.32595800000013,
+          "cpuMs": 466.636
         },
         {
           "requests": 24000,
-          "wallMs": 225.39308399999982,
-          "cpuMs": 451.665
+          "wallMs": 228.721041,
+          "cpuMs": 450.291
         }
       ],
       "connectionsOpened": 8,
-      "rssAfterLoadBytes": 64782336,
-      "footprintAfterLoadBytes": 21758624,
-      "peakRssBytes": 64929792,
-      "peakFootprintBytes": 30868128
+      "rssAfterLoadBytes": 61849600,
+      "footprintAfterLoadBytes": 23118496,
+      "peakRssBytes": 61980672,
+      "peakFootprintBytes": 30786208
     },
     {
       "status": "ok",
-      "importMs": 7.913457999999991,
-      "importCpuMs": 9.119,
+      "importMs": 4.744416000000001,
+      "importCpuMs": 5.558,
       "heap": {
-        "bootBytes": 966716,
-        "loadedBytes": 2380542,
-        "readyBytes": 3358548,
-        "warmBytes": 4086998,
+        "bootBytes": 968508,
+        "loadedBytes": 2381774,
+        "readyBytes": 3355528,
+        "warmBytes": 4087790,
         "peakBytes": null
       },
       "rounds": [
         {
           "requests": 24000,
-          "cpuMs": 469.109,
-          "wallMs": 234.48733399999992,
+          "cpuMs": 464.365,
+          "wallMs": 241.50125000000003,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4201606,
-          "peerCpuMs": 250.96699999999987
+          "heapUsedBytes": 4201886,
+          "peerCpuMs": 275.173
         },
         {
           "requests": 24000,
-          "cpuMs": 452.813,
-          "wallMs": 226.09762499999988,
+          "cpuMs": 484.245,
+          "wallMs": 256.16775000000007,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4203414,
-          "peerCpuMs": 240.91600000000017
+          "heapUsedBytes": 4203694,
+          "peerCpuMs": 286.81500000000005
         },
         {
           "requests": 24000,
-          "cpuMs": 452.29,
-          "wallMs": 226.47145799999998,
+          "cpuMs": 461.859,
+          "wallMs": 237.33199999999988,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4211782,
-          "peerCpuMs": 244.37300000000005
+          "heapUsedBytes": 4212062,
+          "peerCpuMs": 261.5089999999998
         }
       ],
       "warmupRounds": [
         {
           "requests": 24000,
-          "wallMs": 226.292958,
-          "cpuMs": 466.772
+          "wallMs": 218.60924999999997,
+          "cpuMs": 446.777
         },
         {
           "requests": 24000,
-          "wallMs": 226.32395900000006,
-          "cpuMs": 462.302
+          "wallMs": 245.38625000000002,
+          "cpuMs": 467.758
         },
         {
           "requests": 24000,
-          "wallMs": 225.19333400000005,
-          "cpuMs": 451.139
+          "wallMs": 231.99041599999987,
+          "cpuMs": 455.677
         }
       ],
       "connectionsOpened": 8,
-      "rssAfterLoadBytes": 60080128,
-      "footprintAfterLoadBytes": 20726360,
-      "peakRssBytes": 60260352,
-      "peakFootprintBytes": 30556760
+      "rssAfterLoadBytes": 59916288,
+      "footprintAfterLoadBytes": 20972168,
+      "peakRssBytes": 60080128,
+      "peakFootprintBytes": 30638728
     },
     {
       "status": "ok",
-      "importMs": 8.282667000000004,
-      "importCpuMs": 9.515,
+      "importMs": 4.865375,
+      "importCpuMs": 5.726,
       "heap": {
-        "bootBytes": 967052,
-        "loadedBytes": 2380542,
-        "readyBytes": 3357762,
-        "warmBytes": 4086522,
+        "bootBytes": 968392,
+        "loadedBytes": 2381214,
+        "readyBytes": 3354404,
+        "warmBytes": 4088706,
         "peakBytes": null
       },
       "rounds": [
         {
           "requests": 24000,
-          "cpuMs": 457.744,
-          "wallMs": 231.42725000000019,
+          "cpuMs": 457.016,
+          "wallMs": 234.17025000000012,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4201078,
-          "peerCpuMs": 253.50200000000007
+          "heapUsedBytes": 4203314,
+          "peerCpuMs": 263.52700000000004
         },
         {
           "requests": 24000,
-          "cpuMs": 488.969,
-          "wallMs": 252.840958,
+          "cpuMs": 442.557,
+          "wallMs": 225.58908300000007,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4202326,
-          "peerCpuMs": 261.8689999999999
+          "heapUsedBytes": 4203666,
+          "peerCpuMs": 258.80499999999984
         },
         {
           "requests": 24000,
-          "cpuMs": 451.402,
-          "wallMs": 226.4263329999999,
+          "cpuMs": 502.771,
+          "wallMs": 270.48004200000014,
           "latencyP50Ms": null,
           "latencyP99Ms": null,
-          "heapUsedBytes": 4210918,
-          "peerCpuMs": 241.3989999999999
+          "heapUsedBytes": 4212046,
+          "peerCpuMs": 298.3610000000001
         }
       ],
       "warmupRounds": [
         {
           "requests": 24000,
-          "wallMs": 228.14408300000002,
-          "cpuMs": 469.442
+          "wallMs": 230.51245800000004,
+          "cpuMs": 470.13
         },
         {
           "requests": 24000,
-          "wallMs": 227.526833,
-          "cpuMs": 460.936
+          "wallMs": 233.54558399999996,
+          "cpuMs": 468.594
         },
         {
           "requests": 24000,
-          "wallMs": 227.1730419999999,
-          "cpuMs": 452.118
+          "wallMs": 235.03750000000014,
+          "cpuMs": 459.99
         }
       ],
       "connectionsOpened": 8,
-      "rssAfterLoadBytes": 59113472,
-      "footprintAfterLoadBytes": 19972744,
-      "peakRssBytes": 59326464,
-      "peakFootprintBytes": 28869232
+      "rssAfterLoadBytes": 59162624,
+      "footprintAfterLoadBytes": 20234864,
+      "peakRssBytes": 59342848,
+      "peakFootprintBytes": 29835888
     }
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "executor": "calling thread (synchronous)",
+  "notes": "retry.api.retry_call(job, exceptions=RuntimeError, tries=attempts, delay=0, logger=None) for each call; the error rethrown after the last attempt is caught. logger=None turns off its default warning per failed attempt, which would otherwise be printed to standard error. retry has no asynchronous API, so the function is a plain function and nothing is awaited, unlike the Python loop and the asyncio packages here. Between attempts it calls time.sleep(0), which returns at once."
+}

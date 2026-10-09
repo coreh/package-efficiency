@@ -27,7 +27,8 @@ V8 (Node and Deno) a string of one to seven digits keeps its integer value on
 the string object once it has been computed, so `Number()` on those strings
 (196 of the 1,144, about 17%) is a lookup rather than a parse after the first
 pass. That is the engine's own behaviour and is left on; it affects the
-`Number()` row and, less, `strnum`, which calls `Number()` after its own checks.
+`Number()` row and, less, `strnum` and `@ghoullier/number-safe-parse`, which
+call `Number()` after their own checks.
 
 ## Why plain digit strings stop at 15 significant digits
 
@@ -41,17 +42,18 @@ are simply not exercised here.
 ## Entries and omissions
 
 - `strnum`: `toNumber(string)`. It validates the text, trims zeros and compares
-  the printed value before returning, so it does more than convert. It is the
-  only npm package here, and its figure is the cost of those checks on top of
-  `Number()`, not of a different conversion.
+  the printed value before returning, so it does more than convert. Its
+  figure is the cost of those checks on top of `Number()`, not of a different
+  conversion.
+- `@ghoullier/number-safe-parse` (JSR): `numberSafeParse(string)`. It returns
+  `null` for blank text, else `Number(string)` when that is finite, so its
+  figure is `Number()` plus a `trim()` and a finiteness check.
 - JavaScript `Number()`, Python `float()`, Ruby `Float()` and Go
   `strconv.ParseFloat(s, 64)`: standard-library baselines.
 - `lexical-parse-float`: `f64::from_lexical(bytes)` with default options.
 - Left out: `atoi` and `lexical-parse-integer` parse integers only and cannot
   do the floating-point strings. `minimal-lexical` is a low-level building
   block that needs the caller to split mantissa and exponent first, so the
-  adapter would have to implement the job itself. `@ghoullier/number-safe-parse`
-  had no JSR release old enough to pass the seven-day rule when this task was
-  written.
+  adapter would have to implement the job itself.
 
 See [shared methodology](../../README.md) for timing and reproduction.

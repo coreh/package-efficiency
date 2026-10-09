@@ -17,7 +17,7 @@ import { announceFiles, fixtureFiles } from '../harness/files.mjs'
 import { installPinned, installJsr } from './lib/npm.mjs'
 import { binaryInstall, nodeInstall } from './lib/install-size.mjs'
 import { prepareApp } from './lib/apps.mjs'
-import { NATIVE_REGISTRIES, lockNativePackage, nativeMeta, prepareNativePackage } from './lib/native-packages.mjs'
+import { NATIVE_REGISTRIES, PACKAGE_TASK_KINDS, lockNativePackage, nativeMeta, prepareNativePackage } from './lib/native-packages.mjs'
 import { adapterFingerprint, adaptersTaskOf, placeScenario, staleReason, taskInputs } from './lib/tasks.mjs'
 import { ASYNC_JS_RUNNER, ASYNC_KIND, asyncEnv, asyncNativeRunner, checkAsyncTask, concurrencyRecord, measureAsyncOperation } from './lib/async-operation.mjs'
 import { CLIENT_JS_RUNNER, CLIENT_KIND, checkClientTask, clientMeasurer, prepareNativeClient } from './lib/client-tasks.mjs'
@@ -315,15 +315,17 @@ const adapters = globSync('{npm,jsr,builtin,cargo,pypi,rubygems,gomod}/**/adapte
   .filter((a) => !only || only.includes(a.name))
   .sort((a, b) => a.ecosystem.localeCompare(b.ecosystem) || a.name.localeCompare(b.name))
 
-// A PyPI, RubyGems or Go module adapter of a synchronous task is resolved to
-// exact files the first time it is seen, and the lock is written beside it
-// (scripts/lib/native-packages.mjs). That is done here for every such adapter
-// of the task, selected or not, before anything is measured: a lock is part
-// of its adapter's fingerprint, which each result records.
-// Synchronous tasks only: the other kinds of task have runners of their own.
-// A client task takes PyPI and RubyGems packages too, run by its own
-// runners (scripts/lib/client-tasks.mjs).
-const takesPackages = task.kind === 'sync-operation' || isClient
+// A PyPI, RubyGems or Go module adapter of an operation task (synchronous or
+// asynchronous) is resolved to exact files the first time it is seen, and the
+// lock is written beside it (scripts/lib/native-packages.mjs). That is done
+// here for every such adapter of the task, selected or not, before anything is
+// measured: a lock is part of its adapter's fingerprint, which each result
+// records. An asynchronous task installs them the same way and runs them with
+// its own runners (Python's asyncio runner; Ruby and Go use the synchronous
+// ones). A client task takes all three too, run by its own runners
+// (scripts/lib/client-tasks.mjs). Servers and applications have installs of
+// their own.
+const takesPackages = task.kind in PACKAGE_TASK_KINDS
 const packaged = (target) => takesPackages && target.ecosystem in NATIVE_REGISTRIES
 const unlocked = new Map()
 if (takesPackages) {
@@ -401,7 +403,8 @@ for (const target of adapters) {
   }
 
   // A client task: a client of Python, Ruby or Go (standard library, or a
-  // package from PyPI or RubyGems installed from its lock), above the same
+  // package from PyPI, RubyGems or the Go module proxy installed or built from
+  // its lock), above the same
   // idle baseline as the language's synchronous tasks.
   if (isClient && meta.language && meta.language !== 'javascript') {
     for (const runtimeId of meta.runtimes.filter(selected)) {

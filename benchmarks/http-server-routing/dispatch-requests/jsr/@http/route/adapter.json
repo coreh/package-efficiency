@@ -1,0 +1,12 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "types": "@http/route",
+  "executor": "event loop",
+  "notes": "handle([...]) over 50 byPattern(path, byMethod({...})) handlers (URLPattern per path, tried in order, the library's own composition); each of the 100 routes has its own handler returning one Response made at start-up. byMethod answers a wrong method with its own 405 and an unmatched path gets handle's 404. URLPattern does not percent-decode, so the handler decodes the id with decodeURIComponent."
+}

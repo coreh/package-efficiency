@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "notes": "Figure(figsize=(width / 96, height / 96)), add_subplot(), axes.plot(x, series) for each series, savefig(StringIO, format='svg'), default settings. Its default path simplification leaves out the points that lie within 1/9 of a pixel of the line through their neighbours, so a series is drawn with 485 to 495 of its 500 points as vertices.",
+  "details": "matplotlib.figure.Figure is used directly, without pyplot's global state. With the default rcParams['path.simplify'] = True (threshold 1/9 pixel), the five lines of fixture 0 have 485, 495, 486, 495 and 486 vertices. The points left out lie on the line as drawn, which the check accepts; the variant matplotlib-no-simplify turns simplification off and writes every point."
+}

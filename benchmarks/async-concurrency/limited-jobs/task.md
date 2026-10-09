@@ -51,6 +51,19 @@ Executors, as recorded with each result:
 - Rust `futures`: `futures::executor::block_on`, which polls on the calling
   thread; the jobs are futures in one `buffered` stream, not spawned tasks.
 
+Packages from PyPI and the Go module proxy run as the built-in entries of
+their language do: `anyio` (a task group and a `CapacityLimiter`) on the same
+asyncio loop, with the job yielding by `asyncio.sleep(0)`; `golang.org/x/sync`
+(`errgroup.Group` with `SetLimit`) with `GOMAXPROCS=1`, the job yielding by
+`runtime.Gosched()`.
+
+The RubyGems `async` gem was tried and left out: it cannot do this task as it
+is defined. `Semaphore#async` starts each job at once, and its reactor runs
+ready fibers first in, first out, so after one yield an earlier job has
+finished before the next is started. At most two jobs are ever in flight,
+whatever the limit, and a job would need a second yield to reach it, which
+would make it a different unit of work from every other entry's.
+
 Not compared here: worker-process and worker-thread pools (`jest-worker`,
 poolifier), which run jobs in parallel on other threads, and packages with no
 limit (`run-parallel`) or another purpose (`p-locate`).

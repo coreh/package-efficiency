@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "dependencies": ["pandas", "pyarrow"],
+  "notes": "Dask DataFrame (4 partitions, synchronous scheduler): df[df.qty >= min].groupby('key').agg(sum of amount, mean of qty).compute(), then values.tolist() to [key, sum, mean] rows. Runs on pandas (Dask needs pyarrow for pandas 3 strings)."
+}

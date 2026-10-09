@@ -1,0 +1,10 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "notes": "minizlib has only streams, so each call makes a Gzip and a Gunzip stream and uses the documented one-liner new Gzip().end(data).read(). It is synchronous and wraps Node's zlib binding at the default level. An empty result, which minipass reads as null, is passed on as undefined. Text goes through TextEncoder/TextDecoder."
+}

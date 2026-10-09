@@ -7,6 +7,7 @@ import { existsSync } from 'node:fs'
 import { copyFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { measureClient } from '../../harness/client.mjs'
+import { binaryInstall } from './install-size.mjs'
 import { ROOT, fromRoot } from './util.mjs'
 
 export const CLIENT_KIND = 'client'
@@ -51,19 +52,30 @@ export function clientMeasurer({ scenario, build }) {
 // language's synchronous tasks). A standard-library client is run as it is; a
 // package from PyPI or RubyGems is installed from the lock beside its adapter
 // by scripts/lib/native-packages.mjs, under the rules written there, and
-// found through the environment that gives back. Go modules are not run by
-// client tasks yet: their build is tied to the synchronous runner.
+// found through the environment that gives back. A Go module is built there
+// too, from its go.mod and go.sum, through the same age-checking proxy, with
+// the client runner instead of the operation runner.
 export async function prepareNativeClient({ taskId, target, meta, runtimeId, rt, config, goBaseline, prepareNativePackage }) {
   let installed = null
   if (target.ecosystem !== 'builtin') {
-    if (meta.language === 'go') throw new Error('client tasks do not run Go modules yet, only the standard library (see "Client tasks" in benchmarks/README.md)')
-    installed = await prepareNativePackage({ taskId, target, meta, runtimeId, rt, config })
+    installed = await prepareNativePackage({ taskId, target, meta, runtimeId, rt, config, runner: 'client' })
     if (installed.unavailable) return installed
   }
   const env = { ...installed?.env, ...meta.env }
   const extra = installed
     ? { version: installed.version, dependencies: installed.dependencies, ...(installed.install ? { install: installed.install } : {}), ...(meta.env ? { settings: meta.env } : {}) }
     : { version: null, dependencies: {} }
+  if (meta.language === 'go' && installed) {
+    const base = await goBaseline(rt)
+    // What the module adds to the program, as for a Go module in an operation task.
+    const install = binaryInstall(installed.command, base)
+    if (install) extra.install = install
+    return {
+      launch: { command: installed.command, args: [], cwd: ROOT, env, phases: ['boot', 'ready'] },
+      base: { command: base, args: ['-'], cwd: ROOT },
+      extra,
+    }
+  }
   if (meta.language === 'go') {
     const work = fromRoot('.cache/work', taskId, 'builtin', target.name)
     await mkdir(work, { recursive: true })

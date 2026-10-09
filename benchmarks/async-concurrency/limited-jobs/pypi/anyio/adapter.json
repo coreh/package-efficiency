@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "executor": "asyncio event loop",
+  "notes": "One anyio task group per operation; every job is started with start_soon and runs under one anyio.CapacityLimiter(limit). The task group's exit waits for all of them; each job writes its result at its own index. anyio runs on the harness's asyncio loop. The job yields with asyncio.sleep(0), as the asyncio entry does."
+}

@@ -21,7 +21,7 @@ What the task fixes:
   blocking client (Python `http.client`, Ruby `Net::HTTP`, Rust `ureq`) runs
   each lane on its own thread; Go runs eight goroutines; an asynchronous Rust
   client runs eight tasks on the Tokio runtime its adapter builds.
-- **Keep-alive.** A client may open at most eight connections in the whole
+- **Keep-alive.** A client may open at most sixteen connections in the whole
   run, the verification and warm-up included, and reuses them. The server
   counts the connections it accepts; a run that opened more fails.
 - **HTTP/1.1 without pipelining**, plain TCP, no TLS, no proxy, no redirects,

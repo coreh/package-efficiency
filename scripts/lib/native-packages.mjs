@@ -1,4 +1,5 @@
-// Third-party packages for the synchronous tasks in Python, Ruby and Go:
+// Third-party packages in Python, Ruby and Go for operation tasks (synchronous
+// and asynchronous) and client tasks:
 // adapters under <task>/pypi/<name>/, <task>/rubygems/<name>/ and
 // <task>/gomod/<name>/. An adapter names its package; this file resolves it
 // to exact files, records them beside the adapter, installs them under
@@ -462,12 +463,27 @@ async function lockGo({ target, meta, config }) {
   return true
 }
 
-async function prepareGo({ taskId, target, meta, rt }) {
+// The Go runners a module adapter can be built with: the operation runner
+// (synchronous and asynchronous operation tasks, which call prepare on every
+// fixture) and the client runner (client tasks, no prepare).
+export const GO_RUNNERS = {
+  operation: { file: 'harness/go/runner.go', prepare: true },
+  client: { file: 'harness/go/client-runner.go', prepare: false },
+}
+
+// The kinds of task that take PyPI, RubyGems and Go module adapters, and the
+// Go runner each builds them with. Servers and applications have installs of
+// their own (scripts/lib/native-http.mjs, scripts/lib/apps.mjs).
+export const PACKAGE_TASK_KINDS = { 'sync-operation': 'operation', 'async-operation': 'operation', client: 'client' }
+
+async function prepareGo({ taskId, target, meta, rt, runner: kind = 'operation' }) {
   const { module } = goModule(target, meta)
+  const chosen = GO_RUNNERS[kind]
+  if (!chosen) throw new Error(`no Go runner "${kind}"`)
   const work = fromRoot('.cache/work', taskId, 'gomod', target.name)
   const binary = path.join(work, 'runner')
   const record = path.join(work, 'build.json')
-  const runner = await readFile(fromRoot('harness/go/runner.go'), 'utf8')
+  const runner = await readFile(fromRoot(chosen.file), 'utf8')
   const adapter = await readFile(path.join(target.dir, 'adapter.go'), 'utf8')
   const files = ['go.mod', 'go.sum']
   const stamp = digest([rt.version, runner, adapter, ...files.map((file) => readFileSync(path.join(target.dir, file), 'utf8'))])
@@ -479,8 +495,8 @@ async function prepareGo({ taskId, target, meta, rt }) {
     for (const file of files) await copyFile(path.join(target.dir, file), path.join(work, file))
     await writeFile(path.join(work, 'runner.go'), runner)
     await writeFile(path.join(work, 'adapter.go'), adapter)
-    // The runner calls prepare on every fixture; most adapters have none.
-    await writeFile(path.join(work, 'prepare.go'), /^func prepare\(/m.test(adapter) ? 'package main\n' : 'package main\nfunc prepare(v any) any { return v }\n')
+    // The operation runner calls prepare on every fixture; most adapters have none.
+    if (chosen.prepare) await writeFile(path.join(work, 'prepare.go'), /^func prepare\(/m.test(adapter) ? 'package main\n' : 'package main\nfunc prepare(v any) any { return v }\n')
     await goRun(rt, ['build', '-mod=readonly', '-o', binary, '.'], work)
     // The modules linked into the program, as the binary itself lists them.
     const linked = Object.fromEntries([...(await goRun(rt, ['version', '-m', binary], work)).matchAll(/^\tdep\t(\S+)\t(\S+)/gm)].map(([, dep, version]) => [dep, version]))
@@ -512,8 +528,10 @@ export async function lockNativePackage({ target, meta, config }) {
 // `env` for the interpreter (Python, Ruby) or `command`, the built program
 // (Go). `unavailable` instead, with the reason, where the package cannot run
 // on the runtime.
-export async function prepareNativePackage({ taskId, target, meta, runtimeId, rt, config }) {
-  const context = { taskId, target, meta: nativeMeta(target, meta), runtimeId, rt, config }
+// `runner` chooses the Go runner the program is built with (GO_RUNNERS):
+// 'operation' by default, 'client' for a client task.
+export async function prepareNativePackage({ taskId, target, meta, runtimeId, rt, config, runner }) {
+  const context = { taskId, target, meta: nativeMeta(target, meta), runtimeId, rt, config, runner }
   return target.ecosystem === 'pypi' ? preparePypi(context) : target.ecosystem === 'rubygems' ? prepareGems(context) : prepareGo(context)
 }
 

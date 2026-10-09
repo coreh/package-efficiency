@@ -154,7 +154,11 @@ export const readSvg = (text) => {
 
 // ---- The check -------------------------------------------------------------------------
 
-export const MAX_RESIDUAL = 0.5 // pixels
+// The check asks whether the chart draws the data, not whether its coordinates are exact:
+// a renderer may round vertices to whole pixels, and may simplify a line by leaving out
+// points that lie on it, as long as the line it draws passes within this of every point.
+export const MAX_RESIDUAL = 1 // pixels
+export const MIN_KEPT = 0.9 // the share of each series' points a line must keep as vertices
 const lstsq = (u, v) => { // v = a u + b
   const n = u.length
   let su = 0, sv = 0, suu = 0, suv = 0
@@ -169,36 +173,93 @@ const corr = (u, v) => {
   for (let i = 0; i < n; i++) { suv += (u[i] - mu) * (v[i] - mv); suu += (u[i] - mu) ** 2; svv += (v[i] - mv) ** 2 }
   return suv / Math.sqrt(suu * svv || 1)
 }
+// The line's height at each of the given horizontal positions, between its vertices.
+const resample = (line, pxs) => {
+  let k = 0
+  return pxs.map((px) => {
+    while (k < line.length - 2 && line[k + 1][0] < px) k++
+    const [[x0, y0], [x1, y1]] = [line[k], line[k + 1]]
+    return x1 === x0 ? y0 : y0 + (y1 - y0) * (px - x0) / (x1 - x0)
+  })
+}
+// Distance from point p to the segment from q to r.
+const toSegment = ([px, py], [qx, qy], [rx, ry]) => {
+  const dx = rx - qx, dy = ry - qy, len = dx * dx + dy * dy
+  const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((px - qx) * dx + (py - qy) * dy) / len))
+  return Math.hypot(px - qx - t * dx, py - qy - t * dy)
+}
 export const checkChart = ({ width, height, x, series }, output, label = 'chart') => {
   assert.equal(typeof output, 'string', `${label}: the SVG text is required`)
   const svg = readSvg(output)
   assert.ok(Math.abs(svg.width - width) <= 0.5 && Math.abs(svg.height - height) <= 0.5, `${label}: the size is ${svg.width} by ${svg.height}, not ${width} by ${height}`)
-  const lines = svg.shapes.filter((s) => s.length === x.length)
-  assert.equal(lines.length, series.length, `${label}: ${lines.length} paths of ${x.length} vertices, ${series.length} series expected`)
-  // Pair each path with the series it draws: the one it follows most closely.
+  const N = x.length, least = Math.ceil(MIN_KEPT * N)
+  // A vertex repeated in a row draws nothing (matplotlib's simplifier writes a line's last point twice).
+  const shapes = svg.shapes.map((s) => s.filter((p, i) => i === 0 || p[0] !== s[i - 1][0] || p[1] !== s[i - 1][1]))
+  const lines = shapes.filter((s) => s.length >= least && s.length <= N)
+  if (lines.length !== series.length) {
+    const longest = shapes.map((s) => s.length).sort((p, q) => q - p).slice(0, series.length + 1)
+    assert.fail(`${label}: ${lines.length} paths of ${least} to ${N} vertices, ${series.length} series expected (the longest shapes have ${longest.join(', ') || 'no'} vertices)`)
+  }
+  // A first estimate of the x mapping from the ends of the lines, which every line keeps.
+  const first = lines.map((l) => l[0][0]), last = lines.map((l) => l[l.length - 1][0])
+  const mean = (v) => v.reduce((p, c) => p + c, 0) / v.length
+  let a = (mean(last) - mean(first)) / (x[N - 1] - x[0]), b = mean(first) - a * x[0]
+  assert.ok(a > 0, `${label}: the x axis does not run left to right`)
+  // Pair each path with the series it follows most closely, up or down, comparing the
+  // line's height at every data point's x. The pairing ignores the sign of the correlation,
+  // so that it does not depend on which way the y axis runs; the orientation is checked on
+  // the common mapping below.
+  const pxs = x.map((v) => a * v + b)
   const used = new Set(), pairs = []
   for (const line of lines) {
-    const ys = line.map((p) => -p[1])
-    let best = -1, bestR = -2
-    series.forEach((s, k) => { const r = corr(ys, s); if (r > bestR) { bestR = r; best = k } })
+    const ys = resample(line, pxs)
+    let best = -1, bestR = -1
+    series.forEach((s, k) => { const r = Math.abs(corr(ys, s)); if (r > bestR) { bestR = r; best = k } })
     assert.ok(!used.has(best), `${label}: two paths draw series ${best}`)
-    used.add(best); pairs.push([line, series[best], best])
+    used.add(best); pairs.push({ line, s: series[best], ys })
   }
-  // One mapping for all: px = a x + b, py = c y + e.
+  let [c, e] = lstsq(pairs.flatMap((p) => p.s), pairs.flatMap((p) => p.ys))
+  // Which data point each vertex draws: the vertices are the points in order, some perhaps
+  // left out, so each vertex takes the nearest point among those still possible.
+  for (const p of pairs) {
+    const { line, s } = p
+    p.index = []
+    let prev = -1
+    for (let i = 0; i < line.length; i++) {
+      const [vx, vy] = line[i], hi = N - line.length + i
+      let best = prev + 1, bestD = Infinity
+      for (let j = prev + 1; j <= hi; j++) {
+        const d = (a * x[j] + b - vx) ** 2 + (c * s[j] + e - vy) ** 2
+        if (d < bestD) { bestD = d; best = j }
+      }
+      p.index.push(best); prev = best
+    }
+  }
+  // One mapping for all, fitted to the vertices: px = a x + b, py = c y + e.
   const ux = [], vx = [], uy = [], vy = []
-  for (const [line, s] of pairs) line.forEach((p, j) => { ux.push(x[j]); vx.push(p[0]); uy.push(s[j]); vy.push(p[1]) })
-  const [a, b] = lstsq(ux, vx), [c, e] = lstsq(uy, vy)
+  for (const { line, s, index } of pairs) line.forEach((pt, i) => { ux.push(x[index[i]]); vx.push(pt[0]); uy.push(s[index[i]]); vy.push(pt[1]) });
+  [a, b] = lstsq(ux, vx); [c, e] = lstsq(uy, vy)
   assert.ok(a > 0, `${label}: the x axis does not run left to right`)
   assert.ok(c < 0, `${label}: the y axis is not flipped (larger values must be higher up)`)
   let worst = 0
   for (let i = 0; i < ux.length; i++) worst = Math.max(worst, Math.abs(a * ux[i] + b - vx[i]), Math.abs(c * uy[i] + e - vy[i]))
   assert.ok(worst <= MAX_RESIDUAL, `${label}: a vertex is ${worst.toFixed(2)} px away from one affine mapping of the data (limit ${MAX_RESIDUAL})`)
+  // A point left out must lie on the line drawn between the vertices around it.
+  let dropped = 0, worstDropped = 0
+  for (const { line, s, index } of pairs) {
+    assert.ok(index[0] === 0 && index[index.length - 1] === N - 1, `${label}: a line does not start and end at its series' first and last points`)
+    for (let i = 1; i < index.length; i++) for (let j = index[i - 1] + 1; j < index[i]; j++) {
+      dropped++
+      worstDropped = Math.max(worstDropped, toSegment([a * x[j] + b, c * s[j] + e], line[i - 1], line[i]))
+    }
+  }
+  assert.ok(worstDropped <= MAX_RESIDUAL, `${label}: a point left out of a line is ${worstDropped.toFixed(2)} px away from it (limit ${MAX_RESIDUAL})`)
   // The data must fill a real part of the canvas, and stay inside it.
   const span = (v) => Math.max(...v) - Math.min(...v)
   assert.ok(a * span(x) >= 0.5 * width, `${label}: the lines cover only ${(a * span(x)).toFixed(0)} px of the ${width} px width`)
   assert.ok(-c * span(uy) >= 0.4 * height, `${label}: the lines cover only ${(-c * span(uy)).toFixed(0)} px of the ${height} px height`)
-  for (const [line] of pairs) for (const [px, py] of line) assert.ok(px >= -0.5 && px <= width + 0.5 && py >= -0.5 && py <= height + 0.5, `${label}: a vertex lies outside the canvas`)
-  return { a, b, c, e, worst }
+  for (const { line } of pairs) for (const [px, py] of line) assert.ok(px >= -0.5 && px <= width + 0.5 && py >= -0.5 && py <= height + 0.5, `${label}: a vertex lies outside the canvas`)
+  return { a, b, c, e, worst, dropped, worstDropped }
 }
 export const verifyOne = (i, output) => { checkChart(fixtures[i], output, `fixture ${i}`) }
 
@@ -211,9 +272,26 @@ const synth = ({ width, height, x, series }, o = {}) => {
   const cy = o.noFlip ? plotH / (hi - lo) : -plotH / (hi - lo)
   const ey = o.noFlip ? top : top + plotH - cy * lo
   const shape = (s, k) => {
-    const pts = x.slice(0, o.points ?? x.length).map((xv, j) => [40 + ax * xv, ey + cy * s[j] + (o.shift && k === 2 ? o.shift : 0) + (o.scaleOne && k === 3 ? (s[j] - lo) * 0.2 : 0)])
+    let pts = x.slice(0, o.points ?? x.length).map((xv, j) => [40 + ax * xv, ey + cy * s[j] + (o.shift && k === 2 ? o.shift : 0) + (o.scaleOne && k === 3 ? (s[j] - lo) * 0.2 : 0)])
+    // Whole pixels, as a renderer with integer coordinates writes them.
+    if (o.round) pts = pts.map((p) => p.map(Math.round))
+    // A simplifier: leave out each point within o.simplify px of the line through its neighbours as drawn.
+    if (o.simplify) {
+      const kept = [pts[0]]
+      for (let j = 1; j < pts.length - 1; j++) if (toSegment(pts[j], kept[kept.length - 1], pts[j + 1]) > o.simplify) kept.push(pts[j])
+      kept.push(pts[pts.length - 1]); pts = kept
+    }
+    if (o.repeatLast) pts = [...pts, pts[pts.length - 1]]
+    // Leave out points that are not on the line: every fiftieth one.
+    if (o.drop) pts = pts.filter((_, j) => j % 50 !== 25)
+    // In a group with translate(10 5) scale(2), the same canvas points are written at half scale.
+    if (o.group) pts = pts.map(([px, py]) => [(px - 10) / 2, (py - 5) / 2])
     if (o.polyline) return `<polyline fill="none" points="${pts.map((p) => p.map(fmt).join(',')).join(' ')}"/>`
-    if (o.relative) { let px = 0, py = 0; return `<path d="M${fmt(pts[0][0])} ${fmt(pts[0][1])}${pts.slice(1).map(([qx, qy]) => { const r = `l${fmt(qx - px)} ${fmt(qy - py)}`; return r }).join('')}"/>`.replace(/^(<path d="M\S+ \S+)l/, '$1l') }
+    if (o.relative) {
+      // Each step is the difference of the rounded absolute points, so rounding does not accumulate.
+      const r = pts.map((p) => p.map((n) => Math.round(n * 1000) / 1000))
+      return `<path d="M${fmt(r[0][0])} ${fmt(r[0][1])}${r.slice(1).map(([qx, qy], j) => `l${fmt(qx - r[j][0])} ${fmt(qy - r[j][1])}`).join('')}"/>`
+    }
     if (o.curves) return `<path d="M${pts[0].join(' ')}${pts.slice(1).map((p) => `C${p.join(' ')} ${p.join(' ')} ${p.join(' ')}`).join('')}"/>`
     return `<path d="M${pts.map((p) => p.map(fmt).join(' ')).join('L')}"/>`
   }
@@ -221,25 +299,38 @@ const synth = ({ width, height, x, series }, o = {}) => {
   const inner = o.group ? `<g transform="translate(10 5)"><g transform="scale(2)">${body}</g></g>` : `<g>${body}</g>`
   return `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="${o.width ?? width}" height="${o.height ?? height}"><defs><path d="M0 0L1 1"/></defs>${inner}</svg>`
 }
-// Good outputs in several spellings: absolute, a polyline, and groups with transforms.
+// Good outputs in several spellings: absolute, relative, a polyline, and groups with transforms.
 {
   const f = fixtures[0]
   assert.ok(checkChart(f, synth(f)).worst < 0.01)
   assert.ok(checkChart(f, synth(f, { polyline: true })).worst < 0.01)
-  const g = synth(f, { group: true }).replace(/ax/, '')
-  // The same chart drawn at half scale inside a group with scale(2) and translate(10 5).
-  const half = { ...f, width: f.width, height: f.height }
-  const bad = (o, why) => assert.throws(() => checkChart(half, synth(f, o)), why)
+  assert.ok(checkChart(f, synth(f, { relative: true })).worst < 0.01)
+  // The same chart drawn at half scale inside a group with translate(10 5) and scale(2).
+  assert.ok(checkChart(f, synth(f, { group: true })).worst < 0.01)
+  // Vertices on whole pixels pass.
+  assert.ok(checkChart(f, synth(f, { round: true })).worst < 0.6)
+  // A line simplified as matplotlib does by default (points within 1/9 px of the line left out) passes.
+  assert.ok(checkChart(f, synth(f, { simplify: 1 / 9 })).dropped > 0)
+  assert.ok(checkChart(f, synth(f, { simplify: 1 / 9, round: true, relative: true })).dropped > 0)
+  // matplotlib writes the last point of a simplified line twice.
+  assert.ok(checkChart(f, synth(f, { simplify: 1 / 9, repeatLast: true })).dropped > 0)
+  const bad = (o, why) => assert.throws(() => checkChart(f, synth(f, o)), why)
   bad({ noFlip: true }, /not flipped/)
-  bad({ points: 499 }, /paths of 500/)
-  bad({ count: 4 }, /paths of 500/)
+  bad({ noFlip: true, polyline: true }, /not flipped/)
+  bad({ points: 400 }, /paths of 450 to 500/)
+  bad({ points: 499 }, /start and end|away from/)
+  bad({ count: 4 }, /paths of 450 to 500/)
   bad({ shift: 2 }, /away from one affine/)
+  bad({ shift: 2, round: true }, /away from one affine/)
   bad({ scaleOne: true }, /away from one affine/)
+  bad({ drop: true }, /left out of a line/)
   bad({ width: f.width + 40 }, /size is/)
-  bad({ curves: true }, /paths of 500/)
-  assert.throws(() => checkChart(f, '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500"></svg>'), /paths of 500/)
+  bad({ curves: true }, /paths of 450 to 500/)
+  assert.throws(() => checkChart(f, '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500"></svg>'), /paths of 450/)
   assert.throws(() => checkChart(f, JSON.stringify(f)), /malformed|root/)
-  assert.ok(g.length > 0)
+  // The same path twice (one series drawn twice, another left out) is caught by the pairing.
+  const twice = synth(f).replace(/(<path d="M[^"]*"\/>)(<path d="M[^"]*"\/>)/, '$1$1')
+  assert.throws(() => checkChart(f, twice), /two paths draw series/)
 }
 
 export const verifyResults = (outputs) => {

@@ -18,9 +18,9 @@
   },
   "harness": 6,
   "inputs": {
-    "harness": "dcd5b85e086b34c1",
+    "harness": "f7ed1d8fd9a6aa43",
     "task": "772fafba38f91764",
-    "adapters": "8fdbc8b3f3368620",
+    "adapters": "dd43cf570c91ac87",
     "runtimes": {
       "node": "24.16.0",
       "bun": "1.4.2",
@@ -34,6 +34,7 @@
     },
     "machine": "f232e1123c8b16f8",
     "pins": {
+      "cargo/asn1-rs": "0.7.2",
       "cargo/der-parser": "10.0.0",
       "cargo/der": "0.7.10",
       "cargo/simple_asn1": "0.6.4",
@@ -44,7 +45,7 @@
       "pypi/pyasn1": "0.6.4"
     }
   },
-  "measuredAt": "2026-10-07T22:10:26.533Z",
+  "measuredAt": "2026-10-09T13:25:07.908Z",
   "source": "3dcbace04c729654",
   "baseline": {
     "runtime": "go",
@@ -57,9 +58,9 @@
     },
     "harness": 6,
     "inputs": {
-      "harness": "1cec02279c71132e",
+      "harness": "f7ed1d8fd9a6aa43",
       "task": "772fafba38f91764",
-      "adapters": "0302b187ac57e812",
+      "adapters": "dd43cf570c91ac87",
       "runtimes": {
         "node": "24.16.0",
         "bun": "1.4.2",
@@ -73,33 +74,38 @@
       },
       "machine": "f232e1123c8b16f8",
       "pins": {
+        "cargo/asn1-rs": "0.7.2",
         "cargo/der-parser": "10.0.0",
         "cargo/der": "0.7.10",
         "cargo/simple_asn1": "0.6.4",
-        "jsr/@wildboar/asn1": "11.3.0"
+        "gomod/go-asn1-ber-asn1-ber": "v1.5.8",
+        "gomod/gopkg.in-asn1-ber": "v1.0.0-20181015200546-f715ec2f112d",
+        "jsr/@wildboar/asn1": "11.3.0",
+        "pypi/asn1crypto": "1.5.1",
+        "pypi/pyasn1": "0.6.4"
       }
     },
-    "measuredAt": "2026-10-07T08:54:51.570Z",
+    "measuredAt": "2026-10-09T13:23:34.027Z",
     "kind": "warm",
     "task": "asn1-der-decoding/x509-structure",
     "runs": [
       {
-        "rssBytes": 6651904,
-        "footprintBytes": 4800968,
-        "heapUsedBytes": 253376,
-        "peakRssBytes": 6651904
-      },
-      {
-        "rssBytes": 6684672,
-        "footprintBytes": 4833760,
+        "rssBytes": 6750208,
+        "footprintBytes": 4833736,
         "heapUsedBytes": 253664,
-        "peakRssBytes": 6684672
+        "peakRssBytes": 6750208
       },
       {
-        "rssBytes": 6553600,
-        "footprintBytes": 4669920,
-        "heapUsedBytes": 253936,
-        "peakRssBytes": 6553600
+        "rssBytes": 6750208,
+        "footprintBytes": 4882888,
+        "heapUsedBytes": 253392,
+        "peakRssBytes": 6750208
+      },
+      {
+        "rssBytes": 6569984,
+        "footprintBytes": 4702688,
+        "heapUsedBytes": 253616,
+        "peakRssBytes": 6569984
       }
     ]
   },
@@ -110,195 +116,195 @@
       "importMs": null,
       "importCpuMs": null,
       "heap": {
-        "bootBytes": 181584,
+        "bootBytes": 181608,
         "loadedBytes": null,
-        "readyBytes": 219864,
-        "warmBytes": 238824,
+        "readyBytes": 225376,
+        "warmBytes": 241824,
         "peakBytes": null
       },
       "rounds": [
         {
           "checksum": 20240,
-          "cpuMs": 305.6099999999999,
+          "cpuMs": 284.0620000000001,
           "operations": 20240,
-          "systemCpuMs": 22.369,
-          "wallMs": 273.000334,
-          "heapUsedBytes": 246184
+          "systemCpuMs": 15.308,
+          "wallMs": 257.1,
+          "heapUsedBytes": 242976
         },
         {
-          "checksum": 20240,
-          "cpuMs": 295.201,
-          "operations": 20240,
-          "systemCpuMs": 19.058999999999997,
-          "wallMs": 265.253209,
-          "heapUsedBytes": 248504
+          "checksum": 22080,
+          "cpuMs": 300.3710000000001,
+          "operations": 22080,
+          "systemCpuMs": 17.274,
+          "wallMs": 271.537166,
+          "heapUsedBytes": 245392
         },
         {
-          "checksum": 20240,
-          "cpuMs": 300.97900000000004,
-          "operations": 20240,
-          "systemCpuMs": 21.30900000000001,
-          "wallMs": 268.511875,
-          "heapUsedBytes": 250632
+          "checksum": 22080,
+          "cpuMs": 297.5450000000001,
+          "operations": 22080,
+          "systemCpuMs": 16.570000000000007,
+          "wallMs": 268.663375,
+          "heapUsedBytes": 247504
         }
       ],
       "warmupRounds": [
         {
           "checksum": 20240,
-          "cpuMs": 300.585,
+          "cpuMs": 278.126,
           "operations": 20240,
-          "systemCpuMs": 19.385,
-          "wallMs": 273.070875
+          "systemCpuMs": 16.466,
+          "wallMs": 251.045583
         },
         {
-          "checksum": 20240,
-          "cpuMs": 302.729,
-          "operations": 20240,
-          "systemCpuMs": 20.909999999999997,
-          "wallMs": 272.547791
+          "checksum": 22080,
+          "cpuMs": 295.55499999999995,
+          "operations": 22080,
+          "systemCpuMs": 16.488,
+          "wallMs": 267.567791
         },
         {
-          "checksum": 20240,
-          "cpuMs": 295.7560000000001,
-          "operations": 20240,
-          "systemCpuMs": 19.794000000000004,
-          "wallMs": 266.870958
+          "checksum": 22080,
+          "cpuMs": 295.16099999999994,
+          "operations": 22080,
+          "systemCpuMs": 15.778999999999996,
+          "wallMs": 267.846625
         }
       ],
-      "rssAfterLoadBytes": 12304384,
-      "footprintAfterLoadBytes": 10289632,
-      "peakRssBytes": 12304384,
-      "peakFootprintBytes": 10289632
+      "rssAfterLoadBytes": 12828672,
+      "footprintAfterLoadBytes": 10863072,
+      "peakRssBytes": 12828672,
+      "peakFootprintBytes": 10863072
     },
     {
       "status": "ok",
       "importMs": null,
       "importCpuMs": null,
       "heap": {
-        "bootBytes": 181520,
+        "bootBytes": 181608,
         "loadedBytes": null,
-        "readyBytes": 219688,
-        "warmBytes": 241288,
+        "readyBytes": 220032,
+        "warmBytes": 237600,
         "peakBytes": null
       },
       "rounds": [
         {
-          "checksum": 19600,
-          "cpuMs": 282.1170000000001,
-          "operations": 19600,
-          "systemCpuMs": 17.858000000000004,
-          "wallMs": 253.962625,
-          "heapUsedBytes": 243128
+          "checksum": 21600,
+          "cpuMs": 294.231,
+          "operations": 21600,
+          "systemCpuMs": 15.306999999999988,
+          "wallMs": 266.65825,
+          "heapUsedBytes": 238176
         },
         {
-          "checksum": 19600,
-          "cpuMs": 277.69499999999994,
-          "operations": 19600,
-          "systemCpuMs": 17.406000000000006,
-          "wallMs": 250.7415,
-          "heapUsedBytes": 244280
+          "checksum": 21600,
+          "cpuMs": 292.4680000000001,
+          "operations": 21600,
+          "systemCpuMs": 16.99799999999999,
+          "wallMs": 263.368667,
+          "heapUsedBytes": 245248
         },
         {
-          "checksum": 17640,
-          "cpuMs": 301.807,
-          "operations": 17640,
-          "systemCpuMs": 26.458,
-          "wallMs": 269.975334,
-          "heapUsedBytes": 246680
+          "checksum": 21600,
+          "cpuMs": 291.25199999999995,
+          "operations": 21600,
+          "systemCpuMs": 16.52600000000001,
+          "wallMs": 262.976375,
+          "heapUsedBytes": 246976
         }
       ],
       "warmupRounds": [
         {
-          "checksum": 19600,
-          "cpuMs": 276.148,
-          "operations": 19600,
-          "systemCpuMs": 16.613999999999997,
-          "wallMs": 250.065417
+          "checksum": 21600,
+          "cpuMs": 298.439,
+          "operations": 21600,
+          "systemCpuMs": 18.304,
+          "wallMs": 269.355166
         },
         {
-          "checksum": 19600,
-          "cpuMs": 279.81000000000006,
-          "operations": 19600,
-          "systemCpuMs": 17.548000000000002,
-          "wallMs": 252.538209
+          "checksum": 21600,
+          "cpuMs": 293.45099999999996,
+          "operations": 21600,
+          "systemCpuMs": 19.371,
+          "wallMs": 265.379709
         },
         {
-          "checksum": 21560,
-          "cpuMs": 300.2399999999999,
-          "operations": 21560,
-          "systemCpuMs": 17.992999999999995,
-          "wallMs": 271.65975
+          "checksum": 21600,
+          "cpuMs": 291.39200000000005,
+          "operations": 21600,
+          "systemCpuMs": 17.087000000000003,
+          "wallMs": 262.628292
         }
       ],
-      "rssAfterLoadBytes": 12386304,
-      "footprintAfterLoadBytes": 10371528,
-      "peakRssBytes": 12386304,
-      "peakFootprintBytes": 10371528
+      "rssAfterLoadBytes": 12845056,
+      "footprintAfterLoadBytes": 10846688,
+      "peakRssBytes": 12845056,
+      "peakFootprintBytes": 10846688
     },
     {
       "status": "ok",
       "importMs": null,
       "importCpuMs": null,
       "heap": {
-        "bootBytes": 176240,
+        "bootBytes": 186952,
         "loadedBytes": null,
-        "readyBytes": 219736,
-        "warmBytes": 245320,
+        "readyBytes": 225040,
+        "warmBytes": 238048,
         "peakBytes": null
       },
       "rounds": [
         {
-          "checksum": 20680,
-          "cpuMs": 294.22299999999996,
-          "operations": 20680,
-          "systemCpuMs": 18.492999999999995,
-          "wallMs": 264.86725,
-          "heapUsedBytes": 246760
+          "checksum": 22000,
+          "cpuMs": 303.451,
+          "operations": 22000,
+          "systemCpuMs": 17.242999999999995,
+          "wallMs": 274.328292,
+          "heapUsedBytes": 245136
         },
         {
-          "checksum": 20680,
-          "cpuMs": 289.1719999999998,
-          "operations": 20680,
-          "systemCpuMs": 17.474999999999994,
-          "wallMs": 260.718292,
-          "heapUsedBytes": 248392
+          "checksum": 22000,
+          "cpuMs": 290.21299999999997,
+          "operations": 22000,
+          "systemCpuMs": 15.975999999999999,
+          "wallMs": 262.4395,
+          "heapUsedBytes": 247152
         },
         {
-          "checksum": 20680,
-          "cpuMs": 290.10300000000007,
-          "operations": 20680,
-          "systemCpuMs": 17.863,
-          "wallMs": 261.1885,
-          "heapUsedBytes": 250408
+          "checksum": 22000,
+          "cpuMs": 294.318,
+          "operations": 22000,
+          "systemCpuMs": 16.211,
+          "wallMs": 266.210542,
+          "heapUsedBytes": 248592
         }
       ],
       "warmupRounds": [
         {
-          "checksum": 20680,
-          "cpuMs": 299.389,
-          "operations": 20680,
-          "systemCpuMs": 18.741,
-          "wallMs": 269.044125
+          "checksum": 22000,
+          "cpuMs": 297.15599999999995,
+          "operations": 22000,
+          "systemCpuMs": 16.437,
+          "wallMs": 269.345417
         },
         {
-          "checksum": 18800,
-          "cpuMs": 289.91700000000003,
-          "operations": 18800,
-          "systemCpuMs": 21.305999999999997,
-          "wallMs": 258.553334
+          "checksum": 22000,
+          "cpuMs": 294.47200000000004,
+          "operations": 22000,
+          "systemCpuMs": 16.096999999999994,
+          "wallMs": 267.06825
         },
         {
-          "checksum": 20680,
-          "cpuMs": 306.8090000000001,
-          "operations": 20680,
-          "systemCpuMs": 20.310000000000002,
-          "wallMs": 275.407958
+          "checksum": 22000,
+          "cpuMs": 290.79499999999996,
+          "operations": 22000,
+          "systemCpuMs": 15.785000000000004,
+          "wallMs": 263.156916
         }
       ],
-      "rssAfterLoadBytes": 12288000,
-      "footprintAfterLoadBytes": 10289608,
-      "peakRssBytes": 12288000,
-      "peakFootprintBytes": 10289608
+      "rssAfterLoadBytes": 12484608,
+      "footprintAfterLoadBytes": 10502600,
+      "peakRssBytes": 12484608,
+      "peakFootprintBytes": 10502600
     }
   ]
 }

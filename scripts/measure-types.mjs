@@ -32,7 +32,7 @@ import os from 'node:os'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
-import { installPinned, installedVersion, MIN_RELEASE_AGE_DAYS } from './lib/npm.mjs'
+import { eligibleJsrVersions, installPinned, installedVersion, MIN_RELEASE_AGE_DAYS } from './lib/npm.mjs'
 import { fromRoot, loadConfig, median, readJson, writeJson } from './lib/util.mjs'
 import { raisePriority } from './lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
@@ -159,13 +159,7 @@ for (const [id, compiler] of Object.entries(compilers)) {
 async function installJsrUnpinned(dir, name) {
   const [, scope, pkg] = /^@([^/]+)\/(.+)$/.exec(name) ?? []
   if (!scope) throw new Error(`Invalid JSR name: ${name}`)
-  const response = await fetch(`https://api.jsr.io/scopes/${scope}/packages/${pkg}/versions`)
-  if (!response.ok) throw new Error(`JSR metadata: ${response.status}`)
-  const cutoff = Date.now() - MIN_RELEASE_AGE_DAYS * 86400000
-  const eligible = (await response.json()).items
-    .filter((v) => !v.yanked && /^\d+\.\d+\.\d+$/.test(v.version) && Date.parse(v.createdAt) < cutoff)
-    .sort((a, b) => b.version.localeCompare(a.version, 'en', { numeric: true }))
-  const version = eligible[0]?.version
+  const version = (await eligibleJsrVersions(scope, pkg))[0]?.version
   if (!version) throw new Error(`No eligible JSR version for ${name}`)
   await writeFile(path.join(dir, '.npmrc'), '@jsr:registry=https://npm.jsr.io\n')
   await exec('npm', ['install', `--min-release-age=${MIN_RELEASE_AGE_DAYS}`, '--ignore-scripts', '--no-audit', '--no-fund', '--silent', `${name}@npm:@jsr/${scope}__${pkg}@${version}`], { cwd: dir })

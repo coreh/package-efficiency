@@ -60,6 +60,27 @@ const ascii85 = (s) => {
   if (group.length) { assert.ok(group.length > 1, 'bad ASCII85 tail'); const n = group.length; flush(group, n) }
   return Buffer.from(out)
 }
+// The value of a direct integer object `num gen obj <n> endobj`, for an indirect /Length.
+const integerObject = (s, num, gen) => {
+  const m = new RegExp(`(?:^|[^0-9])${num}\\s+${gen}\\s+obj\\s*(\\d+)\\s*endobj`).exec(s)
+  return m ? Number(m[1]) : null
+}
+// Where a stream's data ends. The data is followed by an end-of-line marker that is not
+// part of it, then `endstream` (ISO 32000-1, 7.3.8.1). /Length, direct or indirect, gives
+// the end; the bytes after it up to `endstream` may only be white space. Without a usable
+// /Length, the data ends before `endstream` less at most one EOL (CRLF, LF or CR): any
+// other CR or LF before it belongs to the data.
+const streamEnd = (s, dict, from) => {
+  const direct = /\/Length\s+(\d+)(?!\d)(?!\s+\d+\s+R)/.exec(dict)
+  const indirect = /\/Length\s+(\d+)\s+(\d+)\s+R/.exec(dict)
+  const length = direct ? Number(direct[1]) : indirect ? integerObject(s, indirect[1], indirect[2]) : null
+  if (length !== null && from + length <= s.length && /^[\0\t\n\f\r ]*endstream/.test(s.slice(from + length, from + length + 64))) return from + length
+  const at = s.indexOf('endstream', from)
+  assert.ok(at >= from, 'a stream without endstream')
+  if (s.slice(at - 2, at) === '\r\n' && at - 2 >= from) return at - 2
+  if ((s[at - 1] === '\n' || s[at - 1] === '\r') && at - 1 >= from) return at - 1
+  return at
+}
 // Objects: number -> { dict: text, stream: Buffer | null }
 const parseObjects = (file) => {
   const s = text(file), objects = new Map()
@@ -74,9 +95,7 @@ const parseObjects = (file) => {
     if (sp >= 0 && !/^\s*[\[(]/.test(body.slice(0, sp))) {
       const dict = body.slice(0, sp)
       let from = start + sp + body.slice(sp).match(/stream\r?\n/)[0].length
-      const length = /\/Length\s+(\d+)(?!\s+\d+\s+R)/.exec(dict)
-      let to = length && s.startsWith('endstream', from + Number(length[1])) ? from + Number(length[1]) : -1
-      if (to < 0) { to = s.indexOf('endstream', from); while (to > from && (s[to - 1] === '\n' || s[to - 1] === '\r')) to-- }
+      const to = streamEnd(s, dict, from)
       objects.set(num, { dict, stream: file.subarray(from, to) })
       re.lastIndex = Math.max(re.lastIndex, to)
     } else objects.set(num, { dict: body, stream: null })
@@ -268,8 +287,19 @@ export const consume = (value) => value.length ?? value.byteLength
 
 // ---- The proof that the check can fail: a minimal writer of the scenario's
 // own, then outputs that did not do the job.
-const miniPdf = (input, { drop = null, pagesWanted = input.pages.length, size = [PAGE_WIDTH, PAGE_HEIGHT], rules = true, swap = false, compress = 'flate' } = {}) => {
+// It writes what the specification asks for: an EOL after `stream` and before `endstream`
+// that /Length does not count, a cross-reference table with each object's offset, and a
+// trailer with /Size, /Root and startxref. `length: 'indirect'` writes /Length as a
+// reference to an integer object; `length: 'none'` leaves it out, for the reader's fallback.
+const miniContent = (pg, { drop = null, rules = true } = {}) => {
   const esc = (s) => s.replace(/[\\()]/g, '\\$&')
+  let c = 'BT /F1 10 Tf\n'
+  pg.texts.forEach((t, j) => { if (drop === j) return; c += `1 0 0 1 ${t.x} ${PAGE_HEIGHT - t.y} Tm (${esc(t.text)}) Tj\n` })
+  c += 'ET\n0.5 w\n'
+  if (rules) for (const [x1, y1, x2, y2] of pg.rules) c += `${x1} ${PAGE_HEIGHT - y1} m ${x2} ${PAGE_HEIGHT - y2} l S\n`
+  return c
+}
+const miniPdf = (input, { drop = null, pagesWanted = input.pages.length, size = [PAGE_WIDTH, PAGE_HEIGHT], rules = true, swap = false, compress = 'flate', length = 'direct', eol = '\n' } = {}) => {
   const list = input.pages.slice(0, pagesWanted)
   if (swap) [list[0], list[1]] = [list[1], list[0]]
   const objs = []
@@ -278,27 +308,48 @@ const miniPdf = (input, { drop = null, pagesWanted = input.pages.length, size = 
   objs[2] = `<< /Type /Pages /Count ${n} /Kids [${list.map((_, k) => `${4 + 2 * k} 0 R`).join(' ')}] >>`
   objs[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'
   list.forEach((pg, k) => {
-    let c = 'BT /F1 10 Tf\n'
-    pg.texts.forEach((t, j) => { if (drop === j) return; c += `1 0 0 1 ${t.x} ${PAGE_HEIGHT - t.y} Tm (${esc(t.text)}) Tj\n` })
-    c += 'ET\n0.5 w\n'
-    if (rules) for (const [x1, y1, x2, y2] of pg.rules) c += `${x1} ${PAGE_HEIGHT - y1} m ${x2} ${PAGE_HEIGHT - y2} l S\n`
-    const raw = Buffer.from(c, 'latin1')
+    const raw = Buffer.from(miniContent(pg, { drop, rules }), 'latin1')
     const data = compress === 'flate' ? deflateSync(raw) : raw
     objs[4 + 2 * k] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${size[0]} ${size[1]}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${5 + 2 * k} 0 R >>`
-    objs[5 + 2 * k] = { dict: `<< /Length ${data.length}${compress === 'flate' ? ' /Filter /FlateDecode' : ''} >>`, data }
+    const lengthEntry = length === 'direct' ? ` /Length ${data.length}` : length === 'indirect' ? ` /Length ${4 + 2 * n + k} 0 R` : ''
+    objs[5 + 2 * k] = { dict: `<<${lengthEntry}${compress === 'flate' ? ' /Filter /FlateDecode' : ''} >>`, data }
+    if (length === 'indirect') objs[4 + 2 * n + k] = String(data.length)
   })
-  const parts = [Buffer.from('%PDF-1.4\n')]
+  // A binary comment after the header, as the specification recommends for binary data.
+  const parts = [Buffer.from('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n', 'latin1')]
+  let offset = parts[0].length
+  const offsets = []
   for (let k = 1; k < objs.length; k++) {
     const o = objs[k]
-    parts.push(typeof o === 'string' ? Buffer.from(`${k} 0 obj\n${o}\nendobj\n`, 'latin1') : Buffer.concat([Buffer.from(`${k} 0 obj\n${o.dict}\nstream\n`), o.data, Buffer.from('\nendstream\nendobj\n')]))
+    const bytes = typeof o === 'string' ? Buffer.from(`${k} 0 obj\n${o}\nendobj\n`, 'latin1') : Buffer.concat([Buffer.from(`${k} 0 obj\n${o.dict}\nstream${eol}`), o.data, Buffer.from(`${eol}endstream\nendobj\n`)])
+    offsets[k] = offset
+    offset += bytes.length
+    parts.push(bytes)
   }
-  parts.push(Buffer.from('trailer\n<< /Root 1 0 R >>\n%%EOF\n'))
+  const xref = `xref\n0 ${objs.length}\n0000000000 65535 f\r\n${offsets.slice(1).map((o) => `${String(o).padStart(10, '0')} 00000 n\r\n`).join('')}`
+  parts.push(Buffer.from(`${xref}trailer\n<< /Size ${objs.length} /Root 1 0 R >>\nstartxref\n${offset}\n%%EOF\n`, 'latin1'))
   return Buffer.concat(parts)
 }
 {
   const input = cases[0].input
   checkPdf(miniPdf(input), input, 'self-test')
   checkPdf(miniPdf(input, { compress: 'none' }), input, 'self-test (uncompressed)')
+  checkPdf(miniPdf(input, { eol: '\r\n' }), input, 'self-test (CRLF)')
+  checkPdf(miniPdf(input, { length: 'indirect' }), input, 'self-test (indirect /Length)')
+  // Some deflate streams of these pages end in a CR or LF byte (page 3 of fixture 0 in CR):
+  // /Length must be honoured, and the fallback must strip only the one EOL. Without /Length,
+  // data ending in CR followed by an LF marker reads as a CRLF marker; that is why /Length
+  // is required, so the fallback is tested with CRLF markers only.
+  const pageData = (pg) => deflateSync(Buffer.from(miniContent(pg), 'latin1'))
+  const tails = new Set(cases.flatMap(({ input: doc }) => doc.pages.map((pg) => pageData(pg).at(-1))))
+  assert.ok(tails.has(0x0d), 'no fixture page tests a stream that ends in CR')
+  for (const { input: doc } of cases) {
+    checkPdf(miniPdf(doc), doc, 'self-test (every fixture)')
+    checkPdf(miniPdf(doc, { length: 'indirect', eol: '\r\n' }), doc, 'self-test (indirect /Length, CRLF, every fixture)')
+    checkPdf(miniPdf(doc, { length: 'none', eol: '\r\n' }), doc, 'self-test (no /Length, CRLF, every fixture)')
+  }
+  // The old fallback, which trimmed every CR and LF before endstream, fails on that page.
+  assert.throws(() => checkPdf(Buffer.from(text(miniPdf(input, { length: 'none' })).replace(/\r?\n+endstream/g, '\nendstream'), 'latin1'), input, 'trimmed'))
   const rejected = (name, file, doc = input) => assert.throws(() => checkPdf(file, doc, name), undefined, `the check accepted ${name}`)
   rejected('a missing line', miniPdf(input, { drop: 3 }))
   rejected('a missing page', miniPdf(input, { pagesWanted: 19 }))
