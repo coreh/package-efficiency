@@ -8,9 +8,9 @@
 // memory is that of the largest process and does not grow with N.
 // Usage: node scripts/sweep-types/cargo-startup.mjs [--cold-runs=5]
 // Nothing is downloaded: the empty crates are local path dependencies.
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { fromRoot, median, round, timed, writeJson } from './lib.mjs'
+import { fromRoot, median, removeDir, round, timed, writeJson } from './lib.mjs'
 
 const COLD_RUNS = Number(process.argv.find((a) => a.startsWith('--cold-runs='))?.split('=')[1] ?? 5)
 const WORK = fromRoot('.cache/sweep-types/cargo')
@@ -20,7 +20,7 @@ const COUNTS = [0, 1, 2, 4, 8, 16, 32, 64]
 
 async function cold(count) {
   const dir = path.join(WORK, 'work', '__startup__')
-  await rm(dir, { recursive: true, force: true })
+  await removeDir(dir)
   await mkdir(path.join(dir, 'src'), { recursive: true })
   const names = Array.from({ length: count }, (_, i) => `empty${i}`)
   for (const name of names) {
@@ -33,12 +33,12 @@ async function cold(count) {
   const target = path.join(dir, 'target')
   const runs = []
   for (let i = 0; i < COLD_RUNS; i++) {
-    await rm(target, { recursive: true, force: true })
+    await removeDir(target)
     const r = await timed(['cargo', 'check', '--offline', '--quiet'], { cwd: dir, env: { ...ENV, CARGO_TARGET_DIR: target } })
     if (r.status !== 0) throw new Error(`check of ${count} empty crates failed: ${r.stderr}`)
     runs.push({ cpuMs: round(r.cpuMs, 1), peakRssMb: round(r.peakRssMb, 1) })
   }
-  await rm(dir, { recursive: true, force: true })
+  await removeDir(dir)
   return { crates: count, cpuMs: median(runs.map((r) => r.cpuMs)), peakRssMb: median(runs.map((r) => r.peakRssMb)) }
 }
 

@@ -65,9 +65,9 @@
 // installing; every resolved file is then checked again against PyPI (upload
 // time, not yanked, SHA-256); only then is exactly that closure installed with
 // --no-deps --require-hashes. Stub distributions go the same way.
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, round, spread, sweep, timed } from './lib.mjs'
+import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, discard, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, removeDir, round, spread, sweep, timed } from './lib.mjs'
 import { raisePriority } from '../lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
@@ -94,7 +94,7 @@ const normalize = (name) => name.toLowerCase().replace(/[-_.]+/g, '-')
 const pyVersion = (await exec(PYTHON, ['-c', 'import sys;print("%d.%d"%sys.version_info[:2])'])).stdout.trim()
 
 async function makeVenv(dir) {
-  await rm(dir, { recursive: true, force: true })
+  await removeDir(dir)
   await exec(PYTHON, ['-m', 'venv', '--without-pip', dir])
   return path.join(dir, 'lib', `python${pyVersion}`, 'site-packages')
 }
@@ -247,7 +247,7 @@ function standardLibrary(wanted) {
       const notInProbe = wanted.filter((w) => !got.includes(w))
       return { cpuMs: m.cpuMs, peakRssMb: m.peakRssMb, timeMs: m.timeMs, modules: got.length, notInProbe, dropped }
     } finally {
-      await rm(dir, { recursive: true, force: true })
+      await discard(dir)
     }
   })())
   return stdProbes.get(key)
@@ -284,7 +284,7 @@ async function measurePackage({ name }) {
   const dir = path.join(WORK, normalize(name))
   const venv = path.join(dir, 'venv')
   const entry = path.join(dir, 'entry.py')
-  await rm(dir, { recursive: true, force: true })
+  await removeDir(dir)
   await mkdir(dir, { recursive: true })
   try {
     const site = await makeVenv(venv)
@@ -356,7 +356,7 @@ async function measurePackage({ name }) {
     if (!mypy) return { status: 'check-failed', ...result, modules, detail: 'a measured run failed' }
     return { status: 'ok', ...result, typesFrom, modules, added: { cpuMs: Math.max(0, mypy.cpuMs), memoryMb: Math.max(0, mypy.memoryMb) }, mypy, baseline: { cpuMs: baseline.cpuMs, peakRssMb: baseline.peakRssMb } }
   } finally {
-    if (!has('keep')) await rm(dir, { recursive: true, force: true })
+    if (!has('keep')) await discard(dir)
   }
 }
 

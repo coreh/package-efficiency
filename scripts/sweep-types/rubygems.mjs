@@ -102,7 +102,7 @@ import path from 'node:path'
 import { raisePriority } from '../lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
-import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, round, spread, sweep, timed, writeJson } from './lib.mjs'
+import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, discard, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, removeDir, round, spread, sweep, timed, writeJson } from './lib.mjs'
 
 const { names, value, has } = args('Usage: node scripts/sweep-types/rubygems.mjs <gem>... | --top=N [--force] [--retry-failed] [--runs=11] [--std=exclude|include] [--keep] [--sorbet] [--source] [--out=file]')
 const RUNS = Number(value('runs', 11))
@@ -185,7 +185,7 @@ async function download(name, release) {
 const gemspec = async (file) => JSON.parse((await exec(RUBY, ['-rrubygems/package', '-rjson', '-e', 's=Gem::Package.new(ARGV[0]).spec; puts JSON.generate(require_paths: s.require_paths, extensions: s.extensions, dependencies: s.runtime_dependencies.map { |d| [d.name, d.requirement.to_s] })', file])).stdout)
 // bsdtar refuses absolute paths and `..` unless given -P.
 async function unpack(file, dir, only) {
-  await rm(dir, { recursive: true, force: true })
+  await removeDir(dir)
   await mkdir(path.join(dir, 'data'), { recursive: true })
   await exec('tar', ['-xf', file, '-C', dir, 'data.tar.gz'])
   // With a pattern that matches nothing tar exits 1: that is "no sig/".
@@ -438,7 +438,7 @@ async function measurePackage({ name }) {
       checks,
     }
   } finally {
-    if (!has('keep')) await rm(dir, { recursive: true, force: true })
+    if (!has('keep')) await discard(dir)
   }
 }
 

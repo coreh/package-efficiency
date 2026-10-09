@@ -77,15 +77,12 @@
 // .cache/sweep-types/gomod/, emptied after every module and removed at the
 // end (unless --keep). Every 25 modules the free space is checked; under 6 GB
 // the sweep stops and can be resumed.
-import { execFile } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { mkdir, rm, statfs, writeFile } from 'node:fs/promises'
+import { mkdir, statfs, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { promisify } from 'node:util'
 import { goProxy } from '../lib/native-packages.mjs'
-import { MIN_RELEASE_AGE_DAYS, args, fromRoot, loadTargets, median, oldEnough, round, spread, sweep, timed } from './lib.mjs'
+import { MIN_RELEASE_AGE_DAYS, args, discard, exec, fromRoot, loadTargets, median, oldEnough, removeDir, round, spread, sweep, timed } from './lib.mjs'
 
-const exec = promisify(execFile)
 const { names, value, has } = args('Usage: node scripts/sweep-types/gomod.mjs <module>... | --top=N [--force] [--retry-failed] [--runs=11] [--cold-runs=3] [--build-runs=1] [--graded=check|build] [--keep] [--out=file]')
 const RUNS = Number(value('runs', 11))
 const COLD_RUNS = Number(value('cold-runs', 3))
@@ -122,7 +119,7 @@ async function clearCaches() {
   for (const dir of [MODCACHE, BUILDCACHE, path.join(WORK, 'gopath')]) {
     if (!existsSync(dir)) continue
     await exec('chmod', ['-R', 'u+w', dir]).catch(() => {})
-    await rm(dir, { recursive: true, force: true })
+    await removeDir(dir)
   }
 }
 
@@ -214,7 +211,7 @@ async function coldFigures(dir) {
   for (let i = 0; i < BUILD_RUNS; i++) {
     // An empty build cache every time: nothing compiled before is reused.
     await exec('chmod', ['-R', 'u+w', BUILDCACHE]).catch(() => {})
-    await rm(BUILDCACHE, { recursive: true, force: true })
+    await removeDir(BUILDCACHE)
     const r = await timed([GO, 'build', '-mod=readonly', '.'], { cwd: dir, env: OFFLINE, timeout: TIMEOUT_MS }).catch((error) => ({ status: -1, stderr: String(error.message) }))
     if (r.status !== 0) { build = { failed: r.stderr.trim().split('\n').filter((l) => !l.startsWith('#'))[0]?.slice(0, 200) ?? 'build failed' }; break }
     builds.push({ cpuMs: round(r.cpuMs, 1), timeMs: round(r.timeMs, 1), peakRssMb: round(r.peakRssMb, 1) })
@@ -224,7 +221,7 @@ async function coldFigures(dir) {
 }
 
 const baseDir = path.join(WORK, 'work', '__baseline__')
-await rm(path.join(WORK, 'work'), { recursive: true, force: true })
+await removeDir(path.join(WORK, 'work'))
 await writeProbe(baseDir, null)
 const baseline = await coldFigures(baseDir)
 if (baseline.failed || baseline.build?.failed) throw new Error(`baseline failed: ${baseline.failed ?? baseline.build.failed}`)
@@ -236,7 +233,7 @@ const skipped = (importPath, modulePath) => importPath.slice(modulePath.length).
 
 async function measureModule({ name }) {
   const dir = path.join(WORK, 'work', name.replace(/[^\w.-]+/g, '_'))
-  await rm(dir, { recursive: true, force: true })
+  await removeDir(dir)
   try {
     let version
     let all
@@ -304,10 +301,10 @@ async function measureModule({ name }) {
       if (!measured.failed && STD === 'exclude') {
         const stdImports = [...new Set(full.filter((p) => !p.Standard).flatMap((p) => p.Imports ?? []))].filter((i) => standard.has(i) && i !== 'C').sort()
         const stdDir = dir + '.std'
-        await rm(stdDir, { recursive: true, force: true })
+        await removeDir(stdDir)
         await writeProbe(stdDir, null, stdImports)
         std = await coldFigures(stdDir)
-        await rm(stdDir, { recursive: true, force: true })
+        await removeDir(stdDir)
         if (std.failed) throw new Error(`standard-library reference failed: ${std.failed}`)
       }
     } catch (error) {
@@ -344,8 +341,8 @@ async function measureModule({ name }) {
     }
   } finally {
     if (!has('keep')) {
-      await rm(dir, { recursive: true, force: true })
-      await clearCaches()
+      await discard(dir)
+      await clearCaches().catch((err) => console.error(`could not clear the Go caches: ${err.code ?? err.message}`))
     }
   }
 }
@@ -378,5 +375,5 @@ await sweep({
 })
 if (!has('keep')) {
   await clearCaches()
-  await rm(path.join(WORK, 'work'), { recursive: true, force: true })
+  await removeDir(path.join(WORK, 'work'))
 }

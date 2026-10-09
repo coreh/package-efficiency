@@ -58,7 +58,7 @@
 // already does for the adapters.
 import { mkdir, readFile, rm, utimes, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { MIN_RELEASE_AGE_DAYS, args, duMb, exec, fromRoot, loadTargets, median, oldEnough, round, spread, sweep, timed } from './lib.mjs'
+import { MIN_RELEASE_AGE_DAYS, args, discard, duMb, exec, fromRoot, loadTargets, median, oldEnough, removeDir, round, spread, sweep, timed } from './lib.mjs'
 import { raisePriority } from '../lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
@@ -146,7 +146,7 @@ async function enforceAge(dir) {
 const MAIN = 'use pkg as _;\nfn main() {}\n'
 async function writeProject(dir, dependency, features = null) {
   // With features the project is rewritten in place: its lockfile stays.
-  if (!features) await rm(dir, { recursive: true, force: true })
+  if (!features) await removeDir(dir)
   await mkdir(path.join(dir, 'src'), { recursive: true })
   const extra = features ? `${features.noDefault ? ', default-features = false' : ''}${features.list.length ? `, features = ${JSON.stringify(features.list)}` : ''}` : ''
   // The empty [workspace] keeps the package out of the repository's workspace.
@@ -162,7 +162,7 @@ async function coldAndWarm(dir) {
   // an earlier crate can be reused, so the order of a sweep cannot matter.
   const cold = []
   for (let i = 0; i < COLD_RUNS; i++) {
-    await rm(target, { recursive: true, force: true })
+    await removeDir(target)
     const r = await timed(CHECK, options).catch((err) => ({ status: -1, stderr: err.killed ? `error: check ran longer than ${CHECK_TIMEOUT_MS / 60_000} minutes` : String(err.message) }))
     if (r.status !== 0) return { failed: r.stderr.trim().split('\n').filter((l) => /^error/.test(l))[0] ?? r.stderr.trim().split('\n')[0] }
     cold.push({ cpuMs: round(r.cpuMs, 1), timeMs: round(r.timeMs, 1), peakRssMb: round(r.peakRssMb, 1) })
@@ -176,7 +176,7 @@ async function coldAndWarm(dir) {
     if (r.status !== 0) return { failed: 'warm check failed' }
     runs.push({ cpuMs: round(r.cpuMs, 2), timeMs: round(r.timeMs, 2), peakRssMb: round(r.peakRssMb, 2) })
   }
-  await rm(target, { recursive: true, force: true })
+  await removeDir(target)
   const med = (list, key) => median(list.map((r) => r[key]))
   return {
     cold: { cpuMs: med(cold, 'cpuMs'), timeMs: med(cold, 'timeMs'), peakRssMb: med(cold, 'peakRssMb'), runs: cold },
@@ -276,7 +276,7 @@ async function measurePackage({ name }) {
     const graded = figures[GRADED]
     return { status: 'ok', ...result, targetMb: measured.targetMb, gradedBy: GRADED, added: { cpuMs: Math.max(0, graded.cpuMs), memoryMb: Math.max(0, graded.memoryMb) }, ...figures, baseline: { coldCpuMs: baseline.cold.cpuMs, coldPeakRssMb: baseline.cold.peakRssMb, warmCpuMs: baseline.warm.cpuMs, warmPeakRssMb: baseline.warm.peakRssMb } }
   } finally {
-    if (!has('keep')) await rm(dir, { recursive: true, force: true })
+    if (!has('keep')) await discard(dir)
   }
 }
 

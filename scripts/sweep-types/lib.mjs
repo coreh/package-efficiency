@@ -3,13 +3,38 @@
 // list of packages to measure and the resumable loop. Each sweep writes
 // data/<registry>/types.json; scratch files live under .cache/sweep-types/.
 import { execFile } from 'node:child_process'
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { promisify } from 'node:util'
 
-export const exec = promisify(execFile)
+// promisify(execFile), except that it never settles before the child has
+// exited: on a timeout or an overflowing maxBuffer, execFile kills the child
+// and rejects at once, while the child may still be writing into the
+// directory the caller is about to remove.
+export function exec(file, argv = [], options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = execFile(file, argv, options, (err, stdout, stderr) => {
+      const settle = () => (err ? reject(Object.assign(err, { stdout, stderr })) : resolve({ stdout, stderr }))
+      if (child.exitCode !== null || child.signalCode !== null) settle()
+      else child.once('exit', settle)
+    })
+  })
+}
+
+// Recursive removal with retries: on APFS a single pass over a large tree
+// (a venv's site-packages) can end in ENOTEMPTY, the directory listing missing
+// entries unlinked during the walk; Node retries only when asked to.
+export const removeDir = (dir) => rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
+// Cleanup after a package: a failure is logged, never thrown, so it cannot
+// replace a result already in hand (a throw in a `finally` would).
+export async function discard(dir) {
+  try {
+    await removeDir(dir)
+  } catch (err) {
+    console.error(`could not remove ${path.relative(ROOT, dir)}: ${err.code ?? err.message}`)
+  }
+}
 export const ROOT = path.resolve(fileURLToPath(new URL('../..', import.meta.url)))
 export const fromRoot = (...parts) => path.join(ROOT, ...parts)
 export const MIN_RELEASE_AGE_DAYS = 7
