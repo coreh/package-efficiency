@@ -775,3 +775,10 @@ table.cmp-figures { width: 100%; max-width: 52rem; }
   .cmp-sides { grid-template-columns: minmax(0, 1fr); }
   .cmp-swap { justify-self: center; transform: rotate(90deg); }
 }
+
+/* iOS Safari zooms into a text field whose type is under 16px when it gets
+   focus. On touch screens every field is 16px, so nothing zooms, and pinch
+   zoom stays available (maximum-scale in the viewport tag would take it away). */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px !important; }
+}
