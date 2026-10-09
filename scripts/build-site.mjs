@@ -454,6 +454,10 @@ await write(dist('api.js'), await readFile(fromRoot('site/api.js')))
 // The machine-readable files as an API: the specification, and its page.
 const apiSpec = openApiSpec(model)
 await write(dist('openapi.json'), JSON.stringify(apiSpec, null, 1))
+// Everything here is public and read-only, so a script on any site may read it.
+// Cloudflare applies this to the built files; site/worker.mjs adds the same to
+// what it puts together.
+await write(dist('_headers'), '/*\n  Access-Control-Allow-Origin: *\n')
 await page('/api/', apiReferencePage(model, apiSpec))
 await write(dist('api/index.md'), apiMarkdown(model, apiSpec))
 const allRows = tasks.flatMap((data) => resultRows(data, ctx))

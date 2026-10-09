@@ -13,8 +13,10 @@ async function packed(env, url, address) {
   return (await response.json())[address] ?? null
 }
 
-export default {
-  async fetch(request, env) {
+// Public and read-only, like the built files (see _headers in the build).
+const CORS = { 'access-control-allow-origin': '*' }
+
+async function answer(request, env) {
     const url = new URL(request.url)
     if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405 })
     let path = url.pathname
@@ -49,5 +51,13 @@ export default {
     }
     const missing = await asset(env, url, '/lazy/not-found.txt')
     return new Response(missing.body, { status: 404, headers: { 'content-type': 'text/html; charset=utf-8' } })
+}
+
+export default {
+  async fetch(request, env) {
+    const response = await answer(request, env)
+    const headers = new Headers(response.headers)
+    for (const [name, value] of Object.entries(CORS)) headers.set(name, value)
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
   },
 }

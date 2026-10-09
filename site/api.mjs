@@ -1019,7 +1019,7 @@ function introOf(model, spec) {
       ['Base address', `\`${spec.servers[0].url}\``],
       ['Requests', '`GET` and `HEAD` only. No key, no account, no query parameters.'],
       ['Files', `Written when the site is built, not worked out for each request. There is no paging and no filtering: take the file and filter it yourself. The data here is of ${day}.`],
-      ['Other sites', 'The server sends no CORS headers, so a script on another site cannot read these files in a browser. A label works on any site as an image.'],
+      ['Other sites', 'Every answer carries `Access-Control-Allow-Origin: *`, so a script on any site can read these files in a browser. A label works on any site as an image.'],
       ['Caching', 'Labels, embeds, single results and the other files that are put together on request can be kept for five minutes (`max-age=300`).'],
       ['Fields', `Each entry lists the fields of what it returns, for JSON and for CSV. ${OPTIONAL}`],
       ['Errors', 'An address that does not exist answers `404` with the site\'s "not found" page as HTML, also where JSON was asked for.'],
