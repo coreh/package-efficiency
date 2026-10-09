@@ -91,7 +91,8 @@ async function showLabel(side) {
   const picked = entries.get(state[side])
   box.replaceChildren()
   if (!picked) {
-    box.append(el('p', side === 'b' ? 'Pick a result to compare with.' : 'Pick a result.', 'cmp-empty'))
+    const thing = runtimeMode ? 'runtime' : 'result'
+    box.append(el('p', side === 'b' ? `Pick a ${thing} to compare with.` : `Pick a ${thing}.`, 'cmp-empty'))
     return
   }
   const { runtime, entry } = picked
@@ -187,7 +188,7 @@ function render() {
 function fillPickers() {
   for (const side of ['a', 'b']) {
     const select = sides[side].select
-    select.replaceChildren(el('option', 'Pick a result…'))
+    select.replaceChildren(el('option', runtimeMode ? 'Pick a runtime…' : 'Pick a result…'))
     select.firstChild.value = ''
     if (runtimeMode) {
       for (const [key, { runtime }] of entries) {
