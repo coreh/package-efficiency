@@ -8,11 +8,21 @@ const body = table.tBodies[0]
 const config = JSON.parse(document.getElementById('adv-config').textContent)
 const PAGE_SIZE = 30
 const MULTI = ['lang', 'reg', 'rt', 'kind']
-const SINGLE = ['q', 'in', 'cpu', 'memory', 'types', 'lic', 'from', 'to', 'sort']
+const SINGLE = ['q', 'in', 'cpu', 'memory', 'types', 'lic', 'from', 'to']
 let index = []
 let found = []
 let page = 0
 let all = false
+// The column the results are sorted by, as the site's other tables do it: a
+// click on a heading sorts by it, a second click turns the direction. In the
+// address as sort=name or sort=-released (largest first).
+const COLUMNS = [...table.tHead.rows[0].cells].map((th) => th.dataset.col)
+const FIRST_DESCENDING = new Set(['relevance', 'released'])
+let sort = { col: 'relevance', descending: true }
+function parseSort(value) {
+  const col = (value ?? '').replace(/^-/, '')
+  return COLUMNS.includes(col) ? { col, descending: value.startsWith('-') } : { col: 'relevance', descending: true }
+}
 
 // Address to form.
 function restore() {
@@ -28,6 +38,7 @@ function restore() {
     for (const box of form.querySelectorAll(`input[name="${name}"]`)) box.checked = wanted.has(box.value)
   }
   form.elements.measured.checked = params.get('measured') === '1'
+  sort = parseSort(params.get('sort'))
 }
 
 function state() {
@@ -41,6 +52,7 @@ function remember(s) {
   for (const name of SINGLE) if (s[name]) params.set(name, s[name])
   for (const name of MULTI) if (s[name].length) params.set(name, s[name].join(','))
   if (s.measured) params.set('measured', '1')
+  if (sort.col !== 'relevance' || !sort.descending) params.set('sort', `${sort.descending ? '-' : ''}${sort.col}`)
   const query = params.toString()
   history.replaceState(null, '', query ? `?${query}` : location.pathname)
 }
@@ -63,6 +75,10 @@ function score(item, words, whole) {
   return title === whole ? 0 : worst
 }
 
+// The rank as a score out of 100, highest first: what the Relevance column
+// shows. Without words there is nothing to match, so there is no score.
+const RELEVANCE = [100, 90, 80, 65, 50, 35]
+
 function search() {
   const s = state()
   remember(s)
@@ -81,20 +97,55 @@ function search() {
     if (s.kind.length && !s.kind.includes(item.lk)) continue
     if ((s.from && !(item.f >= s.from)) || (s.to && !(item.f <= s.to))) continue
     const rank = score(item, words, whole)
-    if (rank !== null) found.push({ item, rank })
+    if (rank !== null) found.push({ item, rank, relevance: words.length ? RELEVANCE[rank] : null })
   }
-  const used = (a, b) => (a.item.r ?? 1e9) - (b.item.r ?? 1e9)
-  const byName = (a, b) => a.item.t.localeCompare(b.item.t)
-  const order = {
-    '': (a, b) => a.rank - b.rank || (b.item.m ?? 0) - (a.item.m ?? 0) || used(a, b) || byName(a, b),
-    used: (a, b) => used(a, b) || byName(a, b),
-    name: byName,
-    new: (a, b) => (b.item.f ?? '').localeCompare(a.item.f ?? '') || byName(a, b),
-    old: (a, b) => (a.item.f ?? '9').localeCompare(b.item.f ?? '9') || byName(a, b),
-  }
-  found.sort(order[s.sort] ?? order[''])
+  arrange()
   page = 0
   show()
+}
+
+const collator = new Intl.Collator('en', { numeric: true })
+const kindOf = (item) => (item.y === 'p' ? `${config.registries[item.e] ?? 'Package'}${item.m ? '' : ', not measured'}` : `${config.kinds[item.y]}${item.m || item.y === 'e' ? '' : ', not measured'}`)
+// What each column sorts by; a missing value goes last either way.
+const KEYS = {
+  relevance: (r) => -r.rank,
+  name: (r) => r.item.t,
+  kind: (r) => kindOf(r.item),
+  category: (r) => r.item.c,
+  cpu: (r) => r.item.k?.cpu,
+  memory: (r) => r.item.k?.memory,
+  types: (r) => r.item.k?.types,
+  license: (r) => r.item.l,
+  released: (r) => r.item.f,
+}
+// Ties: measured first, then the most used, then by name.
+const tie = (a, b) => (b.item.m ?? 0) - (a.item.m ?? 0) || (a.item.r ?? 1e9) - (b.item.r ?? 1e9) || collator.compare(a.item.t, b.item.t)
+
+function arrange() {
+  const key = KEYS[sort.col]
+  const direction = sort.descending ? -1 : 1
+  // Class letters sort A first: the best class reads as the smallest value.
+  found.sort((a, b) => {
+    const x = key(a), y = key(b)
+    const absent = (v) => v == null || v === ''
+    if (absent(x) || absent(y)) return Number(absent(x)) - Number(absent(y)) || tie(a, b)
+    return direction * (typeof x === 'number' ? x - y : collator.compare(x, y)) || tie(a, b)
+  })
+  for (const th of table.tHead.rows[0].cells) {
+    if (th.dataset.col === sort.col) th.setAttribute('aria-sort', sort.descending ? 'descending' : 'ascending')
+    else th.removeAttribute('aria-sort')
+  }
+}
+
+for (const th of table.tHead.rows[0].cells) {
+  th.querySelector('button').addEventListener('click', () => {
+    const col = th.dataset.col
+    sort = col === sort.col ? { col, descending: !sort.descending } : { col, descending: FIRST_DESCENDING.has(col) }
+    remember(state())
+    arrange()
+    page = 0
+    show()
+  })
 }
 
 const el = (tag, text, className) => {
@@ -108,14 +159,14 @@ const ink = (hex) => {
   return r * 0.299 + g * 0.587 + b * 0.114 > 150 ? '#000' : '#fff'
 }
 
-function row({ item }) {
+function row({ item, relevance }) {
   const tr = document.createElement('tr')
   const name = el('td', null, 'l wrap')
   const link = el('a', item.t)
   link.href = item.u
   name.append(link)
   if (item.d) name.append(el('small', item.d, 'adv-desc'))
-  const kind = el('td', item.y === 'p' ? `${config.registries[item.e] ?? 'Package'}${item.m ? '' : ', not measured'}` : `${config.kinds[item.y]}${item.m || item.y === 'e' ? '' : ', not measured'}`, 'l')
+  const kind = el('td', kindOf(item), 'l')
   // One narrow column for each measure: its best class, or nothing.
   const classes = Object.entries(config.measures).map(([id, measure]) => {
     const cell = el('td', null, 'adv-class')
@@ -132,7 +183,7 @@ function row({ item }) {
   })
   const license = el('td', item.l ?? '', 'l')
   if (item.lk) license.append(el('small', config.licenseKinds[item.lk], 'adv-desc'))
-  tr.append(name, kind, el('td', item.c ?? '', 'l wrap'), ...classes, license, el('td', item.f ?? '', 'l'))
+  tr.append(el('td', relevance ?? '', 'adv-score'), name, kind, el('td', item.c ?? '', 'l wrap'), ...classes, license, el('td', item.f ?? '', 'l'))
   return tr
 }
 
