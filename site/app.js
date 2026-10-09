@@ -1320,17 +1320,33 @@ function embedDialog(holder) {
   show(tabs.includes(ranking) ? ranking : 'all')
 }
 const LABEL_ICONS = { 'Compare…': 'compare', 'Copy as PNG': 'copy', 'Copy as SVG': 'copy', 'Save PNG': 'save', 'Save SVG': 'save', 'Copy link': 'link', 'Open SVG': 'open' }
-// The compare page for a label's file: /labels/<category>/<task>/<runtime>/<entry>.<ranking>.svg.
-function compareAddress(url) {
-  const parts = /^\/labels\/([^/]+\/[^/]+)\/([^/]+)\/(.+)\.([a-z]+)\.svg$/.exec(new URL(url, location.href).pathname)
-  if (!parts) return null
-  const [, task, runtime, entry, ranking] = parts
-  const query = new URLSearchParams({ t: task, a: `${runtime}:${entry}` })
-  if (ranking !== 'cpu') query.set('r', ranking)
-  return `/compare/?${query}`
+// The compare page for a label: two results of a task, from a result's label
+// (/labels/<category>/<task>/<runtime>/<entry>.<ranking>.svg) or a package's
+// overview, which starts from its best result; or two runtimes in a scope,
+// from a runtime's summary label.
+function compareAddress(holder) {
+  const shown = holder.dataset.ranking && holder.dataset.ranking !== 'all' ? holder.dataset.ranking : 'cpu'
+  const path = (address) => new URL(address, location.href).pathname
+  const result = /^\/labels\/([^/]+\/[^/]+)\/([^/]+)\/(.+)\.([a-z]+)\.svg$/
+  const parts = result.exec(path(holder.dataset.label)) ?? (holder.dataset.labelPattern ? result.exec(path(holder.dataset.labelPattern.replace('{r}', shown))) : null)
+  if (parts) {
+    const [, task, runtime, entry, ranking] = parts
+    const query = new URLSearchParams({ t: task, a: `${runtime}:${entry}` })
+    if (ranking !== 'cpu') query.set('r', ranking)
+    return `/compare/?${query}`
+  }
+  const summary = /^\/embed\/runtimes\/([^/]+)\/(.+)\/(best|typical)\/label\.([a-z]+)\.svg$/.exec(path(holder.dataset.label))
+  if (summary) {
+    const [, runtime, scope, basis, ranking] = summary
+    const query = new URLSearchParams({ s: scope, a: runtime })
+    if (basis !== 'best') query.set('basis', basis)
+    if (ranking !== 'cpu') query.set('r', ranking)
+    return `/compare/?${query}`
+  }
+  return null
 }
 const LABEL_ACTIONS = [
-  ['Compare…', (svg, url) => { const to = compareAddress(url); if (to) location.href = to }, true],
+  ['Compare…', (svg, url, holder) => { const to = compareAddress(holder); if (to) location.href = to }, true],
   ['Copy as PNG', (svg) => copy('image/png', labelPng(svg), 'Label copied as an image')],
   ['Copy as SVG', (svg) => copy('text/plain', labelSvg(svg, `@import url('${FONT_CSS.replace(/&/g, '&amp;')}');`).text, 'Label copied as SVG code')],
   ['Save PNG', async (svg) => save(await labelPng(svg), `${labelName(svg)}.png`)],
@@ -1355,11 +1371,12 @@ for (const holder of document.querySelectorAll('[data-label]')) {
     const list = document.createElement('ul')
     for (const [text, action, needsFile] of LABEL_ACTIONS) {
       if (needsFile && !holder.dataset.label) continue
+      if (text === 'Compare…' && !compareAddress(holder)) continue
       const item = document.createElement('li')
       const control = document.createElement('button')
       control.type = 'button'
       control.append(actionIcon(LABEL_ICONS[text]), text)
-      control.addEventListener('click', () => action(svg, holder.dataset.label))
+      control.addEventListener('click', () => action(svg, holder.dataset.label, holder))
       item.append(control)
       list.append(item)
     }

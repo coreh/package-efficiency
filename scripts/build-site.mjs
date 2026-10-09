@@ -18,7 +18,7 @@ import {
   runtimesPage,
   searchIndex, statsPage, statsMarkdown, advancedSearchIndex, searchPage, comparePage, apiReferencePage,
   bestResult,
-  runtimeSummaries,
+  runtimeSummaries, runtimeComparison,
   categoryIconFiles,
   taskPage,
   taskSourcePage,
@@ -429,6 +429,7 @@ await page('/stats/', statsPage(model))
 await write(dist('stats', 'index.md'), statsMarkdown(model))
 // Summary pages are many and alike, so they are packed like the unmeasured
 // package pages and put together on request.
+for (const scope of summaryScopes(model)) await write(dist('data/summaries', `${scope.key}.json`), JSON.stringify(runtimeComparison(scope, model)))
 for (const { scope, rt, address } of summaries) lazyPage(address, summaryPage(scope, rt, model), `# ${rt.title} in ${scope.title}: Package Efficiency Labels\n\nA running summary of ${rt.title} ${rt.version} in ${scope.title}. The figures are on ${siteUrl}${urls.runtime(rt.id)}index.md\n`)
 // Served by the host for any address that is not a page (see wrangler.jsonc).
 await write(dist('404.html'), notFoundPage(model))

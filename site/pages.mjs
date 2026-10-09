@@ -1949,6 +1949,18 @@ export function summaryScopes(model) {
   ].map((scope) => ({ ...scope, runtimes: runtimeScores(scope.tasks, model).map((s) => s.runtime) }))
 }
 
+// What the compare page needs to put two runtimes side by side in a scope:
+// each runtime's classes and multiples of the best, by best and typical entry.
+export function runtimeComparison(scope, model) {
+  const runtimes = {}
+  for (const s of runtimeScores(scope.tasks, model)) {
+    const grades = {}
+    for (const id of ['cpu', 'memory', 'types']) if (s[id]) grades[id] = Object.fromEntries(Object.keys(BASIS).map((basis) => [basis, { class: s[id][basis].class, ratio: s[id][basis].ratio }]))
+    runtimes[s.runtime.id] = { title: s.runtime.title, version: s.runtime.version, entries: s.entries, tasks: s.tasks, grades }
+  }
+  return { key: scope.key, title: scope.title, href: scope.href ?? null, tasks: scope.tasks.length, runtimes }
+}
+
 // A runtime's summary labels in one scope, on a page of their own: where the
 // link on those labels leads. Unlike a single result this is a running
 // summary, so the page changes as tasks are added.
@@ -2675,8 +2687,8 @@ export function apiReferencePage(model, spec) {
   return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, formats: { data: false, download: { href: '/openapi.json', title: 'Download OpenAPI', detail: 'The same addresses as an OpenAPI 3.1 description' } }, body: `<main>\n<div class="api">${body}</div></main>` })
 }
 
-// Two results of one task side by side. The page is one file: its script
-// (compare.js) reads the task's data and the two labels, and the address
+// Two results of one task, or two runtimes in a scope, side by side. The page
+// is one file: its script (compare.js) reads the data and the two labels, and the address
 // keeps the choice, so a comparison can be shared.
 export function comparePage(model) {
   const config = {
@@ -2687,14 +2699,14 @@ export function comparePage(model) {
   }
   return layout({
     title: 'Compare: Package Efficiency Labels',
-    description: 'Two results of the same task side by side: their labels and their figures.',
+    description: 'Two results of the same task, or two runtimes, side by side: their labels and their figures.',
     path: '/compare/',
     crumbs: [['Compare']],
     model,
     formats: null,
     body: `<main class="cmp">
 <h1>Compare</h1>
-<p class="intro" id="cmp-task">Pick two results of the same task to put them side by side. Open a label's menu and choose Compare to start from it.</p>
+<p class="intro" id="cmp-task">Put two results of the same task, or two runtimes, side by side. Open a label's menu and choose Compare to start from it.</p>
 <div class="switches" id="cmp-rankings" hidden></div>
 <div class="cmp-sides" id="cmp-sides" hidden>
 <section class="cmp-side" data-side="a"><label class="adv-field cmp-pick">First <select></select></label><div class="cmp-label"></div></section>
