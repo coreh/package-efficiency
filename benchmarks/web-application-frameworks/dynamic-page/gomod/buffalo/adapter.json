@@ -1,0 +1,21 @@
+{
+  "title": "Buffalo",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "app": "../../../_shared/gomod/buffalo",
+  "module": "github.com/gobuffalo/buffalo",
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "Buffalo's router, its Plush templates in the application layout and r.JSON, in the production environment with the worker off.",
+  "details": "Buffalo's router (buffalo.App with app.GET), its render engine (render.New with Plush templates read from templates/ and wrapped in an application layout, r.HTML, whose <%= %> escapes) and r.JSON, with Env set to production and the background worker off (the shop has no jobs). Request logging is off: buffalo.RequestLogger, the variable Buffalo documents for replacing its logging middleware, is a pass-through. Only what buffalo.New sets up is used: none of the middleware a generated application adds (CSRF, parameter logger, i18n, database transaction) because the shop has no forms, database or translations. Served by net/http's server with the *buffalo.App as its handler, as app.Serve does after its setup. One process on the default Go scheduler, built with go build and no flags beyond -mod=readonly. Go has no build-time prerendering, so /about is a template with no data, rendered on each request like the item page; the templates are parsed on first use and cached by the render engine in production.",
+  "tags": [
+    "multi-threaded"
+  ]
+}

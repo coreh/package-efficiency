@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "notes": "pendulum.parse on both timestamps with defaults; the difference of int_timestamp plus the microsecond difference is truncated to hours, minutes, seconds. Subtracting the two DateTime objects (an Interval) or timestamp() is the usual route but returns a wrong span for mixed offsets on PyPy, where pendulum runs its pure-Python code, so these fields are used on every runtime. cast is only for the type checker (parse returns a union)."
+}

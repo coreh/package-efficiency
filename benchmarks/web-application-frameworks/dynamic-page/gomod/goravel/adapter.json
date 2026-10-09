@@ -1,0 +1,21 @@
+{
+  "title": "Goravel",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "app": "../../../_shared/gomod/goravel",
+  "module": "github.com/goravel/framework",
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "Goravel's application setup with its Gin HTTP driver, its view files (html/template) and Response().Json, in the production environment with the framework's default global middleware.",
+  "details": "Goravel set up as its bootstrap/app.go does: foundation.Setup() with the log, http, validation, view and route service providers and the goravel/gin HTTP driver, configuration for app (env production, debug off), logging (errors only, to /dev/null) and http (default driver gin), and routes registered on the route facade. Pages are ctx.Response().View().Make over html/template files in resources/views (the Gin driver loads them when the route is created, and html/template does the escaping) and the API is ctx.Response().Json. A .env file holds the APP_KEY the framework requires at start (a placeholder, nothing is encrypted). The driver's default global middleware stays: request timeout (3 seconds, which runs each handler in its own goroutine), CORS, TLS redirect and the maintenance mode check; no application middleware is added and no request is logged. Served by net/http's server with the route facade (the Gin engine) as its handler, which is what facades.Route().Run() does with its own server. One process on the default Go scheduler, built with go build and no flags beyond -mod=readonly. Go has no build-time prerendering, so /about is a template with no data, rendered on each request like the item page; the templates are parsed once when the route is created.",
+  "tags": [
+    "multi-threaded"
+  ]
+}

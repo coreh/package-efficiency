@@ -1,0 +1,13 @@
+<main id="bench" data-item="<%= item.ID %>">
+  <h1><%= item.Name %></h1>
+  <p class="price"><%= item.Price() %></p>
+  <%= if (item.InStock) { %><p class="stock">In stock</p><% } else { %><p class="stock out">Sold out</p><% } %>
+  <%= if (item.DiscountPercent > 0) { %><p class="discount">Save <%= item.DiscountPercent %>%</p><% } %>
+  <p class="note"><%= item.Note %></p>
+  <ul class="tags"><%= for (tag) in item.Tags { %><li><%= tag %></li><% } %></ul>
+  <table class="related">
+    <thead><tr><th>Item</th><th>Price</th></tr></thead>
+    <tbody><%= for (r) in item.Related { %><tr><td><a href="/items/<%= r.ID %>"><%= r.Name %></a></td><td><%= r.Price() %></td></tr><% } %></tbody>
+  </table>
+  <footer hidden>rendered</footer>
+</main>

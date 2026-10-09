@@ -1,0 +1,28 @@
+{
+  "package": "expo",
+  "title": "Expo",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../_shared/npm/expo",
+  "dependencies": [
+    "expo-router",
+    "expo-server",
+    "react",
+    "react-dom",
+    "react-native",
+    "react-native-web"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "Expo Router API route, exported with `expo export --platform web` in server output mode and served by expo-server's Node http adapter. Only the API route is measured.",
+  "details": "Built with expo export --platform web, with web.output set to \"server\" in app.json, which writes dist/server; expo-server's documented Node http adapter (createRequestHandler) serves that build from a node:http server inside the measured process, on Bun and Deno as on Node. The route is an Expo Router API route (app/api/items/[id]+api.js) returning Response.json(). The static and dynamic pages were left out: Expo renders pages with React Native components through react-native-web, which cannot produce the shared page's table, list and heading elements without writing raw DOM elements around the framework's own components. Telemetry is off."
+}

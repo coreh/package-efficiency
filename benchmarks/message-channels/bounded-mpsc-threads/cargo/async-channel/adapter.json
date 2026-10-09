@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "std::thread, 4 producers and the caller",
+  "notes": "async_channel::bounded(capacity) used through its blocking send_blocking and recv_blocking, default features; no executor is involved. Producers are scoped threads."
+}

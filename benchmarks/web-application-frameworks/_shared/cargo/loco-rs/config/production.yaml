@@ -1,0 +1,16 @@
+# The configuration of a Loco "lightweight service" in production, with the
+# logger off (request logging is off for every framework here). The port is
+# chosen by the system and the harness is told which.
+logger:
+  enable: false
+  level: error
+  format: compact
+
+server:
+  port: 0
+  binding: 127.0.0.1
+  host: http://127.0.0.1
+
+# No background jobs and no queue: they run in the request when there are any.
+workers:
+  mode: ForegroundBlocking

@@ -1,0 +1,26 @@
+{
+  "package": "@sveltejs/kit",
+  "title": "SvelteKit",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../../_shared/npm/@sveltejs/kit",
+  "dependencies": [
+    "@sveltejs/adapter-node",
+    "@sveltejs/vite-plugin-svelte",
+    "svelte",
+    "vite"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "SvelteKit built with Vite and adapter-node, as its deployment guide says. Only the API route is measured: the pages cannot pass the shared checks (see details).",
+  "details": "Built with vite build and @sveltejs/adapter-node; the build/index.js entry, which `node build` runs, is imported into the measured process, on Bun and Deno as on Node. It listens as soon as it is imported, so it is given PORT=0 and HOST=127.0.0.1 and the port is read from the http server it exports. The API route is a +server.js handler returning json(). adapter-node's defaults are kept. The static and dynamic pages were left out: adapter-node answers a prerendered page without a Content-Type header, and Svelte writes > in text unescaped, which the shared page check does not accept."
+}

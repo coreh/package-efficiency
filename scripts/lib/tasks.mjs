@@ -100,7 +100,7 @@ export function adapterFingerprint(taskId, adapterId) {
 // Stored with each result; `staleReason` compares a stored copy with now.
 export async function taskInputs(taskId, { config, machine }) {
   const digest = (...parts) => parts.reduce((hash, part) => hash.update(part).update('\0'), createHash('sha256')).digest('hex').slice(0, 16)
-  const harnessFiles = globSync('**/*', { cwd: fromRoot('harness'), withFileTypes: true, exclude: (entry) => ['tests', 'target', 'stubs', '.DS_Store'].includes(entry.name) })
+  const harnessFiles = globSync('**/*', { cwd: fromRoot('harness'), withFileTypes: true, exclude: (entry) => ['tests', 'target', 'stubs', '.DS_Store', '__pycache__'].includes(entry.name) })
     .filter((entry) => entry.isFile()).map((entry) => path.join(entry.parentPath, entry.name)).sort()
   const task = await readJson(fromRoot('benchmarks', taskId, 'task.json'))
   const adapters = await adaptersOf(taskId)

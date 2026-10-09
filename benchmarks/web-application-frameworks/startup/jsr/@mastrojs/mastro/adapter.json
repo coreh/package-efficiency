@@ -1,0 +1,23 @@
+{
+  "package": "@mastrojs/mastro",
+  "title": "Mastro",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../../_shared/jsr/@mastrojs/mastro",
+  "dependencies": [
+    "@remix-run/node-fetch-server"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "Mastro's file-based router and html templates, served by its fetch handler on node:http as in its Node example. /about is rendered per request: Mastro's pregenerated files are served without a content type unless they have an extension.",
+  "details": "File-based routes (routes/*.server.js) with the html tagged template, whose escaping is Mastro's own, and jsonResponse. The handler from @mastrojs/mastro/server-filebased is served on node:http through @remix-run/node-fetch-server, as Mastro's own Node example does, on Node, Bun and Deno alike. /about is an ordinary route rendered on each request: Mastro's generator can write the page to generated/ (pregenerate = true), but the static file server then answers the extensionless /about without a content type, and a generated about.html is not at /about, so the framework cannot serve a prerendered /about here without a rewrite it does not provide. The server compresses nothing. Mastro treats requests to the host name localhost as development, so the harness's 127.0.0.1 requests run its production behaviour."
+}

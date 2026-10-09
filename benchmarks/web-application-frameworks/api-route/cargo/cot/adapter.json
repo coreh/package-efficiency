@@ -1,0 +1,24 @@
+{
+  "package": "cot",
+  "title": "Cot",
+  "language": "rust",
+  "runtimes": [
+    "rust"
+  ],
+  "app": "../../../_shared/cargo/cot",
+  "dependencies": [
+    "askama"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "multi-threaded"
+  ],
+  "notes": "Cot's Project and App with its router, Path extractor, Askama templates (cot::Template) and Json response, on the default multi-threaded Tokio runtime. Release build, default features, static-files middleware only.",
+  "details": "A Cot Project with one App whose Router holds the three routes ({id} path parameters read with the Path extractor, Html and Json responses). Pages are Askama templates through cot::Template (with template inheritance), parsed at compile time and escaped by Askama, which writes & < > as numeric references that the page comparison treats as equal to the named ones. The prices are formatted in the handler into a small view struct, as the other Rust entries format them in a filter. /about is rendered from its template on each request: Cot has no build-time prerendering. The project is bootstrapped with Bootstrapper::new(project).with_config(ProjectConfig::default()).boot() and served with cot::run_at on a listener of our own (127.0.0.1, a port chosen by the system, reported to the harness) instead of the cot runserver command, so the port can be reported; ProjectConfig::default() is the production configuration in a release build (debug off). The only middleware is StaticFilesMiddleware, which a Cot project has and which has nothing to serve here; Cot adds no compression by default. No database is configured, though Cot's default features (SQLite, PostgreSQL and MySQL support) are built in. Built with cargo build --release at Cargo's default optimization settings and run as one process on Tokio's multi-threaded runtime (one worker thread per core), so idle workers cost some CPU under a light load. Cargo cannot skip build scripts or procedural macros, so those of the locked crates run at build time, as for every Rust entry here."
+}

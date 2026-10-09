@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "notes": "One httpx2.Client per lane, each lane on its own thread; the client's pool keeps its connection alive. The prepared body is sent as content with a JSON content type; the status is checked with raise_for_status and the receipt is parsed by response.json()."
+}

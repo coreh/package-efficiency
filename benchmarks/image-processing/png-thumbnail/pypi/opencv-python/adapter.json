@@ -1,0 +1,9 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-08" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "dependencies": ["numpy"],
+  "notes": "cv2.imdecode(array, IMREAD_UNCHANGED), cv2.resize(image, (width, height), interpolation=INTER_AREA), cv2.imencode('.png', ...); returns the encoded numpy array. INTER_AREA is the filter OpenCV documents for shrinking: its default (bilinear) and its Lanczos4 look at only a few neighbouring pixels and would not average the area a thumbnail pixel covers.",
+  "details": "Lanczos named for the other entries is not used here because cv2.INTER_LANCZOS4 uses a fixed 8 by 8 neighbourhood without widening the kernel when shrinking."
+}

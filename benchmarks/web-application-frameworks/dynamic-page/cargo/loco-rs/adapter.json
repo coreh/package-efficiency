@@ -1,0 +1,22 @@
+{
+  "package": "loco-rs",
+  "title": "Loco",
+  "language": "rust",
+  "runtimes": [
+    "rust"
+  ],
+  "app": "../../../_shared/cargo/loco-rs",
+  "dependencies": [],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "tags": [
+    "multi-threaded"
+  ],
+  "notes": "Loco's lightweight-service layout (no database): Hooks, AppRoutes, Tera views through a view-engine initializer, format::json, on its default middleware stack and the multi-threaded Tokio runtime. Release build.",
+  "details": "A Loco application as its lightweight-service starter lays it out, built with loco-rs default features off and only cli on (no database, authentication, cache or worker features): an App implementing Hooks, the three routes added to AppRoutes::with_default_routes() (which keeps Loco's /_ping and /_health), {id} path parameters read with the Path extractor, JSON from format::json and pages from format::render().view with Tera templates (template inheritance, parsed once by TeraView::build in a view-engine initializer, and escaped by Tera). The prices are formatted in the handler into a small view struct. /about is rendered from its template on each request: Loco has no build-time prerendering. The configuration is config/production.yaml of the application (found through LOCO_CONFIG_FOLDER, with the server started in the application's folder, where Loco looks for assets/views): the logger is off, the server listens on 127.0.0.1 on a port chosen by the system, and the workers are in foreground mode because there is no queue. The middleware stack is Loco's default one (payload limit, panic catching and ETag on; compression, CORS, timeout and the rest off), so no compression. Hooks::serve is overridden only to report the port once the listener is bound; it is otherwise Loco's own (axum::serve with connect info) minus graceful shutdown. The process is started by calling Hooks::boot and boot::start with the production environment instead of the loco start command. Run as one process on Tokio's multi-threaded runtime (one worker thread per core), so idle workers cost some CPU under a light load. Cargo cannot skip build scripts or procedural macros, so those of the locked crates run at build time, as for every Rust entry here."
+}

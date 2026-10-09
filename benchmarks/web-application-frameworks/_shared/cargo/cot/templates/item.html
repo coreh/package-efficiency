@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.name }}{% endblock %}
+
+{% block content %}
+<main id="bench" data-item="{{ item.id }}">
+  <h1>{{ item.name }}</h1>
+  <p class="price">{{ price }}</p>
+  {% if item.in_stock %}<p class="stock">In stock</p>{% else %}<p class="stock out">Sold out</p>{% endif %}
+  {% if item.discount_percent != 0 %}<p class="discount">Save {{ item.discount_percent }}%</p>{% endif %}
+  <p class="note">{{ item.note }}</p>
+  <ul class="tags">{% for tag in item.tags %}<li>{{ tag }}</li>{% endfor %}</ul>
+  <table class="related">
+    <thead><tr><th>Item</th><th>Price</th></tr></thead>
+    <tbody>{% for related in related %}<tr><td><a href="/items/{{ related.id }}">{{ related.name }}</a></td><td>{{ related.price }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <footer hidden>rendered</footer>
+</main>
+{% endblock %}

@@ -1,0 +1,21 @@
+{
+  "title": "Beego",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "app": "../../../_shared/gomod/beego",
+  "module": "github.com/beego/beego/v2",
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "Beego's router with controllers, its template engine (html/template) and ServeJSON, in production run mode.",
+  "details": "Beego's router (web.Router with controllers), its view engine (web.BuildTemplate over views/, which is Go's html/template and does the escaping) and Controller.ServeJSON, with runmode = prod in conf/app.conf (as Beego documents) and access logs off. Served by net/http's server with Beego's handler tree (web.BeeApp.Handlers) as its handler, which is what web.Run does after its setup. No gzip, sessions or XSRF (Beego's defaults are off). One process on the default Go scheduler, built with go build and no flags beyond -mod=readonly. Go has no build-time prerendering, so /about is a template with no data, rendered on each request like the item page; the templates are parsed once when the server starts.",
+  "tags": [
+    "multi-threaded"
+  ]
+}

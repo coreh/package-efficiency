@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "notes": "One httplib2.Http per lane, each lane on its own thread; Http keeps its connection alive. The prepared body is sent as bytes with a JSON content type; the status is checked and the body is parsed with the standard json module (httplib2 has no JSON helper)."
+}

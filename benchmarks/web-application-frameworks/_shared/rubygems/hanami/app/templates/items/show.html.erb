@@ -1,0 +1,27 @@
+<main id="bench" data-item="<%= item.id %>">
+  <h1><%= item.name %></h1>
+  <p class="price"><%= price(item.price_cents) %></p>
+  <% if item.in_stock? %>
+    <p class="stock">In stock</p>
+  <% else %>
+    <p class="stock out">Sold out</p>
+  <% end %>
+  <% if item.discount_percent > 0 %>
+    <p class="discount">Save <%= item.discount_percent %>%</p>
+  <% end %>
+  <p class="note"><%= item.note %></p>
+  <ul class="tags">
+    <% item.tags.each do |tag| %>
+      <li><%= tag %></li>
+    <% end %>
+  </ul>
+  <table class="related">
+    <thead><tr><th>Item</th><th>Price</th></tr></thead>
+    <tbody>
+      <% item.related.each do |related| %>
+        <tr><td><a href="/items/<%= related.id %>"><%= related.name %></a></td><td><%= price(related.price_cents) %></td></tr>
+      <% end %>
+    </tbody>
+  </table>
+  <footer hidden>rendered</footer>
+</main>

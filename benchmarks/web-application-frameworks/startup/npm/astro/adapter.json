@@ -1,0 +1,23 @@
+{
+  "package": "astro",
+  "title": "Astro",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "app": "../../../_shared/npm/astro",
+  "dependencies": [
+    "@astrojs/node"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "Astro with the Node adapter in standalone mode, as its deployment guide says. /about is prerendered at build time. The server does not compress by default.",
+  "details": "Built with astro build and @astrojs/node in standalone mode; the dist/server/entry.mjs entry, which `node ./dist/server/entry.mjs` runs, is imported into the measured process, on Bun and Deno as on Node. It is imported with the documented ASTRO_NODE_AUTOSTART=disabled and the exported startServer() is called, which is what the entry does itself when autostart is on; HOST=127.0.0.1 and PORT=0 are set and the port is read from the listening server. /about is an ordinary .astro page, which Astro prerenders by default; the item page and the API route are marked `prerender = false` so they are rendered per request. The adapter's defaults are kept (it does not compress responses)."
+}

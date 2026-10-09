@@ -1,0 +1,21 @@
+{
+  "title": "Hanami",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "app": "../../../_shared/rubygems/hanami",
+  "dependencies": [
+    "puma"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-08"
+  },
+  "review": "unreviewed",
+  "notes": "A Hanami 3 application as hanami new makes it (no assets, no database): its router, actions and views with ERB templates that escape by default, on Puma with 5 threads in one process.",
+  "details": "A Hanami 3 application laid out as hanami new makes it with --skip-assets --skip-db (config/app.rb, config/routes.rb, config/settings.rb, config.ru, app/action.rb, app/view.rb, app/views/context.rb and helpers.rb), with the shop added: routes to actions that render a view (hanami-view, ERB templates under app/templates with a layout; Hanami's view escapes what <%= %> prints), and an API action that sets the JSON format and writes the item as JSON. /about is a view rendered on each request, since Hanami has no build-time prerendering. The price is a helper in Views::Helpers (hanami has no currency helper). Production mode (HANAMI_ENV), HANAMI_LOG_LEVEL=error so a request, logged at the info level, is not logged. One change to the generated configuration: config.actions.formats.default = :html, because the benchmark's requests carry no Accept header (a browser asks for text/html) and Hanami would answer them as application/octet-stream. The framework's default response headers (a content security policy and the X-Frame-Options family) and default middleware stay; no sessions and no compression, which are off by default. Started from config.ru (hanami/boot) by the benchmark runner on one Puma server with 5 threads, the HANAMI_MAX_THREADS default of the generated config/puma.rb, and no workers; the pool is 0 to 5 threads where the file sets 5 to 5. The Gemfile is that of hanami new without its development, test and CLI groups (dotenv, hanami-webconsole, hanami-reloader, hanami-rspec), which a production install leaves out. Gems are installed one at a time from gems.lock.json after their age and sha256 are checked, and loaded through Bundler with a frozen Gemfile.lock made from the installed gems (bundle lock --local, without the checksums section, which Bundler cannot fill for gems that ship with Ruby); puma and nio4r compile native extensions at install."
+}

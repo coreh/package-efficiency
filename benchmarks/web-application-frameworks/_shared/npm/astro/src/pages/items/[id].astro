@@ -1,0 +1,26 @@
+---
+import { getItem, price } from '../../lib/items.js'
+export const prerender = false
+const item = getItem(Number(Astro.params.id))
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{item.name}</title>
+  </head>
+  <body>
+    <main id="bench" data-item={item.id}>
+      <h1>{item.name}</h1>
+      <p class="price">{price(item.priceCents)}</p>
+      {item.inStock ? <p class="stock">In stock</p> : <p class="stock out">Sold out</p>}
+      {item.discountPercent ? <p class="discount">Save {item.discountPercent}%</p> : null}
+      <p class="note">{item.note}</p>
+      <ul class="tags">{item.tags.map((tag) => <li>{tag}</li>)}</ul>
+      <table class="related">
+        <thead><tr><th>Item</th><th>Price</th></tr></thead>
+        <tbody>{item.related.map((related) => <tr><td><a href={`/items/${related.id}`}>{related.name}</a></td><td>{price(related.priceCents)}</td></tr>)}</tbody>
+      </table>
+      <footer hidden>rendered</footer>
+    </main>
+  </body>
+</html>
