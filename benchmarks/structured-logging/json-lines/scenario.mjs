@@ -26,8 +26,8 @@ export const cases = sizes.map((size, s) => ({ input: { records: Array.from({ le
 // ---- the reader. Each line the sink captured is one JSON object. Libraries
 // name things differently, so the reader looks for each thing under the names
 // loggers commonly use and compares the content strictly.
-const levelKeys = ['level', 'levelname', 'severity', 'lvl', 'levelName']
-const messageKeys = ['message', 'msg', 'event', 'text']
+const levelKeys = ['level', 'levelname', 'severity', 'lvl', 'levelName', '@level']
+const messageKeys = ['message', 'msg', 'event', 'text', '@message']
 const nested = ['fields', 'extra', 'properties', 'context', 'data', 'meta', 'attributes', 'mdc', 'args']
 const levelNames = { info: 'info', warn: 'warn', warning: 'warn', error: 'error', err: 'error', erro: 'error' }
 // The reader never reads a time: a timestamp is whatever key a library puts it

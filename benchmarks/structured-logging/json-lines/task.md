@@ -36,11 +36,11 @@ Libraries name things differently, and none of that is compared. Each captured
 line must be one JSON object, in the order logged, one per record. The verifier
 reads from it:
 
-- the level, under `level`, `levelname`, `severity` or `lvl` (or as an object
+- the level, under `level`, `levelname`, `severity`, `lvl` or `@level` (or as an object
   with a `name`), in any case, as `info`, `warn`/`warning` or `error`/`err`
   (slog writes `ERRO`);
-- the message, under `message`, `msg`, `event` or `text`, at the top level or
-  inside a nested object;
+- the message, under `message`, `msg`, `event`, `text` or `@message` (hclog
+  writes `@level` and `@message`), at the top level or inside a nested object;
 - each of the five fields, at the top level or inside one nested object named
   `fields`, `extra`, `properties`, `context`, `data`, `meta`, `attributes`,
   `mdc` or `args`. loguru's `serialize` output, `{ text, record }`, is read from
