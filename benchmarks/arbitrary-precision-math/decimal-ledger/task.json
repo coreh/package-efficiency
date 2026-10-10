@@ -1,0 +1,15 @@
+{
+  "category": "arbitrary-precision-math",
+  "task": "decimal-ledger",
+  "title": "Fixed-point decimal ledger arithmetic",
+  "summary": "Parse 2,000 decimal amounts and rates, multiply and add them exactly, and return ten subtotals and the total rounded half-even to cents.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "cargo", "gomod", "rubygems"],
+  "load": { "warmup": 200, "rounds": 3, "operationsPerRound": 2000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
+  },
+  "fixtureCount": 6,
+  "notes": "Each operation parses 4,000 decimal strings, does 2,000 exact multiplications and 2,010 additions, and rounds and formats 11 values. Every exact value has at most 27 significant digits and 12 fractional digits, so fixed-size 96-bit decimals and 28-digit default contexts hold them without rounding."
+}

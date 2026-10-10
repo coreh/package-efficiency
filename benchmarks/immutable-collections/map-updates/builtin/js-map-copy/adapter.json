@@ -1,0 +1,17 @@
+{
+  "title": "Map copy",
+  "language": "javascript",
+  "runtimes": [
+    "node",
+    "bun",
+    "deno"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "notes": "Standard-library baseline, copy on write: version 0 is new Map(Object.entries(entries)); each op copies the previous version with new Map(m) and then sets or deletes. Only the kept versions are held; lookups use get, with null for an absent key."
+}

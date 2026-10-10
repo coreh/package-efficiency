@@ -1,0 +1,7 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "tags": ["non-default-options"],
+  "notes": "Runs on Decimal.clone({ precision: 40 }), not the default 20 significant digits, which would round the products (up to 27 digits). times and plus, then toDecimalPlaces(2, ROUND_HALF_EVEN) and toFixed(2).",
+  "details": "Not the default configuration: decimal.js rounds every result to 20 significant digits by default, which would round products of up to 27 digits, so the adapter works on Decimal.clone({ precision: 40 }). There is no entry at the default precision because it would return wrong digits."
+}

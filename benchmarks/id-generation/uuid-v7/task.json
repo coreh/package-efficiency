@@ -1,0 +1,15 @@
+{
+  "category": "id-generation",
+  "task": "uuid-v7",
+  "title": "Time-ordered UUID v7",
+  "summary": "Generate 100 time-ordered version 7 UUID strings per call with the default generator.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "jsr", "cargo", "pypi", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
+  },
+  "fixtureCount": 16,
+  "notes": "Each operation returns a list of 100 new UUID v7 strings. The task and its adapters add no cache or pre-generated pool; each ID reads the clock and asks for random bits through the library. Generators differ in what they keep between calls (a millisecond counter, the last timestamp), and that is part of the figure."
+}

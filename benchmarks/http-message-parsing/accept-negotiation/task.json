@@ -1,0 +1,33 @@
+{
+  "category": "http-message-parsing",
+  "task": "accept-negotiation",
+  "title": "Accept header preference order",
+  "summary": "Parse an HTTP Accept header (q-values, parameters, wildcards) and return its acceptable media ranges in order of preference.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "rubygems",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "No standard library of Node, Python, Ruby or Go parses an Accept header into a preference list, so there is no builtin entry. Wildcard ranges always rank below more specific ones by q, because goautoneg's comparator puts a wildcard after a concrete range whatever the q values."
+}

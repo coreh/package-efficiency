@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "tokio current-thread",
+  "notes": "sync::mpsc::channel(capacity) with send(v).await and recv().await, on a current-thread runtime. The four producers are joined with the consumer inside Runtime::block_on; nothing is spawned. recv() takes part in tokio's cooperative budget inside the runtime, which is the package's behaviour and is kept."
+}

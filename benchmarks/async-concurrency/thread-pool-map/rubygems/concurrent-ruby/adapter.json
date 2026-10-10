@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": ["ruby", "ruby-yjit"],
+  "executor": "Concurrent::FixedThreadPool, 4 threads, one at a time under the interpreter lock",
+  "notes": "Concurrent::FixedThreadPool.new(4) per operation; one Concurrent::Promises.future_on(pool) per input, value! on each in order, then pool.shutdown and wait_for_termination."
+}

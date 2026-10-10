@@ -1,0 +1,32 @@
+{
+  "category": "password-hashing",
+  "task": "argon2id-raw",
+  "title": "Argon2id raw hash with given salt and parameters",
+  "summary": "Compute the 32-byte Argon2id tag of a password and a given 16-byte salt at m=19 MiB, t=2, p=1 (version 0x13).",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 22,
+    "rounds": 3,
+    "operationsPerRound": 220,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 11,
+  "notes": "Each operation is one Argon2id run over 19 MiB of memory with two passes, so one call costs tens of milliseconds and the load is far smaller than in the fast string tasks."
+}

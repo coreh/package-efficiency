@@ -1,0 +1,12 @@
+{
+  "title": "Python asyncio.TaskGroup",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "asyncio event loop",
+  "notes": "Standard library: one TaskGroup.create_task per index inside async with asyncio.TaskGroup(), which waits for all of them on exit; the values are then read from the tasks with result() in spawn order and added. The task yields with asyncio.sleep(0), one pass of the event loop."
+}

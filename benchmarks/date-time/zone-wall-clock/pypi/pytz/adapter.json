@@ -1,0 +1,7 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "notes": "pytz.timezone(name) in prepare; datetime.fromtimestamp(t, tz), which goes through the zone's fromutc, then strftime and utcoffset() in seconds. Never datetime(..., tzinfo=tz), which gives LMT offsets. pytz bundles its own tz data."
+}

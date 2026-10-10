@@ -1,0 +1,32 @@
+{
+  "category": "digital-signatures",
+  "task": "rsa-pkcs1-sha256-sign",
+  "title": "RSA PKCS#1 v1.5 SHA-256 sign",
+  "summary": "Sign a message with a 2048-bit RSA private key, PKCS#1 v1.5 padding and SHA-256, and return the 256-byte signature.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 1000,
+    "rounds": 3,
+    "operationsPerRound": 10000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 24,
+  "notes": "Each operation is one 2048-bit RSA private-key operation (two 1024-bit exponentiations where the library uses the CRT) plus SHA-256 of a message of at most 8 KiB, so the load is far smaller than in the fast string tasks."
+}

@@ -1,0 +1,34 @@
+{
+  "category": "hash-maps",
+  "task": "set-algebra",
+  "title": "Union, intersection and difference of integer sets",
+  "summary": "Build two sets from integer lists with repeats, then return their union, intersection and difference as the library's own set values.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi",
+    "rubygems",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Every entry builds two sets and three new ones inside the call, so construction and growth are a large part of each figure. Ordered sets (ordered-set, sorted_set) keep an order the hash sets do not, and pay for it here. Rust allocation-counting overhead is included in CPU figures."
+}

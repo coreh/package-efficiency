@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "executor": "joblib threading backend, 4 threads, one at a time under the interpreter lock",
+  "notes": "Parallel(n_jobs=4, prefer=\"threads\") over delayed(job)(seed, rounds) for each input; the default loky (process) backend is not used. batch_size is left at its default (auto). The threads take turns under the interpreter lock. On PyPy joblib fails to run (AttributeError: type object 'Pickler' has no attribute 'dispatch')."
+}

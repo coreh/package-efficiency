@@ -1,0 +1,33 @@
+{
+  "category": "image-decoding",
+  "task": "webp-lossless-rgba",
+  "title": "Lossless WebP to RGBA pixels",
+  "summary": "Decode an in-memory lossless (VP8L) WebP file, with transforms, colour cache, backward references and several prefix-code groups, to a width, a height and a buffer of pixel bytes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing, so the measured call decodes bytes only."
+}

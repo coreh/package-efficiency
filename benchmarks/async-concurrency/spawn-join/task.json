@@ -1,0 +1,33 @@
+{
+  "category": "async-concurrency",
+  "task": "spawn-join",
+  "title": "Spawn 10,000 tasks that yield once and join them",
+  "summary": "Spawn 10,000 tasks on one thread, each of which yields once and then works out a value from its index, wait for every one of them through its handle, and return the sum of their values.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 10000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "An asynchronous task on one thread: each operation is one awaited call that spawns 10,000 tasks on the executor that runs it and ends when every task has been joined. A task only yields once and computes one small integer, so the figures are the cost of spawning a task, scheduling it twice and joining it: the executor's own machinery, not any work in the tasks. No timer or sleep with a real delay is involved. Rust runs on each crate's own single-thread executor, Go with GOMAXPROCS=1, Python on one asyncio loop, JavaScript on its event loop."
+}

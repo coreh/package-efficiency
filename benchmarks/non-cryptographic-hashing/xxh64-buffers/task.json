@@ -1,0 +1,33 @@
+{
+  "category": "non-cryptographic-hashing",
+  "task": "xxh64-buffers",
+  "title": "XXH64 of byte buffers",
+  "summary": "Hash a buffer of bytes, from empty to 1 MiB, with xxHash's 64-bit algorithm XXH64 (seed 0) to an unsigned 64-bit integer.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 119,
+  "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing, so the measured call hashes bytes only. Results stay native unsigned 64-bit integers in the measured call; Python, Go and Rust write them as decimal strings for the verifier outside timing."
+}

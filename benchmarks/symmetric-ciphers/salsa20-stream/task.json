@@ -1,0 +1,33 @@
+{
+  "category": "symmetric-ciphers",
+  "task": "salsa20-stream",
+  "title": "Salsa20 encrypt",
+  "summary": "Encrypt a message with the Salsa20/20 stream cipher: a 256-bit key, a 64-bit nonce, block counter 0, and no authentication.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo",
+    "pypi",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 48
+}

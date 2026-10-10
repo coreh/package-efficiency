@@ -1,0 +1,15 @@
+{
+  "category": "file-lookup",
+  "task": "which-executable",
+  "title": "Find an executable on a given PATH",
+  "summary": "Look up 40 command names against a PATH of 5 to 16 directories on disk (745 entries: executable and non-executable files, links, directories, names in several directories) and return, for each, the path of the first executable file found, or null.",
+  "kind": "sync-operation",
+  "ecosystems": ["npm", "jsr", "cargo"],
+  "load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
+  },
+  "fixtureCount": 4,
+  "notes": "The PATH is given to every entry as a string; Go's exec.LookPath reads it only from the environment, so its adapter sets PATH inside each call. A task on the file system: the directories are real, created anew before each process and already in the operating system's cache, so no disk is read, and CPU time includes the time the kernel spends answering the lookups."
+}

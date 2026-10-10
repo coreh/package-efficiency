@@ -1,0 +1,31 @@
+{
+  "category": "number-parsing",
+  "task": "integer-strings",
+  "title": "Decimal integer strings",
+  "summary": "Parse a batch of 1,000 decimal integer strings (optional sign, 1 to 15 digits, some with leading zeros) into integers.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 6,
+  "notes": "One operation is 1,000 single-string parses plus the loop and the output array, which every adapter has alike."
+}

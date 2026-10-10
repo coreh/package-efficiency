@@ -1,0 +1,32 @@
+{
+  "category": "embedded-script-interpreters",
+  "task": "lua-guest",
+  "title": "Run a Lua script and read its result",
+  "summary": "Run one small Lua script (recursive fib(22), a heap sort of 2,000 numbers, build a string, a float sum, a global-leak probe) in a fresh interpreter state and return the value it returns.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "cargo",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 12,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 500
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 6
+}

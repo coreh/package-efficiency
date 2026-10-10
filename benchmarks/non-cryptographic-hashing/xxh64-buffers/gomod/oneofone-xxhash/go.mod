@@ -1,0 +1,5 @@
+module bench/oneofone-xxhash
+
+go 1.25.0
+
+require github.com/OneOfOne/xxhash v1.2.8

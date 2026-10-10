@@ -1,0 +1,14 @@
+{
+  "category": "json-path-query",
+  "task": "jmespath-queries",
+  "title": "Evaluate JMESPath expressions",
+  "summary": "Evaluate 40 compiled JMESPath expressions (projections, filters, slices, flattening, multiselect, pipes and functions such as sort_by, max_by, join and length) against a parsed JSON document and return the list of results.",
+  "kind": "sync-operation",
+  "ecosystems": ["pypi", "rubygems", "gomod"],
+  "load": { "warmup": 2000, "rounds": 3, "operationsPerRound": 20000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
+  },
+  "fixtureCount": 3
+}

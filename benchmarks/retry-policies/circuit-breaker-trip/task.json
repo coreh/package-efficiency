@@ -1,0 +1,15 @@
+{
+  "category": "retry-policies",
+  "task": "circuit-breaker-trip",
+  "title": "Open a circuit breaker after consecutive failures",
+  "summary": "Send 500 calls that succeed or fail through a new circuit breaker that opens after 5 consecutive failures, and report for each call whether it ran and succeeded, ran and failed, or was rejected.",
+  "kind": "sync-operation",
+  "ecosystems": ["pypi", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
+  },
+  "fixtureCount": 6,
+  "notes": "Each operation creates one breaker and sends 500 trivial calls through it, one after another, returning one outcome per call. The function does no work of its own, so the figure is the breaker's bookkeeping per call (counting, the state check, the rejection error) and its creation. go-resiliency starts a goroutine that sleeps for the open time each time a breaker opens; that goroutine is in its figures."
+}

@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "futures LocalPool",
+  "notes": "A LocalPool built once in main; run_until drives the run, and a LocalSpawner clone kept in a thread-local lets the operation call spawn_local_with_handle per task and await each RemoteHandle. Tasks yield with the harness's executor-neutral yield_now."
+}

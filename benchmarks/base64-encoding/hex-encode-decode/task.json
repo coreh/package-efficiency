@@ -1,0 +1,31 @@
+{
+  "category": "base64-encoding",
+  "task": "hex-encode-decode",
+  "title": "Lowercase hex encoding and decoding",
+  "summary": "Encode bytes as lowercase hex text and decode that text back to the bytes, in one call.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 60
+}

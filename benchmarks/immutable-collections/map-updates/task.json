@@ -1,0 +1,33 @@
+{
+  "category": "immutable-collections",
+  "task": "map-updates",
+  "title": "Persistent map updates",
+  "summary": "Build an immutable map of 200 to 1,000 string keys, apply 100 to 500 sets and deletes each making a new version, and read keys in the first, middle and last versions.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "pypi",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "Some entries share structure between versions (hash tries, a radix tree) and some copy the whole map on every update (frozendict, immutabledict, Immer and the standard-library copies), so the same job is different work; the figures include that difference."
+}

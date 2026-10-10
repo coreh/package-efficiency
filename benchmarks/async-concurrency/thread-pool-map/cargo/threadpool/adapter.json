@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "threadpool, 4 threads",
+  "notes": "ThreadPool::new(4) per operation; one execute per input sends (index, value) over a std::sync::mpsc channel, the caller places each at its index, then pool.join(). The prepared input is shared through Arc."
+}

@@ -1,0 +1,7 @@
+{
+  "runtimes": ["bun", "deno"],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-10" },
+  "review": "unreviewed",
+  "executor": "4 worker threads (@poolifier/poolifier-web-worker); the main thread's event loop hands out jobs",
+  "notes": "new FixedThreadPool(4, workerUrl) on the global Web Worker, with its defaults; pool.execute({ seed, rounds }) per input, Promise.all, then await pool.destroy(). Deno and Bun only: Node has no global Worker."
+}

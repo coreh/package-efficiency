@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "title": "Go crypto/rsa",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "notes": "Standard-library baseline: sha256.Sum256 of the message, then rsa.SignPKCS1v15(nil, key, crypto.SHA256, digest), which uses the CRT in constant-time arithmetic; returns a 256-byte []byte (base64 through encoding/json for verification). prepare (untimed) parses the PKCS#1 PEM with x509.ParsePKCS1PrivateKey."
+}

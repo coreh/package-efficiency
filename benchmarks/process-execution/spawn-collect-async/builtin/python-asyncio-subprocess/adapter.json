@@ -1,0 +1,9 @@
+{
+  "title": "Python asyncio subprocess",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "asyncio event loop",
+  "notes": "await asyncio.create_subprocess_exec(command, *args, stdout=PIPE), then await communicate(); the output is decoded as UTF-8 and returncode read. Standard-library baseline. On macOS asyncio learns of the child's exit from a watcher thread it starts per child; that thread is the standard library's and its CPU is counted."
+}

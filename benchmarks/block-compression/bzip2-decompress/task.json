@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "bzip2-decompress",
+  "title": "bzip2 decompress",
+  "summary": "Decompress bzip2 streams (recorded at every level from 1 to 9, over text and binary data, two of them several blocks long) and return the original bytes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 49,
+  "notes": "One operation decompresses one in-memory bzip2 stream and returns the decompressed bytes, compared exactly with the original. The streams were recorded once by the bzip2 1.0.8 command, so every entry decodes the same bytes; nothing is compressed in the timed call."
+}

@@ -1,0 +1,32 @@
+{
+  "category": "digital-signatures",
+  "task": "ecdsa-p384-verify",
+  "title": "ECDSA P-384 verify",
+  "summary": "Verify ECDSA P-384 (SHA-384) signatures, accepting valid ones and rejecting tampered ones.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 48
+}

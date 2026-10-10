@@ -1,0 +1,15 @@
+{
+  "category": "id-generation",
+  "task": "ulid-generate",
+  "title": "Generate ULIDs",
+  "summary": "Generate 100 ULID strings per call with each package's default generator.",
+  "kind": "sync-operation",
+  "ecosystems": ["jsr", "gomod"],
+  "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
+  "metrics": {
+    "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
+    "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
+  },
+  "fixtureCount": 16,
+  "notes": "Each operation returns a list of 100 new ULID strings. The task and its adapters add no cache or pre-generated pool; each ID reads the clock and draws its random part through the library's default source. The defaults differ (crypto.getRandomValues, Math.random, a clock-seeded math/rand stream that increments within a millisecond), and that is part of the figure."
+}

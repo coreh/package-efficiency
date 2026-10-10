@@ -1,0 +1,33 @@
+{
+  "category": "async-concurrency",
+  "task": "unlimited-jobs",
+  "title": "Run all jobs at once and collect results in order",
+  "summary": "Start 100, 1,000 or 4,000 trivial asynchronous jobs at once with no limit, each of which yields once, and wait for every result in input order.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 4000
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "An asynchronous task on one thread: each operation is one awaited call that starts every job at once and ends when every job has finished. A job only counts itself in and out and yields once, so the figures are the cost of the package's bookkeeping (starting each job, collecting its value at its index, noticing the last one) and of the runtime's scheduling, not of any work in the jobs. No timer or sleep with a real delay is involved. JavaScript runs on its event loop, Python on one asyncio loop."
+}

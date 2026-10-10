@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "snappy-roundtrip-text",
+  "title": "Snappy compress and decompress text",
+  "summary": "Compress a buffer of text to the raw Snappy block format and decompress it again, returning both the compressed block and the restored text.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 40,
+  "notes": "One operation is a full Snappy compress-then-decompress round trip of an in-memory buffer in the raw block format (no framing). The compressed block the timed call produced is returned with the restored text and decoded outside timing by the scenario's own Snappy decoder, so a private or framed format fails; it must also be smaller than the input for the fixtures the format can shrink."
+}

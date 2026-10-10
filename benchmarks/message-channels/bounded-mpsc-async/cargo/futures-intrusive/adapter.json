@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "futures::executor::block_on (calling thread)",
+  "notes": "A single-thread LocalChannel (no locks) with send(v).await and receive().await. LocalChannel's buffer is a fixed array type, so the runtime capacity 16, 64 or 1024 selects the array size at compile time ([u64; 16], [u64; 64], [u64; 1024]). The four producers are joined with the consumer as futures of one task; nothing is spawned."
+}

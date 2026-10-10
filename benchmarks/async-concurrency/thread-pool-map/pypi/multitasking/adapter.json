@@ -1,0 +1,8 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": ["cpython", "pypy"],
+  "executor": "multitasking threads, at most 4 at once, one at a time under the interpreter lock",
+  "notes": "set_max_threads(4), then a @multitasking.task function per input writes its result at its index and wait_for_tasks() waits. The package starts one thread per call and lets at most four run at once; there is no persistent pool. The default thread engine."
+}

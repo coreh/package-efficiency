@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "rayon ThreadPool, 4 threads",
+  "notes": "A new rayon::ThreadPoolBuilder pool with num_threads(4) per operation (not the global pool); pool.install runs seeds.par_iter().zip(rounds).map(job).collect::<Vec<u32>>(), which keeps input order. Dropping the pool ends its threads asynchronously."
+}

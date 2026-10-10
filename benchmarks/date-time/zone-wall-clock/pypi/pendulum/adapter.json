@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "language": "python",
+  "runtimes": [
+    "cpython",
+    "pypy"
+  ],
+  "notes": "pendulum.timezone(name) in prepare; DateTime.fromtimestamp(t, tz=zone), strftime and utcoffset() in seconds. Reads the tzdata package. Not pendulum.from_timestamp: on PyPy, where pendulum runs pure Python, it converts via UTC and returns an hour-off wall-clock time just before a transition (2012-03-11T00:59:59 instead of 01:59:59 in New York); DateTime.fromtimestamp is right on both runtimes."
+}

@@ -1,0 +1,31 @@
+{
+  "category": "substring-search",
+  "task": "count-byte",
+  "title": "Count one byte in a buffer",
+  "summary": "Count the newline bytes (0x0a) in a buffer of 1 KiB to 8 MiB of text or binary data.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 23,
+  "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing. No npm or JSR package in the category offers this operation; only crates and standard-library baselines are measured."
+}

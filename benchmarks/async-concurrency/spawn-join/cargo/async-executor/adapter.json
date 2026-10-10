@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "async-executor LocalExecutor",
+  "notes": "One LocalExecutor (not Send), leaked in a thread-local and built once; futures_lite::future::block_on(executor.run(main)) drives the run, and the operation calls executor.spawn per task and awaits each Task. Tasks yield with the harness's executor-neutral yield_now. futures-lite is only the block_on of the adapter."
+}

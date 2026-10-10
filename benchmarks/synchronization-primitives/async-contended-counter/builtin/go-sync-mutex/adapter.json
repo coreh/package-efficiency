@@ -1,0 +1,9 @@
+{
+  "title": "Go sync.Mutex",
+  "language": "go",
+  "runtimes": ["go"],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "goroutines, GOMAXPROCS=1",
+  "notes": "Language baseline: sync.Mutex Lock and Unlock around the read, the yield (runtime.Gosched()) and the write, in eight goroutines joined with a WaitGroup. A goroutine that finds the mutex held parks until it is handed over or woken."
+}

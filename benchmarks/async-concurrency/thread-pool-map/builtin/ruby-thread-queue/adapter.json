@@ -1,0 +1,12 @@
+{
+  "title": "Ruby Thread and Thread::Queue",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "Thread, 4 workers, one at a time under the interpreter lock",
+  "notes": "Core library, no pool class: four Thread workers pop job indices from a closed Thread::Queue until it is empty and write each result at its index; the caller joins them. The threads take turns under the interpreter lock."
+}

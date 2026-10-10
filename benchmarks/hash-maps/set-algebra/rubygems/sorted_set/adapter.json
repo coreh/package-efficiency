@@ -1,0 +1,15 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "language": "ruby",
+  "runtimes": [
+    "ruby",
+    "ruby-yjit"
+  ],
+  "notes": "Not passing as written: on Ruby 4.0 the core Set's SortedSet#| with a SortedSet argument returns only the receiver's members (sorted_set 1.1.0 predates the core Set), so the union is taken with the documented enumerable form, a | b.to_a (the to_a is inside the call). SortedSet.new(a) and SortedSet.new(b), then that union, & and -, each returning a new SortedSet. It keeps members sorted in a red-black tree (the rbtree gem)."
+}

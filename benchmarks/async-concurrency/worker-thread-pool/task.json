@@ -1,0 +1,34 @@
+{
+  "category": "async-concurrency",
+  "task": "worker-thread-pool",
+  "title": "Run 64 CPU jobs on a pool of 4 JavaScript worker threads",
+  "summary": "Create a pool of four JavaScript worker threads, run the same integer mixing loop (4 to 68 million rounds of xorshift32) for each of 64 inputs on it, and return the 64 results in input order.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 20,
+    "rounds": 3,
+    "operationsPerRound": 30,
+    "minRoundMs": 250,
+    "threads": 4,
+    "concurrency": 4
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "ms",
+      "headline": "ms of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "A task on four JavaScript worker threads. Each operation creates its pool, submits 64 jobs, collects their results in input order and shuts the pool down; starting the four workers (an isolate each, and the worker module loaded in it) is part of the figure, about a tenth of it. The jobs are 512 million steps of xorshift32 in all, the same worker code for every entry, so most of the figure is the engine running that loop, warming up again in each new worker, and the rest is the pool: starting its workers, passing inputs and results as messages and stopping them. CPU time is the sum over all threads; wall-clock time is not what is ranked. Only JavaScript entries: these are worker-thread pools."
+}

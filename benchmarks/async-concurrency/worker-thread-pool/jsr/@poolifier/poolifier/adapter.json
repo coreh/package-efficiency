@@ -1,0 +1,7 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-10" },
+  "review": "unreviewed",
+  "executor": "4 worker threads (@poolifier/poolifier); the main thread's event loop hands out jobs",
+  "runtimes": ["node", "bun"],
+  "notes": "new FixedThreadPool(4, workerFile) with its defaults; pool.execute({ seed, rounds }) per input, Promise.all, then await pool.destroy(). Node and Bun only: on Deno its worker_threads pool never starts (the top-level await never resolves); Deno is covered by @poolifier/poolifier-web-worker."
+}

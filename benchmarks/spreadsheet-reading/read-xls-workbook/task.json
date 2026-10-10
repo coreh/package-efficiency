@@ -1,0 +1,35 @@
+{
+  "category": "spreadsheet-reading",
+  "task": "read-xls-workbook",
+  "title": "Read a legacy .xls workbook",
+  "summary": "Open an in-memory .xls (BIFF8) workbook of 3 or 4 sheets and read every cell value: strings, numbers, booleans and dates.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "npm",
+    "jsr",
+    "cargo",
+    "pypi",
+    "rubygems"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "Each adapter opens the .xls bytes (BIFF8 records inside an OLE compound file) with the library and returns the sheets and cell values mapped to a common list of { name, rows }. The verifier compares every cell against the values the scenario wrote."
+}

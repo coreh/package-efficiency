@@ -1,0 +1,33 @@
+{
+  "category": "linear-algebra",
+  "task": "mat4-transforms",
+  "title": "4x4 transform chain",
+  "summary": "Multiply a chain of 64 4x4 transform matrices of 64-bit floats (rotations, scales, translations) and invert the product.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi",
+    "rubygems"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 16,
+  "notes": "Every adapter builds the library's 64 matrices from the JSON numbers in prepare, before any timing; the measured call multiplies them in order and inverts the product."
+}

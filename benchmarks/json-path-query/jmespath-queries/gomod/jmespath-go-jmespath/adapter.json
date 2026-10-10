@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "title": "jmespath/go-jmespath", "language": "go", "runtimes": ["go"], "module": "github.com/jmespath/go-jmespath",
+  "notes": "Not passing: jmespath.Compile per expression in prepare, then .Search(document) for each in the call. go-jmespath's sort_by sorts the document's books array in place, so on fixture 1 later expressions that read store.books[0] see another book (expression 38 differs); the document is not copied to hide it."
+}

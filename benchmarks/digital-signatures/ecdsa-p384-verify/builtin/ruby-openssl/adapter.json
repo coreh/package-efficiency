@@ -1,0 +1,8 @@
+{
+  "title": "Ruby OpenSSL::PKey::EC",
+  "language": "ruby",
+  "runtimes": ["ruby", "ruby-yjit"],
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-opus-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "notes": "The openssl extension that ships with Ruby. Each call wraps the SEC1 point in a fixed SPKI header, parses it with OpenSSL::PKey.read and calls PKey#verify('SHA384', der_signature, message), which hashes the message. prepare (untimed) decodes the hex and turns r||s into the DER signature OpenSSL takes."
+}

@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "xz-decompress",
+  "title": "xz decompress",
+  "summary": "Decompress .xz streams (LZMA2, recorded at every preset from 1 to 9 with CRC64 and CRC32 checks, over text and binary data, two of them several blocks long) and return the original bytes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 49,
+  "notes": "One operation decompresses one in-memory .xz stream and returns the decompressed bytes, compared exactly with the original. The streams were recorded once by the xz 5.8.4 command (liblzma), single-stream, LZMA2 only, each with a dictionary just large enough for its input, so every entry decodes the same bytes; nothing is compressed in the timed call."
+}

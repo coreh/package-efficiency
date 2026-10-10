@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "tokio current-thread",
+  "notes": "tokio::sync::Mutex::new(0u64) and lock().await, on a current-thread runtime, with tokio::task::yield_now() as the yield. The eight tasks are futures joined with futures::join_all inside the operation's future; nothing is spawned. The mutex owns a u64 and the guard is dropped to unlock."
+}

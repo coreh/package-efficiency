@@ -1,0 +1,35 @@
+{
+  "category": "synchronization-primitives",
+  "task": "async-contended-counter",
+  "title": "Increment one counter under an async lock from eight tasks that yield inside it",
+  "summary": "Eight async tasks on one thread each lock one shared async mutex, read a counter, yield once, write it back plus one and unlock, 500 to 2,000 times each, and the operation returns the final counter and the sum of all tickets.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 20,
+    "rounds": 3,
+    "operationsPerRound": 100,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 8
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "An asynchronous task on one thread: eight tasks contend for one async lock and each yields once while holding it, so every acquisition but the first of a turn has to suspend, queue and be woken. The figure is the lock's acquire, release and wake-up plus the runtime's scheduling of the yields and the waiting tasks; the yield is the same cheapest yield in every language. Each operation creates the lock and starts its eight tasks; starting them is part of the figure. No timer or sleep with a real delay is involved. Go runs with GOMAXPROCS=1, Rust on a single-thread executor, Python on one asyncio loop."
+}

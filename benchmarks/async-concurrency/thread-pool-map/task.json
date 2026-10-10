@@ -1,0 +1,35 @@
+{
+  "category": "async-concurrency",
+  "task": "thread-pool-map",
+  "title": "Map a CPU job over 256 inputs on a pool of 4 threads",
+  "summary": "Create a fixed pool of four threads, run the same integer mixing loop (500 to 17,000 rounds of xorshift32) for each of 256 inputs on it, and return the 256 results in input order.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi",
+    "rubygems"
+  ],
+  "load": {
+    "warmup": 200,
+    "rounds": 3,
+    "operationsPerRound": 2000,
+    "minRoundMs": 250,
+    "threads": 4,
+    "concurrency": 4
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 3,
+  "notes": "A task on four threads. Each operation creates its pool, submits 256 jobs, collects their results in input order and shuts the pool down; starting the pool is part of the figure. The jobs are 512,000 steps of xorshift32 in all, written the same way in every language, so most of the figure is the language running that loop and the rest is the pool: starting its threads, handing out jobs and gathering results. CPU time is the sum over all threads, so a pool that spins while it waits pays for it; wall-clock time is not what is ranked. Go runs with GOMAXPROCS=4. CPython and CRuby run one thread at a time under their interpreter lock, so their four threads take turns and gain no parallelism; their CPU time is still what is graded. No JavaScript entry: these are thread pools."
+}

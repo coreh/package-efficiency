@@ -1,0 +1,33 @@
+{
+  "category": "checksums",
+  "task": "crc32c-buffers",
+  "title": "CRC-32C of byte buffers",
+  "summary": "Compute the CRC-32C (Castagnoli, as used by iSCSI, ext4, Btrfs, SCTP and cloud object stores) of a buffer of bytes as an unsigned 32-bit number.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi",
+    "gomod"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 101,
+  "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing, so the measured call checksums bytes only."
+}

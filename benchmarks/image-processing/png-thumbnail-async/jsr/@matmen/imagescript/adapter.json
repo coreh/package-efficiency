@@ -1,0 +1,14 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "executor": "event loop",
+  "notes": "await Image.decode(bytes), resize(width, height), await encode(). Not passing: its only resize mode is nearest neighbour, which takes one source pixel per thumbnail pixel and keeps the grain (3.3 to 6.6 levels from the reference). Deno only: its WebAssembly modules are read with Deno.readFile, so on Node and Bun the package fails to load (Deno is not defined).",
+  "runtimes": [
+    "deno"
+  ]
+}

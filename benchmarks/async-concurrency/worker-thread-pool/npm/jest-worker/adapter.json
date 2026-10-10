@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-10" },
+  "review": "unreviewed",
+  "executor": "4 worker threads (jest-worker); the main thread's event loop hands out jobs",
+  "notes": "new Worker(file, { numWorkers: 4, enableWorkerThreads: true, exposedMethods: ['job'] }); worker.job(seed, rounds) per input, Promise.all, then await worker.end(). The worker module is CommonJS because jest-worker loads it with require."
+}

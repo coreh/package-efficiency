@@ -1,0 +1,16 @@
+{
+  "title": "Go image/jpeg",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "notes": "jpeg.Decode returns an *image.YCbCr; draw.Draw into an image.NewRGBA converts it to RGBA (alpha 255), and that Pix slice is returned. File bytes are made from hex outside timing.",
+  "details": "jpeg.Decode reads the baseline file into an *image.YCbCr holding the decoded planes at their own sampling. draw.Draw(rgba, bounds, img, min, draw.Src) then converts every pixel to RGBA with the standard library's YCbCr-to-RGB conversion, taking 4:2:0 chroma from the nearest sample (no interpolation); the conversion is part of the timed call, since the task asks for RGB pixels. The result has four bytes per pixel with alpha 255. The file's bytes are made from hex once per fixture, outside the timed call."
+}

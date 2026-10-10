@@ -1,0 +1,31 @@
+{
+  "category": "hash-maps",
+  "task": "hasher-u64-keys",
+  "title": "u64 keys in the standard HashMap, by hasher",
+  "summary": "Build Rust's standard HashMap<u64, u64> with each crate's hasher, insert integer keys (sequential, random, multiples of a power of two, near the top of the range), look up present and absent keys and remove a third.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 48,
+  "notes": "Cargo only. Every entry uses std::collections::HashMap<u64, u64, S> created with S::default(), so the figures differ only by the hasher. Keys that are multiples of 2^12, 2^16 and 2^32 make identity and weak multiplicative hashes collide; that cost is part of the figure. Rust allocation-counting overhead is included in CPU figures."
+}

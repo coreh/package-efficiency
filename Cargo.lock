@@ -204,10 +204,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "adler"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
+
+[[package]]
+name = "adler32"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aae1277d39aeec15cb388266ecc24b11c80469deae6067e17a1a7aa9e5c1f234"
 
 [[package]]
 name = "aead"
@@ -426,6 +438,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ansi-text-layout-wrap-plain-text-textwrap"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "textwrap",
+]
+
+[[package]]
 name = "ansi-text-layout-wrap-to-80-columns-textwrap"
 version = "0.0.0"
 dependencies = [
@@ -549,6 +570,24 @@ version = "0.0.0"
 dependencies = [
  "bench-harness",
  "bigdecimal",
+ "serde_json",
+]
+
+[[package]]
+name = "arbitrary-precision-math-decimal-ledger-bigdecimal"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "bigdecimal",
+ "serde_json",
+]
+
+[[package]]
+name = "arbitrary-precision-math-decimal-ledger-rust_decimal"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "rust_decimal",
  "serde_json",
 ]
 
@@ -908,6 +947,107 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-concurrency-spawn-join-async-executor"
+version = "0.0.0"
+dependencies = [
+ "async-executor",
+ "bench-harness",
+ "futures-lite",
+ "serde_json",
+]
+
+[[package]]
+name = "async-concurrency-spawn-join-async-global-executor"
+version = "0.0.0"
+dependencies = [
+ "async-global-executor",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "async-concurrency-spawn-join-futures"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures",
+ "serde_json",
+]
+
+[[package]]
+name = "async-concurrency-spawn-join-tokio"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
+name = "async-concurrency-thread-pool-map-rayon"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "rayon",
+ "serde_json",
+]
+
+[[package]]
+name = "async-concurrency-thread-pool-map-threadpool"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "threadpool",
+]
+
+[[package]]
+name = "async-executor"
+version = "1.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c96bf972d85afc50bf5ab8fe2d54d1586b4e0b46c97c50a0c9e71e2f7bcd812a"
+dependencies = [
+ "async-task",
+ "concurrent-queue",
+ "fastrand",
+ "futures-lite",
+ "pin-project-lite",
+ "slab",
+]
+
+[[package]]
+name = "async-global-executor"
+version = "2.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05b1b633a2115cd122d73b955eadd9916c18c8f510ec9cd1686404c60ad1c29c"
+dependencies = [
+ "async-channel",
+ "async-executor",
+ "async-lock",
+ "blocking",
+ "futures-lite",
+ "once_cell",
+]
+
+[[package]]
+name = "async-io"
+version = "2.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "456b8a8feb6f42d237746d4b3e9a178494627745c3c56c6ea55d92ba50d026fc"
+dependencies = [
+ "autocfg",
+ "cfg-if",
+ "concurrent-queue",
+ "futures-io",
+ "futures-lite",
+ "parking",
+ "polling",
+ "rustix 1.1.5",
+ "slab",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "async-lock"
 version = "3.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -923,6 +1063,42 @@ name = "async-once-cell"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4288f83726785267c6f2ef073a3d83dc3f9b81464e9f99898240cced85fce35a"
+
+[[package]]
+name = "async-process"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc50921ec0055cdd8a16de48773bfeec5c972598674347252c0399676be7da75"
+dependencies = [
+ "async-channel",
+ "async-io",
+ "async-lock",
+ "async-signal",
+ "async-task",
+ "blocking",
+ "cfg-if",
+ "event-listener",
+ "futures-lite",
+ "rustix 1.1.5",
+]
+
+[[package]]
+name = "async-signal"
+version = "0.2.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52b5aaafa020cf5053a01f2a60e8ff5dccf550f0f77ec54a4e47285ac2bab485"
+dependencies = [
+ "async-io",
+ "async-lock",
+ "atomic-waker",
+ "cfg-if",
+ "futures-core",
+ "futures-io",
+ "rustix 1.1.5",
+ "signal-hook-registry",
+ "slab",
+ "windows-sys 0.61.2",
+]
 
 [[package]]
 name = "async-stream"
@@ -945,6 +1121,12 @@ dependencies = [
  "quote",
  "syn 2.0.119",
 ]
+
+[[package]]
+name = "async-task"
+version = "4.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
 
 [[package]]
 name = "async-trait"
@@ -1109,6 +1291,33 @@ version = "0.0.0"
 dependencies = [
  "aws-lc-rs",
  "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "authenticated-encryption-chacha20-aws-lc-rs"
+version = "0.0.0"
+dependencies = [
+ "aws-lc-rs",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "authenticated-encryption-chacha20-chacha20poly1305"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "chacha20poly1305",
+ "serde_json",
+]
+
+[[package]]
+name = "authenticated-encryption-chacha20-ring"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "ring",
  "serde_json",
 ]
 
@@ -1485,6 +1694,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "base64-encoding-hex-encode-decode-base16ct"
+version = "0.0.0"
+dependencies = [
+ "base16ct",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "base64-encoding-hex-encode-decode-data-encoding"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "data-encoding",
+ "serde_json",
+]
+
+[[package]]
+name = "base64-encoding-hex-encode-decode-hex"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "hex",
+ "serde_json",
+]
+
+[[package]]
 name = "base64-simd"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1652,6 +1888,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "binary-serialization-uleb128-varints-integer-encoding"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "integer-encoding",
+ "serde_json",
+]
+
+[[package]]
+name = "binary-serialization-uleb128-varints-leb128fmt"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "leb128fmt",
+ "serde_json",
+]
+
+[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1780,6 +2034,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e4b40c7323adcfc0a41c4b88143ed58346ff65a288fc144329c5c45e05d70c6"
 
 [[package]]
+name = "bitcoin-consensus-encoding"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9daa31138eb443d5751b207f3f64154e2bb09cd59960562ccc7a7112be38147f"
+dependencies = [
+ "bitcoin-internals",
+ "hex-conservative 1.3.0",
+ "serde",
+]
+
+[[package]]
+name = "bitcoin-internals"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8bea3a9f0cfece4564e37cb49a38cc245ca5184719e50d7d0dda3268722c4e2"
+
+[[package]]
+name = "bitcoin-io"
+version = "0.1.101"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb5de036369d1ac59d3c1819ebc4d850f89466f5401c571a285b6ed564a4cb78"
+dependencies = [
+ "bitcoin-consensus-encoding",
+]
+
+[[package]]
+name = "bitcoin_hashes"
+version = "0.14.101"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bca4c7abb40c8817d77403c880988cfd484f23ab2365726afb2f798363e2c4a2"
+dependencies = [
+ "bitcoin-io",
+ "hex-conservative 0.2.3",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1867,6 +2157,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-compression-brotli-decompress-brotli"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "brotli 9.0.0",
+ "serde_json",
+]
+
+[[package]]
+name = "block-compression-brotli-decompress-brotli-decompressor"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "brotli-decompressor 6.0.1",
+ "serde_json",
+]
+
+[[package]]
 name = "block-compression-brotli-large-buffer-compress-brotli"
 version = "0.0.0"
 dependencies = [
@@ -1881,6 +2189,15 @@ version = "0.0.0"
 dependencies = [
  "bench-harness",
  "brotli 9.0.0",
+ "serde_json",
+]
+
+[[package]]
+name = "block-compression-bzip2-decompress-bzip2"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "bzip2",
  "serde_json",
 ]
 
@@ -1957,6 +2274,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-compression-snappy-roundtrip-text-snap"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "snap",
+]
+
+[[package]]
 name = "block-compression-zstd-large-buffer-compress-zstd"
 version = "0.0.0"
 dependencies = [
@@ -2008,6 +2334,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "710f1dd022ef4e93f8a438b4ba958de7f64308434fa6a87104481645cc30068b"
 dependencies = [
  "hybrid-array",
+]
+
+[[package]]
+name = "blocking"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a70e4329df6cb94385eed412ec92375c3cdd8a6e502493d1229b6414e4036dfa"
+dependencies = [
+ "async-channel",
+ "async-task",
+ "futures-io",
+ "futures-lite",
+ "piper",
 ]
 
 [[package]]
@@ -2655,8 +2994,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
 dependencies = [
  "cfg-if",
+ "cipher 0.5.2",
  "cpufeatures 0.3.1",
  "rand_core 0.10.1",
+]
+
+[[package]]
+name = "chacha20poly1305"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b89e1c441e926b9c82a8d023f6e1b7ae0adcfaa7d621814e4d60789bac751cb"
+dependencies = [
+ "aead",
+ "chacha20",
+ "cipher 0.5.2",
+ "poly1305",
 ]
 
 [[package]]
@@ -2785,11 +3137,65 @@ dependencies = [
 ]
 
 [[package]]
+name = "checksums-adler32-buffers-adler"
+version = "0.0.0"
+dependencies = [
+ "adler",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "checksums-adler32-buffers-adler2"
+version = "0.0.0"
+dependencies = [
+ "adler2",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "checksums-adler32-buffers-adler32"
+version = "0.0.0"
+dependencies = [
+ "adler32",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "checksums-adler32-buffers-simd-adler32"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "simd-adler32",
+]
+
+[[package]]
 name = "checksums-crc"
 version = "0.0.0"
 dependencies = [
  "bench-harness",
  "crc",
+ "serde_json",
+]
+
+[[package]]
+name = "checksums-crc32c-buffers-crc"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "crc",
+ "serde_json",
+]
+
+[[package]]
+name = "checksums-crc32c-buffers-crc32c"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "crc32c",
  "serde_json",
 ]
 
@@ -3684,6 +4090,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "217698eaf96b4a3f0bc4f3662aaa55bdf913cd54d7204591faa790070c6d0853"
 
 [[package]]
+name = "crc32c"
+version = "0.6.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a47af21622d091a8f0fb295b88bc886ac74efcc613efc19f5d0b21de5c89e47"
+dependencies = [
+ "rustc_version",
+]
+
+[[package]]
 name = "crc32fast"
 version = "1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3841,6 +4256,60 @@ dependencies = [
  "getrandom 0.4.3",
  "hybrid-array",
  "rand_core 0.10.1",
+]
+
+[[package]]
+name = "cryptographic-hashing-blake2b-512-blake2"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "blake2",
+ "serde_json",
+]
+
+[[package]]
+name = "cryptographic-hashing-blake3-256-blake3"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "blake3",
+ "serde_json",
+]
+
+[[package]]
+name = "cryptographic-hashing-md-5"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "md-5 0.11.0",
+ "serde_json",
+]
+
+[[package]]
+name = "cryptographic-hashing-md5"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "md5",
+ "serde_json",
+]
+
+[[package]]
+name = "cryptographic-hashing-sha1-sha1"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "sha1 0.10.7",
+]
+
+[[package]]
+name = "cryptographic-hashing-sha1-sha1_smol"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "sha1_smol",
 ]
 
 [[package]]
@@ -4203,11 +4672,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "date-time-go-style-durations-humantime"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "humantime",
+ "serde_json",
+]
+
+[[package]]
 name = "date-time-jiff"
 version = "0.0.0"
 dependencies = [
  "bench-harness",
  "jiff",
+]
+
+[[package]]
+name = "date-time-zone-wall-clock-jiff"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "jiff",
+ "serde_json",
 ]
 
 [[package]]
@@ -4592,6 +5079,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "digital-signatures-ecdsa-p384-verify-p384"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "hex",
+ "p384",
+ "serde_json",
+]
+
+[[package]]
+name = "digital-signatures-ecdsa-secp256k1-verify-k256"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "hex",
+ "k256",
+ "serde_json",
+]
+
+[[package]]
+name = "digital-signatures-ecdsa-secp256k1-verify-secp256k1"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "hex",
+ "secp256k1",
+ "serde_json",
+]
+
+[[package]]
 name = "digital-signatures-ed25519-dalek"
 version = "0.0.0"
 dependencies = [
@@ -4599,6 +5116,16 @@ dependencies = [
  "ed25519-dalek",
  "hex",
  "serde_json",
+]
+
+[[package]]
+name = "digital-signatures-rsa-pkcs1-sha256-sign-rsa"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "rsa",
+ "serde_json",
+ "sha2 0.10.9",
 ]
 
 [[package]]
@@ -5548,6 +6075,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "embedded-script-interpreters-mlua"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "mlua",
+ "serde_json",
+]
+
+[[package]]
 name = "embedded-script-interpreters-rquickjs"
 version = "0.0.0"
 dependencies = [
@@ -6029,6 +6565,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "file-lookup-which-executable-which"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "which",
+]
+
+[[package]]
 name = "file-type-detection-infer"
 version = "0.0.0"
 dependencies = [
@@ -6465,6 +7010,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fxhash"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
 name = "generational-box"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6893,6 +7447,78 @@ dependencies = [
 ]
 
 [[package]]
+name = "hash-maps-hasher-ahash"
+version = "0.0.0"
+dependencies = [
+ "ahash",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-fnv"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "fnv",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-foldhash"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "foldhash 0.2.0",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-fxhash"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "fxhash",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-nohash-hasher"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "nohash-hasher",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-rustc-hash"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "rustc-hash 2.1.3",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-seahash"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "seahash",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-hasher-siphasher"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "siphasher",
+]
+
+[[package]]
 name = "hash-maps-hashlink"
 version = "0.0.0"
 dependencies = [
@@ -6916,6 +7542,42 @@ version = "0.0.0"
 dependencies = [
  "bench-harness",
  "linked-hash-map",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-multimap-groups-multimap"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "multimap",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-multimap-groups-ordered-multimap"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "ordered-multimap",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-set-algebra-hashbrown"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "hashbrown 0.17.1",
+ "serde_json",
+]
+
+[[package]]
+name = "hash-maps-set-algebra-indexmap"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "indexmap",
  "serde_json",
 ]
 
@@ -7084,6 +7746,24 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "hex-conservative"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db3fef046dca3ca91ee1408a8c1b80ab777e80a4d308d1bf4e7adb3fcb047e08"
+dependencies = [
+ "arrayvec",
+]
+
+[[package]]
+name = "hex-conservative"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "271e0d19bcb473b6675739a2b536076b24a082316cb5199ad918edce10c599e8"
+dependencies = [
+ "arrayvec",
+]
 
 [[package]]
 name = "hickory-proto"
@@ -7964,6 +8644,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "id-generation-uuid-v7-uuid"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "uuid",
+]
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8073,12 +8762,82 @@ dependencies = [
 ]
 
 [[package]]
+name = "image-decoding-jpeg-rgb-image"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "image 0.25.10",
+ "serde_json",
+]
+
+[[package]]
+name = "image-decoding-jpeg-rgb-jpeg-decoder"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "jpeg-decoder",
+ "serde_json",
+]
+
+[[package]]
+name = "image-decoding-jpeg-rgb-zune-jpeg"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "serde_json",
+ "zune-jpeg",
+]
+
+[[package]]
 name = "image-decoding-png-rgba-png"
 version = "0.0.0"
 dependencies = [
  "base64 0.22.1",
  "bench-harness",
  "png 0.18.1",
+ "serde_json",
+]
+
+[[package]]
+name = "image-decoding-tiff-rgba-image"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "image 0.25.10",
+ "serde_json",
+]
+
+[[package]]
+name = "image-decoding-tiff-rgba-tiff"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "serde_json",
+ "tiff 0.11.3",
+]
+
+[[package]]
+name = "image-decoding-webp-lossless-rgba-image"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "image 0.25.10",
+ "serde_json",
+]
+
+[[package]]
+name = "image-decoding-webp-lossless-rgba-image-webp"
+version = "0.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "bench-harness",
+ "image-webp",
  "serde_json",
 ]
 
@@ -8303,6 +9062,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "integer-encoding"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14c00403deb17c3221a1fe4fb571b9ed0370b3dcd116553c77fa294a3d918699"
+
+[[package]]
 name = "interpolate_name"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8425,6 +9190,15 @@ name = "ixdtf"
 version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d3667095d64c3ecffc96463a21157b04bf3e252f6e8d5750b20c02e33c194e3"
+
+[[package]]
+name = "jaro-winkler-pairs-strsim"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "strsim",
+]
 
 [[package]]
 name = "jiff"
@@ -8651,6 +9425,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "json-path-query-json-pointer-lookup-serde_json"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
 name = "json5"
 version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8843,12 +9625,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "k256"
+version = "0.13.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6e3919bbaa2945715f0bb6d3934a173d1e9a59ac23767fbaaef277265a7411b"
+dependencies = [
+ "cfg-if",
+ "ecdsa",
+ "elliptic-curve",
+ "once_cell",
+ "sha2 0.10.9",
+ "signature",
+]
+
+[[package]]
 name = "keccak"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb26cec98cce3a3d96cbb7bced3c4b16e3d13f27ec56dbd62cbc8f39cfb9d653"
 dependencies = [
  "cpufeatures 0.2.17",
+]
+
+[[package]]
+name = "key-derivation-hkdf-sha256-hkdf"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "hkdf 0.13.0",
+ "serde_json",
+ "sha2 0.11.0",
 ]
 
 [[package]]
@@ -8935,6 +9741,12 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 dependencies = [
  "spin 0.9.9",
 ]
+
+[[package]]
+name = "leb128fmt"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
 
 [[package]]
 name = "lebe"
@@ -9351,6 +10163,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "linear-algebra-mat4-transforms-glam"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "glam 0.33.11",
+ "serde_json",
+]
+
+[[package]]
+name = "linear-algebra-mat4-transforms-nalgebra"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "nalgebra",
+ "serde_json",
+]
+
+[[package]]
 name = "linear-algebra-matrix-inverse-nalgebra"
 version = "0.0.0"
 dependencies = [
@@ -9637,6 +10467,25 @@ name = "lru-slab"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f"
+
+[[package]]
+name = "lua-src"
+version = "551.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d400ffef0e3d4d29287092bdc5a276d0bf468b2c69709d5bab0d469312d9f947"
+dependencies = [
+ "cc",
+]
+
+[[package]]
+name = "luajit-src"
+version = "210.7.4+c6ffc14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1db548b001f0b7da416daf0ffae963912bae6cad1799fa9f4eaba09da6dba837"
+dependencies = [
+ "cc",
+ "which",
+]
 
 [[package]]
 name = "lz4"
@@ -9959,6 +10808,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "md5"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ebb8d8732c6a6df3d8f032a82911cfc747e00efb95cc46e8d0acd5b5b88570c"
+
+[[package]]
 name = "media-type-parsing-mime"
 version = "0.0.0"
 dependencies = [
@@ -10005,6 +10860,56 @@ dependencies = [
  "hmac 0.12.1",
  "serde_json",
  "sha2 0.10.9",
+]
+
+[[package]]
+name = "message-channels-bounded-mpsc-async-async-channel"
+version = "0.0.0"
+dependencies = [
+ "async-channel",
+ "bench-harness",
+ "futures",
+ "serde_json",
+]
+
+[[package]]
+name = "message-channels-bounded-mpsc-async-flume"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "flume",
+ "futures",
+ "serde_json",
+]
+
+[[package]]
+name = "message-channels-bounded-mpsc-async-futures-channel"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures",
+ "futures-channel",
+ "serde_json",
+]
+
+[[package]]
+name = "message-channels-bounded-mpsc-async-futures-intrusive"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures",
+ "futures-intrusive",
+ "serde_json",
+]
+
+[[package]]
+name = "message-channels-bounded-mpsc-async-tokio"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures-util",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -10223,6 +11128,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "mlua"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d96e5d00f19d8c46c71ceaced99593b90c31c57aa1fe2cb3e93a8b1698eedba9"
+dependencies = [
+ "bstr",
+ "either",
+ "libc",
+ "mlua-sys",
+ "num-traits",
+ "parking_lot",
+ "rustc-hash 2.1.3",
+]
+
+[[package]]
+name = "mlua-sys"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b806d7ade031f5d6607eae3e283fb034cb795a76247dd0d1ba753c8c42debccf"
+dependencies = [
+ "cc",
+ "cfg-if",
+ "libc",
+ "lua-src",
+ "luajit-src",
+ "pkg-config",
+]
+
+[[package]]
 name = "moxcms"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10247,6 +11181,15 @@ dependencies = [
  "mime",
  "spin 0.9.9",
  "version_check",
+]
+
+[[package]]
+name = "multimap"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d87ecb2933e8aeadb3e3a02b828fed80a7528047e68b4f424523a0981a3a084"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -10433,6 +11376,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "nohash-hasher"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
+
+[[package]]
 name = "nom"
 version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10473,6 +11422,24 @@ dependencies = [
  "bench-harness",
  "hash32 1.0.0",
  "serde_json",
+]
+
+[[package]]
+name = "non-cryptographic-hashing-xxh64-buffers-twox-hash"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "twox-hash",
+]
+
+[[package]]
+name = "non-cryptographic-hashing-xxh64-buffers-xxhash-rust"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "xxhash-rust",
 ]
 
 [[package]]
@@ -10743,6 +11710,24 @@ version = "0.0.0"
 dependencies = [
  "bench-harness",
  "lexical-parse-float",
+ "serde_json",
+]
+
+[[package]]
+name = "number-parsing-integer-strings-atoi"
+version = "0.0.0"
+dependencies = [
+ "atoi",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "number-parsing-integer-strings-lexical-parse-integer"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "lexical-parse-integer",
  "serde_json",
 ]
 
@@ -11624,6 +12609,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
+name = "piper"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c835479a4443ded371d6c535cbfd8d31ad92c5d23ae9770a61bc155e4992a3c1"
+dependencies = [
+ "atomic-waker",
+ "fastrand",
+ "futures-io",
+]
+
+[[package]]
 name = "pkcs1"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11753,6 +12749,30 @@ dependencies = [
  "fdeflate",
  "flate2",
  "miniz_oxide 0.8.9",
+]
+
+[[package]]
+name = "polling"
+version = "3.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d0e4f59085d47d8241c88ead0f274e8a0cb551f3625263c05eb8dd897c34218"
+dependencies = [
+ "cfg-if",
+ "concurrent-queue",
+ "hermit-abi",
+ "pin-project-lite",
+ "rustix 1.1.5",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "poly1305"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e2d0073b297041425c7c3df6eb4792d598a15323fe63346852b092eca02904c"
+dependencies = [
+ "cpufeatures 0.3.1",
+ "universal-hash",
 ]
 
 [[package]]
@@ -11951,6 +12971,25 @@ dependencies = [
  "bench-harness",
  "duct",
  "serde_json",
+]
+
+[[package]]
+name = "process-execution-spawn-collect-async-async-process"
+version = "0.0.0"
+dependencies = [
+ "async-io",
+ "async-process",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "process-execution-spawn-collect-async-tokio"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -12221,11 +13260,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "queues-and-linked-lists-concurrent-queue"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "concurrent-queue",
+ "serde_json",
+]
+
+[[package]]
 name = "queues-and-linked-lists-crossbeam-deque"
 version = "0.0.0"
 dependencies = [
  "bench-harness",
  "crossbeam-deque",
+ "serde_json",
+]
+
+[[package]]
+name = "queues-and-linked-lists-crossbeam-queue"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "crossbeam-queue",
  "serde_json",
 ]
 
@@ -13633,6 +14690,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "salsa20"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f874456e72520ff1375a06c588eaf074b0f01f9e9e1aada45bd9b7954a6e42c"
+dependencies = [
+ "cfg-if",
+ "cipher 0.5.2",
+]
+
+[[package]]
 name = "same-file"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -13700,7 +14767,7 @@ checksum = "0516a385866c09368f0b5bcd1caff3366aace790fcd46e2bb032697bb172fd1f"
 dependencies = [
  "password-hash",
  "pbkdf2 0.12.2",
- "salsa20",
+ "salsa20 0.10.2",
  "sha2 0.10.9",
 ]
 
@@ -13724,6 +14791,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "seahash"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
+
+[[package]]
 name = "sec1"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -13735,6 +14808,26 @@ dependencies = [
  "pkcs8",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "secp256k1"
+version = "0.31.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c3c81b43dc2d8877c216a3fccf76677ee1ebccd429566d3e67447290d0c42b2"
+dependencies = [
+ "bitcoin_hashes",
+ "rand 0.9.5",
+ "secp256k1-sys",
+]
+
+[[package]]
+name = "secp256k1-sys"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcb913707158fadaf0d8702c2db0e857de66eb003ccfdda5924b5f5ac98efb38"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -14592,6 +15685,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "snap"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "199905e6153d6405f9728fe44daace35f8f837bbf830bb6e85fbd5828709a886"
+
+[[package]]
 name = "socket2"
 version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -14717,6 +15816,15 @@ dependencies = [
  "bench-harness",
  "serde_json",
  "umya-spreadsheet 2.3.3",
+]
+
+[[package]]
+name = "spreadsheet-reading-read-xls-workbook-calamine"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "calamine",
+ "serde_json",
 ]
 
 [[package]]
@@ -15177,6 +16285,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "substring-search-count-byte-bytecount"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "bytecount",
+ "serde_json",
+]
+
+[[package]]
+name = "substring-search-count-byte-memchr"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "memchr",
+ "serde_json",
+]
+
+[[package]]
 name = "substring-search-match-positions-aho-corasick"
 version = "0.0.0"
 dependencies = [
@@ -15242,12 +16368,49 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7973cce6668464ea31f176d85b13c7ab3bba2cb3b77a2ed26abd7801688010a"
 
 [[package]]
+name = "symmetric-ciphers-aes-256-cbc-aws-lc-rs"
+version = "0.0.0"
+dependencies = [
+ "aws-lc-rs",
+ "bench-harness",
+ "serde_json",
+]
+
+[[package]]
+name = "symmetric-ciphers-aes-256-cbc-cbc"
+version = "0.0.0"
+dependencies = [
+ "aes 0.9.3",
+ "bench-harness",
+ "cbc 0.2.1",
+ "serde_json",
+]
+
+[[package]]
 name = "symmetric-ciphers-aes-256-ctr-ctr"
 version = "0.0.0"
 dependencies = [
  "aes 0.9.3",
  "bench-harness",
  "ctr",
+ "serde_json",
+]
+
+[[package]]
+name = "symmetric-ciphers-chacha20-stream-chacha20"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "chacha20",
+ "serde_json",
+]
+
+[[package]]
+name = "symmetric-ciphers-salsa20-stream-salsa20"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "salsa20 0.11.0",
  "serde_json",
 ]
 
@@ -15292,6 +16455,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 dependencies = [
  "futures-core",
+]
+
+[[package]]
+name = "synchronization-primitives-async-contended-counter-async-lock"
+version = "0.0.0"
+dependencies = [
+ "async-lock",
+ "bench-harness",
+ "futures",
+ "serde_json",
+]
+
+[[package]]
+name = "synchronization-primitives-async-contended-counter-futures-intrusive"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures",
+ "futures-intrusive",
+ "serde_json",
+]
+
+[[package]]
+name = "synchronization-primitives-async-contended-counter-tokio"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "futures",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
@@ -15442,6 +16635,15 @@ dependencies = [
 
 [[package]]
 name = "tar-archiving-in-memory-roundtrip-tar"
+version = "0.0.0"
+dependencies = [
+ "bench-harness",
+ "serde_json",
+ "tar",
+]
+
+[[package]]
+name = "tar-archiving-pack-directory-tar"
 version = "0.0.0"
 dependencies = [
  "bench-harness",
@@ -15825,6 +17027,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ad99c4c6d32803332c548b1af0540b357b3f5fc0be8f6c6bfe8b2e6ae784070"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "threadpool"
+version = "1.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d050e60b33d41c19108b32cea32164033a9013fe3b46cbd4457559bfbf77afaa"
+dependencies = [
+ "num_cpus",
 ]
 
 [[package]]
@@ -16526,6 +17737,9 @@ name = "twox-hash"
 version = "2.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5283634e518fe9e82c7b20520bb4bc209009fd16c82077c802f8111ecbb0117a"
+dependencies = [
+ "rand 0.9.5",
+]
 
 [[package]]
 name = "typed-builder"
@@ -17171,6 +18385,7 @@ dependencies = [
  "cfg-if",
  "once_cell",
  "rustversion",
+ "serde",
  "wasm-bindgen-macro",
  "wasm-bindgen-shared",
 ]
@@ -17413,6 +18628,15 @@ name = "weezl"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4ca08e5ef825b65b056d9efbd95c8750683f0a6d0466d02e96dc2e4e360f3d2"
+
+[[package]]
+name = "which"
+version = "8.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bae2f2b2b816647a1cab1acc91f5bd20812d53cb344382635ec2181940c8034f"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "whoami"

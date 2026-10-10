@@ -1,0 +1,31 @@
+{
+  "category": "block-compression",
+  "task": "brotli-decompress",
+  "title": "Brotli decompress",
+  "summary": "Decompress Brotli streams (recorded at qualities 0 to 11 and windows of 10 to 24 bits, over text and binary data) and return the original bytes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 47,
+  "notes": "One operation decompresses one in-memory Brotli stream and returns the decompressed bytes, compared exactly with the original. The streams were recorded once by node:zlib, so every entry on every runtime decodes the same bytes; nothing is compressed in the timed call."
+}

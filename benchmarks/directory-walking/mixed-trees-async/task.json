@@ -1,0 +1,33 @@
+{
+  "category": "directory-walking",
+  "task": "mixed-trees-async",
+  "title": "List every file and directory under a root, awaited",
+  "summary": "Walk one of the four directory trees of mixed-trees (5,158 files in 451 directories in all) through an awaited API and return the path of every file and directory in it.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 1
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 4,
+  "notes": "The trees and check of mixed-trees, through each package's promise or callback API with one walk at a time, awaited before the next starts. The figure is the package's walking (how many directory reads and stat calls it makes, how many it has in flight, how it builds the list) plus the promise and callback turns the runtime needs to settle them; the file-system calls themselves run on libuv's thread pool (or the runtime's own) while the JavaScript thread waits, so more than one thread is involved, and CPU is that of the whole process, every thread included. No timer or sleep is involved. A task on the file system: the trees are real directories, created anew before each process and already in the operating system's cache, so no disk is read; CPU time includes the time the kernel spends listing directories for the process."
+}

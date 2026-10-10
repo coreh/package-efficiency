@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "futures::executor::block_on (calling thread)",
+  "notes": "mpsc::channel(capacity - 4) with SinkExt::send and StreamExt::next. The channel holds its buffer plus one slot per sender, so exactly one Sender is cloned per producer, the original is dropped, and buffer = capacity - 4 makes the capacity exactly the runtime capacity. The four producers are joined with the consumer as futures of one task; nothing is spawned."
+}

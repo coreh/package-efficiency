@@ -1,0 +1,34 @@
+{
+  "category": "image-decoding",
+  "task": "png-rgba-async",
+  "title": "PNG to RGBA pixels, awaited",
+  "summary": "Decode an in-memory 8-bit RGBA PNG file to a width, a height and a buffer of RGBA pixel bytes, through each package's awaited API.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "npm",
+    "jsr"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 1
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 38,
+  "notes": "The files and exact check of png-rgba, through each package's promise API with one operation at a time: one decode per operation, awaited before the next starts. The figure is the package's PNG decoding (inflate, row filters, the copy into its image object) plus the promise turns needed to settle it. @img/png inflates through the runtime's DecompressionStream, whose work the runtime may do off the JavaScript thread; sharp decodes with libvips on a thread of libuv's pool; CPU is that of the whole process, every thread included. No timer or sleep is involved."
+}

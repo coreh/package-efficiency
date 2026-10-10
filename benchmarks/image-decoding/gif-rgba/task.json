@@ -1,0 +1,32 @@
+{
+  "category": "image-decoding",
+  "task": "gif-rgba",
+  "title": "GIF to RGBA pixels",
+  "summary": "Decode an in-memory single-frame GIF file (global or local colour table, a transparent index, interlaced or not) to a width, a height and a buffer of RGBA pixel bytes.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 44,
+  "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing, so the measured call decodes bytes only. Expanding palette indices to RGBA is part of the call for every entry."
+}

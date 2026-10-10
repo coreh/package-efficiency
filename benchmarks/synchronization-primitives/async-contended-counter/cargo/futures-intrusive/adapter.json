@@ -1,0 +1,11 @@
+{
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-sonnet-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "executor": "futures::executor::block_on (calling thread)",
+  "notes": "futures_intrusive::sync::Mutex::new(0u64, false) and lock().await: the thread-safe Mutex rather than LocalMutex. The constructor requires a fairness flag and false is chosen: not fair, so a released lock may be taken by the next caller instead of being handed to the longest waiter (true would hand it over in FIFO order). The eight tasks are futures joined with futures::join_all inside the operation's future; nothing is spawned. The mutex owns a u64 and the guard is dropped to unlock."
+}

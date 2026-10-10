@@ -1,0 +1,33 @@
+{
+  "category": "digital-signatures",
+  "task": "ecdsa-secp256k1-verify",
+  "title": "ECDSA secp256k1 verify of prehashed messages",
+  "summary": "Verify ECDSA secp256k1 signatures over 32-byte SHA-256 digests, accepting valid ones and rejecting tampered ones.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo",
+    "gomod",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 10000,
+    "rounds": 3,
+    "operationsPerRound": 100000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 48
+}

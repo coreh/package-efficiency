@@ -1,0 +1,35 @@
+{
+  "category": "message-channels",
+  "task": "bounded-mpsc-async",
+  "title": "Send from four async tasks to one through a bounded channel",
+  "summary": "Four producer tasks on one thread each send 250 to 4,000 small integers through one bounded channel of capacity 16, 64 or 1,024 to a single consumer task, which checks that each producer's messages arrive in order and adds them up.",
+  "kind": "async-operation",
+  "ecosystems": [
+    "jsr",
+    "cargo",
+    "pypi"
+  ],
+  "load": {
+    "warmup": 500,
+    "rounds": 3,
+    "operationsPerRound": 5000,
+    "minRoundMs": 250,
+    "threads": 1,
+    "concurrency": 4
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 9,
+  "notes": "An asynchronous task on one thread: four producer tasks and the consumer interleave, they never run in parallel. Each operation is one awaited call that creates the channel and the producers and ends when every message has been received and every producer has finished. Nobody does work of their own beyond sending, receiving and checking order, so the figures are the cost of the channel and of the runtime's scheduling that wakes the waiting side. No timer or sleep with a real delay is involved. JavaScript runs on its event loop, Python on one asyncio loop, Rust on a single-thread executor, Go with GOMAXPROCS=1."
+}

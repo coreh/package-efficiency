@@ -1,0 +1,16 @@
+{
+  "title": "Go image/gif",
+  "language": "go",
+  "runtimes": [
+    "go"
+  ],
+  "author": {
+    "kind": "agent",
+    "agent": "claude-code",
+    "model": "claude-opus-5-5",
+    "date": "2026-10-09"
+  },
+  "review": "unreviewed",
+  "notes": "gif.Decode returns an *image.Paletted (indices and the frame's colour table, the transparent entry set to zero); draw.Draw into an image.NewRGBA expands it to RGBA, and that Pix slice is returned. File bytes are made from hex outside timing.",
+  "details": "gif.Decode reads the first frame into an *image.Paletted: one index per pixel and the colour table in force (the local one where the frame has it), with the transparent index's entry replaced by fully transparent zero. draw.Draw(rgba, bounds, img, min, draw.Src) then looks every index up and writes four bytes per pixel; the expansion is part of the timed call, since the task asks for RGBA pixels. Every alpha of a GIF is 0 or 255, so the premultiplied RGBA buffer holds the same bytes as straight RGBA. The file's bytes are made from hex once per fixture, outside the timed call."
+}

@@ -1,0 +1,6 @@
+{
+  "author": { "kind": "agent", "agent": "claude-code", "model": "claude-sonnet-5-5", "date": "2026-10-09" },
+  "review": "unreviewed",
+  "executor": "event loop",
+  "notes": "await sharp(bytes).ensureAlpha().raw().toBuffer({ resolveWithObject: true }), default options. sharp.cache(false) and sharp.concurrency(1) are called once at load, so libvips neither answers a repeated decode from its operation cache nor works on more than one thread. The work runs on libuv pool threads while the JavaScript thread waits; CPU counts every thread. A native add-on (libvips behind N-API), installed as a prebuilt binary."
+}

@@ -1,0 +1,31 @@
+{
+  "category": "date-time",
+  "task": "go-style-durations",
+  "title": "Parse compound duration strings such as 1h30m15s",
+  "summary": "Parse 200 Go-style duration strings of whole hours, minutes and seconds (1h30m15s, 45m, 90s) and return each total in seconds.",
+  "kind": "sync-operation",
+  "ecosystems": [
+    "cargo"
+  ],
+  "load": {
+    "warmup": 2000,
+    "rounds": 3,
+    "operationsPerRound": 20000,
+    "minRoundMs": 250
+  },
+  "metrics": {
+    "cpu": {
+      "key": "cpuMs",
+      "displayUnit": "µs",
+      "headline": "µs of CPU per operation"
+    },
+    "memory": {
+      "key": "memoryBytes",
+      "displayUnit": "MB",
+      "headline": "MB after GC, above baseline",
+      "floor": 4000000
+    }
+  },
+  "fixtureCount": 8,
+  "notes": "One operation is 200 single-string parses, each with the reading of the library's duration value as whole seconds, plus the loop and the output list, which every adapter has alike."
+}
