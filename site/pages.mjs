@@ -268,8 +268,8 @@ function layout({ title, description, path, crumbs = [], context = {}, model, bo
 ${siteMeta(model, { title, description, path, crumbs, markdown: formats && own ? `${own}index.md` : null })}
 ${ICON_LINKS()}
 ${FONTS}
-<link rel="stylesheet" href="/styles.css?v=${model.assets ?? ''}">
-<script type="module" src="/app.js?v=${model.assets ?? ''}"></script>
+<link rel="stylesheet" href="/styles.css">
+<script type="module" src="/app.js"></script>
 ${context.side ? '' : '<link rel="preload" href="/data/side.json" as="fetch" crossorigin>\n'}</head>
 <body data-site="${esc(model.site?.url ?? '')}" data-repo="${esc(model.repository?.url ?? '')}">
 <input type="checkbox" id="menu" class="menu-toggle" aria-label="Show the catalog menu">
@@ -2762,7 +2762,7 @@ ${group('Release', `<label class="adv-field">Released on or after <input type="d
 <tbody></tbody>
 </table></div>
 <script type="application/json" id="adv-config">${JSON.stringify({ kinds: { p: 'Package', t: 'Task', c: 'Category', r: 'Runtime', e: 'Registry' }, registries: Object.fromEntries(Object.entries(ECOSYSTEMS).map(([id, e]) => [id, e.title])), licenseKinds: LICENSE_KINDS, measures: Object.fromEntries(Object.keys(RANKINGS).map((id) => [id, { title: RANKINGS[id].title, colors: RANKINGS[id].colors }])) }).replace(/</g, '\\u003c')}</script>
-<script type="module" src="/search.js?v=${model.assets ?? ''}"></script>
+<script type="module" src="/search.js"></script>
 </main>`,
   })
 }
@@ -2774,7 +2774,7 @@ ${group('Release', `<label class="adv-field">Released on or after <input type="d
 export function apiReferencePage(model, spec) {
   const page = apiPage(model, spec)
   const { title, description } = page
-  const body = page.body.replace('src="/api.js"', `src="/api.js?v=${model.assets ?? ''}"`)
+  const body = page.body
   return layout({ title, description, path: '/api/', crumbs: [['API']], context: { side: apiSideNav(spec), sideLabel: 'API addresses' }, model, formats: { data: false, download: { href: '/openapi.json', title: 'Download OpenAPI', detail: 'The same addresses as an OpenAPI 3.1 description' } }, body: `<main>\n<div class="api">${body}</div></main>` })
 }
 
@@ -2808,7 +2808,7 @@ export function comparePage(model) {
 <p class="cmp-link" id="cmp-link-row" hidden><button type="button" id="cmp-copy" class="cmp-copy">Copy link to this comparison</button></p>
 <noscript><p class="note">This page runs in the browser and needs JavaScript. Each task's page lists all of its results without it.</p></noscript>
 <script type="application/json" id="cmp-config">${JSON.stringify(config).replace(/</g, '\\u003c')}</script>
-<script type="module" src="/compare.js?v=${model.assets ?? ''}"></script>
+<script type="module" src="/compare.js"></script>
 </main>`,
   })
 }

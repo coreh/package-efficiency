@@ -220,12 +220,8 @@ labelSite.host = siteUrl.replace(/^https?:\/\//, '')
 // Links inside the Markdown and llms.txt exports: absolute once site.json
 // names the address the site is published at, relative until then.
 const exported = { url: (to) => `${siteUrl}${to}` }
-// The stylesheet and script are addressed with a mark of their content, so a
-// page never meets an older copy of them that a browser or the CDN still holds.
-const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).update(await readFile(fromRoot('site/api.js'))).update(await readFile(fromRoot('site/search.js'))).update(await readFile(fromRoot('site/compare.js'))).update(await readFile(fromRoot('site/units.mjs'))).update(chipStyles()).update(iconStyles()).digest('hex').slice(0, 10)
 const model = {
   index,
-  assets,
   repository,
   site: { url: siteUrl, indexable },
   tasks,
