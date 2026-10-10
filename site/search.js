@@ -57,27 +57,46 @@ function remember(s) {
   history.replaceState(null, '', query ? `?${query}` : location.pathname)
 }
 
-// How well an item answers the words: 0 the title itself, then a title that
-// starts with them, a word of the title that does, the title anywhere, another
-// name, and last the description. null when a word is nowhere.
-function score(item, words, whole) {
-  if (!words.length) return 3
-  const title = item.t.toLowerCase()
-  const names = (item.a ?? []).join(' ').toLowerCase()
-  const text = (item.d ?? '').toLowerCase()
-  let worst = 0
-  for (const word of words) {
-    const at = title.indexOf(word)
-    const rank = at === 0 ? 1 : at > 0 && /[^a-z0-9]/.test(title[at - 1]) ? 2 : at > 0 ? 3 : names.includes(word) ? 4 : text.includes(word) ? 5 : null
-    if (rank === null) return null
-    worst = Math.max(worst, rank)
+// How well an item answers the words, from 0 to 1 (null when a word is
+// nowhere). Where each word is found sets the level: the start of the name,
+// the start of a word in it, elsewhere in it, another name, the description.
+// Within a level, a word that covers more of the name, and is found earlier,
+// counts for more. The words' scores are averaged, the whole phrase found
+// together adds a little, and the exact name is 1. Last, a nudge for measured
+// and much-used packages, so that near-ties fall the way a reader expects.
+const isBoundary = (text, at) => at === 0 || /[^a-z0-9]/.test(text[at - 1])
+function wordScore(word, title, names, text) {
+  const at = title.indexOf(word)
+  if (at !== -1) {
+    const cover = word.length / title.length
+    const early = 1 - at / title.length
+    const base = at === 0 ? 0.72 : isBoundary(title, at) ? 0.58 : 0.46
+    return base + 0.18 * cover + 0.05 * early
   }
-  return title === whole ? 0 : worst
+  const alias = names.find((n) => n.includes(word))
+  if (alias) return 0.36 + 0.08 * (word.length / alias.length)
+  const found = text.indexOf(word)
+  if (found !== -1) return 0.16 + (isBoundary(text, found) ? 0.06 : 0) + 0.06 * Math.max(0, 1 - found / 120)
+  return null
 }
-
-// The rank as a score out of 100, highest first: what the Relevance column
-// shows. Without words there is nothing to match, so there is no score.
-const RELEVANCE = [100, 90, 80, 65, 50, 35]
+function score(item, words, whole) {
+  if (!words.length) return null
+  const title = item.t.toLowerCase()
+  if (title === whole) return 1
+  const names = (item.a ?? []).map((n) => n.toLowerCase())
+  const text = (item.d ?? '').toLowerCase()
+  let sum = 0
+  for (const word of words) {
+    const s = wordScore(word, title, names, text)
+    if (s === null) return null
+    sum += s
+  }
+  let value = sum / words.length
+  if (words.length > 1 && (title.includes(whole) || text.includes(whole))) value += 0.04
+  const used = item.r ? Math.max(0, 1 - Math.log10(item.r) / 4) : 0
+  value += 0.015 * (item.m ? 1 : 0) + 0.015 * used
+  return Math.min(0.99, value)
+}
 
 function search() {
   const s = state()
@@ -96,8 +115,8 @@ function search() {
     if (license && !(item.l ?? '').toLowerCase().includes(license)) continue
     if (s.kind.length && !s.kind.includes(item.lk)) continue
     if ((s.from && !(item.f >= s.from)) || (s.to && !(item.f <= s.to))) continue
-    const rank = score(item, words, whole)
-    if (rank !== null) found.push({ item, rank, relevance: words.length ? RELEVANCE[rank] : null })
+    const value = score(item, words, whole)
+    if (value !== null || !words.length) found.push({ item, value, relevance: value === null ? null : Math.round(value * 100) })
   }
   arrange()
   page = 0
@@ -108,7 +127,7 @@ const collator = new Intl.Collator('en', { numeric: true })
 const kindOf = (item) => (item.y === 'p' ? `${config.registries[item.e] ?? 'Package'}${item.m ? '' : ', not measured'}` : `${config.kinds[item.y]}${item.m || item.y === 'e' ? '' : ', not measured'}`)
 // What each column sorts by; a missing value goes last either way.
 const KEYS = {
-  relevance: (r) => -r.rank,
+  relevance: (r) => r.value,
   name: (r) => r.item.t,
   kind: (r) => kindOf(r.item),
   category: (r) => r.item.c,
@@ -159,6 +178,22 @@ const ink = (hex) => {
   return r * 0.299 + g * 0.587 + b * 0.114 > 150 ? '#000' : '#fff'
 }
 
+// The score as a meter of ten squares, filled from the left; the exact score
+// is its tooltip and what the column sorts by.
+const SQUARES = 10
+function meter(relevance) {
+  const cell = el('td', null, 'adv-score')
+  if (relevance == null) return cell
+  const filled = Math.max(1, Math.round(relevance / 10))
+  const bar = el('span', null, 'adv-meter')
+  bar.setAttribute('role', 'img')
+  bar.setAttribute('aria-label', `Relevance ${relevance} of 100`)
+  bar.title = `Relevance ${relevance} of 100`
+  for (let i = 0; i < SQUARES; i++) bar.append(el('i', null, i < filled ? 'on' : null))
+  cell.append(bar)
+  return cell
+}
+
 function row({ item, relevance }) {
   const tr = document.createElement('tr')
   const name = el('td', null, 'l wrap')
@@ -183,7 +218,7 @@ function row({ item, relevance }) {
   })
   const license = el('td', item.l ?? '', 'l')
   if (item.lk) license.append(el('small', config.licenseKinds[item.lk], 'adv-desc'))
-  tr.append(el('td', relevance ?? '', 'adv-score'), name, kind, el('td', item.c ?? '', 'l wrap'), ...classes, license, el('td', item.f ?? '', 'l'))
+  tr.append(meter(relevance), name, kind, el('td', item.c ?? '', 'l wrap'), ...classes, license, el('td', item.f ?? '', 'l'))
   return tr
 }
 

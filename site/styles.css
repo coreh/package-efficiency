@@ -727,7 +727,12 @@ table.adv-results { width: 100%; min-width: 64rem; table-layout: fixed; }
 .adv-results th:nth-child(1) { width: 7.5%; text-align: right; } .adv-results th:nth-child(2) { width: 28%; } .adv-results th:nth-child(3) { width: 12%; } .adv-results th:nth-child(4) { width: 17%; }
 .adv-results th:nth-child(5), .adv-results th:nth-child(6), .adv-results th:nth-child(7) { width: 5.5%; text-align: center; }
 .adv-results th:nth-child(8) { width: 10%; } .adv-results th:nth-child(9) { width: 8.5%; }
-.adv-results td.adv-score { text-align: right; font-variant-numeric: tabular-nums; padding-right: 14px; }
+.adv-results td.adv-score { text-align: right; padding-right: 14px; white-space: nowrap; }
+/* The relevance meter: small squares, filled in the highlight yellow with a
+   dark edge like the tabs, the rest only outlined. */
+.adv-meter { display: inline-flex; gap: 2px; vertical-align: middle; }
+.adv-meter i { width: 7px; height: 7px; box-sizing: border-box; border: 1px solid var(--rule); }
+.adv-meter i.on { background: var(--mark); border-color: var(--ink); }
 .adv-results td { vertical-align: top; white-space: normal; overflow-wrap: anywhere; }
 .adv-results td.adv-class { text-align: center; }
 .adv-results td.adv-class .cls { margin: 0; }
