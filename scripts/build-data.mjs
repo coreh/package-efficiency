@@ -249,6 +249,15 @@ await mkdir(fromRoot('dist'), { recursive: true })
 
 const generatedAt = new Date().toISOString()
 const index = { generatedAt, compilers: types.compilers, categories: [], tasks: [], planned: [] }
+// A data file says when it was built (`generatedAt`). A file whose content is
+// otherwise the same as the last build's keeps that build's time and is not
+// rewritten, so a build changes only the files whose data changed and the
+// next deploy uploads only those.
+async function writeData(file, value) {
+  const before = await readJson(file, null)
+  if (before?.generatedAt && JSON.stringify({ ...value, generatedAt: before.generatedAt }) === JSON.stringify(before)) return
+  await writeJson(file, value)
+}
 
 const unmeasured = []
 const pending = []
@@ -537,12 +546,12 @@ for (const { taskId, data, taxonomy: category, scored, everyVersion, typeChecks 
     const anchor = { title: best.title, version: best.version, tool: best.tool, value: bestValue, category: taxonomy.categories.find((c) => c.id === category)?.title ?? category }
     for (const check of Object.values(typeChecks)) check.anchor = anchor
   }
-  await writeJson(fromRoot('dist/data', `${taskId}.json`), data)
+  await writeData(fromRoot('dist/data', `${taskId}.json`), data)
 }
 // For the listed packages that are not measured: the same anchors, by category.
 for (const [category, best] of lowest) if (typedIn.get(category).size > 1) index.typeAnchors[category] = { title: best.title, version: best.version, tool: best.tool, value: typeValue(best.value) }
 index.typeScale = TYPES_METRIC.scale
 index.typeFloor = TYPES_METRIC.floor
 
-await writeJson(fromRoot('dist/data/index.json'), index)
+await writeData(fromRoot('dist/data/index.json'), index)
 if (unmeasured.length) console.log(`not measured yet, left out: ${unmeasured.join(', ')}`)

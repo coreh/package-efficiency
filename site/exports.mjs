@@ -582,7 +582,7 @@ Compute and RAM keep getting pricier. Switching languages, runtimes and librarie
 
 This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (see Limitations below), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.
 
-Choose a category or search for packages to get started. Currently listing ${listedCount(model).toLocaleString('en-US')} packages, out of which ${measuredCount(model).toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}.
+Choose a category or search for packages to get started. Currently listing ${listedCount(model).toLocaleString('en-US')} packages, out of which ${measuredCount(model).toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${new Date(model.index?.generatedAt ?? Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}.
 
 Each page has a Markdown version at the same address with index.md added. A page with a list also has results.csv and results.json there. Task and package pages include the benchmark source code.
 

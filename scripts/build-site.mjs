@@ -36,10 +36,12 @@ import {
   tasksPage,
   urls,
   versionsOf,
+  sideData,
+  chipStyles,
 } from '../site/pages.mjs'
 import { adapterIdOf } from '../site/source.mjs'
 import { apiMarkdown, openApiSpec } from '../site/api.mjs'
-import { iconFile, iconFiles, iconScales } from '../site/icons.mjs'
+import { iconFile, iconFiles, iconScales, iconStyles } from '../site/icons.mjs'
 import { embedFiles } from '../site/layouts.mjs'
 import * as exportsOf from '../site/exports.mjs'
 import { llmsText, packageMarkdown, resultRows, taskMarkdown, toCsv } from '../site/exports.mjs'
@@ -56,25 +58,82 @@ const MANIFEST = fromRoot('.cache/site-manifest.json')
 const before = await readJson(MANIFEST, {})
 const produced = {}
 let rewritten = 0
-// A large page repeats the same inline icon thousands of times (one for each
+// A page can repeat the same inline icon thousands of times (one for each
 // row of a table). Each icon that repeats is drawn once, in a sprite at the
-// top of the page, and every place it appeared refers to it. This keeps the
-// longest pages under the 25 MiB a file may have on Cloudflare.
-const ICON = /<svg class="ico"([^>]*)>(.*?)<\/svg>/gs
-function shareIcons(html) {
+// top of the page, and every place it appeared refers to it with <use>; the
+// outer <svg> keeps its attributes, so the icon keeps its size, transform
+// and colour (currentColor reaches into <use>). A drawing that the stylesheet
+// reaches into (by a class or style inside it) is left inline, since rules
+// do not apply inside <use>. A shared drawing is named by a hash of it, so
+// the name is the same on every page and in every build, and a table fetched
+// later (see `fragments` below) can refer to the page's sprite. The side
+// menu is left as it is: it is shared by many pages (see lazyPage), and each
+// page decides for itself which icons it shares.
+const ICON = /<svg class="(ico|medal|place-mark)([^"]*)"([^>]*)>(<title>[^<]*<\/title>)?(.*?)<\/svg>/gs
+const symbolId = (inner) => `i${createHash('sha1').update(inner).digest('hex').slice(0, 8)}`
+// The drawings worth sharing in `html`: those that repeat enough to pay for
+// their place in the sprite. A map from drawing to its name.
+function iconsToShare(html) {
   const seen = new Map()
-  for (const [, , inner] of html.matchAll(ICON)) seen.set(inner, (seen.get(inner) ?? 0) + 1)
-  const shared = new Map([...seen].filter(([inner, count]) => count > 8 && inner.length > 200 && !inner.startsWith('<use ')).map(([inner], index) => [inner, `ico-${index}`]))
-  if (!shared.size) return html
-  const at = html.indexOf('>', html.indexOf('<body')) + 1
-  if (at === 0) return html
-  const sprite = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[...shared].map(([inner, id]) => `<g id="${id}">${inner}</g>`).join('')}</defs></svg>`
-  const body = html.slice(at).replace(ICON, (whole, attributes, inner) => (shared.has(inner) ? `<svg class="ico"${attributes}><use href="#${shared.get(inner)}"/></svg>` : whole))
-  return html.slice(0, at) + sprite + body
+  for (const [, , , , , inner] of html.matchAll(ICON)) {
+    if (/<use |<svg|\b(class|style)=/.test(inner)) continue
+    seen.set(inner, (seen.get(inner) ?? 0) + 1)
+  }
+  return new Map([...seen].filter(([inner, count]) => count > 1 && (count - 1) * inner.length > 60).map(([inner]) => [inner, symbolId(inner)]))
 }
+// Every shared drawing in `html` taken from the sprite. A medal named by its
+// title needs no aria-label saying the same.
+function useIcons(html, shared) {
+  return html.replace(ICON, (whole, kind, classes, attributes, title = '', inner) => {
+    const id = shared.get(inner)
+    if (!id) return whole
+    return `<svg class="${kind}${classes}"${title ? attributes.replace(` aria-label="${title.slice(7, -8)}"`, '') : attributes}>${title}<use href="#${id}"/></svg>`
+  })
+}
+const SIDE = /<nav class="side"[\s\S]*?<\/nav>/
+// `change` applied to all of `html` but its side menu.
+function outsideSide(html, change) {
+  const start = html.search(SIDE)
+  if (start < 0) return change(html)
+  const end = html.indexOf('</nav>', start) + '</nav>'.length
+  return change(html.slice(0, start)) + html.slice(start, end) + change(html.slice(end))
+}
+// `fragments`: the tables of the page that are fetched later, as a map from
+// address to HTML. Each shares its own icons, and the page's sprite holds
+// theirs too. Returns the page and the fragments as they are to be written.
+function shareIcons(html, fragments = new Map()) {
+  const drawings = new Map()
+  const outFragments = new Map()
+  for (const [address, fragment] of fragments) {
+    if (typeof fragment !== 'string') { outFragments.set(address, fragment); continue }
+    const shared = iconsToShare(fragment)
+    for (const [inner, id] of shared) drawings.set(id, inner)
+    outFragments.set(address, useIcons(fragment, shared))
+  }
+  const shared = iconsToShare(html.replace(SIDE, ''))
+  for (const [inner, id] of shared) drawings.set(id, inner)
+  const at = html.indexOf('>', html.indexOf('<body')) + 1
+  if (!drawings.size || at === 0) return { html, fragments: outFragments }
+  const sprite = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[...drawings].sort(([a], [b]) => a.localeCompare(b)).map(([id, inner]) => `<g id="${id}">${inner}</g>`).join('')}</defs></svg>`
+  return { html: html.slice(0, at) + sprite + outsideSide(html.slice(at), (part) => useIcons(part, shared)), fragments: outFragments }
+}
+// Labels draw their runtime marks with gradients, and each gets ids of its
+// own from a counter that runs through the whole build (see labelIcon in
+// site/icons.mjs), so adding one label would renumber every later one. The
+// ids of each page or file are numbered afresh, in the order they appear.
+function stableIds(text) {
+  const numbers = new Map()
+  return text.replace(/\b(runtime-icon-|mark-)(\d+)(?=[-"\\)])/g, (whole, prefix, n) => {
+    const key = prefix + n
+    if (!numbers.has(key)) numbers.set(key, numbers.size + 1)
+    return prefix + numbers.get(key)
+  })
+}
+// Everything a page goes through before it is written.
+const finish = (html, fragments) => shareIcons(stableIds(html), fragments)
 
 async function write(file, content) {
-  if (typeof content === 'string' && content.length > 1_000_000 && file.endsWith('.html')) content = shareIcons(content)
+  if (typeof content === 'string' && (file.endsWith('.html') || file.endsWith('.svg'))) content = stableIds(content)
   const key = path.relative(dist(), file)
   const hash = createHash('sha1').update(content).digest('base64')
   produced[key] = hash
@@ -85,7 +144,25 @@ async function write(file, content) {
 }
 // Every page's address, for the sitemap.
 const addresses = []
-const page = (url, html) => { addresses.push(url); return write(dist(url, 'index.html'), html) }
+// A page whose tables are fetched later is rendered with `model.fragments`
+// set, and those tables are written beside it (see packageTable).
+const fragmentsWritten = new Map()
+async function page(url, render) {
+  addresses.push(url)
+  if (typeof render === 'string') return write(dist(url, 'index.html'), finish(render).html)
+  model.fragments = new Map()
+  const rendered = render()
+  const { html, fragments } = finish(rendered, model.fragments)
+  model.fragments = null
+  for (const [address, fragment] of fragments) {
+    // Two pages can show the same table (the home page and /packages/).
+    const json = JSON.stringify(fragment)
+    if (fragmentsWritten.has(address) && fragmentsWritten.get(address) !== json) throw new Error(`two different tables for ${address}`)
+    fragmentsWritten.set(address, json)
+    await write(dist(address.slice(1)), json)
+  }
+  return write(dist(url, 'index.html'), html)
+}
 
 // The site model: tasks as loaded, plus the cross-cutting views built from
 // them (categories, packages, runtimes) that the navigation needs.
@@ -145,7 +222,7 @@ labelSite.host = siteUrl.replace(/^https?:\/\//, '')
 const exported = { url: (to) => `${siteUrl}${to}` }
 // The stylesheet and script are addressed with a mark of their content, so a
 // page never meets an older copy of them that a browser or the CDN still holds.
-const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).update(await readFile(fromRoot('site/api.js'))).update(await readFile(fromRoot('site/search.js'))).update(await readFile(fromRoot('site/compare.js'))).update(await readFile(fromRoot('site/units.mjs'))).digest('hex').slice(0, 10)
+const assets = createHash('sha256').update(await readFile(fromRoot('site/styles.css'))).update(await readFile(fromRoot('site/api.css'))).update(await readFile(fromRoot('site/app.js'))).update(await readFile(fromRoot('site/api.js'))).update(await readFile(fromRoot('site/search.js'))).update(await readFile(fromRoot('site/compare.js'))).update(await readFile(fromRoot('site/units.mjs'))).update(chipStyles()).update(iconStyles()).digest('hex').slice(0, 10)
 const model = {
   index,
   assets,
@@ -287,6 +364,7 @@ async function emit(path, { markdown, rows }) {
 const packs = new Map()
 const sidebars = new Map()
 function lazyPage(address, html, markdown) {
+  html = finish(html).html
   const start = html.indexOf('<nav class="side"')
   const end = html.indexOf('</nav>', start) + '</nav>'.length
   if (start < 0) throw new Error(`no sidebar in the page for ${address}`)
@@ -297,6 +375,14 @@ function lazyPage(address, html, markdown) {
   const shard = shardOf(address)
   if (!packs.has(shard)) packs.set(shard, {})
   packs.get(shard)[address] = [html.slice(0, start), id, html.slice(end), markdown]
+}
+
+// A pack as written. Packs hold whole groups (see packOf in site/lazy.mjs),
+// so one can grow large; Cloudflare refuses a file over 25 MiB.
+function packed(pack) {
+  const json = JSON.stringify(pack)
+  if (Buffer.byteLength(json) > 24 * 2 ** 20) throw new Error(`a pack of ${Object.keys(pack).length} files is over 24 MiB; raise SHARDS in site/lazy.mjs`)
+  return json
 }
 
 // Short links to result pages (/r/<code>). Codes are given out once and kept
@@ -338,7 +424,7 @@ for (const data of tasks) {
       for (const rankingId of Object.keys(RANKINGS)) {
         const svg = renderLabel({ entry, data, runtime, rankingId, standalone: true })
         if (!svg) continue
-        labelFiles.push([urls.label(data.task.id, runtime.id, entry.id, rankingId), svg])
+        labelFiles.push([urls.label(data.task.id, runtime.id, entry.id, rankingId), stableIds(svg)])
         labels++
       }
     }
@@ -346,7 +432,7 @@ for (const data of tasks) {
       for (const rankingId of Object.keys(RANKINGS)) {
         const svg = renderLabel({ entry, data, runtime, rankingId, standalone: true })
         if (!svg) continue
-        labelFiles.push([urls.label(data.task.id, runtime.id, entry.id, rankingId, entry.version), svg])
+        labelFiles.push([urls.label(data.task.id, runtime.id, entry.id, rankingId, entry.version), stableIds(svg)])
         labels++
       }
     }
@@ -398,7 +484,7 @@ await page('/tasks/', tasksPage(model))
 await emit('/tasks/', exportsOf.tasksExport(ctx))
 await page('/categories/', categoriesPage(model))
 await emit('/categories/', exportsOf.categoriesExport(ctx))
-await page('/packages/', packagesPage(model))
+await page('/packages/', () => packagesPage(model))
 await emit('/packages/', exportsOf.packagesExport(ctx))
 await page('/runtimes/', runtimesPage(model))
 await emit('/runtimes/', exportsOf.runtimesExport(ctx))
@@ -413,7 +499,7 @@ await emit('/', exportsOf.homeExport(ctx))
 // small, so they are packed for site/worker.mjs to hand out (see site/lazy.mjs).
 const embedPacks = Array.from({ length: EMBED_SHARDS }, () => ({}))
 let embeds = 0
-const embed = (address, svg) => { if (svg) { embedPacks[embedShardOf(address)][address] = svg; embeds++ } }
+const embed = (address, svg) => { if (svg) { embedPacks[embedShardOf(address)][address] = stableIds(svg); embeds++ } }
 for (const [address, svg] of labelFiles) embedPacks[embedShardOf(address)][address] = svg
 for (const data of tasks) {
   for (const runtime of data.runtimes) {
@@ -433,7 +519,7 @@ for (const { base, summary } of runtimeSummaries(model)) {
   for (const rankingId of Object.keys(RANKINGS)) embed(`${base}label.${rankingId}.svg`, renderLabel({ ...summary, rankingId, standalone: true }))
   for (const [file, svg] of embedFiles({ ...summary, summary })) embed(`${base}${file}`, svg)
 }
-for (const [shard, pack] of embedPacks.entries()) await write(dist('lazy/embed', `${shard}.json`), JSON.stringify(pack))
+for (const [shard, pack] of embedPacks.entries()) await write(dist('lazy/embed', `${shard}.json`), packed(pack))
 await page('/credits/', creditsPage(model))
 await page('/stats/', statsPage(model))
 await write(dist('stats', 'index.md'), statsMarkdown(model))
@@ -445,9 +531,9 @@ for (const { scope, rt, address } of summaries) lazyPage(address, summaryPage(sc
 await write(dist('404.html'), notFoundPage(model))
 await write(dist('lazy/not-found.txt'), notFoundPage(model))
 await write(dist('lazy/short.json'), JSON.stringify(shortLinks))
-for (let shard = 0; shard < SHARDS; shard++) await write(dist('lazy/pages', `${shard}.json`), JSON.stringify(packs.get(shard) ?? {}))
+for (let shard = 0; shard < SHARDS; shard++) await write(dist('lazy/pages', `${shard}.json`), packed(packs.get(shard) ?? {}))
 for (const [id, sidebar] of sidebars) await write(dist('lazy/side', `${id}.txt`), sidebar)
-await page('/', homePage(model))
+await page('/', () => homePage(model))
 // The sitemap needs full addresses, so it is written once site.json has one.
 // It is built whether or not the site may be indexed yet, and robots.txt
 // points to it only when it may.
@@ -476,6 +562,8 @@ const allRows = tasks.flatMap((data) => resultRows(data, ctx))
 await write(dist('data/results.csv'), toCsv(allRows))
 await write(dist('data/results.json'), JSON.stringify(allRows))
 await write(dist('llms.txt'), llmsText(model, ECOSYSTEMS, ctx))
+// The side menu's counts and medals, which every page fills in (see sideData).
+await write(dist('data/side.json'), JSON.stringify(sideData(model)))
 // Each group's categories, for the menu on a phone to open a group in place.
 await write(dist('data/menu.json'), JSON.stringify(Object.fromEntries(groups.map((group) => [group.id, taxonomy.filter((c) => c.group === group.id).map((c) => {
   const measured = model.categories.find((m) => m.taxonomy === c.id)
@@ -497,7 +585,7 @@ for (const [id, svg] of Object.entries(iconFiles())) await write(dist('icons', `
 for (const id of [...Object.keys(ECOSYSTEMS).map((id) => `eco-${id}`), ...model.runtimes.map((rt) => rt.id)]) if (iconFile(id)) await write(dist('icons/s', `${id}.svg`), iconFile(id))
 for (const [file, svg] of Object.entries(categoryIconFiles())) await write(dist('icons/cat', file), svg)
 // The search results' marks are images, so their optical sizes are rules keyed on the file.
-await write(dist('styles.css'), `${await readFile(fromRoot('site/styles.css'), 'utf8')}\n${await readFile(fromRoot('site/api.css'), 'utf8')}\n${Object.entries(iconScales).map(([id, scale]) => `#q-results img[src$="/s/${id}.svg"] { transform: scale(${scale}); }`).join('\n')}\n`)
+await write(dist('styles.css'), `${await readFile(fromRoot('site/styles.css'), 'utf8')}\n${await readFile(fromRoot('site/api.css'), 'utf8')}\n${Object.entries(iconScales).map(([id, scale]) => `#q-results img[src$="/s/${id}.svg"] { transform: scale(${scale}); }`).join('\n')}\n${chipStyles()}\n${iconStyles()}\n`)
 await write(dist('app.js'), await readFile(fromRoot('site/app.js')))
 
 

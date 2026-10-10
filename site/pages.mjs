@@ -57,9 +57,17 @@ const times = (ratio) => `${ratio < 10 ? String(Math.round(ratio * 10) / 10) : M
 function chip(rankingId, grade, text) {
   if (grade?.reference) return `<span class="cls ref" title="Reference, not graded: ${times(grade.ratio)} the best graded entry" role="img" aria-label="Reference, not graded">R</span>`
   if (!grade?.class) return ''
-  const color = classColor(rankingId, grade.class)
-  return `<span class="cls" style="background:${color};color:${inkOn(color)}"${text ? ` title="${esc(text)}"` : ''}>${grade.class}</span>`
+  // Its colours come from a rule for each class of each measure (chipStyles),
+  // not an inline style: a long table holds thousands of chips.
+  return `<span class="cls c-${rankingId}-${grade.class}"${text ? ` title="${esc(text)}"` : ''}>${grade.class}</span>`
 }
+
+// The colours of every class chip, for the stylesheet. `!important` gives the
+// rules the same precedence the inline style they replace had.
+export const chipStyles = () => Object.keys(RANKINGS).flatMap((rankingId) => CLASSES.map((letter) => {
+  const color = classColor(rankingId, letter)
+  return `.cls.c-${rankingId}-${letter} { background: ${color} !important; color: ${inkOn(color)} !important; }`
+})).join('\n')
 
 // A table cell that the sort script can order by `value`.
 const cell = (value, html) => `<td data-v="${value ?? ''}">${html}</td>`
@@ -119,16 +127,47 @@ const ICON_LINKS = () => `<link rel="icon" href="${tabIcon('#8a8a8a')}">
 // The catalog tree shown beside every page. It stays short as the catalog
 // grows: only the category in `context` is opened to its tasks and packages.
 // The small count after a category in the menu: its packages, and for a
-// measured category how many of them are measured. Worked out once.
+// measured category how many of them are measured. Worked out once. The
+// counts change with every new result, so they are not written into the
+// pages: they are in one shared file (sideData, written to /data/side.json)
+// that the page script adds to the menu, and a page without the script shows
+// the links alone. This keeps a page the same from one build to the next
+// unless its own content changes.
 function categoryCount(model, taxonomyId, measured) {
   model.categoryCounts ??= new Map()
   if (!model.categoryCounts.has(taxonomyId)) {
     const listed = model.catalog.byCategory.get(taxonomyId)?.length ?? 0
     const done = measured ? model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id && !a.entry.reference)).length : 0
     const total = Math.max(listed, done)
-    model.categoryCounts.set(taxonomyId, total ? ` <span class="count">${done ? `${done} of ${total}` : total}</span>` : '')
+    model.categoryCounts.set(taxonomyId, total ? (done ? `${done} of ${total}` : String(total)) : '')
   }
   return model.categoryCounts.get(taxonomyId)
+}
+
+// Everything in the side menu that changes when a result does, for the page
+// script to fill in: the count after each category, group and registry (by
+// the address it links to), and the runtimes in medal-table order with their
+// medals as [id, gold, silver, bronze].
+export function sideData(model) {
+  const counts = {}
+  const measuredOf = (taxonomyId) => model.categories.find((c) => c.taxonomy === taxonomyId)
+  for (const group of model.catalog.groups ?? []) {
+    const members = model.catalog.categories.filter((c) => c.group === group.id)
+    const measured = members.filter((c) => measuredOf(c.id)).length
+    counts[urls.group(group.id)] = measured ? `${measured} of ${members.length}` : String(members.length)
+    for (const c of members) {
+      const m = measuredOf(c.id)
+      const count = categoryCount(model, c.id, m)
+      if (count) counts[m ? urls.category(m.id) : `/${c.id}/`] = count
+    }
+  }
+  for (const id of Object.keys(ECOSYSTEMS)) counts[urls.ecosystem(id)] = ecosystemCount(model, id)
+  model.medalTally ??= runtimeMedals(model.tasks)
+  const runtimes = byMedals(model).map((rt) => {
+    const won = model.medalTally.get(rt.id)
+    return won ? [rt.id, won.best.length, won.second.length, won.third.length] : [rt.id]
+  })
+  return { counts, runtimes }
 }
 
 function sidebar(model, path, context) {
@@ -143,23 +182,21 @@ function sidebar(model, path, context) {
   const hereGroup = context.group ?? model.catalog.categories.find((c) => c.id === here)?.group
   const categoryItem = (c) => {
     const measured = measuredOf(c.id)
-    const count = categoryCount(model, c.id, measured)
-    if (!measured) return `<li>${link(`/${c.id}/`, c.title, count)}</li>`
-    if (measured.id !== context.category) return `<li>${link(urls.category(measured.id), measured.title, count)}</li>`
+    if (!measured) return `<li>${link(`/${c.id}/`, c.title)}</li>`
+    if (measured.id !== context.category) return `<li>${link(urls.category(measured.id), measured.title)}</li>`
     const inCategory = model.packages.filter((p) => p.appearances.some((a) => a.data.task.category === measured.id))
     // Entries kept for reference have a list of their own.
     const isReference = (p) => p.appearances.filter((a) => a.data.task.category === measured.id).every((a) => a.entry.reference)
     const packages = inCategory.filter((p) => !isReference(p))
     const references = inCategory.filter(isReference)
-    return `<li>${link(urls.category(measured.id), measured.title, count)}<ul>${measured.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
+    return `<li>${link(urls.category(measured.id), measured.title)}<ul>${measured.tasks.map((d) => `<li>${link(urls.task(d.task.id), d.task.title)}</li>`).join('')}</ul>
 <h3>Packages in ${esc(measured.title)}</h3><ul>${packages.slice(0, SIDE_LIMIT).map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}${packages.length > SIDE_LIMIT ? `<li><a class="more" href="${urls.category(measured.id)}">All ${packages.length} packages</a></li>` : ''}</ul>${references.length ? `
 <h3>For reference</h3><ul>${references.map((p) => `<li>${link(urls.package(p), p.title)}</li>`).join('')}</ul>` : ''}</li>`
   }
   return (model.catalog.groups ?? [])
     .map((group) => {
       const members = model.catalog.categories.filter((c) => c.group === group.id)
-      const measured = members.filter((c) => measuredOf(c.id)).length
-      const head = `<a href="${urls.group(group.id)}"${urls.group(group.id) === path ? ' aria-current="page"' : ''}>${groupIcon(group.id)}${esc(group.title)} <span class="count">${measured ? `${measured} of ${members.length}` : members.length}</span></a>`
+      const head = `<a href="${urls.group(group.id)}"${urls.group(group.id) === path ? ' aria-current="page"' : ''}>${groupIcon(group.id)}${esc(group.title)}</a>`
       if (group.id !== hereGroup) return `<li>${head}</li>`
       // Measured categories first, then the rest by name.
       const ordered = [...members].sort((a, b) => !!measuredOf(b.id) - !!measuredOf(a.id) || a.title.localeCompare(b.title))
@@ -175,7 +212,7 @@ function sidebar(model, path, context) {
     ? `<script>(()=>{try{const n=document.currentScript.parentNode,w=sessionStorage.getItem('category'),t=w&&[...n.querySelectorAll('template[data-side]')].find(t=>t.dataset.side===w);if(t){n.querySelector('.side-categories').replaceChildren(t.content.cloneNode(true));n.dataset.category=w}}catch{}})()</script>`
     : ''
   const ecosystems = Object.entries(ECOSYSTEMS)
-    .map(([id, eco]) => `<li><a href="${urls.ecosystem(id)}"${urls.ecosystem(id) === path ? ' aria-current="page"' : ''}>${inlineIcon(`eco-${id}`)}${esc(eco.title)} <span class="count">${ecosystemCount(model, id)}</span></a></li>`)
+    .map(([id, eco]) => `<li><a href="${urls.ecosystem(id)}"${urls.ecosystem(id) === path ? ' aria-current="page"' : ''}>${inlineIcon(`eco-${id}`)}${esc(eco.title)}</a></li>`)
     .join('')
   return `<nav class="side" aria-label="Catalog"${context.category ? ` data-category="${esc(context.category)}"` : ''}>
 <div class="side-indexes">${topLinks(model)}</div>
@@ -184,7 +221,7 @@ function sidebar(model, path, context) {
 <h2>${link('/packages/', 'Packages')}</h2>
 <ul>${ecosystems}</ul>
 <h2>${link('/runtimes/', 'Languages/Runtimes')}</h2>
-<ul>${byMedals(model).map((rt) => `<li><a href="${urls.runtime(rt.id)}"${urls.runtime(rt.id) === path ? ' aria-current="page"' : ''}>${inlineIcon(rt.id)}${esc(rt.title)}${sideMedals(model, rt.id)}</a></li>`).join('')}</ul>
+<ul class="side-runtimes">${model.runtimes.map((rt) => `<li><a href="${urls.runtime(rt.id)}"${urls.runtime(rt.id) === path ? ' aria-current="page"' : ''}>${inlineIcon(rt.id)}${esc(rt.title)}</a></li>`).join('')}</ul>
 <h2>${link('/stats/', 'Statistics')}</h2>
 </nav>`
 }
@@ -233,7 +270,7 @@ ${ICON_LINKS()}
 ${FONTS}
 <link rel="stylesheet" href="/styles.css?v=${model.assets ?? ''}">
 <script type="module" src="/app.js?v=${model.assets ?? ''}"></script>
-</head>
+${context.side ? '' : '<link rel="preload" href="/data/side.json" as="fetch" crossorigin>\n'}</head>
 <body data-site="${esc(model.site?.url ?? '')}" data-repo="${esc(model.repository?.url ?? '')}">
 <input type="checkbox" id="menu" class="menu-toggle" aria-label="Show the catalog menu">
 <header class="top">
@@ -892,7 +929,7 @@ ${related}
 ${versionNav}
 ${hasSettings ? `<div class="switches package-settings">${switcher('settings', 'Settings', [{ id: 'tuned', title: 'Tuned', icon: WRENCH.replace('role="img" aria-label="Tuned"', 'aria-hidden="true"') }, { id: 'installed', title: 'As installed' }], 'tuned')}</div>` : ''}
 ${failures.length ? `<section class="compatibility" aria-label="Benchmark compatibility">${failures.map(({runtime,entry})=>`<div class="compatibility-item"><p><strong>${esc(runtime.title)} unavailable.</strong> ${esc(entry.notes ?? 'This version of the package did not complete the task on this runtime.')}</p><details><summary>Details</summary><pre>${esc(entry.error)}</pre></details></div>`).join('')}</section>` : ''}
-${version === pkg.version ? packageOverall(pkg, model) : ''}
+${packageOverall(version === pkg.version ? pkg : { ...pkg, version, appearances: shown }, model, version === pkg.version ? null : version)}
 ${sections}
 ${comparison}
 </main>`,
@@ -965,7 +1002,11 @@ function packageGrade(pkg, runtimeId, rankingId) {
 // with nothing else is not listed.
 // `highlight` marks one package's rows, on that package's own page; `settings`
 // off leaves the Settings switch to the page, which already has one.
-function packageTable(packages, model, { showEcosystem, everyPackage = false, references = false, highlight = null, settings: ownSettings = true }) {
+// `lazy` names a table too long to send whole in its page: only the tab it
+// opens on is in the page, and each other tab's table is written to
+// /lazy/tables/<lazy>/<tab>.json (through model.fragments) for the page
+// script to fetch when that tab is chosen.
+function packageTable(packages, model, { showEcosystem, everyPackage = false, references = false, highlight = null, settings: ownSettings = true, lazy = null }) {
   packages = activeReleaseRows(packages)
   if (!references) packages = packages.map((p) => (p.appearances.some((a) => a.entry.reference) ? { ...p, appearances: p.appearances.filter((a) => !a.entry.reference) } : p)).filter((p) => p.appearances.length)
   const actualRuntimes = model.runtimes.filter((rt) => packages.some((p) => p.appearances.some((a) => a.runtime.id === rt.id)))
@@ -1042,12 +1083,42 @@ ${rt.best ? `<td class="l">${inlineIcon(selected.id)}${esc(selected.title)}</td>
 ${everyPackage ? '<td class="l" data-v="0">Measured</td>' : ''}${showEcosystem ? `<td class="l">${inlineIcon(`eco-${pkg.ecosystem}`)}<a href="${urls.ecosystem(pkg.ecosystem)}">${esc(ECOSYSTEMS[pkg.ecosystem].title)}</a></td>` : ''}</tr>`
     })
     const typeHeads = isRust ? sortableTypes('cargo check') + sortable('cargo check, first run, CPU') : rt.language === 'all' ? sortableTypes('Type check') : nativeLanguage ? sortableTypes(`Type check, ${({python: 'mypy', ruby: 'Sorbet', go: 'go/types'})[nativeLanguage]}`) : compilers.map((id) => sortableTypes(`Type check, ${id} ${esc(model.index.compilers[id])}`)).join('')
-    return `<section class="panel" data-runtime="${rt.id}"${runtimes.length === 1 ? ' style="display:block"' : ''} aria-label="Packages on ${esc(rt.title)}">
-<div class="scroll"><table class="sortable" data-md="measured"${everyPackage ? ' data-filters="status"' : ''}>
+    const open = `<section class="panel" data-runtime="${rt.id}"${runtimes.length === 1 ? ' style="display:block"' : ''} aria-label="Packages on ${esc(rt.title)}"`
+    // The figures the script sorts by are of no use without it, so in the
+    // tab that comes with the page they are left to a file of their own
+    // (data-sort-src), which the script reads back into the cells.
+    let sortSrc = ''
+    if (lazy && model.fragments && rt.id === checked) {
+      const sorts = []
+      for (const [i, row] of body.entries()) {
+        // First the row's status (for the script's filter), then each cell's figures.
+        const status = / data-status="([^"]*)"/.exec(row)?.[1]
+        const cells = [status ? { status } : 0]
+        body[i] = row.replace(/^<tr([^>]*) data-status="[^"]*"/, '<tr$1').replace(/<td( [^>]*)?>/g, (whole, attributes = '') => {
+          const data = {}
+          const rest = attributes.replace(/ data-([a-z-]+)="([^"]*)"/g, (_, name, value) => { data[name.replace(/-([a-z])/g, (__, c) => c.toUpperCase())] = value; return '' })
+          cells.push(Object.keys(data).length ? data : 0)
+          return `<td${rest}>`
+        })
+        sorts.push(cells)
+      }
+      sortSrc = `/lazy/tables/${lazy}/${rt.id}.sort.json`
+      model.fragments.set(sortSrc, sorts)
+    }
+    const table = `<div class="scroll"><table class="sortable" data-md="measured"${everyPackage ? ' data-filters="status"' : ''}>
 <caption>${rt.every ? `${plural(pairs.length, 'result')}: every release on every runtime it was measured on. ` : `${plural(rows.length, 'release')} on ${esc(rt.title)} ${esc(rt.version)}. `}${rt.best && !rt.every ? 'Best is the runtime with the lowest CPU class and cost for the package. Only the runtimes that cover the most tasks are compared. All figures in a row come from that runtime. ' : ''}Columns with a class sort by class first, then by figure. Press a heading again for the next order. A medal after the name of a package shows that one of its figures is in the top three for its task, among the packages listed here: gold for the best, silver for the runner-up, bronze for third. Equal figures share a place, and ×2 or more means several medals. Hover over a medal to see what it is for. Use is the download count of the package in its registry. Hover over it for the measure and the rank. It sorts by share of the registry, so that registries can be compared.</caption>
 <thead><tr><th scope="col">Package</th>${sortableGraded('CPU')}${sortableGraded('Memory')}${typeHeads}${sortable('Tasks')}${sortable('Use')}${everyPackage ? sortable('Rank') : ''}${rt.best ? sortable('Runtime', ' class="l"') : ''}${rt.language === 'all' ? sortable('Language', ' class="l"') : ''}${sortable('Categories', ' class="l"')}${everyPackage ? sortable('Status', ' class="l"') : ''}${showEcosystem ? '<th scope="col" class="l">Ecosystem</th>' : ''}</tr></thead>
 <tbody>${body.join('\n')}</tbody></table></div>
-${TYPE_KEY}
+${TYPE_KEY}`
+    if (lazy && model.fragments && rt.id !== checked) {
+      const src = `/lazy/tables/${lazy}/${rt.id}.json`
+      model.fragments.set(src, captionsBelow(table))
+      return `${open} data-src="${src}">
+<p class="soft panel-wait">Loading the packages on ${esc(rt.title)}…</p><noscript><p class="soft">This table is added by the page's script. Without it, the measured packages are listed on the page of each registry: ${Object.entries(ECOSYSTEMS).map(([id, eco]) => `<a href="${urls.ecosystem(id)}">${esc(eco.title)}</a>`).join(', ')}.</p></noscript>
+</section>`
+    }
+    return `${open}${sortSrc ? ` data-sort-src="${sortSrc}"` : ''}>
+${table}
 </section>`
   })
   const hasTuned = packages.some((p) => p.appearances.some((a) => a.entry.name !== a.entry.package))
@@ -1078,7 +1149,7 @@ export function packagesPage(model) {
 <h1>Packages</h1>
 <p class="intro">${allKnownPackages(model).length.toLocaleString('en-US')} packages are listed on this site, and ${model.packages.length} are measured. The measured packages come first, with their classes and figures. The others follow, most used first. Select a language or runtime, filter by status, or sort by a column.</p>
 ${EVERY_PACKAGE_NOTE}
-${packageTable(model.packages, model, { showEcosystem: true, everyPackage: true })}
+${packageTable(model.packages, model, { showEcosystem: true, everyPackage: true, lazy: 'packages' })}
 <h2>By registry</h2>
 <div class="scroll"><table class="narrow sortable">
 <thead><tr><th scope="col">Ecosystem</th>${['Listed', 'Measured', 'Fails the check', 'Benchmark not run yet', 'No benchmark yet', 'No comparable task'].map((t) => sortable(t)).join('')}</tr></thead>
@@ -1170,7 +1241,8 @@ const overallSize = (pairs) => {
 // figure is the geometric mean of its multiples of each task's best result
 // (for type checks, of the lowest cost in each category). Shown on the
 // package's own page before the tasks, when there is more than one.
-function packageOverall(pkg, model) {
+// For a version other than the one rankings use, from that version's results.
+function packageOverall(pkg, model, version = null) {
   const best = model.runtimes
     .map((rt) => ({ rt, cpu: packageGrade(pkg, rt.id, 'cpu'), memory: packageGrade(pkg, rt.id, 'memory'), types: packageGrade(pkg, rt.id, 'types') }))
     .filter((r) => r.cpu?.several && r.memory?.several)
@@ -1196,7 +1268,7 @@ function packageOverall(pkg, model) {
   // One label for each measure, side by side.
   entry.adapter.notes = `The figure is the geometric mean, over ${plural(tasks, 'task')}, of this package's multiple of the best result in each task.`
   const cards = Object.keys(RANKINGS).filter((id) => entry.grades[id]).map((id) => {
-    const svg = renderLabel({ entry, data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall on ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg) })
+    const svg = renderLabel({ entry, data, runtime: rt, rankingId: id, subtitle: pkg.version ? `Version ${pkg.version}` : '', context: `Overall on ${rt.title}, across ${plural(tasks, 'task')}`, address: urls.package(pkg, version) })
     return svg ? `<li data-label><p class="over"></p>${svg}</li>` : ''
   })
   if (!cards.some(Boolean)) return ''
@@ -1440,7 +1512,10 @@ function featured(model) {
   const pool = []
   for (let turn = 0; pool.length < FEATURED.pool && queues.some((q) => q[turn]); turn++) for (const queue of queues) if (queue[turn] && pool.length < FEATURED.pool) pool.push(queue[turn])
   if (pool.length <= FEATURED.shown) return ''
-  const cards = pool.map((pkg) => {
+  // Only the first four labels, the ones shown without the script, are in the
+  // page; the script fetches the others' from their own address (data-label)
+  // when the day's draw shows them.
+  const cards = pool.map((pkg, place) => {
     const data = pkg.appearances[0].data
     // The package as installed where it has such an entry, not a tuned variant.
     const rows = pkg.appearances.filter((a) => a.data === data)
@@ -1452,7 +1527,8 @@ function featured(model) {
     const base = own ? urls.embed(data.task.id, pkg, '') : urls.embedResult(data.task.id, best.runtime.id, best.entry.id, null, '')
     const svg = overviewLabel({ entry: best.entry, data, runtime: best.runtime })
     if (!svg) return ''
-    return `<li data-label="${esc(`${base}overview.svg`)}" data-embed="${esc(base)}" data-embed-page="${esc(own ? urls.package(pkg) : urls.result(data.task.id, best.runtime.id, best.entry))}" data-embed-alt="${esc(`Package efficiency of ${best.entry.title}`)}" data-ranking="all" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => best.entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, best.runtime.id, best.entry.id, '{r}', null))}"><p class="over"></p>${linked(svg, urls.package(pkg), `${pkg.title}, all runtimes`)}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all runtimes</a> &nbsp; <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a> &nbsp; <a href="${urls.result(data.task.id, best.runtime.id, best.entry)}">Permalink</a></p></li>`
+    const inPage = place < FEATURED.shown
+    return `<li data-label="${esc(`${base}overview.svg`)}" data-embed="${esc(base)}" data-embed-page="${esc(own ? urls.package(pkg) : urls.result(data.task.id, best.runtime.id, best.entry))}" data-embed-alt="${esc(`Package efficiency of ${best.entry.title}`)}" data-ranking="all" data-embed-rankings="${Object.keys(RANKINGS).filter((id) => best.entry.grades[id]).join(',')}" data-label-pattern="${esc(urls.label(data.task.id, best.runtime.id, best.entry.id, '{r}', null))}"${inPage ? '' : ' data-fetch-label'}><p class="over"></p>${linked(inPage ? svg : '', urls.package(pkg), `${pkg.title}, all runtimes`)}<p class="under"><a href="${urls.package(pkg)}">${esc(pkg.title)}, all runtimes</a> &nbsp; <a href="${urls.task(data.task.id)}">${esc(data.task.title)}</a> &nbsp; <a href="${urls.result(data.task.id, best.runtime.id, best.entry)}">Permalink</a></p></li>`
   }).filter(Boolean)
   return `<h2>Random packages</h2>
 <p class="soft">Four of the most used packages, drawn every day.</p>
@@ -1468,11 +1544,26 @@ function featured(model) {
   for (const item of items) item.hidden = !picked.has(item)
   list.prepend(...picked)
   list.classList.add('picked')
+  // A drawn label that is not in the page is fetched. Its ids are made its
+  // own, so they cannot meet those of another label here; the page script
+  // then gives it its menu (label-ready).
+  let n = 0
+  for (const item of picked) {
+    if (!item.hasAttribute('data-fetch-label')) continue
+    const tag = 'f' + ++n + '-'
+    fetch(item.dataset.label).then((r) => (r.ok ? r.text() : Promise.reject())).then((svg) => {
+      item.querySelector('.label-link').innerHTML = svg.replace(/\\b(runtime-icon-|mark-)(?=\\d)/g, '$1' + tag)
+      item.removeAttribute('data-fetch-label')
+      item.dispatchEvent(new Event('label-ready', { bubbles: true }))
+    }).catch(() => {})
+  }
 })()</script>`
 }
 
-// The day the site was built, as the home page says it.
-export const BUILD_DATE = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+// The day the data last changed, as the home page says it (build-data.mjs
+// keeps `generatedAt` while the data stays the same), so a build on another
+// day with the same results leaves the page as it was.
+export const updatedDay = (model) => new Date(model.index?.generatedAt ?? Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 export function homePage(model) {
   const lead = model.tasks[0]
   // Packages from the registries' lists and the hand-picked ones; runtime built-ins are not packages.
@@ -1488,7 +1579,7 @@ export function homePage(model) {
 <div class="pitch">
 <h1 class="tagline">Compute and RAM keep getting pricier. Switching languages, runtimes and libraries has never been cheaper.</h1>
 <p>This website aims to help developers and agents alike make informed decisions about the efficiency of various packages across ecosystems. It's semi-scientific (<a href="#limitations">see limitations</a>), inspired by the power efficiency labels used across the EU and other regions. Not affiliated with any package or runtime.</p>
-<p>Choose a <a href="/categories/">category</a> or <a href="/search/">search</a> for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${BUILD_DATE}.</p>
+<p>Choose a <a href="/categories/">category</a> or <a href="/search/">search</a> for packages to get started. Currently listing ${listedCount.toLocaleString('en-US')} packages, out of which ${measuredCount.toLocaleString('en-US')} have been benchmarked and compared across ${model.tasks.length} tasks. Last updated ${updatedDay(model)}.</p>
 </div>
 ${featured(model)}
 <h2>Measured categories</h2>
@@ -1496,7 +1587,7 @@ ${groupedTiles(model, 'h3', { measuredOnly: true })}
 <h2>Packages</h2>
 <p>Every listed package. The ${model.packages.length} measured packages come first, with their classes. The others follow, most used first.</p>
 ${EVERY_PACKAGE_NOTE}
-${packageTable(model.packages, model, { showEcosystem: true, everyPackage: true })}
+${packageTable(model.packages, model, { showEcosystem: true, everyPackage: true, lazy: 'packages' })}
 <h2>Reading a label</h2>
 ${legend(lead)}
 <p>The best result for a task, in any language or runtime, sets class A. Thus a class means the same on every page. A function built into a runtime is also an entry, so you can compare a package with no package.</p>
@@ -1638,7 +1729,8 @@ function placeOf(groups, key, count) {
 }
 // Tables show only the medals, and one medal whether or not the place is
 // shared; the tooltip says when it is.
-const tableMark = (kind, tied, title) => (MEDALS.includes(kind) ? `<svg class="medal" viewBox="0 0 16 16" width="16" height="16" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>${PLACE_MARKS[kind](0)}</svg>` : '')
+// (Its size is the stylesheet's, svg.medal; a long table holds thousands.)
+const tableMark = (kind, tied, title) => (MEDALS.includes(kind) ? `<svg class="medal" viewBox="0 0 16 16" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>${PLACE_MARKS[kind](0)}</svg>` : '')
 // Medals shown as a tally, the way lives are counted in a game: one medal of
 // each kind, with ×N after it when there are several. `titles` says what each
 // was won for, in the tooltip.
@@ -1717,13 +1809,9 @@ function byMedals(model) {
   return [...model.runtimes].sort((a, b) => score(b) - score(a))
 }
 
-function sideMedals(model, runtimeId) {
-  model.medalTally ??= runtimeMedals(model.tasks)
-  const won = model.medalTally.get(runtimeId)
-  if (!won) return ''
-  const counts = [['g', 'gold', won.best.length], ['s', 'silver', won.second.length], ['b', 'bronze', won.third.length]]
-  return `<span class="side-medals" title="${counts.map(([, name, n]) => `${n} ${name}`).join(', ')}: best three figures among every entry of a task, for CPU, memory and type check">${counts.map(([kind, , n]) => `<i class="${kind}${n ? '' : ' none'}">${n}</i>`).join('')}</span>`
-}
+// The medals after a runtime in the side menu are added by the page script
+// from /data/side.json (see sideData), in the same markup:
+// <span class="side-medals" title="…"><i class="g">…</i><i class="s">…</i><i class="b">…</i></span>
 
 export function runtimeMedals(tasks) {
   const count = new Map()

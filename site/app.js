@@ -10,6 +10,23 @@ document.documentElement.classList.add('js')
 // all go through here to reach the rows that are not on show.
 const rowsOf = (table) => table.allRows ?? [...table.tBodies[0].rows]
 
+// The long package table comes with its first tab's rows but not the figures
+// they sort by (data-sort-src): those are read here into the cells, by row
+// and column, before anything sorts. A sort asked for in the meantime waits
+// for them (see listenSort).
+for (const panel of document.querySelectorAll('.panel[data-sort-src]')) {
+  const table = panel.querySelector('table.sortable')
+  if (!table) continue
+  const rows = [...table.tBodies[0].rows]
+  table.hydrating = fetch(panel.dataset.sortSrc).then((r) => r.json()).then((sorts) => {
+    // Each row: its own data (its status), then each cell's.
+    rows.forEach((row, i) => [row, ...row.cells].forEach((cell, j) => { if (sorts[i]?.[j]) Object.assign(cell.dataset, sorts[i][j]) }))
+    table.hydrating = null
+    applySettings()
+    resort()
+  }).catch(() => { table.hydrating = null })
+}
+
 // Remember which category the reader is in, so a package that belongs to
 // several opens the side menu at that one (the swap itself is inline in the
 // page, to happen before anything is drawn).
@@ -17,6 +34,42 @@ const sideCategory = document.querySelector('nav.side')?.dataset.category
 try {
   if (sideCategory) sessionStorage.setItem('category', sideCategory)
 } catch {}
+
+// The counts in the side menu, and the runtimes' medals and their order, move
+// with every new result. They are kept in one shared file instead of in every
+// page (see sideData in pages.mjs), so a page only changes when its own
+// content does; without this script the menu shows the links alone.
+const sideMenu = document.querySelector('nav.side:not(.side-own)')
+if (sideMenu) {
+  fetch('/data/side.json').then((r) => (r.ok ? r.json() : null)).then((data) => {
+    if (!data) return
+    const fill = (root) => {
+      for (const link of root.querySelectorAll('li > a[href]:not(.more)')) {
+        const count = data.counts[link.getAttribute('href')]
+        if (count && !link.querySelector(':scope > .count')) link.append(' ', Object.assign(document.createElement('span'), { className: 'count', textContent: count }))
+      }
+    }
+    fill(sideMenu)
+    // The same menu opened at another category, for a package in several.
+    for (const template of sideMenu.querySelectorAll('template[data-side]')) fill(template.content)
+    const list = sideMenu.querySelector('.side-runtimes')
+    if (!list) return
+    const items = new Map([...list.children].map((item) => [item.querySelector('a')?.getAttribute('href'), item]))
+    const ordered = []
+    for (const [id, ...won] of data.runtimes) {
+      const item = items.get(`/runtimes/${id}/`)
+      if (!item) continue
+      ordered.push(item)
+      if (won.length !== 3 || item.querySelector('.side-medals')) continue
+      const counts = [['g', 'gold', won[0]], ['s', 'silver', won[1]], ['b', 'bronze', won[2]]]
+      const medals = Object.assign(document.createElement('span'), { className: 'side-medals', title: `${counts.map(([, name, n]) => `${n} ${name}`).join(', ')}: best three figures among every entry of a task, for CPU, memory and type check` })
+      for (const [kind, , n] of counts) medals.append(Object.assign(document.createElement('i'), { className: n ? kind : `${kind} none`, textContent: String(n) }))
+      item.querySelector('a').append(medals)
+    }
+    // Most medals first, as in the medal table.
+    list.prepend(...ordered)
+  }).catch(() => {})
+}
 
 // Search across packages, tasks and categories. Typing part of a name, its
 // initials ("jas" for JSON API server) or a few of its letters in order all
@@ -341,14 +394,17 @@ for (const control of switches) {
 
 // Every column of a sortable table can be sorted, names included: headings
 // that are plain text in the markup get a button here.
-for (const heading of document.querySelectorAll('table.sortable thead tr:last-child th')) {
-  if (heading.querySelector('[data-sort]')) continue
-  const button = document.createElement('button')
-  button.type = 'button'
-  button.dataset.sort = ''
-  button.append(...heading.childNodes)
-  heading.append(button)
+function addSortButtons(table) {
+  for (const heading of table.querySelectorAll('thead tr:last-child th')) {
+    if (heading.querySelector('[data-sort]')) continue
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.dataset.sort = ''
+    button.append(...heading.childNodes)
+    heading.append(button)
+  }
 }
+for (const table of document.querySelectorAll('table.sortable')) addSortButtons(table)
 
 // Share sorting across a tab group by column meaning, not its position.
 // Best first or worst first: reverses every row of labels in the same group.
@@ -430,8 +486,10 @@ function sortTable(table, key, descending, field) {
   else table.tBodies[0].append(...rows)
   table.dispatchEvent(new Event('sorted'))
 }
-for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
+function listenSort(button) {
   button.addEventListener('click', () => {
+    const waiting = [...(button.closest('.explorer, .pick') ?? button.closest('table')).querySelectorAll('table.sortable')].map((table) => table.hydrating).filter(Boolean)
+    if (waiting.length) return Promise.all(waiting).then(() => button.click())
     const heading = button.closest('th')
     const table = heading.closest('table')
     const key = columnKey(heading)
@@ -456,6 +514,7 @@ for (const button of document.querySelectorAll('table.sortable [data-sort]')) {
     for (const target of tables) sortTable(target, key, descending, field)
   })
 }
+for (const button of document.querySelectorAll('table.sortable [data-sort]')) listenSort(button)
 
 // Tables that list packages or tasks of several kinds get a row of filters,
 // built from the values their rows carry (data-status, data-ecosystem, ...).
@@ -519,11 +578,12 @@ function buildFilters(table) {
   row.append(...groups)
   ;(table.headHolder ?? table.closest('.scroll') ?? table).before(row)
 }
-for (const table of document.querySelectorAll('table[data-filters]')) {
+function setUpFilters(table) {
   buildFilters(table)
   // A table that gains rows later may only then have something to filter by.
   table.addEventListener('grown', () => buildFilters(table))
 }
+for (const table of document.querySelectorAll('table[data-filters]')) setUpFilters(table)
 
 // Long tables are shown a page at a time, with the same controls above and
 // below. Every row is still in the page, so sorting covers all of them and a
@@ -685,8 +745,16 @@ let catalog = null
 async function fillPanel(host, panel) {
   if (panel.dataset.filled) return
   panel.dataset.filled = 'true'
+  try {
+    await loadPanel(panel)
+  } catch {
+    delete panel.dataset.filled
+    return
+  }
   catalog ??= fetch('/data/catalog.json').then((r) => r.json())
   const { registries, packages } = await catalog
+  // The rows that came with the page get their status first (see data-sort-src).
+  await panel.querySelector('table.sortable')?.hydrating
   const language = host.querySelector(`input[name="runtime"][value="${panel.dataset.runtime}"]`)?.dataset.language
   const wanted = language && language !== 'all' ? (REGISTRIES_OF[language] ?? []) : Object.keys(registries)
   const table = panel.querySelector('table.sortable')
@@ -797,6 +865,46 @@ function stickHead(table) {
   sync()
 }
 for (const table of document.querySelectorAll('table.sortable')) stickHead(table)
+
+// A tab whose table is too long to come with the page (data-src) has it
+// fetched the first time the tab is shown. The table is then set up as the
+// ones in the page were, and sorted the way the tab group is sorted now.
+// (The fetch is kept on the panel: this can be called before the lines
+// below have run, by the package table above.)
+function loadPanel(panel) {
+  if (!panel.dataset.src) return Promise.resolve()
+  if (!panel.loading) {
+    panel.loading = (fetch(panel.dataset.src).then((r) => {
+      if (!r.ok) throw new Error(`${r.status} for ${panel.dataset.src}`)
+      return r.json()
+    }).then((html) => {
+      panel.innerHTML = html
+      delete panel.dataset.src
+      const group = panel.closest('.pick')
+      for (const table of panel.querySelectorAll('table.sortable')) {
+        addSortButtons(table)
+        for (const button of table.querySelectorAll('[data-sort]')) listenSort(button)
+        applySettings()
+        const sorted = [...(group?.querySelectorAll('table.sortable') ?? [])].map((other) => other !== table && other.querySelector('thead th[aria-sort]')).find(Boolean)
+        if (sorted) sortTable(table, columnKey(sorted), sorted.getAttribute('aria-sort') === 'descending', sorted.dataset.field)
+        if (table.dataset.filters) setUpFilters(table)
+        paginate(table)
+        stickHead(table)
+      }
+    }).catch((error) => {
+      panel.loading = null
+      const note = panel.querySelector('.panel-wait')
+      if (note) note.textContent = 'This table could not be loaded. Choose the tab again to try once more.'
+      throw error
+    }))
+  }
+  return panel.loading
+}
+for (const host of document.querySelectorAll('.pick:not([data-catalog]):has(.panel[data-src])')) {
+  const shown = () => [...host.querySelectorAll('.panel[data-src]')].filter((panel) => panel.offsetParent).forEach((panel) => loadPanel(panel).catch(() => {}))
+  host.addEventListener('change', () => setTimeout(shown, 0))
+  shown()
+}
 
 // In the menu on a phone, tapping a group opens it in place instead of
 // leaving for the group's page: a finger cannot hover to see what is inside,
@@ -1355,10 +1463,14 @@ const LABEL_ACTIONS = [
   ['Open SVG', (svg, url) => window.open(url, '_blank'), true],
 ]
 
-// Every label gets the same menu, built when it is first opened.
-for (const holder of document.querySelectorAll('[data-label]')) {
+// Every label gets the same menu, built when it is first opened. A label
+// fetched after the page loaded (the home page's draw) gets it when it
+// arrives.
+for (const holder of document.querySelectorAll('[data-label]')) labelMenu(holder)
+document.addEventListener('label-ready', (event) => labelMenu(event.target))
+function labelMenu(holder) {
   const svg = holder.querySelector('svg[role="img"]')
-  if (!svg) continue
+  if (!svg || holder.querySelector(':scope > .over .label-actions')) return
   const menu = document.createElement('details')
   menu.className = 'menu label-menu'
   const summary = document.createElement('summary')

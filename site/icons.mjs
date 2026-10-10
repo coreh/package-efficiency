@@ -174,12 +174,20 @@ export const iconFile = (id) => {
 }
 export const iconScales = OPTICAL
 
-// For page text: one colour, following the text around it.
+// For page text: one colour, following the text around it. A page can hold
+// thousands of these, so the optical size and the file of a mark are rules
+// of the stylesheet (iconStyles) named by a class, not an inline style.
+const opticalClass = (id) => (OPTICAL[id] ? ` o-${id}` : '')
 export function inlineIcon(id) {
-  if (!FILE_ICONS.includes(id)) return inlineSvg(id)
-  const scale = OPTICAL[id] ? `;transform:scale(${OPTICAL[id]})` : ''
-  return `<span class="ico ico-file" style="--src:url(/icons/${id}.svg)${scale}" aria-hidden="true"></span>`
+  if (!FILE_ICONS.includes(id)) return inlineSvg(id).replace(/^<svg class="ico" style="transform:scale\([\d.]+\)"/, `<svg class="ico${opticalClass(id)}"`)
+  return `<span class="ico ico-file f-${id}${opticalClass(id)}" aria-hidden="true"></span>`
 }
+// Those rules. `!important` gives them the precedence of the inline style
+// they stand for.
+export const iconStyles = () => [
+  ...FILE_ICONS.map((id) => `.ico-file.f-${id} { --src: url(/icons/${id}.svg); }`),
+  ...Object.entries(OPTICAL).map(([id, scale]) => `.ico.o-${id} { transform: scale(${scale}) !important; }`),
+].join('\n')
 
 function inlineSvg(id) {
   // YJIT publishes its logo only as a bitmap (kept for the labels, where the
