@@ -5,7 +5,8 @@ encodes it to UTF-8 bytes, compresses it with Brotli and returns the
 compressed bytes. Nothing is decompressed in the timed call. Only Brotli
 implementations are compared here, at the same settings, so the ranking shows
 how well each one implements the format and not which format it implements.
-Entries: `brotli` (Rust crate) and `node:zlib`'s Brotli (Node, Bun, Deno).
+Entries: `brotli` (Rust crate), `node:zlib`'s Brotli (Node, Bun, Deno), Python's
+`brotli` and `cramjam`, and Go's `andybalholm/brotli`.
 
 The fixtures are prose, JSON records, log lines, CSV, source code, HTML,
 Unicode text, base64 and hex data, long repeats, and a mixed document that
@@ -14,7 +15,9 @@ same fixtures in every format's large-buffer task.
 
 ## Settings
 
-Every entry runs at Brotli quality 11 with a 22-bit window (`lgwin` 22), generic mode, no size hint and no dictionary. That is the default of both libraries, checked in the installed sources: `node:zlib` (`BROTLI_DEFAULT_QUALITY` 11, `BROTLI_DEFAULT_WINDOW` 22) and the `brotli` crate (`BrotliEncoderParams::default()`: `quality: 11`, `lgwin: 22`), so both run as installed and no setting is passed. `node:zlib` is a different encoder on each runtime (Node and Bun link the C library, Deno the Rust `brotli` crate, version 6 in Deno 2.9.6 by its source, called through the crate's C-compatible interface; the crate entry here is version 9, so on Deno the two entries are two versions of the same encoder); on all three the no-options output is byte-identical to the output with quality 11 and window 22 passed explicitly.
+Every entry runs at Brotli quality 11 with a 22-bit window (`lgwin` 22), generic mode, no size hint and no dictionary. That is the default of both libraries, checked in the installed sources: `node:zlib` (`BROTLI_DEFAULT_QUALITY` 11, `BROTLI_DEFAULT_WINDOW` 22) and the `brotli` crate (`BrotliEncoderParams::default()`: `quality: 11`, `lgwin: 22`), so both run as installed and no setting is passed. Python's `brotli` and
+`cramjam` are called with their defaults; `andybalholm/brotli` defaults to
+quality 6, so its adapter passes quality 11. `node:zlib` is a different encoder on each runtime (Node and Bun link the C library, Deno the Rust `brotli` crate, version 6 in Deno 2.9.6 by its source, called through the crate's C-compatible interface; the crate entry here is version 9, so on Deno the two entries are two versions of the same encoder); on all three the no-options output is byte-identical to the output with quality 11 and window 22 passed explicitly.
 
 ## What is checked
 
@@ -26,7 +29,9 @@ size: every fixture except the random base64 and hex ones must compress to
 under 90% of its size, the random ones must not compress below 40% (a result
 that small could not restore the text), and sizes must differ between fixtures.
 This fails an adapter that returns its input, a constant, or skips the work.
-The JavaScript adapter attaches `operation.decode(compressed)`; the Rust adapter's `describe` decompresses.
+The JavaScript adapter attaches `operation.decode(compressed)`; the Rust and
+Python adapters' `describe` decompresses, and the Go adapter's result
+decompresses itself when the runner marshals it.
 
 ## Scope
 

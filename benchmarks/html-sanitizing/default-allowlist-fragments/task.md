@@ -74,6 +74,8 @@ once, outside the timed call.
   `div`.
 - RubyGems `loofah`: `Loofah.scrub_fragment(html, :strip).to_s`.
 - RubyGems `rails-html-sanitizer`: `Rails::HTML5::SafeListSanitizer#sanitize`.
+- RubyGems `rails-deprecated_sanitizer`: `HTML::WhiteListSanitizer#sanitize`,
+  the older Rails sanitizer, kept as a gem though deprecated.
 - RubyGems `sanitize`: `Sanitize.fragment(html)`. Its default config removes
   every element, so the allowed elements are missing and it is recorded as not
   passing. The `sanitize-basic` variant passes `Sanitize::Config::BASIC`.
@@ -88,7 +90,7 @@ is what is compared.
 
 No standard library has an HTML sanitizer, so there are no built-in entries.
 No JSR package does this job. Left out: `isomorphic-dompurify` (DOMPurify with
-jsdom bundled, the same work), `rails-deprecated_sanitizer` (deprecated).
+jsdom bundled, the same work).
 Not included: `html-sanitizer` and `sanitize-html-rs` style crates (not widely
 used, not checked).
 

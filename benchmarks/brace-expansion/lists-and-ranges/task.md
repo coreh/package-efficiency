@@ -4,8 +4,7 @@ One operation expands one brace pattern string into the list of strings it
 stands for, in the order bash produces them (leftmost brace group varies slowest).
 The 48 cases mix literal prefixes and suffixes, comma lists, nested comma
 lists, several groups in one pattern, ascending numeric ranges such as `{1..12}`,
-and ranges inside lists. Each result is a list of strings with between 2 and
-a few hundred entries. The check compares the whole list, in order, with an
+and ranges inside lists. Each result is a list of 6 to 126 strings. The check compares the whole list, in order, with an
 independent reference expander.
 
 Inputs only use syntax every package treats the same way: no zero padding, no

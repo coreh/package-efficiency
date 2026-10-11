@@ -12,7 +12,7 @@ not left bare (a plain join fails). Empty words must survive the round trip.
 
 The 60 cases are built from lists of 1 to 10 words: plain options and paths,
 words with spaces or tabs, quotes, backslashes, non-ASCII text, shell metacharacters
-(`| & ; < > ( ) $ ` # * ? ~ { }`), and empty words. Words with `!` or newlines are left
+(``| & ; < > ( ) $ ` # * ? ~ { }``), and empty words. Words with `!` or newlines are left
 out because packages differ in how they quote history expansion and line breaks.
 
 Packages run with their default settings as installed. Python uses `shlex.join` and

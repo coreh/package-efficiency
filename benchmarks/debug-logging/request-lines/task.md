@@ -8,8 +8,9 @@ pattern once, at load, the way the `DEBUG` environment variable would.
 
 An input is `{ id, ns, method, path, ms }`: `ns` is the namespace and `id` its
 number from 0 to 99 (area index times ten, plus n). One operation is one call on
-the logger of one namespace, with a method, a path and a duration: the message is "<method> <path> took <ms>ms", formatted by the
-library from its own format string and arguments. The 100 inputs cover every
+the logger of one namespace, with a method, a path and a duration: the message
+is "<method> <path> took <ms>ms", formatted by the library from its own format
+string and arguments. The 100 inputs cover every
 namespace once, with varied methods and paths (including Unicode and percent
 signs) and durations.
 

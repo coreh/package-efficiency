@@ -17,8 +17,8 @@ Scope is limited to the syntax every package shares. Compound ranges (`||`,
 space or comma separated), partial versions (`1.x`), hyphen ranges and
 dependency resolution are outside the task, because Cargo's flavour and npm's
 differ there. Prerelease versions never satisfy a range whose comparator has no
-prerelease, which all three implementations agree on; prerelease versions are
-tested only against such ranges. Build metadata is ignored in precedence.
+prerelease, which all the implementations here agree on; prerelease versions
+are tested only against such ranges. Build metadata is ignored in precedence.
 
 Packages run with default options as installed. Rust crates receive the already
 parsed JSON fixture and return a bool; JavaScript adapters receive the same array.

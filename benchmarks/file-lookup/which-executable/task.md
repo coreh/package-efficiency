@@ -45,7 +45,7 @@ and the system's `access(X_OK)` agree. No PATH has an empty entry, `.`, `..`,
 a relative directory, a trailing slash or quotes, and no name holds a `/`;
 those are handled differently from one package to another and are not part
 of the job here. No name differs from a file only in letter case, since the
-file system of the published results ignores case.
+usual macOS file system ignores case and Linux file systems do not.
 
 ## What is checked
 
@@ -67,8 +67,8 @@ system time. The system part is the kernel answering `stat` and `access`
 calls; how many a package makes per candidate (one `stat` read for mode and
 owner, or `stat` and `access`, or Python's three) is its own choice and is
 counted, which is why classes are closer together here than in a task on
-memory. The time depends on the operating system and file system (macOS and
-APFS for the published results).
+memory. The time depends on the operating system and file system of the
+machine, which is recorded with each result.
 
 Every entry is given the PATH as a string in its documented option (`path`,
 `PATH`, the paths argument). Go's `exec.LookPath` has none: it reads the

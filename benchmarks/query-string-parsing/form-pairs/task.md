@@ -3,11 +3,12 @@
 One operation decodes one query string (no leading `?`) in `application/x-www-form-urlencoded`
 syntax and returns a map from each key to its value, both as decoded text.
 
-The 48 cases hold from 1 to 30 pairs each, joined by `&`. Keys and values are
-percent-encoded UTF-8 (accented text, CJK, emoji, and the reserved characters `& = + % # / ? [ ]`
-inside values), with a space written either as `%20` or as `+`. Keys are unique, plain
-names (letters, digits, `_`, `-`) and none looks like a number. There is also an empty query string, which
-decodes to an empty map. A correct result maps every key to its exact decoded value. The check
+There are 48 cases: 47 query strings of 1 to 30 pairs each, joined by `&`, and
+an empty query string, which decodes to an empty map. Keys and values are
+percent-encoded UTF-8 (accented text, CJK, emoji, and the reserved characters
+`& = + % # / ? [ ]` inside values), with a space written either as `%20` or as
+`+`. Keys are unique, plain names (letters, digits, `_`, `-`, a few accented or
+CJK names) and none looks like a number. A correct result maps every key to its exact decoded value. The check
 compares the whole map, ignoring key order.
 
 Accepted differences: the order of keys in the result, and the container type (object,

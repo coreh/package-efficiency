@@ -15,14 +15,16 @@ dynamic-programming oracle in `scenario.mjs` using the same tie rule. A constant
 or a first-element answer fails because the expected indices vary.
 
 Packages run with default settings: `fast-levenshtein` without a locale
-collator, `leven` and `strsim::levenshtein` with no options. None of them has a
-"closest" function, so each adapter runs the same plain loop (call the package's
-distance function on each candidate, keep the first strictly smaller distance)
-in its own language. The loop is identical everywhere; the distance calls are the
-package's own work. No distance limit option is used, and no result is cached.
+collator; `leven`, `strsim::levenshtein`, Python's `Levenshtein.distance` and
+`rapidfuzz.distance.Levenshtein.distance`, Ruby's `Text::Levenshtein.distance`
+and Go's `agnivade/levenshtein` and `agext/levenshtein` with no options. None of
+them has a "closest" function, so each adapter runs the same plain loop (call
+the package's distance function on each candidate, keep the first strictly
+smaller distance) in its own language. The loop is identical everywhere; the
+distance calls are the package's own work. No distance limit option is used, and no result is cached.
 
 Inputs are created before timing. Characters are one UTF-16 code unit in
-JavaScript and one scalar value in Rust; in the Basic Multilingual Plane these
-agree. Each language consumes the integer index directly.
+JavaScript and one code point in the other languages; in the Basic Multilingual
+Plane these agree. Each language consumes the integer index directly.
 
 See [shared methodology](../../README.md) for timing and reproduction.

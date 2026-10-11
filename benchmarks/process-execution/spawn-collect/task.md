@@ -16,8 +16,8 @@ or re-encoded fails.
 
 ## What is measured, and what is not
 
-This is the existing synchronous kind of task, with adapters that call the
-synchronous form of each library. The figures are those of the calling process:
+This is a synchronous task: each adapter calls the synchronous form of its
+library. The figures are those of the calling process:
 
 - **CPU** is the caller's user and system time per call: the library's own
   work, and the kernel's work on its behalf to create the child (fork or
@@ -25,9 +25,7 @@ synchronous form of each library. The figures are those of the calling process:
 - **The child's CPU and memory are not counted**, on purpose. The child is the
   same program in every entry, so its cost is a constant that would only blur
   the differences between libraries, and it is not the library's doing. Every
-  runner already reads its own process's CPU time (`RUSAGE_SELF`,
-  `process.cpuUsage()`, `time.process_time()`), which leaves children out; no
-  harness change was needed.
+  runner reads its own process's CPU time, which leaves children out.
 - **Waiting is not CPU.** A call takes about a millisecond of elapsed time,
   most of it waiting for the child. Rounds are timed by the clock, so each
   round holds a few hundred calls instead of tens of thousands; the round time
@@ -44,13 +42,18 @@ caller's address space the kernel has to deal with to do it.
 - `execa`: `execaSync(command, args)`, default options.
 - `tinyexec`: `xSync(command, args)`, default options.
 - `duct` (Rust): `cmd(command, args).stdout_capture().run()`.
+- Ruby gems, each given the command and its arguments as a list, so no shell
+  is involved: `childprocess` (`ChildProcess.build`, stdout to a pipe, `start`,
+  read, `wait`), `mixlib-shellout` (`run_command`), `open4` (`popen4`),
+  `shellany` (`Sheller#run`, `Open3.popen3` inside), `systemu`, and
+  `tty-command` (`run`, built once with a null printer).
 - Standard library: `node:child_process` `spawnSync` (on Node, Bun and Deno),
   Python `subprocess.run(..., capture_output=True, text=True)`, Ruby
   `Open3.capture2`, Go `exec.Command(...).Output()`.
 
-Not covered: the asynchronous forms (`execa`, `tinyexec` `x`, `@david/dax`,
-`cross-spawn`'s `spawn`), which are what most programs use and belong to the
-asynchronous task kind, where the same fixtures and check apply; commands that
+The asynchronous forms (`execa`, `tinyexec` `x`, `@david/dax`), which are what
+most programs use, are measured with the same fixtures and check in
+[spawn-collect-async](../spawn-collect-async/task.md). Not covered: commands that
 fail (libraries differ on whether a non-zero status throws); large outputs,
 standard input, a shell, signals and time-outs. `foreground-child` hands the
 terminal to the child and exits with it, and `run-applescript` runs only on

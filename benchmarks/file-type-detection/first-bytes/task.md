@@ -60,4 +60,5 @@ Left out: `file-type` (npm) only has an asynchronous API; `python-magic` and
 latter's install failed without it); `magika` is a deep-learning model;
 `identify` reads files and file names (and shebangs), not a buffer. Python,
 Ruby and JavaScript have no standard-library content sniffer.
+
 See [shared methodology](../../README.md) for timing and reproduction.

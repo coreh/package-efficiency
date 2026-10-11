@@ -35,9 +35,8 @@ CPU time is the process's user and system time, and here most of it is the
 kernel's: `open`, `flock` and `close` system calls, which every entry has to
 make, so the classes are closer together than in a task on memory. The entries
 differ by how many calls they make per cycle and by their own bookkeeping
-(objects, exceptions, thread locks). Specifically:
+(objects, exceptions, thread locks):
 
-- `locket` keeps one lock set per path in the process, with a thread lock in front of the flock, so its second handle is refused by the thread lock. That is the library's design.
 - Handles are created in every cycle, as the packages document. Nothing is
   kept between cycles or calls.
 - Python `filelock` and `portalocker` signal a refused non-blocking attempt by
@@ -47,6 +46,9 @@ differ by how many calls they make per cycle and by their own bookkeeping
   one file. `flock` locks belong to the open file description, so a second
   handle of the same process is refused just as another process would be.
   Contention among several processes is not measured.
+- `locket` keeps one lock per path in the process, with a thread lock in
+  front of the `flock`, so its second handle is refused by the thread lock.
+  That is the library's design.
 
 ## Packages
 
@@ -60,11 +62,11 @@ Left out:
 
 - `fcntl` record locks (`fcntl.lockf`, POSIX `F_SETLK`): they belong to the
   process, so a second handle in the same process is not refused. Out of scope.
-- Node.js and Bun have no file lock in their standard libraries, and the brief
-  has no npm or JSR package that takes an advisory file lock (`proper-lockfile`
+- Node.js and Bun have no file lock in their standard libraries, and the package
+  list has no npm or JSR package that takes an advisory file lock (`proper-lockfile`
   locks with a directory and modification times, not with a lock on the file).
   There is no JavaScript entry.
 - Rust's `File::lock` has no `builtin` path in the harness.
 - Python `lockfile` (pylockfile) is deprecated and locks with hard links and
   unique files, not with a lock on the file.
-- No RubyGems package in the brief; Ruby has the standard library entry only.
+- No RubyGems package in the package list; Ruby has the standard library entry only.

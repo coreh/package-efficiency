@@ -67,6 +67,12 @@ See [shared methodology](../../README.md) for timing and reproduction.
 - npm: `js-yaml` `load`, `yaml` `parse`, `confbox` `parseYAML`.
 - JSR: `@std/yaml` `parse`, `@eemeli/yaml` `parse`.
 - Rust: `serde_yaml` into `serde_yaml::Value`, `yaml-rust` `YamlLoader::load_from_str`.
+- Python: `pyyaml` `safe_load` (the pure-Python loader), `ruamel.yaml` with the
+  safe loader.
+- Ruby: `psych` `safe_load`, `safe_yaml` `load`.
+- Go: `gopkg.in/yaml` (its `map[any]any` converted to `map[string]any` inside
+  the call), `ghodss/yaml` and `sigs.k8s.io/yaml` (both convert YAML to JSON,
+  then decode it), all `Unmarshal` into `any`.
 
 No YAML parser from the earlier combined task was left out: all seven read
 every document identically. The JSON5 and JSONC parsers that shared that task

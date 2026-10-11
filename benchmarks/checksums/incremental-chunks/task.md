@@ -34,6 +34,8 @@ call, in every language.
 - `crc32fast`: `Hasher::new()`, `update` per chunk, `finalize()`.
 - `crc`: a `Crc<u32>` (CRC_32_ISO_HDLC) built once as a constant, a `Digest` per
   call, `update` per chunk, `finalize()`.
+- `github.com/klauspost/crc32`: `crc32.Update` with the IEEE table per chunk
+  (a SIMD-accelerated drop-in for Go's `hash/crc32`).
 
 Adler-32, CRC-32C and other polynomials are not measured; `adler2`,
 `simd-adler32` and `crc32c` compute different checksums, so they are left out.

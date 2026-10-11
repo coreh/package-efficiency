@@ -2,9 +2,9 @@
 
 One operation takes two strings (slices of the fixture): a text and a second
 string to compare it with. Most are ASCII of 1 to 40 bytes; some are longer
-and some are not ASCII. It builds the library's
-small-string type from the text, clones that value once, builds a second value
-from the second string, and compares the clone with that second value. The call
+and some are not ASCII. It builds the library's small-string type from the
+text, clones that value once, builds a second value from the second string,
+and compares the clone with that second value. The call
 returns the clone and the result of the comparison; the source and the second
 value are dropped inside the call.
 
@@ -25,17 +25,17 @@ strings) still has to compare bytes. The strings are preconstructed and
 parsing is excluded.
 
 A correct output holds the same text as the input, has the input's length in
-bytes of UTF-8 and reports whether the two strings are equal. The verifier checks the text and
-length of the clone (so a constant or a skipped build fails) and that the
-comparison is true for the equal pairs and false for the others.
-The Rust runner describes each result to JSON before warm-up; that step is not
-timed. During measurement only the clone's length and the comparison result are
+bytes of UTF-8 and reports whether the two strings are equal. The verifier
+checks the text and length of the clone (so a constant or a skipped build
+fails) and that the comparison is true for the equal pairs and false for the
+others. The Rust runner describes each result to JSON before warm-up; that
+step is not timed. During measurement only the clone's length and the comparison result are
 read.
 
 One call is expected to cost somewhere between a few nanoseconds and a few
 tens of nanoseconds, so the loop shared by every entry (indexing the fixture,
-reading its two strings, the `Result` wrapper) is a visible share of each figure. Small differences between
-entries should not be read closely.
+reading its two strings, the `Result` wrapper) is a visible share of each
+figure. Small differences between entries should not be read closely.
 
 Packages run with their default settings.
 

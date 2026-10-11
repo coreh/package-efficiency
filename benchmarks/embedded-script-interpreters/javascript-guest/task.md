@@ -14,7 +14,7 @@ The six fixtures:
 - a 400-piece string built with `push` and `join` (about 4 KB);
 - the harmonic sum of 1/i for i up to 1,000 (a non-integer number, compared exactly);
 - a probe that sets a global variable and a property on `Array.prototype` and
-  reports the counters, twice in a row.
+  reports the counters, given twice in a row (two fixtures).
 
 ## What counts as correct
 
@@ -37,14 +37,13 @@ Creating the interpreter (runtime and context, or a new V8 isolate), parsing
 and running the program, and copying the result out to the host language are all
 inside the timed call, in every language, because a fresh context per run is the
 task. Nothing is cached between calls and no program is compiled outside the
-call. Packages run with their default options. `node:vm` is the host
-runtime's own engine (V8 in Node and Deno, through their `node:vm` layers in
-Bun) and is listed as the built-in. Whether a binding starts a native engine,
+call. Packages run with their default options. `node:vm` runs the
+host runtime's own engine (Bun and Deno reach it through their `node:vm`
+layers) and is listed as the built-in. Whether a binding starts a native engine,
 a WebAssembly module or an interpreter written in the host language shows up
 in the figures and is not hidden.
 
-Left out: `goja` (no release at least seven days old builds with the pinned
-Go), PyPI `py-mini-racer` and `quickjs` (no eligible wheel for the pinned
+Left out: PyPI `py-mini-racer` and `quickjs` (no eligible wheel for the pinned
 Python), packages that cannot return a completion value (`sval` only exposes
 `exports`), packages that launch an external runtime (`execjs`), and
 `@eyurtsev/pyodide-sandbox`, which runs Python and is asynchronous. The sort is

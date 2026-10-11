@@ -30,14 +30,16 @@ subsequence, or that do not add up to the lengths of the two strings, fail.
 Because only counts are compared, the check cannot tell which equally long
 subsequence was kept.
 
-Packages run with their default settings as installed. For
-`@clearlylocal/diff-match-patch-unicode` the default is `Diff_Timeout = 1`
-second, which turns on diff-match-patch's half-match shortcut; upstream
-documents that shortcut as able to give a non-minimal diff. It keeps a longest
-common subsequence on every fixture here (the check would fail otherwise), but
-unlike the other entries the library does not promise one on other inputs. Not covered: line or
-word diffs, unified patch text, edit-distance scores, semantic cleanup of the
-result and assertion pretty-printers.
+Packages run with their default settings as installed. For the two
+diff-match-patch ports, `@clearlylocal/diff-match-patch-unicode` and Go's
+`sergi/go-diff`, the default is `Diff_Timeout = 1` second, which turns on
+diff-match-patch's half-match shortcut; upstream documents that shortcut as
+able to give a non-minimal diff. They keep a longest common subsequence on
+every fixture here (the check would fail otherwise), but unlike the other
+entries they do not promise one on other inputs.
+
+Not covered: line or word diffs, unified patch text, edit-distance scores,
+semantic cleanup of the result and assertion pretty-printers.
 
 ## Packages left out
 

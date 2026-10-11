@@ -18,10 +18,9 @@ parsed: only the head is in scope, and a parser may stop at the end of the head.
 
 Packages run with their default settings as installed. Responses, chunked
 decoding, partial or invalid messages and full servers are outside the task.
-No npm or JSR package in this category parses raw HTTP bytes, so it compares
-two Rust crates and the Go standard library. Python's standard library parses
-headers only from file objects and Ruby has no standard parser, so neither
-is included.
+No npm or JSR package in this category parses raw HTTP bytes, so there is no
+JavaScript entry. Python's standard library parses headers only from file
+objects and Ruby has no standard parser, so neither has a builtin entry.
 
 - `httparse`: `Request::parse` with a 100-header array on the stack. It is
   zero-copy: the parsed request borrows from the input. The measured call
@@ -30,6 +29,12 @@ is included.
   fields copied to JSON.
 - `ureq-proto`: `parser::try_parse_request::<100>`, which runs httparse and
   builds an `http::Request`; returned as is.
+- `h11` (PyPI): a new `h11.Connection(SERVER)` per call, `receive_data`, then
+  one `next_event()`, which returns the `Request` event.
+- `httptools` (PyPI): `HttpRequestParser` with a callback object that collects
+  the URL and headers, `feed_data`, then `get_method` and `get_http_version`.
+- `http_parser.rb` (RubyGems): `Http::Parser` stopping at
+  `on_headers_complete`, then the method, URL, minor version and headers hash.
 - Go `net/http`: `ReadRequest` over a `bufio.Reader` on the string.
 
 See [shared methodology](../../README.md) for timing and reproduction.

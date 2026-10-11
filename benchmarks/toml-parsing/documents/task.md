@@ -7,7 +7,10 @@ with escapes) and four lockfiles, the largest about 5,000 lines of
 `[[package]]` tables. They use basic and literal strings, multi-line strings,
 integers (decimal and hexadecimal, with underscores), floats, booleans,
 arrays, inline tables, dotted keys, nested tables, arrays of tables and
-comments. Escapes are limited to `\n \t \" \\ \uXXXX`; the eight-digit `\UXXXXXXXX` escape is left out because `@std/toml` decodes it wrongly for characters beyond the Basic Multilingual Plane (such emoji appear only as literal text). They use no date or time values, no infinities or NaN and no
+comments. Escapes are limited to `\n \t \" \\ \uXXXX`; the eight-digit
+`\UXXXXXXXX` escape is left out because `@std/toml` decodes it wrongly for
+characters beyond the Basic Multilingual Plane (such emoji appear only as
+literal text). They use no date or time values, no infinities or NaN and no
 integers beyond 2^53, because libraries and languages represent those
 differently. Packages run with their default settings, as installed.
 
@@ -29,4 +32,9 @@ See [shared methodology](../../README.md) for timing and reproduction.
 - JSR: `@std/toml` `parse`.
 - Rust: `toml` `from_str` into `toml::Table`, `toml_edit` `DocumentMut` parse
   (format-preserving; the parsed document is what it returns).
+- PyPI: `tomli` `loads`, `tomlkit` `parse` (a style-preserving document,
+  unwrapped to plain data outside the timed call).
+- RubyGems: `toml-rb` `TomlRB.parse`, `tomlrb` `Tomlrb.parse`.
+- Go: `BurntSushi/toml` `Decode` and `pelletier/go-toml` v2 `Unmarshal`, both
+  into `map[string]any`.
 - Built in: `Bun.TOML.parse` (Bun), Python `tomllib.loads`.

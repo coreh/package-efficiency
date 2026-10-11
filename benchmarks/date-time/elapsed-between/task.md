@@ -11,7 +11,7 @@ numbers). They are totals, not a breakdown: 90 minutes is `[1, 90, 5400]`.
 This is the second job of the category: the first task adds calendar months and
 formats; this one parses with offsets and measures a span between two instants,
 and never formats. The 48 cases mix `Z` and numeric offsets (from -08:00 to
-+09:30), both directions, gaps from a few seconds to about 20 years, years 1970
++12:00), both directions, gaps from a few seconds to about 20 years, years 1970
 to 2100 and some fractional seconds. Results are checked against an independent
 oracle written with UTC millisecond arithmetic. A result of negative zero is
 accepted as zero.

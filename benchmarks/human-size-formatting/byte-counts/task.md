@@ -20,8 +20,8 @@ inside the measured call, in every language alike. That is the case for
 `number_prefix` (Rust): the crate only divides and picks the prefix, and the
 string is produced by the adapter's own `format!` with one decimal, so its
 figure is the crate's arithmetic plus formatting code the crate does not
-contain. Parsing sizes back from text,
-decimal (SI) formatting and locale-aware number formatting are outside the task.
+contain. Parsing sizes back from text, decimal (SI) formatting and
+locale-aware number formatting are outside the task.
 `d3-format` is left out: its `s` type is decimal SI (factors of 1000), which is a
 different output, not a spelling variant.
 

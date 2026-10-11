@@ -22,10 +22,11 @@ Accepted as equivalent: the container type of the bytes (`Uint8Array`,
 `describe`, and Rust a `describe` function, only to turn the bytes into a list
 of integers for the verifier, outside the timed call.
 
-Packages that take bytes (`@noble/hashes`' string inputs are accepted directly;
-the Rust crate and Go's `crypto/pbkdf2` take bytes or strings) do any UTF-8
-encoding inside the call. The Rust crate is used with its `sha2` companion,
-`pbkdf2_hmac::<Sha256>`, filling a stack buffer for each length. No setup is
+Every adapter is given the password and salt as strings and does any UTF-8
+encoding inside the call: `@noble/hashes` accepts strings directly, Python
+encodes them, and Rust and Go take the strings' bytes. The Rust crate is used
+with its `sha2` companion, `pbkdf2_hmac::<Sha256>`, filling a 64-byte stack
+buffer whose first `length` bytes are the key. No setup is
 hoisted: PBKDF2 has no reusable state per password and salt.
 
 Every package runs with default settings as installed. No result is cached.

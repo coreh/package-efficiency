@@ -29,5 +29,7 @@ See [shared methodology](../../README.md) for timing and reproduction.
 - JSR: `@std/ini` `parse`.
 - Rust: `rust-ini` `Ini::load_from_str`.
 - Python standard library: `configparser.ConfigParser.read_string`.
+- PyPI: `iniconfig` `IniConfig(path, data=text)`, returning its `.sections` mapping.
+- Go: `gopkg.in/ini.v1` `ini.Load`, with the sections copied into maps inside the call.
 
 No npm package in the category's top list was available for this task.

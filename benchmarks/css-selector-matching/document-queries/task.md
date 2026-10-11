@@ -20,8 +20,8 @@ the document. Reading the attribute happens only in the check, not in the
 measured work.
 
 The document is well-formed on purpose (explicit `tbody`, no implied tags), so
-that the HTML5 parser used in Rust and the forgiving parser used in JavaScript
-build the same tree. Packages run with their default settings as installed.
+that the HTML5 parsers and the forgiving parsers the libraries use all build the
+same tree. Packages run with their default settings as installed.
 
 ## Entries
 
@@ -30,14 +30,24 @@ build the same tree. Packages run with their default settings as installed.
   `Selector::parse(selector)` and `Html::select`, collecting the matched node ids.
   `selectors` itself has no tree and needs a hand-written tree adapter, so the
   crate that wraps it is used.
-
-Python, Ruby and Go libraries for this job (soupsieve, cssselect2, goquery,
-cascadia) cannot take part in a synchronous task yet.
+- Python `cssselect2`: `ElementWrapper.query_all(selector)` over an html5lib
+  ElementTree.
+- Python `soupsieve`: `soupsieve.select(selector, soup)` over a BeautifulSoup
+  tree built with `html.parser`.
+- Python `cssselect`, through lxml's `CSSSelector(selector)(root)` over an
+  `lxml.html` tree. It rejects the `i` flag of `[data-kind="NOTE" i]`, so it
+  does not pass here.
+- Go `andybalholm/cascadia`: `cascadia.Compile(selector)` then `MatchAll` over
+  an `x/net/html` tree. It rejects `:is()`, so it does not pass here.
+- Go `PuerkitoBio/goquery`: `Document.Find(selector).Nodes`. It compiles with
+  cascadia and matches nothing for `:is(h2, h3) + p`, so it does not pass here.
 
 ## The lenient task
 
-This is the strict task of a pair. [document-queries-lenient](../document-queries-lenient/task.md) runs the same
-adapters on the same inputs with a check that leaves out or forgives one
-stated kind of difference. It has the 42 selectors written in Selectors Level 3, without `:is(h2, h3) + p` and `[data-kind="NOTE" i]`. cascadia and goquery, which refuse the first, and cssselect, which
-refuses the second, pass there.
+This is the strict task of a pair.
+[document-queries-lenient](../document-queries-lenient/task.md) runs the same
+adapters on the same document with only the 42 selectors written in Selectors
+Level 3, without `:is(h2, h3) + p` and `[data-kind="NOTE" i]`. cascadia and
+goquery, which refuse the first, and cssselect, which refuses the second, pass
+there.
 See "Strict and lenient tasks" in the [shared methodology](../../README.md).

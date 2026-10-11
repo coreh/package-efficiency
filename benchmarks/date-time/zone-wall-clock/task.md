@@ -8,9 +8,9 @@ after it), and the zone's UTC offset at that instant in seconds east of UTC
 (an integer: `-14400` in New York in summer, `20700` in Kathmandu). The result
 is the list of 200 pairs, in input order.
 
-This is the category's job on time zone rules: the other two tasks parse,
-add calendar months, and subtract instants with fixed offsets; this one
-looks up which offset a named zone has at an instant. The 12 fixtures are
+This is the category's job on time zone rules: the other tasks parse, add
+calendar months, subtract instants with fixed offsets and read duration
+strings; this one looks up which offset a named zone has at an instant. The 12 fixtures are
 one per zone:
 
 - `America/New_York`, `America/Los_Angeles`: United States daylight-saving rules.
@@ -32,8 +32,9 @@ December), are spread over 2012 to 2024 by a fixed-seed generator.
 
 Every entry uses some copy of the tz database, and not the same one: the
 JavaScript runtimes use their ICU's, Python's `zoneinfo`, Go's `time`,
-`python-dateutil` and `arrow` read the system's zoneinfo files (on the machine
-of the first results, tzdata 2026d), `jiff` reads them too, `pytz` bundles its
+`python-dateutil` and `arrow` read the system's zoneinfo files (whichever tzdata
+release the measuring machine has; 2026d on the machine of the first results),
+`jiff` and `tzinfo` read them too, `pytz` bundles its
 own, and `pendulum` reads the `tzdata` package it requires. So the fixtures
 stay where those copies cannot disagree: instants from 2012 to 2024 only, in
 zones whose rules for those years have not changed in any recent release. No

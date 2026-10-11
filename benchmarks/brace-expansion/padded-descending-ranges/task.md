@@ -6,7 +6,7 @@ The 48 cases are dominated by numeric ranges rather than word lists: ascending
 ranges with zero-padded endpoints (`{001..120}`), descending ranges (`{90..3}`),
 descending padded ranges, short padded ranges (`{00..09}`), two ranges in one
 pattern, and a range combined with a small comma list. Results are lists of
-roughly 10 to 300 strings (a few are larger when two ranges multiply).
+20 to 286 strings.
 The check compares the whole list, in order, with an independent reference
 expander, so padding width and direction must be exact.
 

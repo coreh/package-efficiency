@@ -5,7 +5,7 @@ beforehand (by `node:crypto`, outside any package) and the shared secret to
 check it with. The operation verifies the token with HS256 and returns
 `{ status, claims }`. `status` is `valid` (claims are the verified payload as a
 plain object), `expired` (signature correct, `exp` in the past) or
-`invalid-signature` (claims are `null`).
+`invalid-signature`; claims are `null` for both rejections.
 
 This is a different job from the sign-and-verify round trip: nothing is signed
 in the measured call, and 30% of the tokens are rejected, so the error path
@@ -21,19 +21,20 @@ claims that deep-equal the payload that was signed. Returning the decoded
 payload without checking the signature fails on the tampered and wrong-secret
 tokens; a constant fails on the mix.
 
-Libraries signal rejection differently: `jsonwebtoken` for npm throws, the Rust
-crate returns an error with a kind. Each adapter maps the rejection to the
-status inside the measured call, in the same way: an expiry error becomes
-`expired`, any other error `invalid-signature`. Creating and catching the
-exception is part of what the JavaScript package costs. Packages run with
+Libraries signal rejection differently: `jsonwebtoken` for npm and the Python
+and Ruby packages raise an exception, the Rust crate and the Go packages return
+an error. Each adapter maps the rejection to the status inside the measured
+call, in the same way: an expiry error becomes `expired`, any other error
+`invalid-signature`. Where the package throws, creating and catching the
+exception is part of its cost. Packages run with
 default settings as installed, except that the Rust `jsonwebtoken` crate ships
 no crypto backend by default and is built with `default-features = false` and
 `rust_crypto` (pure-Rust HMAC and SHA-2).
 
-There is one entry per language: `jsonwebtoken` for npm and the `jsonwebtoken`
-crate for Rust. The task therefore compares a JavaScript library with a Rust
-crate plus its crypto backend; it does not grade a package against a peer in
-the same language. The sibling sign-and-verify task has more entries.
+Entries: `jsonwebtoken` (npm), the `jsonwebtoken` crate (Rust), `pyjwt`,
+`python-jose` and `joserfc` (PyPI), `jwt` (RubyGems), and `golang-jwt/jwt`,
+`dgrijalva/jwt-go` and `form3tech-oss/jwt-go` (Go). JavaScript and Rust have
+one entry each. The sibling sign-and-verify task has more entries.
 
 Left out: `jws`, `jwa` and the Rust `jwt` crate have no claims layer and do not
 check `exp`, so they could not give the `expired` outcome without the adapter

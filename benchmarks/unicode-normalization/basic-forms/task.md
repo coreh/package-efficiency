@@ -27,6 +27,7 @@ cached between calls.
 The standard-library adapters (JavaScript `String.prototype.normalize`, Python
 `unicodedata.normalize`, Ruby `String#unicode_normalize`) are baselines. Go's
 standard library has no normalization, and no npm or JSR package in the
-category list offers it, so only crates.io packages are included.
+category list offers it, so the packages are crates (`unicode-normalization`,
+`icu_normalizer`) and gems (`unf_ext`, `unicode_utils`).
 
 See [shared methodology](../../README.md) for timing and reproduction.

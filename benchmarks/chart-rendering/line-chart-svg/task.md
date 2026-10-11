@@ -7,8 +7,9 @@ colours and margins are the library's own.
 
 The 6 fixtures are 560 by 352 to 1000 by 600 pixels (every size a multiple of
 4, so points and CSS pixels convert exactly). The x values are 0 to 499; each
-series is a slow wave plus grain large enough that no point lies on the line
-through its neighbours, so every point is a corner of the line.
+series is a slow wave plus grain, so nearly every point is a corner of the
+line (a few lie within a fraction of a pixel of the line through their
+neighbours, which is what a simplifying renderer leaves out).
 
 ## What counts as correct
 

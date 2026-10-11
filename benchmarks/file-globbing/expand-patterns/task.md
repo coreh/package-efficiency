@@ -95,14 +95,14 @@ recorded as not passing, and where an option fixes it a variant sits beside it.
 
 - `wcmatch` (PyPI): without the `GLOBSTAR` flag `**` means `*`. Variant
   `wcmatch-globstar` passes.
-- `bmatcuk/doublestar` (Go): `*` and `**` match hidden names. Variant
-  `bmatcuk-doublestar-nohidden` (`WithNoHidden()`) passes.
-- `glob` (crate): `*` and `**` match hidden names. Its option
-  `require_literal_leading_dot` fixes that but also stops `**/.gitignore` from
-  finding anything, so even that fails and no variant is entered.
-- `globwalk` (crate) and `mattn/go-zglob` (Go module): hidden names match and
-  there is no option for it.
-- `@std/fs` (JSR): `*` and `**` match hidden names, and there is no option for it.
+- `mattn/go-zglob` (Go module): its results follow neither dot-file convention
+  on these trees, and there is no option for it.
+
+`bmatcuk/doublestar` (Go) follows the second convention by default and passes;
+the variant `bmatcuk-doublestar-nohidden` (`WithNoHidden()`) follows the first
+and passes too. Rust's `glob` has an option, `require_literal_leading_dot`, for
+the first convention, but it also stops `**/.gitignore` from finding anything,
+so no variant is entered.
 
 ## Packages
 

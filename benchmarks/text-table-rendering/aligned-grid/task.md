@@ -3,7 +3,8 @@
 One operation takes a table `{ headers, rows }` and returns a string: the table
 laid out as aligned plain text. `headers` is a list of 8 strings; each row is a
 list of 8 cells that mix strings (with spaces, accents and punctuation),
-integers, decimals (all exactly representable, multiples of 1/8) and booleans. The 40 cases have between 3 and 60 rows.
+integers, decimals (all exactly representable, multiples of 1/8) and booleans.
+The 40 cases have between 3 and 60 rows.
 
 A correct output has one line per table row, the header first, and on each
 line that row's cells in order, every cell's text exactly as `String(cell)`
@@ -15,7 +16,9 @@ unpadded join of the cells therefore fails. Border style, padding width,
 separators, the choice of left or right alignment per column, header
 decoration and trailing whitespace are free, so packages that draw borders
 and packages that only pad columns are both accepted; centred columns are
-not, and no included package centres by default. Lines are not required to
+not (`prettytable`, which centres by default, and `tablewriter`, which centres
+the header, are recorded as not passing, each beside a variant that does not
+centre). Lines are not required to
 have equal total width, because several packages trim trailing padding or
 leave the last column unpadded.
 

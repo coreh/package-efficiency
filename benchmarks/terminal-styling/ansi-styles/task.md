@@ -36,13 +36,15 @@ the string concatenation would be written by the adapter, not the package.
 ## Rust entries
 
 Each adapter returns a fresh owned `String`, formatted with the crate's own
-types. Nested styles are built in one of two ways, depending on how the crate
-closes a style. `colored` formats the inner styled value into the outer text
-and styles that string, as the JavaScript adapters do. `owo-colors`, `yansi`
-and `nu-ansi-term` instead style three separate parts (`a`, `b`, `c`), each
-carrying its full style, and join them (`format!` for the first two,
-`AnsiStrings` for `nu-ansi-term`): they close with a full reset or do not
+types. How nested styles are built depends on how the crate closes a style.
+`colored` formats the inner styled value into the outer text and styles that
+string, as the JavaScript adapters do. `owo-colors`, `yansi`, `anstyle`,
+`ansi_term` and `nu-ansi-term` instead style three separate parts (`a`, `b`,
+`c`), each carrying its full style, and join them (`ANSIStrings` and
+`AnsiStrings` for the last two): they close with a full reset or do not
 re-open an outer style, so an inner part embedded in outer text would end the
-outer style early. Output is verified by the same JavaScript `verifyResults`.
+outer style early. `termcolor` writes into one ANSI `Buffer` with `set_color`,
+`write` and `reset`, outer style first, as its stateful writer works. Output
+is verified by the same JavaScript `verifyResults`.
 
 See [shared methodology](../../README.md) for timing and reproduction.

@@ -16,8 +16,9 @@ Steps, the same in every adapter:
 3. for `i` in `0..chunks`, allocate a zero-filled Buffer of `size` bytes, fill
    it with `i & 255`, then set byte 0 to `(i * 7 + 5) & 255` and the last byte
    to `(i * 13 + 1) & 255`, and write it to the first stream. When `write`
-   returns exactly `false` (MuteStream returns nothing and has no backpressure), wait for the first stream's `drain` before writing the
-   next chunk (backpressure is honoured);
+   returns exactly `false`, wait for the first stream's `drain` before writing
+   the next chunk, so backpressure is honoured (MuteStream's `write` returns
+   nothing and never applies it);
 4. call `end()` on the first stream, wait for the tail's `end`, and return
    `{ bytes, count, checksum }`.
 

@@ -40,8 +40,9 @@ figure does not.
 ## Who is included
 
 Only packages that reopen outer styles by themselves are included: `chalk`,
-`picocolors`, `colorette`, `kleur`, `tinyrainbow`, Node's `util.styleText` and,
-in Rust, `colored`. `@std/fmt` and `@cliffy/ansi` were tried and fail the check
+`picocolors`, `colorette`, `kleur`, `tinyrainbow`, `ansi-colors`, Node's
+`util.styleText`, `colored` (Rust), `rich` (Python, which renders a text with
+styled spans rather than nested calls) and `ansi` (Ruby). `@std/fmt` and `@cliffy/ansi` were tried and fail the check
 (they wrap without reopening), so they are removed. `yansi`, `owo-colors` and
 `nu-ansi-term` close with a full reset and do not reopen, so they are left out
 without being tried.

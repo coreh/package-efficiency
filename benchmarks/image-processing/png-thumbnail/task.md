@@ -34,8 +34,8 @@ without preferring one filter to another.
 ## Packages
 
 Each runs with its default options. Where a library has no default filter and
-one must be named, Lanczos3 is used: it is the default of the entry that has
-one, and the three passing entries then do the same resampling.
+one must be named, Lanczos3 is used, the default of `@napi-rs/image`; OpenCV
+and Go's `x/image` name another filter, as said below.
 
 - `@napi-rs/image`: `new Transformer(bytes).resize(width, height).pngSync()`.
   A native add-on (the Rust `image` crate behind N-API), installed as a
@@ -50,20 +50,36 @@ one, and the three passing entries then do the same resampling.
   without averaging, and maps corner pixel to corner pixel, so its thumbnails
   are 2.3 to 6.3 levels from the reference. No setting of the package changes
   that.
+- `pillow` (PyPI): `Image.open(BytesIO(bytes)).resize((width, height),
+  Image.Resampling.LANCZOS)`, saved as PNG.
+- `opencv-python` and `opencv-python-headless` (PyPI): `cv2.imdecode`,
+  `cv2.resize(image, (width, height), interpolation=INTER_AREA)`,
+  `cv2.imencode('.png', ...)`. `INTER_AREA` is the filter OpenCV documents for
+  shrinking; its default (bilinear) and its Lanczos4 look at only a few
+  neighbouring pixels and would not average.
+- `scikit-image` (PyPI): `skimage.transform.resize(image, (height, width))`
+  with its default anti-aliasing, `img_as_ubyte`, and `imageio.v3` to decode
+  and encode the PNG, which is how scikit-image does file I/O.
+- `rmagick` (RubyGems): `Magick::Image.from_blob(bytes).first.resize(width,
+  height, Magick::LanczosFilter)`, then `to_blob` as PNG. Compiled against the
+  ImageMagick installed on the machine.
+- `golang.org/x/image` (Go): the standard library's `image/png` to decode and
+  encode, and `draw.CatmullRom.Scale` to resample. `x/image` has no Lanczos
+  kernel; Catmull-Rom is its best and averages over the covered area when
+  shrinking.
 
-The three passing entries share one resampling and PNG code base (the Rust
-`image` crate), reached natively, through N-API and through WebAssembly, so
-this task mostly compares those three ways of running it.
+Three of the entries share one resampling and PNG code base (the Rust `image`
+crate), reached natively, through N-API and through WebAssembly.
 
 Not included: `sharp`, `jimp`, `@matmen/imagescript` and `@cross/image` decode
-or encode asynchronously and wait for the asynchronous task kind; `pngjs` has
-no resize. PyPI `pillow` and `opencv-python`, RubyGems `mini_magick` and
-`ruby-vips`, and Go `x/image` can be added when those registries can supply
-adapters; the check needs no change. JPEG input is not covered: the scenario
-has no JPEG encoder to draw fixtures with.
+or encode only through promises and are measured in
+[png-thumbnail-async](../png-thumbnail-async/task.md); `pngjs` has no resize.
+RubyGems `mini_magick` and `ruby-vips` have no adapter yet; the check would
+need no change. JPEG input is not covered: the scenario has no JPEG encoder to
+draw fixtures with.
 
 The scenario compresses the fixtures with the runtime's own zlib, so the PNG
 bytes of a fixture can differ between Node, Bun and Deno while the pixels are
-the same; the Rust entry reads the files Node wrote.
+the same; the Rust, Python, Ruby and Go entries read the files Node wrote.
 
 See [shared methodology](../../README.md) for timing and reproduction.

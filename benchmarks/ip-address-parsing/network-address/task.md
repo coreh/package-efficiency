@@ -23,7 +23,8 @@ shorthand IPv4. Packages run with their default settings as installed.
 Entries: `ipaddr.js` (`networkAddressFromCIDR`, `toString`); `ip-address`
 (`Address4`/`Address6` parse, `startAddress()`, `correctForm()`); Rust `ipnet`
 (`IpNet` parse, `network()`) and `ipnetwork` (`IpNetwork` parse, `network()`);
-standard library: Python `ipaddress`, Ruby `IPAddr`, Go `net/netip`. In JavaScript
+Ruby `ipaddress` (`IPAddress.parse`, `network.to_s`); Go `hashicorp/go-sockaddr`
+(`NewIPAddr`, masked with `NetIPMask()` and printed); standard library: Python `ipaddress`, Ruby `IPAddr`, Go `net/netip`. In JavaScript
 the family is picked with a `:` check, as the packages have separate classes.
 JavaScript has no built-in CIDR parser.
 

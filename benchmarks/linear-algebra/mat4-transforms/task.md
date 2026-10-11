@@ -73,11 +73,8 @@ from the row-major input with a row-major constructor in `prepare`.
 | --- | --- |
 | `cargo/glam` | `DMat4::from_cols_array(&m).transpose()` in `prepare` (the input is row-major); the chain folded with `*`; `DMat4::inverse()`. A fixed 4 by 4 type with a cofactor inverse; `describe` reads `transpose().to_cols_array()`. |
 | `cargo/nalgebra` | `Matrix4::<f64>::from_row_slice` in `prepare`; the chain folded with `*`; `try_inverse()` (nalgebra's 4 by 4 inverse is a closed formula). A fixed-size stack matrix, not the `DMatrix` of the sibling tasks. |
-| `pypi/numpy` | `np.array(...).reshape(64, 4, 4)` in `prepare`; `np.linalg.multi_dot` over the 64 matrices (or `functools.reduce(np.matmul, ...)`); `np.linalg.inv`. `describe` flattens with `ravel().tolist()`. |
+| `pypi/numpy` | `np.array(...).reshape(64, 4, 4)` in `prepare`; `np.linalg.multi_dot` over the 64 matrices; `np.linalg.inv`. `describe` flattens with `ravel().tolist()`. |
 | `rubygems/matrix` | `Matrix.rows(rows, false)` for each matrix in `prepare`; `reduce(:*)`; `Matrix#inverse`. `describe` flattens with `to_a.flatten`. |
-
-The package entries are written separately; this list says what each is to
-call.
 
 ## Left out
 

@@ -16,8 +16,8 @@ and the stable or unstable nature of a sort does not matter.
 
 Each adapter parses every string once, sorts the parsed versions with the
 package's comparison, and returns the original input strings in that order
-(JavaScript adapters return the input strings, Rust returns indices into the
-input that the harness resolves to strings outside the timing). The adapter does
+(Rust returns indices into the input, which the harness resolves to strings
+outside the timing). The adapter does
 not format versions back to text. The verifier compares to an independent
 implementation of the precedence rules in `scenario.mjs`, so returning the input
 unchanged or a plain string sort fails.

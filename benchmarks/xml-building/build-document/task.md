@@ -54,16 +54,21 @@ the tree inside the timed call; that is its walk.
 - `quick-xml` (Rust): a `Writer` and `Start`, `Text`, `End` events.
 - `xml-rs` (Rust): an `EventWriter` and `start_element`, `characters`,
   `end_element` events.
+- `builder` (Ruby): `Builder::XmlMarkup` with `tag!(name, attrs)` for every
+  element (a block for children, the text for leaves), then `target!`.
+- `gyoku` (Ruby): `Gyoku.xml` on nested `Hash` data built from the tree, with
+  the attributes under `:attributes!`.
+- `et-xmlfile` (Python): `xmlfile()` over a `BytesIO`, `element(name, attrib)`
+  as a context manager for every element and `write(text)` for text.
 - Standard library: Python `xml.etree.ElementTree` (`SubElement`, `tostring`),
   Go `encoding/xml` (`Encoder.EncodeToken`), Ruby REXML (`add_element`,
   `add_text`, `Document#write`; a bundled gem that ships with Ruby).
 
 The libraries do not all work the same way, and that is part of what is
 measured: `xmlbuilder`, `xmlbuilder2`, ElementTree and REXML build a document
-object in memory and then serialize it; the Rust crates and Go write each
-element straight into the output buffer.
+object in memory and then serialize it; the Rust crates, Go, `builder` and
+`et-xmlfile` write each element straight into the output.
 
-Not included yet: RubyGems `builder` and `gyoku` and PyPI `et-xmlfile`, which
-can be added when those registries can supply adapters. `arbre` builds HTML.
+Not included: `arbre`, which builds HTML.
 
 See [shared methodology](../../README.md) for timing and reproduction.

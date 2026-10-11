@@ -68,9 +68,6 @@ this task.
 | `rubygems/http-accept` | `HTTP::Accept::MediaTypes.parse(header)`, a list of `MediaRange` structs sorted by q (stable); the adapter keeps those with `quality_factor > 0`, and `describe` gives `mime_type` for each, outside the timed call |
 | `gomod/github.com/munnerz/goautoneg` | `goautoneg.ParseAccept(header)`, a slice of `Accept{Type, SubType, Q, Params}`; the adapter keeps those with `Q > 0` |
 
-The package entries are written separately; this list says what each is to
-call.
-
 ## Left out
 
 - Standard libraries: Node, Bun and Deno, Python, Ruby and Go have no Accept

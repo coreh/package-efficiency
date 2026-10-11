@@ -34,4 +34,4 @@ See [shared methodology](../../README.md) for timing and reproduction.
 
 ## Packages
 
-- npm: `acorn` `parse`, `@babel/parser` `parse`, `espree` `parse`, `esprima` `parseScript`, `oxc-parser` `parseSync`.
+- npm: `acorn` `parse`, `@babel/parser` `parse`, `espree` `parse`, `esprima` `parseScript`, `oxc-parser` `parseSync`, `@typescript-eslint/typescript-estree` `parse`.

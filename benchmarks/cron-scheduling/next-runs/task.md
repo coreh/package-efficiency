@@ -2,10 +2,12 @@
 
 One operation takes a five-field cron expression (minute, hour, day of month,
 month, day of week), a start instant and a count of 50, and returns the next 50
-run times strictly after the start, as the library's own list of `Date` values.
-The expression is parsed inside the call in every adapter, because evaluating an
-expression from text is the job being compared; the 50 occurrences are computed
-with the library's "next N dates" call.
+run times strictly after the start, as the library's own date values (`Date` in
+JavaScript). The expression is parsed inside the call in every adapter, because
+evaluating an expression from text is the job being compared. The 50 occurrences
+come from the library's "next N dates" call where it has one (`nextRuns`,
+`getNextDates`), otherwise from 50 calls of its "next date" call, each from the
+previous run.
 
 The 40 cases cover every-minute and stepped minutes, hourly, daily and weekly
 schedules, weekday ranges and name aliases (`mon-fri`, `jun-aug`), lists, ranges
@@ -24,5 +26,5 @@ and the leap-day expression `0 0 29 2 *` is excluded because `cron-schedule`
 gives up searching for it. Packages run with default settings as installed.
 
 `@m4rc3l05/cron` is left out: it is a timer-driven job runner on top of
-`cron-parser` and exposes no call that returns the next run times. No npm or
-crates.io packages were in the brief. See [shared methodology](../../README.md).
+`cron-parser` and exposes no call that returns the next run times. There are no
+npm or crates.io entries. See [shared methodology](../../README.md).

@@ -11,8 +11,9 @@ the way its library allows, so every step is drawn: `renderThrottle: 0`
 (progress), `mininterval=0, miniters=1` (tqdm), `throttle_rate: 0`
 (ruby-progressbar), `term_like` without a rate limiter plus `force_draw()`
 (indicatif), `set_max_refresh_rate(None)` (pbr), `update(i, force=True)`
-(progressbar2), static mode with `Write()` (cheggaaa/pb). Everything else is
-the library's default. Where a library needs a format string it is
+(progressbar2), static mode with `Write()` (cheggaaa/pb v3);
+schollz/progressbar does not throttle by default. Everything else is the
+library's default. Where a library needs a format string it is
 `[:bar] :percent` (progress); the others use their default format.
 
 **The stream** is a small object in every adapter that looks like a

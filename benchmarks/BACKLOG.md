@@ -23,6 +23,12 @@
 
 ## Known gaps in what exists
 
-- Adapters for PyPI, RubyGems and Go-module packages run in synchronous and client tasks, not yet in asynchronous ones. Several async tasks (retry policies, synchronization primitives, resource pools) left packages out for this reason.
-- Go modules do not run in client tasks yet.
-- A dozen tasks compare one package with standard-library code only; they need more packages picked by hand.
+- Seven tasks compare a single package, with or without standard-library
+  entries, and need more packages picked by hand:
+  `block-compression/lzw-large-buffer-compress`,
+  `block-compression/lzw-roundtrip-text`, `image-decoding/gif-rgba`,
+  `image-decoding/png-rgba`, `message-authentication-codes/hmac-sha256-messages`,
+  `symbol-demangling/rust-legacy-paths`, `symmetric-ciphers/aes-256-ctr`.
+- Client tasks run Python clients on threads only; an asynchronous Python
+  client (aiohttp, httpx's AsyncClient) needs an asyncio mode in the client
+  runner. See "Not there yet" under "Client tasks" in README.md.

@@ -49,7 +49,7 @@ strings, one total off by one, a missing total and another fixture's results.
 All inputs are valid, so error handling is outside this task. There are no
 days or weeks (Go has no unit for them), no milliseconds or smaller units, no
 fractions (`1.5h`), no sign, no spaces between parts and no bare `0` without a
-unit: libraries differ on each of those, and the cluster's job is whole hours,
+unit: libraries differ on each of those, and this task's job is whole hours,
 minutes and seconds.
 
 Each library's duration value is turned into whole seconds inside the measured

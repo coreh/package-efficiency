@@ -16,11 +16,12 @@ call changes the files and later calls replace them with identical contents.
 
 There are two cases, replaced alternately:
 
-- `small`: 121 text files of 0 to 8 KB in 15 directories (one holds a name with
-  a space, others non-ASCII names, a dot directory, a chain five directories
-  deep). It has an empty new content, dot files, names with spaces and
+- `small`: 113 text files of 0 to about 10 KB in 14 directories, counting
+  `small` itself (one has a name with a space, others non-ASCII names, a dot
+  directory, a chain five directories deep). It has an empty new content, dot files, names with spaces and
   non-ASCII characters, files with mode 755, 640 and 600 and the rest 644.
-- `large`: 8 files of 256 KB each, one with mode 600 and one with mode 755.
+- `large`: 8 files of about 320 KB each (a little over 256 K characters of
+  UTF-8 text), one with mode 600 and one with mode 755.
 
 There are no symbolic links.
 

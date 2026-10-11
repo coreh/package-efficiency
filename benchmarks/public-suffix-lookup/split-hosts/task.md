@@ -5,12 +5,13 @@ its registrable domain (`globex-37.co.uk`): the public suffix plus one label,
 according to the Public Suffix List. A host that is only a public suffix
 (`co.uk`, `com`) has none, and the result is `null` (`nil`, `None`).
 
-The 720 hosts (594 distinct) are generated deterministically from single
+The 720 hosts (621 distinct) are generated deterministically from single
 labels (`com`, `de`, `jp`), multi-label suffixes (`co.uk`, `com.br`, `ne.jp`,
 `gov.cn`), internationalized suffixes already in punycode (`xn--p1ai`),
 wildcard rules (`*.ck`, `*.fk`, `*.np`, ...) and the exception to one
-(`www.ck`), each with zero to three subdomain labels, and with bare suffixes
-(one host in twelve) that must give `null`. Every host is lower case.
+(`www.ck`), each with zero to three subdomain labels. One host in eight is a
+bare suffix (`co.uk`, or a name directly under a wildcard rule) and must give
+`null`. Every host is lower case.
 
 ## What counts as correct
 
@@ -44,8 +45,8 @@ Each runs with default options, the way its documentation shows.
 - `golang.org/x/net/publicsuffix` (`EffectiveTLDPlusOne`), Go.
 
 No standard library does this, so there are no `builtin` adapters. Not
-included: JSR and crates (`psl`, `publicsuffix`, `addr`), which the brief did
-not list; Python `publicsuffix2` and `publicsuffixlist`, Go `weppos/publicsuffix-go`
-are other candidates.
+included: JSR packages and crates (`psl`, `publicsuffix`, `addr`), which the
+brief did not list. Python `publicsuffix2` and `publicsuffixlist` and Go
+`weppos/publicsuffix-go` are other candidates, not entered.
 
 See [shared methodology](../../README.md) for timing and reproduction.

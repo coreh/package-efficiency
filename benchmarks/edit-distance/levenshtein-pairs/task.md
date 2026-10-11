@@ -10,11 +10,11 @@ unrelated strings, strings of very different lengths and repetitive strings.
 Every output must equal the distance from an independent dynamic-programming
 oracle in `scenario.mjs`. There is no tolerance: the distance is exact.
 
-Inputs are ASCII only, so a character is one UTF-16 code unit in JavaScript and
-one scalar value in Rust, and the packages agree. Unicode normalisation and
+Inputs are ASCII only, so a character is one byte, code unit, scalar value or
+rune in every language, and the packages agree. Unicode normalisation and
 grapheme handling are outside the task. Packages run with their default
-settings as installed: `fast-levenshtein` without a locale collator, `leven`
-and `strsim::levenshtein` with no options. Packages with a distance limit or
+settings as installed: `fast-levenshtein` without a locale collator, the others
+with no options. Packages with a distance limit or
 other metrics (Damerau, Jaro-Winkler) are not used here.
 
 No result is cached between calls. Strings are created before timing. Each

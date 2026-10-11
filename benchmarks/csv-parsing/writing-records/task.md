@@ -35,4 +35,5 @@ See [shared methodology](../../README.md) for timing and reproduction.
 
 - JSR: `@std/csv` `stringify`.
 - Rust: `csv` `Writer` over a `Vec<u8>`, `write_record` per row.
+- RubyGems: `csv` `CSV.generate`, the gem release of the library Ruby bundles.
 - Standard library: Python `csv.writer().writerows`, Ruby `CSV.generate`, Go `encoding/csv` `Writer`.

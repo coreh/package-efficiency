@@ -3,11 +3,13 @@
 One operation takes a string of 4 KB to 214 KB (33 cases, median about 45 KB),
 encodes it to UTF-8 bytes, compresses it with Zstandard and returns the
 compressed bytes. Nothing is decompressed in the timed call. Only Zstandard
-entries are compared here, at the same settings. Both bind the same C library,
-libzstd 1.5.7, so the ranking shows the cost of each binding and its call path
-around that library (and the language around it), not two implementations of
-the format.
-Entries: `zstd` (Rust crate) and Python's `compression.zstd` (CPython 3.14 only).
+entries are compared here, at the same settings. All but one bind the C
+library libzstd, so among them the ranking shows the cost of each binding and
+its call path around that library (and the language around it), not different
+implementations of the format; `klauspost/compress` is an implementation in Go.
+Entries: the Rust crates `zstd` and `zstd-safe`, Python's `compression.zstd`
+(CPython 3.14 only), `zstandard` and `cramjam`, and Go's `DataDog/zstd` (a cgo
+binding) and `klauspost/compress`.
 
 The fixtures are prose, JSON records, log lines, CSV, source code, HTML,
 Unicode text, base64 and hex data, long repeats, and a mixed document that
@@ -16,7 +18,7 @@ same fixtures in every format's large-buffer task.
 
 ## Settings
 
-Every entry runs at Zstandard level 3, no dictionary, no checksum, one thread. That is the default of both libraries, checked in the installed sources: the `zstd` crate is called with level 0, which libzstd defines as `ZSTD_CLEVEL_DEFAULT` (3), and Python's `compression.zstd.compress` with no level uses `COMPRESSION_LEVEL_DEFAULT` (3); both bind libzstd 1.5.7. Both entries use their library's one-shot compression call, so libzstd knows the input size before it sets up its tables and both write the content size into the frame header: Python's `compress`, and the crate's `zstd::bulk::compress` (its streaming `encode_all` does not tell libzstd the size and sets up full-size tables on every call). Each call to the crate creates and frees its own compression context. The Rust memory figure counts allocations made through Rust's allocator, which may not include the context libzstd allocates on the C side.
+Every entry runs at Zstandard level 3, no dictionary, one thread, and all but `klauspost/compress` (whose default adds a checksum) without a checksum. Level 3 is the default of most of the libraries, checked in the installed sources: the `zstd` and `zstd-safe` crates are called with level 0, which libzstd defines as `ZSTD_CLEVEL_DEFAULT` (3), Python's `compression.zstd.compress` with no level uses `COMPRESSION_LEVEL_DEFAULT` (3), and `zstandard` and `cramjam` default to 3. `DataDog/zstd` defaults to 5, so its adapter passes 3; `klauspost/compress` runs at its `SpeedDefault`, about level 3, and shares one encoder and decoder across calls, as the package documents. The `zstd` crate and Python's `compression.zstd` use their library's one-shot compression call, so libzstd knows the input size before it sets up its tables and both write the content size into the frame header: Python's `compress`, and the crate's `zstd::bulk::compress` (its streaming `encode_all` does not tell libzstd the size and sets up full-size tables on every call). Each call to the crate creates and frees its own compression context. The Rust memory figure counts allocations made through Rust's allocator, which may not include the context libzstd allocates on the C side.
 
 ## What is checked
 
@@ -28,7 +30,8 @@ size: every fixture except the random base64 and hex ones must compress to
 under 90% of its size, the random ones must not compress below 40% (a result
 that small could not restore the text), and sizes must differ between fixtures.
 This fails an adapter that returns its input, a constant, or skips the work.
-The Rust and Python adapters' `describe` decompresses.
+The Rust and Python adapters' `describe` decompresses, and the Go adapters'
+results decompress themselves when the runner marshals them.
 
 ## Scope
 

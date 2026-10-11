@@ -75,7 +75,8 @@ Each runs with default options, the way its documentation shows.
 Not included: Ruby `nanaimo` and Go `groob/plist` (an older name of
 `micromdm/plist`, which Go refuses to build under the old path). `nanaimo`
 reads ASCII property lists, another format. PyPI `biplist` publishes only a
-source distribution, which the install rules do not accept; no PyPI package with a wheel that reads XML plists was found. JavaScript, Ruby and Go have no
+source distribution, which the install rules do not accept; no PyPI package
+with a wheel that reads XML plists was found. JavaScript, Ruby and Go have no
 standard-library reader, and JSR has no package for it.
 
 See [shared methodology](../../README.md) for timing and reproduction.

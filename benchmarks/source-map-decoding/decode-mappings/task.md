@@ -6,7 +6,7 @@ list of `{ generatedLine, generatedColumn, source, originalLine, originalColumn,
 Lines are 1-based and columns 0-based, as in the `source-map` API. A mapping
 with no name has `name: null`.
 
-The 42 cases are deterministic maps of 3 to about 620 generated lines, with
+The 42 cases are deterministic maps of 3 to about 610 generated lines, with
 1 to 20 sources, 0 to 80 names, empty lines, backward jumps in original line
 and column, source switches, and segments with and without a name. The
 `mappings` strings are produced by an independent VLQ encoder in the scenario,
@@ -23,6 +23,9 @@ common shape inside the call, for every package alike:
 - `@jridgewell/sourcemap-codec`: `decode(map.mappings)` returns numeric
   segments by line; the adapter turns them into the common shape by looking up
   sources and names. That conversion is timed.
+- `neelance/sourcemap` (Go): `ReadFrom` on the map as JSON bytes (marshalled
+  in `prepare`, outside timing), then `DecodedMappings()`, mapped to the common
+  record.
 
 The checker projects each mapping to its six fields outside timing, so a
 library's own object type is accepted. Packages run with default options as

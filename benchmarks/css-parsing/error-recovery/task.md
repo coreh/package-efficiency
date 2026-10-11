@@ -33,11 +33,12 @@ checks and the variant `css-tools-silent` (`BENCH_CSS_TOOLS=silent`) passes
 them. `css-tree` recovers by default, keeping unparsable declarations as `Raw`
 nodes.
 
-The two packages do different amounts of work per rule: `css-tree` parses
+The packages do different amounts of work per rule: `css-tree` parses
 selectors and declaration values into nodes, `@adobe/css-tools` keeps them as
-text. That is each package's normal output and is part of what is measured.
-Only two entries pass the checks here, one of them through its variant, so
-this is a comparison of those two.
+text, and the Python `tinycss2` and Ruby `crass` return rule nodes whose
+preludes and contents are token lists. That is each package's normal output
+and is part of what is measured. All four pass the checks, `@adobe/css-tools`
+only through its variant.
 
 Left out, as in `stylesheets`: `lightningcss` (no JavaScript call that returns a
 tree), `@csstools/css-parser-algorithms` (works on tokens, not stylesheets) and

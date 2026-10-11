@@ -19,7 +19,7 @@ order above. Expected results are computed in `scenario.mjs` from a plain model
 of the script, not from any library. A container that ignores removals, returns
 wrong values for keys, or does not hold the values fails `live`, `sum` or `mix`.
 
-36 fixtures, from 200 to 24,000 first-phase inserts, with differing extra counts
+36 fixtures, from 200 to about 24,200 first-phase inserts, with differing extra counts
 and seeds. Keys are whatever the container hands out (integer indices or
 generational handles); the adapter keeps them in a `Vec` in every case. Reuse of
 vacated slots is allowed but not required.
@@ -31,4 +31,5 @@ key type), `sharded_slab::Slab::new()`. `sharded-slab` is a concurrent slab and
 is used here through its single-threaded call path; its `get` returns a guard,
 which is dereferenced for the value. The timed output is a small struct read
 through its fields; there is no serialization.
+
 See [shared methodology](../../README.md) for timing and reproduction.

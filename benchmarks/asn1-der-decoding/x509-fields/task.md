@@ -19,8 +19,8 @@ to the common shape inside the call.
 
 The 40 certificates are built deterministically by the scenario: RSA (filler
 2048-bit modulus), EC P-256 (real points) and Ed25519 keys, one to six name
-attributes in subject and issuer (PrintableString and UTF8String, with
-non-ASCII text), UTCTime and GeneralizedTime validity, one to seven
+attributes in subject and issuer (PrintableString, UTF8String with
+non-ASCII text, IA5String for email addresses), UTCTime and GeneralizedTime validity, one to seven
 well-formed extensions (basic constraints, key usage, subject/authority key
 id, SAN, extended key usage, CRL distribution points, authority info access).
 Signatures are filler bytes: nothing is verified. A correct output equals the
@@ -42,5 +42,7 @@ See [shared methodology](../../README.md) for timing and reproduction.
 ## Packages
 
 - Rust: `x509-parser` `X509Certificate::from_der`.
+- PyPI: `asn1crypto` `x509.Certificate.load`, `pyasn1-modules` (the `pyasn1`
+  DER decoder with `rfc5280.Certificate` as spec).
 - Standard library: Go `crypto/x509` `ParseCertificate`, Ruby
   `OpenSSL::X509::Certificate`.

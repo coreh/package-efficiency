@@ -5,11 +5,14 @@ encodes it to UTF-8 bytes, compresses it with LZ4 and returns the
 compressed bytes. Nothing is decompressed in the timed call. Only LZ4
 implementations are compared here, at the same settings, so the ranking shows
 how well each one implements the format and not which format it implements.
-Entries: `lz4_flex` (Rust crate), `@denosaurs/lz4` and `@nick/lz4` (WebAssembly, on Node, Bun and Deno).
+Entries: the Rust crates `lz4_flex` and `lz4` (a binding of the C liblz4),
+`@denosaurs/lz4` and `@nick/lz4` (WebAssembly, on Node, Bun and Deno), Python's
+`lz4` and `cramjam`, and Go's `pierrec/lz4` and `cloudflare/golz4` (a cgo
+binding of liblz4).
 
 The UTF-8 step is not the same cost everywhere. The JavaScript adapters run
 `TextEncoder.encode` on the string inside the timed call; a Rust string is
-already UTF-8, so `lz4_flex` reads its bytes for free. The encode is a small
+already UTF-8, so the Rust entries read its bytes for free. The encode is a small
 part of the JavaScript figures next to the compression itself.
 `@denosaurs/lz4` is the Rust crate `lz4-compression` 0.7 compiled to
 WebAssembly and optimised for size, a different and older implementation than
@@ -22,7 +25,7 @@ same fixtures in every format's large-buffer task.
 
 ## Settings
 
-All three entries write the LZ4 block format with the plain (fast) LZ4 compressor, and none of them takes a level, an acceleration factor or any other option: each package's `compress` has the input as its only argument, checked in the installed sources. There is therefore no setting to align. One framing difference remains and is accepted: `lz4_flex` (`compress_prepend_size`) and `@nick/lz4` put the uncompressed length in front of the block as four bytes, `@denosaurs/lz4` writes the bare block. LZ4 has no entropy coding, so random base64 and hex text does not shrink.
+Every entry writes the LZ4 block format with the plain (fast) LZ4 compressor at its defaults; no adapter passes a level, an acceleration factor or any other option, and most of the packages take none. There is therefore no setting to align. One framing difference remains and is accepted: every entry but one puts the uncompressed length in front of the block as four bytes (`lz4_flex` with `compress_prepend_size`), while `@denosaurs/lz4` writes the bare block. LZ4 has no entropy coding, so random base64 and hex text does not shrink.
 
 ## What is checked
 
@@ -34,7 +37,9 @@ size: every fixture except the random base64 and hex ones must compress to
 under 90% of its size, the random ones must not compress below 40% (a result
 that small could not restore the text), and sizes must differ between fixtures.
 This fails an adapter that returns its input, a constant, or skips the work.
-JavaScript adapters attach `operation.decode(compressed)`; the Rust adapter's `describe` decompresses.
+JavaScript adapters attach `operation.decode(compressed)`; the Rust and Python
+adapters' `describe` decompresses, and the Go adapters' results decompress
+themselves when the runner marshals them.
 
 ## Scope
 

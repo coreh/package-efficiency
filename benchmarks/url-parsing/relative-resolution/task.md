@@ -38,6 +38,14 @@ that, so the cache serves only the repeated dot-only references.
   `ruby-uri` (`URI.join`), `go-net-url` (`url.Parse` twice and `ResolveReference`).
 - cargo `url`: `Url::parse(base)?.join(ref)`.
 - cargo `iri-string`: `UriReferenceStr::resolve_against(UriAbsoluteStr)`, converted to an owned `UriString`.
+- PyPI `yarl`: `URL(base).join(URL(ref))`.
+- PyPI `rfc3986`: `uri_reference(ref).resolve_with(base).unsplit()`. Not
+  passing: `../../` against `https://host/` comes back without its trailing
+  slash.
+- PyPI `hyperlink`: `URL.from_text(base).click(ref).to_text()`. Not passing:
+  it keeps the base's port for `//host` references and drops the password.
+- RubyGems `addressable` (`Addressable::URI.join`) and the `uri` gem
+  (`URI.join`, the released gem rather than the copy bundled with Ruby).
 
 `@jridgewell/resolve-uri` was tried and removed: it is a source-map path
 resolver and returns a different result for `./g/.` against a base with a

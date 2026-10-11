@@ -34,6 +34,7 @@ Accepted as equivalent: the minor version prefix of the hash (`$2a$`, `$2b$`,
 Only bcrypt is measured because scrypt and Argon2 have no cost setting equal to
 bcrypt's. The `@felix/bcrypt` and `@da/bcrypt` JSR packages are left out: their
 API is asynchronous (Deno FFI and a Web Worker per call respectively), which
-this synchronous task cannot time. `@stdext/crypto` is left out too: its installed bcrypt `verify` returns true for any
-password and hash, so it cannot pass the check. Bun's `Bun.password` is included as a
-runtime built-in that runs on Bun only.
+this synchronous task cannot time. `@stdext/crypto` is left out too: its
+installed bcrypt `verify` returns true for any password and hash, so it cannot
+pass the check. Bun's `Bun.password` is included as a runtime built-in that
+runs on Bun only.

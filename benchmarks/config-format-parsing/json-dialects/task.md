@@ -67,8 +67,9 @@ API. See [shared methodology](../../README.md) for timing and reproduction.
 ## Packages
 
 - npm: `json5` `parse`, `jsonc-parser` `parse`, `confbox` `parseJSONC` and `parseJSON5`.
-- JSR: `@std/jsonc` `parse`.
+- JSR: `@std/jsonc` `parse`, `@david/jsonc-morph` `parseToValue`.
 - Rust: `json5` `from_str` into `serde_json::Value`.
+- Python: `json5` `loads`.
 
 No JSONC or JSON5 parser from the earlier combined task was left
 out. The YAML parsers that shared that task are compared on YAML in

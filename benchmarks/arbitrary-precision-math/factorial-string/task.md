@@ -7,13 +7,14 @@ The 40 cases cover 0 and 1, small values, and a spread up to 1,000 (2,568 digits
 
 A correct output is the exact decimal digits, with no sign, no exponent, no
 separators and no fractional part. Outputs are compared with an independent
-BigInt oracle. Exact string equality is required; there are no accepted
-spelling differences, except that an integer printed as "120.0" or in
-exponential form is wrong.
+BigInt oracle. Exact string equality is required, with no accepted spelling
+differences: an integer printed as "120.0" or in exponential form is wrong.
 
-Packages run with their default settings, with one exception: decimal.js rounds
-to 20 significant digits by default, which cannot represent these results, so
-its adapter raises the precision to 3,000 digits on a private clone of the
-class. Decimal-oriented packages (decimal.js, bignumber.js, Rust bigdecimal)
-are measured doing integer work, as the brief asks. Nothing is cached between
+Packages run with their default settings, with two exceptions. decimal.js
+rounds to 20 significant digits by default, which cannot represent these
+results, so its adapter raises the precision to 3,000 digits on a private clone
+of the class. mpmath has a second entry, `mpmath-high-precision`, that sets
+`mp.dps` to 3,000; at its default 15 digits it rounds and fails. Decimal and
+rational packages (decimal.js, bignumber.js, fraction.js, Rust bigdecimal and
+others) are measured doing integer work. Nothing is cached between
 calls and the multiplication loop is inside the timed call in every language.

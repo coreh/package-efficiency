@@ -24,30 +24,36 @@ back as numbers or BigInt/Long-like values the check converts; the default
 protobufjs message keeps its default values (empty string, 0, empty list) on the
 prototype, so the check reads each field by name.
 
-For the Rust adapters the verifier sees only JSON, so the untimed
+For the Rust, Python, Ruby and Go adapters the verifier sees only JSON, so the untimed
 describe step reports the decoded record with `encodedBytes`, the length of the
 buffer from a second, untimed encode, which must be positive. As in the `records`
 task this shows the encoder yields bytes; it does not prove the timed call used them.
 
 Setup done once in real code is done once outside the timed call: protobufjs loads
-its schema (reflection, no code generation) at module load; Rust types are compiled.
+its schema (reflection, no code generation) at module load; Rust and Go types are
+compiled; the Python, Ruby and Go schemas, descriptors and classes are built once,
+without `protoc` or other code generators.
 
-The measured call is encode plus decode in every adapter. The Rust runner hands
-adapters the fixture as parsed JSON (`serde_json::Value`), so each Rust adapter
-reads it into its typed struct with serde's `Deserialize` once per fixture, in an
-untimed prepare step, and the timed call starts from the struct. The JavaScript
+The measured call is encode plus decode in every adapter. The native runners hand
+adapters the fixture as parsed JSON, so each native adapter fills its typed struct,
+message or class from it once per fixture, in an untimed prepare step (in Rust with
+serde's `Deserialize`), and the timed call starts from there. The JavaScript
 adapter encodes the plain input object directly with protobufjs, which needs no
 conversion. JavaScript has a single entry, so there is no within-JavaScript
-comparison here; the ranking is among the four Rust crates and across languages.
+comparison here.
 
-Formats: Protocol Buffers (protobufjs, prost), Borsh, MessagePack (rmp-serde, typed,
-default array form: fields by position, no names) and CBOR (ciborium, typed: a map
-with every field name written out). The entries share one ranking, so the ranking
-does compare formats as well as libraries: a library is measured on the format it
-implements, and a format that writes field names does more work per record. The
-rest of the category is out: schemaless JSON-value codecs (`@std/msgpack`,
-`@std/cbor`) have no schema to apply and are measured in `records`; `bincode` was not tried (its
-current release was not checked), `rkyv` and `flatbuffers` are zero-copy or
-builder APIs that cannot decode into an owned record, and `protobuf` (rust-protobuf)
-needs generated code from `protoc`. Packages run with default settings as installed.
+Formats: Protocol Buffers (protobufjs, prost, Python `protobuf`, Ruby
+`google-protobuf`, and in Go `google.golang.org/protobuf`, `golang/protobuf`,
+`gogo/protobuf` and `jhump/protoreflect`), Borsh, bincode, rkyv (archived, then
+deserialized into an owned record), the D-Bus format (zvariant), Avro (fastavro),
+Thrift binary (Python and Ruby `thrift`), BinData's declared layout, MessagePack
+(rmp-serde in its default array form, fields by position; msgspec and the Go
+packages as maps with field names) and CBOR (ciborium, serde_cbor: a map with every
+field name written out). The entries share one ranking, so the ranking does compare
+formats as well as libraries: a library is measured on the format it implements,
+and a format that writes field names does more work per record. Left out:
+schemaless JSON-value codecs (`@std/msgpack`, `@std/cbor`) have no schema to apply
+and are measured in `records`; `flatbuffers` is a builder API that cannot decode
+into an owned record; and `protobuf` (rust-protobuf) needs generated code from
+`protoc`. Packages run with default settings as installed.
 See [shared methodology](../../README.md).

@@ -4,7 +4,7 @@ One operation takes a string, compresses it with bzip2, decompresses the
 result and returns the restored text. Only bzip2 implementations are
 compared here, at the same settings, so the ranking shows how well each one
 implements the format and not which format it implements. Entries:
-`bzip2` (Rust crate) and Python's `bz2` (CPython and PyPy).
+`bzip2` (Rust crate), Python's `bz2` (CPython and PyPy) and `cramjam`.
 
 The 40 cases are 0 to 9,000 characters: prose, JSON records, log lines, CSV,
 source code, HTML, Unicode text, base64 and hex data, long repeats and a few
@@ -14,7 +14,7 @@ UTF-8 bytes inside the call, and decoded again afterwards.
 
 ## Settings
 
-Every entry runs at bzip2 level 9 (900 KB blocks), passed explicitly by both adapters. The libraries' defaults differ, checked in the installed sources: `bzip2::Compression::default()` is level 6, and Python's `bz2.compress` has `compresslevel=9` on CPython and on PyPy. This project's variant mechanism (a second entry of the same package with a different setting) exists only for JavaScript adapters in this kind of task; Rust and Python adapters cannot have one. So instead of each package's default plus a variant at the other's level, both entries are set to one level: 9, which is Python's default and the `bzip2` command's. For the `bzip2` crate that is not its default, and its entry is tagged as running with non-default options. The level is the block size, so on inputs smaller than 100 KB it changes memory use more than output. That matters for what the figure means: the inputs here are at most 9,000 characters, but at level 9 every call sets up the compressor's work arrays for a 900 KB block (several megabytes) and the decompressor's for the block size written in the stream. Both entries pay this in every call, so the comparison is even, but a large part of the cost is allocating and releasing that memory, not compressing the text. Only two entries are compared.
+Every entry runs at bzip2 level 9 (900 KB blocks), passed explicitly by every adapter. The libraries' defaults differ, checked in the installed sources: `bzip2::Compression::default()` is level 6, `cramjam`'s is 6, and Python's `bz2.compress` has `compresslevel=9` on CPython and on PyPy. All entries are set to one level, 9, which is Python's default and the `bzip2` command's. For the `bzip2` crate that is not its default, and its entry is tagged as running with non-default options. The level is the block size, so on inputs smaller than 100 KB it changes memory use more than output. That matters for what the figure means: the inputs here are at most 9,000 characters, but at level 9 every call sets up the compressor's work arrays for a 900 KB block (several megabytes) and the decompressor's for the block size written in the stream. Every entry pays this in every call, so the comparison is even, but a large part of the cost is allocating and releasing that memory, not compressing the text.
 
 ## What is checked
 

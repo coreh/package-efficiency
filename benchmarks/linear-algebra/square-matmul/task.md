@@ -40,3 +40,5 @@ See [shared methodology](../../README.md) for timing and reproduction.
 
 - JSR: `@maths/matrix` `multiply`.
 - crates.io: `ndarray` `dot`, `nalgebra` `DMatrix` product, `matrixmultiply` `dgemm`.
+- PyPI: `numpy` `a @ b`.
+- RubyGems: `matrix` `Matrix#*`.

@@ -35,3 +35,7 @@ Rules:
   matched.
 - `react-router` uses `matchRoutes`; `vue-router` uses `router.resolve` on a
   router with memory history. Navigation is not performed.
+- `@tanstack/react-router` uses `router.getMatchedRoutes` on a memory-history
+  router. A path with no found route, or one whose unmatched remainder lands in
+  the router's `**` splat parameter (its own not-found signal), is reported as
+  `null`.

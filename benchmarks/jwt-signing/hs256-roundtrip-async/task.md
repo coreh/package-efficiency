@@ -21,7 +21,7 @@ again rather than importing them, because a scenario is loaded alone beside
 each adapter; the two must be kept the same.
 
 The secrets are not those of hs256-roundtrip: every secret here is at least
-32 bytes of UTF-8 (32 to 112), where hs256-roundtrip also has 6 and 28. RFC
+32 bytes of UTF-8 (32 to 112), where hs256-roundtrip also has 6, 24 and 28. RFC
 7518 (section 3.2) requires an HS256 key at least as long as the hash, and
 `@cross/jwt` refuses a shorter secret; the fixtures keep to what the
 specification allows rather than giving that package an option. The scenario

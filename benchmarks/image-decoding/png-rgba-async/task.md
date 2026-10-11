@@ -68,7 +68,9 @@ Each runs with its default options.
 
 - `@img/png` (JSR): `await decodePNG(bytes)`; width, height and the RGBA
   bytes from the image it resolves to. Pure TypeScript, inflating with the
-  runtime's `DecompressionStream`.
+  runtime's `DecompressionStream`. `decodePNG` takes over (detaches) the
+  buffer of its input and refuses a view into a larger one, so the adapter
+  passes a copy of the file, made inside each call.
 - `sharp`: `await sharp(bytes).ensureAlpha().raw().toBuffer({ resolveWithObject: true })`;
   width and height from `info`, the bytes from `data`. `ensureAlpha()` does
   nothing to these files, which all have alpha; it makes the request for four
@@ -76,7 +78,9 @@ Each runs with its default options.
   prebuilt binary. `sharp.cache(false)` and `sharp.concurrency(1)` once, at
   load, as above.
 - `@matmen/imagescript` (JSR): `await Image.decode(bytes)`; `width`, `height`
-  and `bitmap` (a `Uint8ClampedArray` of RGBA) of the `Image`.
+  and `bitmap` (a `Uint8ClampedArray` of RGBA) of the `Image`. Deno only: it
+  reads its WebAssembly modules with `Deno.readFile`, so it does not load on
+  Node or Bun.
 - `@cross/image` (JSR): `await Image.decode(bytes)`; `width`, `height` and
   `data` (RGBA bytes) of the `Image`. Pure TypeScript.
 

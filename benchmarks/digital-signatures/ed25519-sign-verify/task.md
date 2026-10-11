@@ -13,11 +13,14 @@ signature node:crypto produces for the same seed and message, asserted byte for
 byte.
 
 The signature is returned in whichever form the library produces: a byte array
-(JavaScript, Rust), or a byte slice (Go, marshalled to base64 by the harness).
+(JavaScript, Rust), a binary string (Ruby), or a byte slice (Go, marshalled to
+base64 by the harness).
 The check accepts the same 64 bytes as a byte array, a hex string or a base64
 string. Hex decoding of the fixtures happens inside the measured call in every
 language. Packages run with their default settings as installed. Where a
 package needs a SHA-512 function supplied (the standalone noble ed25519 build),
-the adapter wires in @noble/hashes as that package's documentation shows.
+the adapter wires in @noble/hashes as that package's documentation shows. Go's
+`nats-io/nkeys` verifies with the key pair it derives from the seed, not with
+the given public key, which it would want in its own base32 encoding.
 
 See [shared methodology](../../README.md) for timing and reproduction.

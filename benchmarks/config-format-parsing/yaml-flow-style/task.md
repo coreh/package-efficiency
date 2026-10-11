@@ -62,6 +62,12 @@ no schema validation, no document or syntax-tree API. See
 - npm: `js-yaml` `load`, `yaml` `parse`, `confbox` `parseYAML`.
 - JSR: `@std/yaml` `parse`, `@eemeli/yaml` `parse`.
 - Rust: `serde_yaml` into `serde_yaml::Value`, `yaml-rust` `YamlLoader::load_from_str`.
+- Python: `pyyaml` `safe_load` (the pure-Python loader), `ruamel.yaml` with the
+  safe loader.
+- Ruby: `psych` `safe_load`, `safe_yaml` `load`.
+- Go: `gopkg.in/yaml` (its `map[any]any` converted to `map[string]any` inside
+  the call), `ghodss/yaml` and `sigs.k8s.io/yaml` (both convert YAML to JSON,
+  then decode it), all `Unmarshal` into `any`.
 
 `unsafe-libyaml` is a low-level C transpilation without a value-returning
 parse; using it would mean writing the document builder in the adapter, so it

@@ -192,8 +192,12 @@ export async function prepare({ root, runtimeId, runtime, variant, helpers }) {
 
 - `variant` is the adapter record's `variant`, or null for the defaults.
 - `root` is the repository; `runtimeId` and `runtime` are the entry of
-  `runtimes.json` being measured (`runtime.bin`, `runtime.args`,
-  `runtime.version`).
+  `runtimes.json` being measured, with `runtime.bin` already resolved to this
+  machine's binary (`runtime.args`, `runtime.version`). For another
+  runtime's binary (a build step that needs CPython while PyPy is measured),
+  call `nativeBin(group, id)` from `scripts/lib/util.mjs`; do not read
+  `runtimes.json` yourself, since a `bin` there can be one path per kind of
+  machine.
 - `helpers` has what the other adapters are prepared with:
   `installPinned(workdir, packages, overrides)` for npm packages (it applies
   the release-age rule and returns the versions installed), `nodeInstall(workdir)`

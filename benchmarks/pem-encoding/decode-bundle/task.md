@@ -3,7 +3,7 @@
 One operation takes a text bundle and returns every PEM block in it, in order,
 as a label and its decoded binary payload. The 40 fixtures are bundles of 1 to
 37 blocks (certificates, PKCS#8, RSA and EC private keys, public keys; payloads
-of 121 to about 1,600 random bytes), with 64-column base64 lines, LF or CRLF
+of 121 to about 1,800 random bytes), with 64-column base64 lines, LF or CRLF
 line endings, and some with comment or `subject=` lines between blocks, as
 `openssl` and certificate bundles have. ASN.1 inside the payload is never parsed.
 

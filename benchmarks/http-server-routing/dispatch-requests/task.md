@@ -32,8 +32,8 @@ In every adapter, in this order:
    from the prepared method and URI (an empty body, two clones).
 4. The handler that runs writes its route label and the parameters the
    framework gives it into the slot, and ends the request in the cheapest way
-   the framework documents: one `Response` made at start-up (Hono, Elysia),
-   `ctx.respond = false` (Koa, oak), `()` or `HttpResponse::Ok()` (axum,
+   the framework documents: one `Response` made at start-up (Hono, Elysia,
+   `@http/route`), `ctx.respond = false` (Koa, oak), `()` or `HttpResponse::Ok()` (axum,
    actix-web). No handler builds a body or sets a header.
 5. Measured: the adapter returns the slot. Operations never overlap, so one
    slot per process is enough.
@@ -66,7 +66,12 @@ HTTP parsing, serializing a response.
 
 `hono`, `@hono/hono` and `elysia` are in both tasks: here through `fetch` and
 `handle`, in `hundred-routes` through Hono's public router and Elysia's
-synchronous `fetch`. `koa`, `@oak/oak`, `axum` and `actix-web` are only here.
+synchronous `fetch`. `koa`, `@oak/oak`, `@http/route`, `axum` and `actix-web`
+are only here. `@http/route` (JSR) is `handle` over 50
+`byPattern(path, byMethod(...))` handlers, its own composition: each path is a
+`URLPattern`, tried in order, `byMethod` answers a wrong method with its own
+405 and an unmatched path gets `handle`'s 404. `URLPattern` does not
+percent-decode, so the handler decodes the id with `decodeURIComponent`.
 
 - Express and `router` dispatch through a callback, not a promise, and
   Fastify's `routing` is synchronous: they are in `hundred-routes` only.

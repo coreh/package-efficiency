@@ -21,8 +21,8 @@ repeated).
 The queue is created inside the measured call, so construction is timed in every
 language. The queue's own length/size accessor decides when to pop, and the
 output list is a native array/list/Vec of the language, grown from empty in
-every adapter. Packages run with default
-settings as installed. Nothing is cached between calls.
+every adapter. Packages run with default settings as installed. Nothing is
+cached between calls.
 
 Packages that are stacks, work-stealing deques or concurrent channels are used
 only through their single-threaded FIFO operations. `crossbeam-deque` is not a
@@ -30,6 +30,8 @@ general-purpose queue: it is a work-stealing concurrency primitive, built so
 that other threads can steal from the queue's far end, and it is measured here
 as a single-threaded queue, a job it was not designed for. The adapter uses
 `Worker::new_fifo` with `push`, `pop` and `len`; its atomics are part of what it
-costs, and its figure says nothing about its work-stealing use. Standard-library baselines: JavaScript `Array` (`push`/`shift`), Python
-`collections.deque`, Ruby `Array` (`push`/`shift`), Go `container/list`.
-JSR `@cm-iv/stack` is a stack with no queue operations and is left out.
+costs, and its figure says nothing about its work-stealing use.
+
+Standard-library baselines: JavaScript `Array` (`push`/`shift`), Python
+`collections.deque`, Ruby `Array` (`push`/`shift`), Go `container/list`. JSR
+`@cm-iv/stack` is a stack with no queue operations and is left out.

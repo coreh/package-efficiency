@@ -29,9 +29,10 @@ fixtures measure the hand-over between threads; with 1,024 the channel is
 rarely full and they measure the queue.
 
 Packages run with their default features and settings. Only the blocking,
-thread-to-thread API is used here; the `async` send and receive of `flume`,
-and the async-only channels (`async-channel`, `futures-channel`), belong to a
-separate task on a single-thread executor.
+thread-to-thread API is used here: `async-channel` takes part through its
+`send_blocking` and `recv_blocking`, with no executor. The async send and
+receive of `flume` and `async-channel`, and the async-only `futures-channel`,
+belong to `bounded-mpsc-async`, on a single-thread executor.
 
 Threads, as recorded with each result:
 

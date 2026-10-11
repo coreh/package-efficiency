@@ -20,8 +20,7 @@ The patterns (the same in every adapter):
 
 The 36 fixtures draw from a generated pool of 756 paths (27 directories by 28
 file names: source trees, packages, docs, assets, config, tests, node_modules,
-build output), with
-each fixture containing both matches and non-matches. Expected answers come
+build output), with each fixture containing both matches and non-matches. Expected answers come
 from an independent glob-to-regex oracle in `scenario.mjs`; every boolean must
 agree, and every fixture must contain at least one true and one false, so an
 adapter returning a constant fails.
@@ -34,12 +33,19 @@ patterns together, built with `literal_separator(true)` so `*` stays inside a
 path segment as in the other packages (its default lets `*` cross `/`); Ruby
 `File.fnmatch?` has no compile step and is tried per pattern with
 `FNM_PATHNAME | FNM_EXTGLOB` (without them `*` crosses `/` and braces are
-literal). `micromatch` and `anymatch` wrap `picomatch`
+literal); PyPI `wcmatch` compiles the list into one matcher; Go's
+`gobwas/glob` has no set type, so the adapter holds one compiled glob per
+pattern and tests them in order. `micromatch` and `anymatch` wrap `picomatch`
 (resolving 2.3.x as installed, while the `picomatch` row is 4.x), so they are
-one engine in two versions plus wrapper cost. Packages run with their default
-settings as installed, except for the `globset` option and the Ruby flags
-above, which the patterns need to mean the same thing; both entries are marked
-as using non-default options.
+one engine in two versions plus wrapper cost.
+
+Packages run with their default settings as installed, except for the
+`globset` option and the Ruby flags above, which the patterns need to mean the
+same thing. `wcmatch` with default flags reads `**` as `*` and braces as
+literal text, so it is recorded as not passing, and the variant
+`wcmatch-globstar-brace` sets `GLOBSTAR | BRACE`. `gobwas/glob` does not pass
+with its defaults: `**/` still needs a slash, so a top-level `index.js` misses
+a pattern like `**/*.js`.
 
 Left out: Node `path.matchesGlob` (like the Ruby entry it works from the pattern
 text on every call, and it takes one pattern, not a set); the JSR `@cfa/gitignore-parser`

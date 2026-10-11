@@ -24,9 +24,8 @@ rank together; the real comparison is between `clsx` and `@nick/clsx`, a
 separate implementation. `tailwind-merge`, also in this category, has no entry:
 its `twMerge` resolves conflicts between Tailwind classes, a different job, and
 its plain joiner `twJoin` does not accept the object arguments these fixtures
-use. There is no builtin or
-Rust entry: neither the JavaScript, Python, Ruby nor Go standard library nor the
-brief's crates offer this operation. The argument spread is part of every
-measured call alike.
+use. There is no builtin entry and no Rust, Python, Ruby or Go entry: no
+standard library offers this operation, and neither do the crates considered.
+The argument spread is part of every measured call alike.
 
 See [shared methodology](../../README.md) for timing and reproduction.

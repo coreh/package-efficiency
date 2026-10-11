@@ -113,5 +113,6 @@ Not here, and why:
 - Next.js, Leptos, Dioxus and the other full-stack frameworks of the web
   application category route from files or inside a rendering runtime and have
   no router that can be asked apart from a running application.
-- `@http/route`, `@quad/route-pattern`, `@oak/acorn` and `@std/http` (JSR) and
-  `memoirist` (Elysia's tree) are routers or have one, and have no adapter yet.
+- `@http/route` (JSR) is entered in `dispatch-requests`.
+- `@quad/route-pattern`, `@oak/acorn` and `@std/http` (JSR) and `memoirist`
+  (Elysia's tree) are routers or have one, and have no adapter yet.

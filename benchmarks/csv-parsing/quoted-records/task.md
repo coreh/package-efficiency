@@ -18,7 +18,9 @@ as empty strings. No type conversion is accepted: `"42"` stays a string.
 Accepted differences: a Rust crate returns its own record type
 (`csv::StringRecord`); the harness converts it to a list of strings once per
 fixture before any measured work. Packages run with their default settings, as
-installed (comma delimiter, double quote, strict quoting).
+installed (comma delimiter, double quote, strict quoting), except that Ruby's
+`CSV.parse` is given `nil_value: ''` so that an unquoted empty field is an empty
+string, as in the other entries; the library does this while parsing.
 
 Not included: `@vslinko/csv` (streaming and asynchronous, so not a synchronous
 call) and `csv-core` (a bare state machine that leaves record assembly to the
@@ -29,4 +31,5 @@ See [shared methodology](../../README.md) for timing and reproduction.
 
 - JSR: `@std/csv` `parse`.
 - Rust: `csv` `Reader` with `has_headers(false)`, collecting `StringRecord`s.
+- RubyGems: `csv` `CSV.parse`, the gem release of the library Ruby bundles.
 - Standard library: Python `csv.reader`, Ruby `CSV.parse`, Go `encoding/csv` `ReadAll`.

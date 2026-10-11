@@ -22,6 +22,7 @@ are out of scope.
 - `dedent`: `dedent(text)`; it also trims surrounding blank lines.
 - `min-indent` is left out: it only measures indentation, so the adapter would have to do the stripping itself.
 - Python: `textwrap.dedent`. Ruby and Go have no standard-library function (Ruby's `<<~` is compile-time).
+- Go: `github.com/lithammer/dedent` (`dedent.Dedent(text)`) and `github.com/MakeNowJust/heredoc` (`heredoc.Doc(text)`, which also drops the leading newline).
 - Rust: `unindent::unindent`, returning an owned `String`. `indoc` is left out: it is a compile-time macro with no runtime function.
 
 Every block is indented (2 to 16 spaces), because template-literal packages such as

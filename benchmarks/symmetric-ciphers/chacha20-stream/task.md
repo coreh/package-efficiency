@@ -81,9 +81,6 @@ the keystream applied to the plaintext into a new `Vec<u8>` and returns it.
 | cargo `chacha20` | `ChaCha20::new(key, nonce)` (RustCrypto, `KeyIvInit`), then the keystream applied from the plaintext into a new `Vec<u8>` (`apply_keystream_b2b`, or a copy and `apply_keystream`) |
 | Go `golang.org/x/crypto` | `chacha20.NewUnauthenticatedCipher(key, nonce)`, then `XORKeyStream` into a new slice |
 
-The package entries are written separately; this list says what each is to
-call.
-
 ## Left out
 
 - Bun: its `node:crypto` has no `chacha20` cipher (`Unknown cipher`), so the

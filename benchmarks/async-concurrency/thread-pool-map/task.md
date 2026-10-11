@@ -8,7 +8,7 @@ order, and shuts the pool down. The input is a list of 256 seeds (non-zero
 in all:
 
 - even: every job 2,000 rounds;
-- varied: jobs of 501 to 3,499 rounds, in pairs that add up to 4,000;
+- varied: jobs of 500 to 3,500 rounds, in pairs that add up to 4,000;
 - skewed: 240 jobs of 1,000 rounds and, every sixteenth, a job of 17,000.
 
 The job is the same in every adapter, written out in the language's plain

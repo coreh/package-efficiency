@@ -21,8 +21,8 @@ lockfile ends with an unclosed `[[package` header.
 
 Most of the bytes are still read by the ordinary parsing path: the valid
 documents, and everything before a defect in the middle or at the end. The
-settings and lockfile generators and the five adapters' parse calls are the
-same as in `toml-parsing/documents`, so the two tasks are expected to rank the
+settings and lockfile generators and the adapters' parse calls are the same
+as in `toml-parsing/documents`, so the two tasks are expected to rank the
 packages similarly; what this one adds is the early exits and the cost of
 building and reporting an error. The lockfile is kept small (about a fifth of
 the bytes) so that it does not decide the figure.
@@ -45,5 +45,11 @@ See [shared methodology](../../README.md) for timing and reproduction.
 - JSR: `@std/toml` `parse`, wrapped in try/catch.
 - Rust: `toml` `from_str::<toml::Table>` and `toml_edit` `DocumentMut` parse,
   each followed by `is_ok()`.
+- PyPI: `tomli` `loads` (catching `TOMLDecodeError`) and `tomlkit` `parse`
+  (catching `TOMLKitError`).
+- RubyGems: `toml-rb` (catching `TomlRB::Error`) and `tomlrb` (catching
+  `Tomlrb::ParseError`).
+- Go: `BurntSushi/toml` `Decode` and `pelletier/go-toml` v2 `Unmarshal` into
+  `map[string]any`, each answering whether the error is nil.
 - Built in: `Bun.TOML.parse` (Bun, try/catch), Python `tomllib.loads`
   (catching `TOMLDecodeError`).

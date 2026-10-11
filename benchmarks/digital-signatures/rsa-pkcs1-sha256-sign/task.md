@@ -46,8 +46,9 @@ figure includes the difference; each adapter's notes say what its library
 does:
 
 - the Chinese Remainder Theorem (two 1024-bit exponentiations instead of one
-  2048-bit one, about three to four times cheaper), which every entry here is
-  expected to use with the CRT values the PEM carries;
+  2048-bit one, about three to four times cheaper), which every entry here uses
+  with the CRT values the PEM carries, except the pure-Python `rsa`, which does
+  one plain 2048-bit exponentiation with d;
 - blinding (multiplying by a random value before the exponentiation and
   dividing it out after), a defence against timing attacks that costs an
   extra inversion and multiplications: OpenSSL and BoringSSL blind, Go's

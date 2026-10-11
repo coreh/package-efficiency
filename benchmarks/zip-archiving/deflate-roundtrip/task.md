@@ -54,6 +54,8 @@ See [shared methodology](../../README.md) for timing and reproduction.
 - Rust: `zip` (`ZipWriter` and `ZipArchive` over a `Cursor`).
 - Python standard library: `zipfile` over `BytesIO`.
 - Go standard library: `archive/zip` over `bytes.Buffer`.
+- Ruby: `rubyzip` (`Zip::OutputStream.write_buffer` over `StringIO`, then
+  `Zip::InputStream`).
 
 Left out: `@zip-js/zip-js`, `@quentinadam/zip` and `@deno-library/compress`
 expose only asynchronous (Web Streams, Promise) or file-system APIs, which

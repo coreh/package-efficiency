@@ -12,8 +12,8 @@ between packages that compile slowly and match fast and the reverse. Two entries
 have no separate compile step to amortize: Node's `path.matchesGlob` takes the
 pattern string on every call (240 times per operation) and Ruby's
 `File.fnmatch?` interprets it on every call. The 240 paths are drawn from a pool
-of 340, about 205 distinct per fixture, so some paths repeat within a call. Paths are relative, use `/` and are in memory;
-nothing touches the file system.
+of 340, about 205 distinct per fixture, so some paths repeat within a call.
+Paths are relative, use `/` and are in memory; nothing touches the file system.
 
 The 36 fixtures cover `*`, `?`, `**` (leading, middle and trailing), character
 classes, brace alternation and plain literals, against paths such as
@@ -23,8 +23,8 @@ boolean must agree.
 
 Accepted equivalences and exclusions: paths and patterns contain no dotfiles, no
 leading `./`, no negation, no extglobs and no Windows separators, since packages
-differ there on purpose. Directory-contents patterns are written `dir/**/*`, not a bare trailing
-`/**`, because Ruby treats a final `**` like `*`. Patterns use `?` only on ASCII
+differ there on purpose. Directory-contents patterns are written `dir/**/*`,
+not a bare trailing `/**`, because Ruby treats a final `**` like `*`. Patterns use `?` only on ASCII
 text, because `globset` matches bytes. Packages run with their default
 settings as installed, with one exception: `globset` lets `*` cross `/` by
 default, so the crate is built with `literal_separator(true)` to give `*` the
@@ -38,8 +38,12 @@ engine in two versions plus wrapper cost, not three independent implementations.
 
 Entries: `minimatch` (`new Minimatch(p).match`), `picomatch` (`picomatch(p)`),
 `micromatch` (`matcher`), `anymatch` (curried `anymatch(p)`), `globset`
-(`Glob::compile_matcher`), Node `path.matchesGlob` and Ruby `File.fnmatch?`
-(with `FNM_PATHNAME | FNM_EXTGLOB`). The JSR `@cfa/gitignore-parser` was left
+(`Glob::compile_matcher`), PyPI `wcmatch` (`glob.compile(p).match`, with a
+`GLOBSTAR | BRACE` variant), Go `gobwas/glob` (`glob.MustCompile(p)`), Node
+`path.matchesGlob` and Ruby `File.fnmatch?` (with `FNM_PATHNAME |
+FNM_EXTGLOB`). `wcmatch` with default flags reads `**` as `*` and braces as
+literal text, and in `gobwas/glob` `**/` still needs a slash, so a top-level
+`index.js` misses `**/*.js`; both are recorded as not passing. The JSR `@cfa/gitignore-parser` was left
 out: it implements gitignore rule sets, which are out of scope. Python and Go
 standard libraries were left out: Python's `full_match` has no braces and Go's
 `path.Match` has no `**`.

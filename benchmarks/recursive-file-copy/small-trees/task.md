@@ -38,18 +38,21 @@ that is their own doing, so it is counted. Three things follow.
 - Waiting for the disk is not CPU time. Nothing here asks for the data to be
   on the disk before returning, and the figure would not show it if it did.
 - How the bytes get across is each implementation's choice. On a file system
-  that can share blocks between files (APFS, where the published results were
-  measured), an implementation may ask the kernel to clone a file instead of
-  copying its bytes, which costs almost nothing for a large file. The kernel
-  can also clone a whole directory in one call. That is the likely reason
-  `fs.cpSync` on Bun and Deno costs about a tenth of every other entry in the
-  published results; the result on disk passes the same check.
+  that can share blocks between files (such as APFS on macOS), an
+  implementation may ask the kernel to clone a file instead of copying its
+  bytes, which costs almost nothing for a large file. On macOS the kernel can
+  also clone a whole directory in one call. That is the likely reason
+  `fs.cpSync` on Bun and Deno costs about a tenth of every other entry in
+  results measured on macOS; the result on disk passes the same check.
 - The cost of creating a file depends on the operating system and the file
-  system far more than on the package.
+  system far more than on the package. Both are those of the machine,
+  recorded with each result.
 
 ## Packages
 
 - npm: `fs-extra` (`copySync`).
+- Go: `otiai10/copy` (`copy.Copy`), `cespare/cp` (`cp.CopyAll`) and
+  `mrunalp/fileutils` (`fileutils.CopyDirectory`), each with its defaults.
 - Standard libraries: `fs.cpSync` with `recursive: true` (Node, Bun and Deno
   each have their own), Python `shutil.copytree`, Ruby `FileUtils.cp_r`.
 
@@ -59,5 +62,3 @@ Left out:
   less the umask, plus the source's execute bits, so a private file (600)
   comes out readable by everyone (644). It fails the check on permission bits.
 - Rust's standard library has no recursive copy.
-- The Go modules `otiai10/copy`, `cespare/cp` and `mrunalp/fileutils` can join
-  when Go modules can be adapters of this kind of task.

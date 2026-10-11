@@ -20,8 +20,8 @@ cached.
 
 The 72 fixtures are built without randomness. Eight are valid; the other 64 each
 break exactly one of 18 rules (wrong type, out of range, missing nested field,
-unknown enum member, a wrong array item, `null` or a string where an object is required, and
-so on), each rule several times on different base documents. Because only one
+unknown enum member, a wrong array item, `null` or a string where an object is
+required, and so on), each rule several times on different base documents. Because only one
 rule is broken, every library finds exactly one error, so "first" does not depend
 on the order in which libraries check things. The expected pointer for each
 fixture is asserted exactly, so returning a constant or a plain boolean fails.

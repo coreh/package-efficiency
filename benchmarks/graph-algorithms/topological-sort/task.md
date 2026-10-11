@@ -36,13 +36,14 @@ same. Nothing is kept between calls.
   index for the edges, then `algo::toposort`. The order comes back as node
   indexes; they are turned into names for the verifier outside the timed call
   (an index is the position of the name in the fixture).
+- `networkx` (PyPI): `DiGraph()`, `add_nodes_from`, `add_edges_from`,
+  `topological_sort(graph)`.
 - Standard library: Python `graphlib.TopologicalSorter` (`add`,
   `static_order`); Ruby `TSort.tsort` over a hash of predecessors built in the
   call. JavaScript and Go have none.
 
-Not included yet: PyPI `networkx`, which can be added when PyPI packages can
-be adapters. Strongly connected components would be a second task with the same
-kind of check (compare the components as a set of sets of nodes): `petgraph`,
+Strongly connected components would be a second task with the same kind of
+check (compare the components as a set of sets of nodes): `petgraph`,
 `@dagrejs/graphlib`, `graphology-components`, `networkx` and Ruby `TSort` do
 it; Python's `graphlib` does not.
 

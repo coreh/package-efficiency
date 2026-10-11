@@ -11,11 +11,11 @@ parsing the XML and mapping to the common shape are all in the timed call.
 The 3 workbooks are written by the scenario itself (a zip with deflate, the
 workbook, styles, a shared string table and one worksheet part per sheet), so
 the expected values are known without a spreadsheet library. They hold 3 or 4
-sheets of 1 to 400 rows and 4 to 10 columns: 600 to 12,000 cells per sheet and
+sheets of 1 to 400 rows and 4 to 10 columns, 234 to 8,200 cells per workbook,
 about 5 KB to 60 KB compressed. Sheet names include a space, `&`, `<` and
 non-ASCII text. Cells are shared strings (accents, CJK, `&`, `<`, quotes),
-whole numbers (also negative), decimals of up to six places (some needing 16
-digits to round-trip) and booleans. Every row has the same number of cells and
+whole numbers (also negative), decimals of up to three places (a few needing
+16 or 17 digits to round-trip) and booleans. Every row has the same number of cells and
 none is empty; blank cells, formulas, dates and the legacy `.xls` format are not
 covered (libraries differ widely on dates and on how they report empty cells).
 

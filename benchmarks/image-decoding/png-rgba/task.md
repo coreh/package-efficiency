@@ -11,7 +11,8 @@ truecolor, not interlaced, from 1 by 1 up to 512 by 128 pixels (most between 10,
 and 120,000 pixels). Nine kinds of content (gradients, flat blocks, checkerboards,
 rings, smooth waves with fine noise, full-range noise, alpha ramps, sprites with
 transparent backgrounds, banded rows) are written with every PNG row filter
-(none, sub, up, average, Paeth, and a row-by-row mix) and with deflate levels 1, 6 and 9.
+(none, sub, up, average, Paeth, and a row-by-row mix) and with deflate levels 1,
+6 and 9.
 
 A correct output has the right width and height and a pixel buffer equal, byte
 for byte, to the pixels the generator drew. Returning the input, a constant or a
@@ -29,14 +30,19 @@ compared, one crate and one standard library.
 
 ## Packages
 
-- Rust: `png` (`Decoder` then `Reader::next_frame` into a buffer sized by `output_buffer_size`).
-- Standard library: Go `image/png` `Decode`, using the `Pix` buffer of the resulting `*image.NRGBA`.
+- Rust: `png` (`Decoder` then `Reader::next_frame` into a buffer sized by
+  `output_buffer_size`).
+- Standard library: Go `image/png` `Decode`, using the `Pix` buffer of the
+  resulting `*image.NRGBA`.
 
 ## Not covered
 
-- `@img/png` (JSR) is the only PNG package in the brief's JavaScript lists. Its `decodePNG` is
-  asynchronous (it uses `DecompressionStream`), so it cannot be a synchronous operation.
-- Python and Ruby ship no PNG decoder. The Rust crates `gif`, `zune-jpeg`, `jpeg-decoder`,
-  `tiff` and `image-webp` decode other formats and cannot do this job.
-- Other colour types, 16-bit depth, palettes and interlacing: libraries return them in
-  different native layouts, and expanding them to RGBA would be adapter work.
+- `@img/png`, `@matmen/imagescript`, `@cross/image` (JSR) and `sharp` (npm)
+  decode PNG only through promises, so they cannot be a synchronous operation;
+  they are measured in [png-rgba-async](../png-rgba-async/task.md).
+- Python and Ruby ship no PNG decoder. The Rust crates `gif`, `zune-jpeg`,
+  `jpeg-decoder`, `tiff` and `image-webp` decode other formats and cannot do
+  this job.
+- Other colour types, 16-bit depth, palettes and interlacing: libraries return
+  them in different native layouts, and expanding them to RGBA would be adapter
+  work.

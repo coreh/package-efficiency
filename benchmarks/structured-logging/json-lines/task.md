@@ -23,10 +23,10 @@ drops or merges repeated records must be off (see `consola`).
 
 The threshold is `info`. Each library is set up to write JSON with the
 formatter, layout or renderer its documentation names for that. Where the
-library has none (`consola`, Python `logging`, Ruby `Logger`) the adapter gives
-it a formatter that writes `JSON.stringify` / `json.dumps` / `JSON.generate`
-of the level, a time, the message and the fields, which is the approach the
-library's documentation shows; that formatting is then part of what that entry
+library has none (`consola`, Python `logging`, Ruby `Logger`, `mono_logger`)
+the adapter gives it a formatter that writes `JSON.stringify` / `json.dumps` /
+`JSON.generate` of the level, a time, the message and the fields, which is the
+approach the library's documentation shows; that formatting is then part of what that entry
 measures. Every library writes whatever timestamp its JSON setup writes by
 default.
 
@@ -65,6 +65,8 @@ level, message or value are refused.
   formatted text and `jsonFormatter`; `logger.info(message, fields)`.
 - `@logtape/logtape` (JSR): `configureSync()` with a function sink that
   appends `jsonLinesFormatter(record)`; `logger.info(message, properties)`.
+- `@danielfroz/slog` (JSR): `new JsonLog({ func })` appending each line to a
+  string; `log.info({ msg, ...fields })`, the message being the `msg` key.
 - `tracing` + `tracing-subscriber` (Rust): a global `fmt().json()` subscriber
   writing to a shared `Vec<u8>`; `info!(user_id, route, ..., "{}", message)`.
 - `slog` + `slog-json` (Rust): `Json::default` over a `Mutex` drain into a
@@ -73,8 +75,11 @@ level, message or value are refused.
   `JsonFormatter` and `serialize=True`.
 - `logging` and `console` (RubyGems): the `json` layout (the fields go through
   the mapped diagnostic context, `Logging.mdc`) and `Console::Output::Serialized`.
-- `zap`, `logrus`, `go-kit/log` (Go modules): the JSON encoder, `JSONFormatter`
-  and `NewJSONLogger`.
+- `mono_logger` (RubyGems), the lock-free `Logger` subclass: it has no JSON
+  output, so it gets the same formatter as the Ruby `Logger` entry.
+- `zap`, `logrus`, `go-kit/log`, `zerolog`, `log15`, `hclog` (Go modules): the
+  JSON encoder, `JSONFormatter`, `NewJSONLogger`, zerolog's own output,
+  `JsonFormat()` and `JSONFormat: true`.
 - Standard library: Python `logging`, Ruby `Logger` and Go `log/slog` with
   `JSONHandler`. Node has no logger with levels and fields.
 
@@ -82,7 +87,7 @@ Rust, Go and Python/Ruby adapters read the fields out of the input (JSON) inside
 the call; JavaScript passes the `fields` object on as it is.
 
 Left out: `lumberjack` (RubyGems) writes text; its JSON output is a separate gem.
-`mixlib-log`, `mono_logger` and `glog` have no fields or no JSON. `logr` is an
+`mixlib-log` and `glog` have no fields or no JSON. `logr` is an
 interface without a formatter. `colorlog` and `coloredlogs` write coloured
 text. `tracing-appender` only moves writes to a thread and `@logtape/file`,
 `@logtape/redaction`, `@eai/logging-ts`, `@mapokapo/simcolog`, `@denosaurs/log`

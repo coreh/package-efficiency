@@ -14,6 +14,11 @@ Each input is hashed in a single call; nothing is cached between calls.
 
 - `imurmurhash` (npm): `MurmurHash3(input).result()`, normalized with `>>> 0`.
 - `hash32` (crates.io): `Murmur3Hasher` fed the whole byte slice, then `finish32()`.
+- `mmh3` (PyPI): `mmh3.hash(input, 0, False)`, unsigned.
+- `murmurhash` (PyPI): `murmurhash.hash(input)`, a signed 32-bit integer that
+  the check reads as unsigned.
+- `murmurhash3` (RubyGems): `MurmurHash3::V32.str_hash(input, 0)`.
+- `spaolacci/murmur3` (Go): `murmur3.Sum32` on the string's bytes.
 
 Other algorithms in the category are different outputs and are not compared.
 See [shared methodology](../../README.md).

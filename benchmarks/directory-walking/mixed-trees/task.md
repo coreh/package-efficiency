@@ -36,8 +36,8 @@ is in the list. A trailing slash on a directory is ignored.
 The result is a list of strings in every language. A package that returns
 entry objects has its adapter read the path of each inside the measured call
 (`@nodelib/fs.walk`), and one that yields entries one at a time has them
-collected into a list (`walkdir`, `ignore`, Go's `WalkDir`, Python's
-`os.walk`). No adapter sorts. The measured loop reads only the length of the
+collected into a list (`walkdir`, `ignore`, `rignore`, `godirwalk`, `kr/fs`,
+Go's `WalkDir`, Python's `os.walk`). No adapter sorts. The measured loop reads only the length of the
 list. Rust converts its paths to JSON for the check once per tree, outside
 measured work.
 
@@ -51,11 +51,12 @@ often a walker calls the kernel is its own choice, and it is most of the
 figure: every entry on a machine pays about the same for the calls nobody can
 avoid, so classes are closer together here than in a task on memory. The time
 a call spends inside the kernel depends on the operating system and the file
-system (macOS and APFS for the published results).
+system of the machine, which is recorded with each result.
 
 Packages run with the options the job needs and no others: `fdir` is asked
-for directories and full paths, `path-scurry` for strings, `ignore` has its
-ignore-file, hidden-file and git rules turned off so that it lists everything.
+for directories and full paths, `path-scurry` for strings, and `ignore` and
+`rignore` have their ignore-file, hidden-file and git rules turned off so that
+they list everything.
 `path-scurry` keeps what it has read in the object it was created from, so its
 adapter creates a new one for every call.
 
@@ -63,10 +64,11 @@ adapter creates a new one for every call.
 
 - npm: `fdir`, `path-scurry`, `@nodelib/fs.walk`.
 - Rust: `walkdir`, `ignore`.
+- PyPI: `rignore`.
+- Go modules: `karrick/godirwalk`, `kr/fs`.
 - Standard libraries: `fs.readdirSync` with `recursive: true` (Node, Bun and
   Deno each have their own), Python `os.walk`, Ruby `Find.find`, Go
   `filepath.WalkDir`.
 
 Left out: `readdirp` only has asynchronous interfaces (a stream and a
-promise). `rignore` (PyPI), `kr/fs` and `godirwalk` (Go modules) can join when
-packages from those registries can be adapters of this kind of task.
+promise); it is measured in mixed-trees-async.

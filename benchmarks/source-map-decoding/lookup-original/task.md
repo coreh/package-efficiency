@@ -21,7 +21,8 @@ constant or the query unchanged fails.
 Each adapter creates its consumer for each of the four maps once, at module load,
 as a real tool loads a map once and then answers many lookups. Decoding the map is
 therefore not measured here (the `decode-mappings` task measures it). The measured
-call is only the lookups. Adapters cannot import the scenario, so each rebuilds the same four maps with a copy of the generator at load time.
+call is only the lookups. Adapters cannot import the scenario, so each
+rebuilds the same four maps with a copy of the generator at load time.
 
 Packages return their own result objects (`source-map-js` and
 `@jridgewell/trace-mapping` objects differ in extra fields); the checker projects

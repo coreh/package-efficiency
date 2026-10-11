@@ -1,6 +1,6 @@
 # Ruby file to its definitions
 
-One operation parses one Ruby source file (95 to 380 lines, 24 files) and
+One operation parses one Ruby source file (94 to 380 lines, 24 files) and
 returns the classes, modules and methods it defines. The files are generated
 deterministically: modules containing classes (one with a nested module),
 instance methods with every kind of parameter, `def self.` methods, predicate,

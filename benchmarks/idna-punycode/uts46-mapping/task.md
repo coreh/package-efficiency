@@ -3,7 +3,7 @@
 One operation takes a domain name as a user might type or paste it and returns
 a single string: the normalized ASCII form (lowercase, Punycode `xn--` labels
 for non-ASCII labels). This is the UTS #46 / IDNA mapping job, where the
-existing round-trip task only handled already normalized names.
+`domain-round-trip` task only handles already normalized names.
 
 The 60 inputs start from valid names with Latin (with diacritics), Greek,
 Cyrillic, Han, Kana, Hangul, Thai, Devanagari and Arabic labels and are then
@@ -16,10 +16,11 @@ returns its input, only encodes Punycode, or skips mapping fails.
 
 The `punycode` npm package is left out: it converts labels but does no mapping
 or normalization, so it cannot do this job. Inputs avoid cases where IDNA 2003,
-IDNA 2008 and UTS #46 disagree (`ß`, final sigma, emoji), so `tr46`, `idna`,
-Node's WHATWG URL are accepted as equivalent.
-Public suffix lookup and URL parsing are out of scope. Packages run with their
-default settings as installed.
+IDNA 2008 and UTS #46 disagree (`ß`, final sigma, emoji), so the packages'
+mappings are accepted as equivalent. Public suffix lookup and URL parsing are
+out of scope. Packages run with their default settings as installed. PyPI
+`idna` maps only when asked (`uts46=True`): with its defaults uppercase input
+raises, so it is recorded as not passing beside the `idna-uts46` variant.
 
 Python's `idna` codec is left out: it leaves ASCII labels untouched (no case
 folding), so it would not lowercase `EXAMPLE.COM`.

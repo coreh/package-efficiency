@@ -6,8 +6,8 @@ the ten listeners from every name (the first and the sixth registered), emits
 the second half, and returns the sum the listeners accumulated. Each event
 carries two integer arguments, `a` and `b`. Listener `j` (0 to 9) adds
 `a * (j + 1) - b` to the shared total. Some events name a string nobody listens
-to. There are 36 fixtures with 120 to 240 events each, from a single hot name to
-skewed and uniform mixes over eight names.
+to. There are 24 fixtures with 120 to 239 events each, from a single hot name to
+skewed, cyclic and uniform mixes over up to eight names.
 
 A correct output is the exact integer total from an independent reference that
 uses plain arrays. It depends on every registered listener running for every

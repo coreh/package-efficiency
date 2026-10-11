@@ -23,9 +23,10 @@ Rust define `describe` only to turn the bytes into integers for the verifier,
 outside the timed call.
 
 The JavaScript packages that take bytes encode the string to UTF-8 inside the
-call with `TextEncoder`; `node:crypto` takes the string directly. Rust, Python
-and Go strings are already UTF-8 bytes. Ruby is not included because its
-standard library on the pinned runtime has no SHA3.
+call with `TextEncoder`; `node:crypto` takes the string directly. The Python
+adapters encode the string to UTF-8 inside the call too; Rust and Go strings are
+already UTF-8 bytes. Ruby is not included because its standard library on the
+pinned runtime has no SHA3.
 
 Every package runs with default settings as installed, in its plain one-shot
 form. No result is cached. Streaming, HMAC, other algorithms and small messages

@@ -22,7 +22,10 @@ their default settings as installed.
 and do not know combining marks, so they are left out. The `unicode-display-width`
 crate, which is in `display-width`, is left out too: version 0.3.0 counts the
 zero-width space, non-joiner, word joiner and byte order mark as one column
-each, so it gives a different width for 24 of the 61 fixtures. That leaves
-`string-width` (npm) and `unicode-width` (cargo), one per language. Wrapping, truncating and
+each, so it gives a different width for 24 of the 61 fixtures. The entries are
+`string-width` (npm), `unicode-width` (cargo), `wcwidth` (PyPI),
+`unicode-display_width` (RubyGems), and `go-runewidth` and `uniseg` (Go).
+`go-runewidth` does not pass with its default condition: it gives the
+non-joiner and word joiner of fixture 6 a width. Wrapping, truncating and
 stripping styled text are outside the task.
 See [shared methodology](../../README.md) for timing and reproduction.

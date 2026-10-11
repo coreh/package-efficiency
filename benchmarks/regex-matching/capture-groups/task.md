@@ -28,7 +28,9 @@ engine gives: JavaScript, Python and Ruby build a new string per group; Go's
 group strings share the text's memory, with one slice per match; the Rust
 crates' groups borrow from the text, so those adapters keep each group's byte
 span, one `Vec` per match, and copy no text. `describe` slices the text with
-the spans for the verifier and is not timed. `@rregex/rregex` is Rust `regex` compiled to WebAssembly; its 20
-compiled objects are kept for the life of the process.
+the spans for the verifier and is not timed. `@rregex/rregex` is Rust `regex`
+compiled to WebAssembly; its 20 compiled objects are kept for the life of the
+process.
+
 `@shahriyardx/regex` (ready-made validators) and the `matchers` crate (boolean
 matching for tracing filters) do not offer this operation and are left out.

@@ -61,9 +61,9 @@ Entries, and what each calls:
 Executors, as recorded with each result:
 
 - JavaScript: the runtime's own event loop; a yield is one turn of it
-  (`setImmediate`). A microtask would not do: it is the yield every other
-  task in this category uses, and with `await null` the cost of the turn
-  would drop out for some entries and not others. Node makes a system call
+  (`setImmediate`), the yield the other tasks in this category use. A
+  microtask (`await null`) would not do: the cost of the turn would drop out
+  for some entries and not others. Node makes a system call
   per turn and Bun and Deno do not, which is why Node's figures are higher for
   every entry here.
 - Python: one `asyncio` event loop for the whole run; a yield is one pass of

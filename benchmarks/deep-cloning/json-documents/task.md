@@ -12,8 +12,9 @@ no object or array is the same object as, or shares one with, the input. The
 JavaScript check asserts deep equality with the expected document, then
 asserts that the root and every nested object and array is a distinct object
 from the input's, and that mutating the copy leaves the input untouched. The
-Python check (a JSON comparison with the expected document) can only see equality,
-so it cannot tell a copy from the input itself.
+Python and Go checks (a JSON comparison with the expected document) can only see
+equality, so they cannot tell a copy from the input itself, or from a copy that
+shares nested values with it.
 
 Scope: JSON-compatible values only. Cycles, shared sub-references, class
 instances, Date, Map, Set, typed arrays, functions and prototype handling are
@@ -32,7 +33,14 @@ Packages run with their default settings as installed:
 - Built-in `structuredClone` (Node, Bun, Deno) and Python's `copy.deepcopy`
   are the standard-library baselines. Ruby has no deep copy in its standard
   library (`Marshal` is serialization) and Go has none, so neither is included.
-  No Rust crate or JSR package in this category's brief offered this operation.
+  No Rust crate or JSR package in this category offers this operation.
+- Go `mohae/deepcopy` (`deepcopy.Copy`) and `mitchellh/copystructure`
+  (`copystructure.Copy`) are called with their defaults.
+- Go `jinzhu/copier` copies into a new value of the input's type with
+  `copier.Copy` and default options. That is not a deep copy: nested maps and
+  slices stay shared with the input, which the Go check cannot see. The variant
+  `jinzhu-copier-deep-copy` passes `Option{DeepCopy: true}`, which makes them
+  independent.
 
 No setup is needed by any package, so nothing is hoisted out of the call. See
 [shared methodology](../../README.md) for timing and reproduction.

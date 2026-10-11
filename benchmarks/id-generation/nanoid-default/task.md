@@ -17,11 +17,11 @@ alphabets, custom alphabets and sizes, and non-secure generators.
 JavaScript uses `nanoid()` from the `nanoid` package and from `@sitnik/nanoid`
 (JSR). Rust uses the `nanoid` crate's `nanoid!()` macro, whose default is the
 same 21-character alphabet. All return a string per call. The entropy
-handling differs and both are library defaults: npm `nanoid` fills a pool
+handling differs, and each is the library's default: npm `nanoid` fills a pool
 of random bytes and slices it across calls; `@sitnik/nanoid` on JSR ships the
 browser build, which calls `crypto.getRandomValues` for 21 bytes on every
 call; the Rust crate seeds a new `StdRng` from the operating system on every
-call. The standard
-libraries of JavaScript, Python, Ruby and Go have no Nano ID function, so no
-built-in adapters are included.
+call. The standard libraries of JavaScript, Python, Ruby and Go have no Nano ID
+function, so no built-in adapters are included.
+
 See [shared methodology](../../README.md) for timing and reproduction.

@@ -77,9 +77,6 @@ show; none is forced into or out of a code path.
 | `cargo/twox-hash` | `twox_hash::XxHash64::oneshot(0, &bytes)`, a `u64` |
 | `cargo/xxhash-rust` | `xxhash_rust::xxh64::xxh64(&bytes, 0)`, a `u64`, with the crate's `xxh64` feature |
 
-The package entries are written separately; this list says what each is to
-call.
-
 ## Left out
 
 - Node, Deno, Python, Ruby, Go and Rust have no XXH64 in their standard

@@ -13,9 +13,10 @@ independent RFC 3492 encoder's result.
 
 Inputs avoid cases where IDNA2003, IDNA2008 and UTS #46 disagree (for example
 `ß`, final sigma, emoji, uppercase letters needing case mapping). So packages
-that apply UTS #46 mapping (`tr46`, `idna`, Node's WHATWG URL) and packages that
-only do Punycode per label (`punycode`, Python's `idna` codec) are accepted as
-equivalent. Packages return different shapes (a string, an object with an
+that apply UTS #46 mapping (`tr46`, the `idna` crate, Node's WHATWG URL), the
+IDNA 2003 codec of Python's standard library, PyPI `idna` without UTS #46
+mapping (its default) and `punycode`, which only converts each label, are
+accepted as equivalent. Packages return different shapes (a string, an object with an
 error field, a tuple with a result); each adapter maps to the common
 `[ascii, unicode]` list inside the call. Public suffix lookup and URL parsing are
 out of scope. Packages run with their default settings as installed.

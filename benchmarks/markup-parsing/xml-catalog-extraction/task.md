@@ -44,13 +44,16 @@ Python `ElementTree`) build their result and the adapter looks up the products
 in it. Parser objects are created fresh per call, as the documentation shows;
 there is no schema or pattern to compile.
 
-Packages run with default settings as installed, with two stated exceptions
-that are variants: `htmlparser2` defaults to HTML mode, where CDATA is a
+Packages run with default settings as installed, with three stated
+exceptions. Two are variants: `htmlparser2` defaults to HTML mode, where CDATA is a
 comment, so its default entry fails the check and the `xmlMode` variant does
 the job; `fast-xml-parser` drops attributes by default, so its default entry
 fails and the variant with `ignoreAttributes: false` does the job. Under the
 default `parseTagValue`, `fast-xml-parser` returns price text as a number and
-the adapter passes it through `Number()`.
+the adapter passes it through `Number()`. `@libs/xml` decodes entities a
+second time in CDATA content by default (a literal `&amp;` there becomes `&`),
+so its adapter passes `revive.entities: false`, which keeps CDATA as written
+while ordinary text and attributes are still decoded.
 
 ## Accepted differences
 
@@ -69,10 +72,9 @@ the adapter passes it through `Number()`.
   deliver this data and are not asked to.
 - `xmlparser` (cargo) yields raw slices and does not resolve references; the
   adapter would have to implement decoding itself.
-- `@libs/xml`, `@mikaelporttila/rss`, `@sftsrv/structured-html` and
-  `@bureaudouble/html-parse-stringify` were not written: the first was not
-  tried for time, the others are feed or HTML-shaped and do not offer a plain
-  generic XML parse.
+- `@mikaelporttila/rss`, `@sftsrv/structured-html` and
+  `@bureaudouble/html-parse-stringify` were not written: they are feed or
+  HTML-shaped and do not offer a plain generic XML parse.
 
 This is parsing, not DOM manipulation, serialization or sanitizing. Documents
 are preconstructed in memory.

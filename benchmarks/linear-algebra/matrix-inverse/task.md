@@ -13,9 +13,9 @@ are 4 by 4, most of the time goes to the large ones: by that estimate the
 8, 10 and 12 sized matrices (three cases in eight) take close to nine tenths of
 it. The figure is closer to "invert a 10 by 10 matrix" than to "invert a 4 by 4".
 
-There are only two entries, one in JavaScript and one in Rust, so the ranking
-shows the language as much as the library. The sibling task `square-matmul` has
-four entries.
+There is one entry per language (JavaScript, Rust, Python and Ruby), so the
+ranking shows the language as much as the library. The sibling task
+`square-matmul` has three Rust entries.
 
 A correct output is the inverse, `n * n` elements in row-major order. The
 verifier checks every element within 1e-8 of a Gauss-Jordan reference with
@@ -43,3 +43,5 @@ See [shared methodology](../../README.md) for timing and reproduction.
 
 - JSR: `@maths/matrix` `invert`.
 - crates.io: `nalgebra` `DMatrix::try_inverse`.
+- PyPI: `numpy` `np.linalg.inv`.
+- RubyGems: `matrix` `Matrix#inverse`.

@@ -9,7 +9,10 @@ Several types have more than one extension (`image/jpeg` is `jpg`, `jpeg` or
 `jpe`). Libraries pick a different default, so the check accepts any extension
 from a fixed list per type, with or without a leading dot, in any letter case.
 A wrong type, an empty string, `null`, `false` or `undefined` fails. Only types
-every package and standard library knows are used. Go and Python return a list
+that every npm, JSR and Rust package and both standard libraries know are used.
+The two Ruby gems each fail one type (`mime-types` returns `mp2` for
+`video/mpeg`, and `mini_mime` has no entry for `image/x-icon`), with no option
+that changes it, and are recorded as not passing. Go and Python return a list
 or a dotted extension; the Go adapter takes the first element of
 `mime.ExtensionsByType`, Rust takes the first of `get_mime_extensions_str`, and
 every library's own table is used.

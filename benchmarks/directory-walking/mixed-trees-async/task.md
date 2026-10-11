@@ -76,8 +76,8 @@ a package has one, is created inside the measured call.
   and it is most of the figure: every entry on a machine pays about the same
   for the calls nobody can avoid, so classes are closer together here than in
   a task on memory. The time a call spends inside the kernel depends on the
-  operating system and the file system (macOS and APFS for the published
-  results).
+  operating system and the file system of the machine, which is recorded with
+  each result.
 - No timer or sleep is involved anywhere.
 
 Set beside mixed-trees, the figures of the packages that are in both show

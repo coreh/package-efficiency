@@ -14,8 +14,10 @@ lightness on a 0-100 scale. Libraries differ in shape and scale, so each adapter
 maps its library's result to that common triple inside the measured call, in every
 language alike: `color-convert` already returns it (rounded to integers), d3-color
 returns an `Hsl` object with saturation and lightness as 0-1 fractions that the adapter
-scales by 100, and csscolorparser returns 0-1 fractions in an array that the adapter
-scales by 100. The check compares with an independent reference conversion:
+scales by 100, csscolorparser and go-colorful return 0-1 fractions that the adapter
+scales by 100, and `@csstools/color-helpers`, which has no direct sRGB to HSL function,
+takes the channels scaled to 0-1 through `sRGB_to_XYZ_D50` and `XYZ_D50_to_HSL`,
+which returns the common triple. The check compares with an independent reference conversion:
 saturation and lightness may differ by 1 (some libraries round to integers, others
 keep fractions), hue may differ by 1 degree around the circle (359 and 0 are
 neighbours). For achromatic colors (equal channels) hue is undefined and is not
@@ -26,9 +28,9 @@ expected to cost tens of nanoseconds, so the loop shared by every entry and, in 
 result array each call allocates are a large share of the figures; the Rust entry
 returns its three numbers on the stack.
 
-Three other packages in this category have no adapter in this task:
-`@csstools/color-helpers` and `@omega/color` do export an RGB to HSL conversion
-and could be added; `@asamuzakjp/css-color` was not examined.
+Two other packages in this category have no adapter in this task: `@omega/color`
+does export an RGB to HSL conversion and could be added; `@asamuzakjp/css-color`
+was not examined.
 
 Packages run with their default settings as installed. Nothing is cached between
 calls. The standard libraries of JavaScript, Python, Ruby and Go have no color space

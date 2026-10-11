@@ -2,9 +2,8 @@
 
 One operation takes a string of standard RFC 4648 base64 (alphabet with `+` and
 `/`, `=` padding, no line breaks) and returns the bytes it encodes. This is the
-decoding counterpart of the existing encoding task. Binary data decodes
-differently from text: the output is raw bytes, not a string, and every input is
-valid, so no error path is measured.
+decoding counterpart of `text-to-base64`, but for binary data: the output is
+raw bytes, not a string. Every input is valid, so no error path is measured.
 
 The 59 cases are the encodings of deterministic pseudo-random binary payloads:
 20 values of 32 bytes (tokens and digests), 11 tiny payloads of 0 to 10 bytes

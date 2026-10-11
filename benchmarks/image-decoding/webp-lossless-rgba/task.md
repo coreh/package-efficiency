@@ -64,13 +64,11 @@ Pillow 12.3.0 and `golang.org/x/image` 0.45.0's `webp.Decode`, and all three
 gave the drawn pixels exactly.
 
 Each library returns what it naturally returns (a Rust `Vec<u8>`, a Go
-`*image.NRGBA`, a NumPy array, a Pillow `Image`); the adapter reads width,
+`*image.NRGBA`, a Pillow `Image`); the adapter reads width,
 height and the pixel bytes from it inside the call, and nothing is serialized,
 hashed or copied for the harness. An adapter does not convert an RGB result to
-RGBA: where the library gives three samples, the adapter returns three. Where
-a library decodes to its own colour order (OpenCV's BGR and BGRA), the
-conversion to RGB or RGBA is part of the call, and the adapter's notes say
-which conversion it uses. Converting to JSON (base64 pixel data) for the
+RGBA: where the library gives three samples, the adapter returns three.
+Converting to JSON (base64 pixel data) for the
 verifier happens once per fixture, outside measured work. Packages run with
 their default settings, as installed.
 
@@ -86,11 +84,6 @@ their default settings, as installed.
 - PyPI: `pillow` (`Image.open(BytesIO(bytes))`, then `load()`, which forces
   the decode that `open` defers; mode `RGB` or `RGBA`, with no `convert`).
   Pillow decodes with libwebp.
-- PyPI: `opencv-python-headless`
-  (`cv2.imdecode(np.frombuffer(bytes, np.uint8), cv2.IMREAD_UNCHANGED)`, BGR
-  or BGRA, then `cv2.cvtColor` to RGB or RGBA inside the call). OpenCV bundles
-  libwebp; `IMREAD_COLOR_RGB`, which spares the conversion for JPEG, drops the
-  alpha channel.
 - Go: `golang.org/x/image` (`webp.Decode`, then the `Pix` buffer of the
   `*image.NRGBA` it returns for every lossless file).
 
@@ -103,6 +96,8 @@ their default settings, as installed.
 - The extended format (`VP8X`), animation, ICC and metadata chunks: they add
   container parsing and frame compositing, not decoding, and not every entry
   reads them the same way (an animated file is a sequence of frames).
+- `opencv-python-headless` (PyPI) is not compared: this task has no adapter
+  for it.
 - Standard libraries: none of Python, Ruby, Go, Rust or JavaScript ships a
   WebP decoder (Go's is in `golang.org/x/image`, a module), so there is no
   builtin entry.

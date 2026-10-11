@@ -43,7 +43,7 @@ Everything else must match exactly.
 
 The mapping an adapter does is a few property reads per node of the WHERE
 condition and one pass over a list or two; it is the same amount of work in
-every adapter, in JavaScript and Rust alike, and the parse dominates. Rust
+every adapter, whatever the language, and the parse dominates. Rust
 builds the common shape as a struct inside the call; turning it into JSON for
 the verifier is outside it. The select list, the join conditions, the VALUES
 rows, column types and constraints are parsed by every library but only
@@ -62,11 +62,14 @@ Each runs with default options, the way its documentation shows.
   required option. It returns a concrete syntax tree that keeps every keyword,
   which is more work than an abstract tree and is its normal output.
 - `sqlparser` (Rust): `Parser::parse_sql(&GenericDialect {}, sql)`.
+- `sqlglot` (Python): `sqlglot.parse_one(sql)` with the default dialect; the
+  tree is read with `isinstance` checks on its node classes.
+- `pg_query` (Ruby): `PgQuery.parse(sql)`, the PostgreSQL parser's own tree;
+  its lists of `AND` or `OR` operands are folded to the left.
 
-Not included yet: PyPI `sqlglot`, `sqlparse` and `py-partiql-parser`, and
-RubyGems `pg_query`, which can be added when those registries can supply
-adapters. `sqlparse` does not build a tree of the condition, so it would be
-recorded as not passing. `pgsql-parser` (npm) wraps the PostgreSQL parser
-compiled to WebAssembly and needs an asynchronous load.
+Not included: PyPI `sqlparse` and `py-partiql-parser`. `sqlparse` does not
+build a tree of the condition, so it would be recorded as not passing.
+`pgsql-parser` (npm) wraps the PostgreSQL parser compiled to WebAssembly and
+needs an asynchronous load.
 
 See [shared methodology](../../README.md) for timing and reproduction.

@@ -20,8 +20,8 @@ per maximal invalid subpart, so a truncated three-byte sequence gives a single
 U+FFFD, and a surrogate or overlong encoding gives one per byte. The expected
 text comes from a small decoder written out in the scenario, which follows the
 WHATWG algorithm and does not use `TextDecoder`, and is compared code point for
-code point. Returning the
-input, a constant, or text that skips the replacement fails.
+code point. Returning the input, a constant, or text that skips the
+replacement fails.
 
 Packages run with their default settings as installed. Results are owned
 strings; where a library can return a borrowed value for valid input (bstr), the

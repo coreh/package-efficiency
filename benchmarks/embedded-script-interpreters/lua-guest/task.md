@@ -6,10 +6,11 @@ string. The category has one task per guest language, because the script is
 the input: a Lua run is never compared with a JavaScript run. This is the Lua
 guest.
 
-The scripts stay inside what every engine here reads the same way: Lua 5.1
-(gopher-lua, LuaJIT), 5.3 (fengari), 5.4 (mlua's vendored Lua) and piccolo.
-That means the core language and the `math` table only. piccolo's standard
-library has no `table.sort`, `table.concat` or string functions, so the sort is
+The scripts stay inside what Lua 5.1 (gopher-lua), 5.3 (fengari) and 5.4
+(mlua's vendored Lua) read the same way, and also LuaJIT and the crate
+piccolo, which are not compared. That means the core language and the `math`
+table only. piccolo's standard library has no `table.sort`, `table.concat` or
+string functions, so the sort is
 a heap sort written in Lua and the string is built with `..`. Lua 5.1 has only
 floats, while 5.3 and later have integers that print differently from floats,
 so nothing that becomes text is ever divided with `/`. fengari's integers are
@@ -25,7 +26,7 @@ The six fixtures:
 - a 400-piece string built with `..` in a loop (about 4 KB);
 - the harmonic sum of 1/i for i up to 1,000 (a non-integer number, compared exactly);
 - a probe that sets a global variable and a field of the built-in `math`
-  table and reports the counters, twice in a row.
+  table and reports the counters, given twice in a row (two fixtures).
 
 ## What counts as correct
 
@@ -51,7 +52,7 @@ running the chunk, and copying the result out to the host language are all
 inside the timed call, in every language, because a fresh state per run is the
 task. Nothing is cached between calls and no chunk is compiled outside the
 call. Packages run with their default options. Whether a package binds the
-reference C implementation, runs a Lua written in the host language (Go, Rust,
+reference C implementation, runs a Lua written in the host language (Go,
 JavaScript) or something else shows up in the figures and is not hidden.
 
 The packages, and what each adapter calls:
@@ -61,8 +62,6 @@ The packages, and what each adapter calls:
   stack, read back as a number or with `to_jsstring`.
 - crate `mlua`: `Lua::new().load(script).eval::<Value>()`, with Lua 5.4
   vendored (built from source into the binary, no system Lua).
-- crate `piccolo`: `Lua::core()`, the chunk compiled and run on an `Executor`,
-  and the value it returns.
 - Go `github.com/yuin/gopher-lua`: `lua.NewState()`, `L.DoString(script)`,
   `L.Get(-1)`, `L.Close()`.
 

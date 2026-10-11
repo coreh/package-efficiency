@@ -6,7 +6,7 @@ encoding, and returns the decoded Unicode string. Only decoding is measured;
 the existing `round-trip` task covers encoding.
 
 The 73 cases are 12 sizes for each encoding, from a single sentence to a few
-hundred (roughly 10 bytes to 20 KB, about 2 KB on average), built from
+hundred (about 25 bytes to 13 KB, 2 KB on average), built from
 realistic Japanese, simplified and traditional Chinese, Russian and Western
 European sentences mixed with ASCII runs, plus one empty buffer. The bytes
 were produced by an independent encoder (CPython codecs) and are written into

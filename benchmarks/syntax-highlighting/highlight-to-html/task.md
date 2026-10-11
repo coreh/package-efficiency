@@ -60,16 +60,19 @@ file from scratch.
   theme })`, which is synchronous. Inline styles from the `github-dark` theme.
 - `syntect` (Rust): `highlighted_html_for_string` with the bundled syntaxes and
   the `base16-ocean.dark` theme, default features (Oniguruma). Inline styles.
+- `pygments` (Python): `highlight()` with a lexer from `get_lexer_by_name` and
+  the default `HtmlFormatter`, both created once. Class-based markup.
+- `rouge` (Ruby): `Rouge::Formatters::HTML` with the `Javascript` and `Python`
+  lexers, created once; each call lexes and formats the file. Class-based
+  markup.
 
 The libraries do different amounts of work for the same file, and that is what
 is compared: `shiki` and `syntect` run TextMate and Sublime grammars and resolve
-a theme to colours; `highlight.js` and `prismjs` run their own smaller grammars
-and write class names.
+a theme to colours; `highlight.js`, `prismjs`, `pygments` and `rouge` run
+their own grammars and write class names.
 
-Not included yet: PyPI `pygments`, RubyGems `rouge` and `coderay`, and the Go
-modules in the brief, which can be added when those registries can supply
-adapters; the check needs no change for them (class-based or inline-styled
-output are both read). `lowlight`, `refractor` and `@wooorm/starry-night`
-return a syntax tree, not HTML. `@speed-highlight/core` is asynchronous.
+Not included: RubyGems `coderay` and the Go modules. `lowlight`, `refractor`
+and `@wooorm/starry-night` return a syntax tree, not HTML.
+`@speed-highlight/core` is asynchronous.
 
 See [shared methodology](../../README.md) for timing and reproduction.

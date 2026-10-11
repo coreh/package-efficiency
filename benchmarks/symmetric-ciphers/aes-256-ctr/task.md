@@ -23,15 +23,19 @@ Rust, Ruby) or base64 (Go, whose `[]byte` results marshal that way); the convers
 is done once per fixture before any timing.
 
 Only encryption is measured (CTR decryption is the same operation). Each call
-builds its cipher object from the key and IV, as the packages' documentation shows
-for one message with its own IV; nothing is cached between calls. For the
+builds its cipher object from the key and IV, as the packages' documentation
+shows for one message with its own IV; nothing is cached between calls. For the
 short messages (10 of the 48 are under 100 bytes) creating that object, not
 encrypting, is most of the cost, most of all in Node and Ruby, where it is an
-OpenSSL cipher context; that is the cost of encrypting one message. Packages that
-do not offer a plain AES-256-CTR with a caller-chosen IV are left out. `@roj/tgcrypto` (the only JSR package in the category) offers only AES-IGE, not CTR, so it is left out. The
-`aes` crate alone is only a block cipher, so the Rust entry is `ctr` (with `aes`
-as its block cipher); `chacha20`, `salsa20` and `cbc` are different ciphers or modes.
-Node and Ruby return a new buffer from `update`, and Go writes the keystream
-output into a new slice. The Rust crate encrypts in place, so each call copies
-the plaintext first and returns that copy as an owned `Vec<u8>`.
+OpenSSL cipher context; that is the cost of encrypting one message. Node and
+Ruby return a new buffer from `update`, and Go writes the keystream output into
+a new slice. The Rust crate encrypts in place, so each call copies the
+plaintext first and returns that copy as an owned `Vec<u8>`.
+
+Packages that do not offer a plain AES-256-CTR with a caller-chosen IV are left
+out. `@roj/tgcrypto`, the only JSR package in the category, offers AES-IGE, not
+CTR. The `aes` crate alone is only a block cipher, so the Rust entry is `ctr`
+(with `aes` as its block cipher); `chacha20`, `salsa20` and `cbc` are different
+ciphers or modes.
+
 See [shared methodology](../../README.md) for timing and reproduction.

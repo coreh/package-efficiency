@@ -4,8 +4,8 @@ One operation encrypts one message with ChaCha20-Poly1305 (RFC 8439: a 256-bit
 key, a 96-bit nonce, the keystream starting at block counter 1, and a Poly1305
 tag over the associated data and the ciphertext) and returns the ciphertext
 followed by the 16-byte authentication tag (the layout every AEAD API produces
-or accepts as "combined" output). It is the AEAD of TLS 1.3, WireGuard and SSH
-on machines without AES instructions.
+or accepts as "combined" output). It is the AEAD of WireGuard, and of TLS 1.3
+and SSH on machines without AES instructions.
 
 An input is an object with four strings: `key` (32 ASCII characters, used as the
 32 key bytes), `nonce` (12 ASCII characters, the 96-bit nonce), `aad` (associated

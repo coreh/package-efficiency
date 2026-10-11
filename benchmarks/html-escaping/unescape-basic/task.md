@@ -19,6 +19,9 @@ with default settings as installed. Inputs are preconstructed in memory.
 
 Entries: npm `entities` (`decodeHTML`), npm `html-escaper` (`unescape`), JSR
 `@std/html` (`unescape`), Rust `html-escape` (`decode_html_entities`, returned as
-Cow), Python `html.unescape`, Ruby `CGI.unescapeHTML`, Go `html.UnescapeString`.
+Cow), PyPI `markupsafe` (`Markup(value).unescape()`), RubyGems `escape_utils`
+(`unescape_html`) and `htmlentities` (`decode`), Python `html.unescape`, Ruby
+`CGI.unescapeHTML`, Go `html.UnescapeString`.
 
-Rust `htmlescape` `decode_html` was left out: it returns an error on bare ampersands (`R&D`), so it cannot do the common job.
+Rust `htmlescape` `decode_html` was left out: it returns an error on bare
+ampersands (`R&D`), so it cannot do the common job.

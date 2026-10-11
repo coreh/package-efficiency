@@ -9,8 +9,10 @@ token it signed.
 The 48 cases are realistic access-token payloads (issuer, subject,
 issued-at and expiry times, roles, nested objects, Unicode text) of varied size,
 with secrets of varied length. Every payload carries `iat` and an `exp` far in
-the future (year 2100). There is no `aud` claim, because the Rust jsonwebtoken crate rejects any audience unless one is expected, which would need a non-default option, so the expiry check passes the same way at any time and
-libraries that add `iat` themselves have nothing to add.
+the future (year 2100), so the expiry check passes the same way at any time and
+libraries that add `iat` themselves have nothing to add. There is no `aud`
+claim, because the Rust `jsonwebtoken` crate rejects any audience unless one is
+expected, which would need a non-default option.
 
 A correct output has claims that deep-equal the input claims (same keys and
 values, key order ignored) and a token that the verifier checks on its own,
@@ -36,6 +38,9 @@ Packages run with default settings as installed, with one exception: the Rust
 `jsonwebtoken` crate ships no crypto backend by default and must be built with
 one of two, so it is built with `default-features = false` and its `rust_crypto`
 feature (pure-Rust HMAC and SHA-2) rather than `aws_lc_rs`. Default verification
-checks the signature and the algorithm, and in `jsonwebtoken` (npm and Rust) also
-`exp`; `jws` and the Rust `jwt` crate have no claims layer and do not check `exp`. Only synchronous APIs qualify: `jose`
-and the JSR packages sign and verify through promises and are left out.
+checks the signature and the algorithm, and in most packages also `exp`. `jws`
+and the Rust `jwt` crate have no claims layer, and `json-jwt` and Go's
+`square/go-jose` check no claims by default, so these four do not check `exp`.
+Only synchronous APIs qualify: `jose` and the JSR packages sign and verify
+through promises and are measured in
+[hs256-roundtrip-async](../hs256-roundtrip-async/task.md).

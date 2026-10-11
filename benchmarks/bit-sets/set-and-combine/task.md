@@ -34,6 +34,9 @@ Packages run with their default settings as installed.
 - `bit-set`: `BitSet`, `insert`, `union_with`, `intersect_with`, `len`.
 - `bitvec`: `BitVec<usize, Lsb0>`, `set`, `|=`, `&=`, `count_ones`.
 
-Every entry is given the full capacity up front and counts with the package's
-own counting method.
-Only Rust has packages in this category.
+Every Rust entry is given the full capacity up front, and every entry counts
+with the package's own counting method.
+
+Python (`bitarray`, `pyroaring`) and Go (`bits-and-blooms/bitset`) have entries
+too; their union and intersection return new sets. `pyroaring` is a compressed
+roaring bitmap, not a fixed-size set, so `size` is unused there.

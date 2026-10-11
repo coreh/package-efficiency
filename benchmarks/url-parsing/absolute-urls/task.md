@@ -6,8 +6,9 @@ https and ftp URLs with userinfo, ports, long paths, percent-escapes, queries,
 fragments, IPv4 hosts and mixed lengths.
 
 Each adapter returns what its package returns: a WHATWG `URL` object, the
-component object of an RFC 3986 parser, or Rust's `Url`. The verifier reads
-either shape into the seven components and compares each with the parts the
+component object of an RFC 3986 parser, Rust's `Url`, or a Python or Ruby URL
+object, which the adapter's `describe` reads outside the timed call. The
+verifier reads each shape into the seven components and compares each with the parts the
 fixture was built from, so a wrong split fails. That reading happens in the
 verifier, never in the timed call; the timed call reads only the host's length.
 
@@ -29,6 +30,12 @@ the task.
 - npm `fast-uri`: `parse(input)`.
 - builtin `js-url`: the runtime's global `URL`, `new URL(input)`.
 - cargo `url`: `Url::parse(input)`.
+- PyPI `rfc3986`: `urlparse(input)`; `hyperlink`: `URL.from_text(input)`.
+- PyPI `yarl`: `URL(input)`. Not passing: it re-quotes the query (`%2F`
+  becomes `/`). The `yarl-encoded` entry passes `encoded=True`, so the input
+  is taken as already quoted.
+- RubyGems `uri`, `addressable` and `fuzzyurl`: `URI.parse`,
+  `Addressable::URI.parse` and `FuzzyURL.from_string`.
 
 `@jridgewell/resolve-uri`, `parseurl`, `tldts`, `iri-string` and
 `@alistair/pathcat` are left out: they resolve paths, parse request paths,

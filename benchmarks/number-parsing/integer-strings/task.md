@@ -65,9 +65,6 @@ the first pass. That is the engine's own behaviour and is left on.
 | `cargo/atoi` | `atoi::atoi::<i64>(bytes)` for each string, which returns `Option<i64>`; `None` is an error. |
 | `cargo/lexical-parse-integer` | `i64::from_lexical(bytes)` (`lexical_parse_integer::FromLexical`) with default options for each string; an error is returned. |
 
-The package entries are written separately; this list says what each is to
-call.
-
 ## Left out
 
 - `lexical-parse-float` (the float sibling, measured in `decimal-strings`)

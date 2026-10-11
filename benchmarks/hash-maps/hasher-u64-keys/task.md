@@ -72,7 +72,7 @@ Each adapter inserts with `insert`, looks up with `get` and removes with
   there is no way yet to list a Rust standard-library entry. `siphasher`'s
   `SipHasher13` runs the same algorithm.
 - `twox-hash` and `xxhash-rust`: both ship a `BuildHasher`, but they belong
-  to the proposed `non-cryptographic-hashing/xxh64-buffers` task, where hashing
+  to the `non-cryptographic-hashing/xxh64-buffers` task, where hashing
   bytes is their job.
 - `hashbrown`, `indexmap` and the other map crates: they are different maps,
   compared in `insert-lookup-remove` and `count-and-retract`.

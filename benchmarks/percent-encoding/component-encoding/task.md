@@ -6,9 +6,9 @@ component (a query value or path segment): every character other than
 `/ ? # & = + %` and space. Not whole-URL encoding (which leaves reserved
 characters alone), not decoding, not query-string splitting.
 
-The 61 inputs are 40 to 240 characters of mixed plain text, URLs, form-like
-text, punctuation, Latin accents, CJK, Cyrillic, Arabic, emoji and control
-characters, plus an empty string. Outputs are checked against an independent
+The 61 inputs are 60 strings of about 40 to 260 characters of mixed plain
+text, URLs, form-like text, punctuation, Latin accents, CJK, Cyrillic, Arabic,
+emoji and control characters, plus an empty string. Outputs are checked against an independent
 byte-wise oracle, and any input containing a character that must be escaped
 must come back changed.
 

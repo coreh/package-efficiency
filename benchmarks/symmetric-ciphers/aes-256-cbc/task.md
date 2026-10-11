@@ -65,9 +65,6 @@ measuring its own code.
 | cargo `cbc` | `cbc::Encryptor::<aes::Aes256>::new(key, iv)` and the padded-to-`Vec` encrypt with `Pkcs7` (RustCrypto, with the `alloc` feature), returning a `Vec<u8>` |
 | cargo `aws-lc-rs` | `PaddedBlockEncryptingKey::cbc_pkcs7(UnboundCipherKey::new(&AES_256, key))`, then `less_safe_encrypt` on a copy of the plaintext with `EncryptionContext::Iv128` of the IV; the copy grows by the padding and is returned |
 
-The package entries are written separately; this list says what each is to
-call.
-
 ## Left out
 
 - Go's standard library: `crypto/cipher` has `NewCBCEncrypter`, but no padding,

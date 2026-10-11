@@ -5,7 +5,7 @@ encodes it to UTF-8 bytes, compresses it with bzip2 and returns the
 compressed bytes. Nothing is decompressed in the timed call. Only bzip2
 implementations are compared here, at the same settings, so the ranking shows
 how well each one implements the format and not which format it implements.
-Entries: `bzip2` (Rust crate) and Python's `bz2` (CPython and PyPy).
+Entries: `bzip2` (Rust crate), Python's `bz2` (CPython and PyPy) and `cramjam`.
 
 The fixtures are prose, JSON records, log lines, CSV, source code, HTML,
 Unicode text, base64 and hex data, long repeats, and a mixed document that
@@ -14,7 +14,7 @@ same fixtures in every format's large-buffer task.
 
 ## Settings
 
-Every entry runs at bzip2 level 9 (900 KB blocks), passed explicitly by both adapters. The libraries' defaults differ, checked in the installed sources: `bzip2::Compression::default()` is level 6, and Python's `bz2.compress` has `compresslevel=9` on CPython and on PyPy. This project's variant mechanism (a second entry of the same package with a different setting) exists only for JavaScript adapters in this kind of task; Rust and Python adapters cannot have one. So instead of each package's default plus a variant at the other's level, both entries are set to one level: 9, which is Python's default and the `bzip2` command's. For the `bzip2` crate that is not its default, and its entry is tagged as running with non-default options. The level is the block size, so on inputs smaller than 100 KB it changes memory use more than output.
+Every entry runs at bzip2 level 9 (900 KB blocks), passed explicitly by every adapter. The libraries' defaults differ, checked in the installed sources: `bzip2::Compression::default()` is level 6, `cramjam`'s is 6, and Python's `bz2.compress` has `compresslevel=9` on CPython and on PyPy. All entries are set to one level, 9, which is Python's default and the `bzip2` command's. For the `bzip2` crate that is not its default, and its entry is tagged as running with non-default options. The level is the block size, so on inputs smaller than 100 KB it changes memory use more than output.
 
 ## What is checked
 
@@ -26,7 +26,7 @@ size: every fixture except the random base64 and hex ones must compress to
 under 90% of its size, the random ones must not compress below 40% (a result
 that small could not restore the text), and sizes must differ between fixtures.
 This fails an adapter that returns its input, a constant, or skips the work.
-The Rust and Python adapters' `describe` decompresses.
+The adapters' `describe` decompresses.
 
 ## Scope
 

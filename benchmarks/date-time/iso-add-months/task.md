@@ -21,11 +21,13 @@ JavaScript `Date`, read as a time in the process's local time zone, and do the
 month and day arithmetic and the formatting through local-time `Date` fields, so
 each call goes through the runtime's time-zone rules. The Rust entries (`chrono`
 `NaiveDateTime`, `jiff` `civil::DateTime`) do civil date-time arithmetic: a
-calendar date and a clock time with no zone and no instant behind it. That is
-each library's ordinary way to handle a zoneless timestamp, but it is not the
-same amount of work. Times of day are between 06:00 and
-21:59 and years stay within 1950 to 2100, so daylight-saving gaps cannot change the
-answer in whichever zone the process runs. Packages run with their default
+calendar date and a clock time with no zone and no instant behind it. The
+Python entries (`python-dateutil`, `isodate`, and `arrow` and `pendulum`, which
+read the text as UTC) and Ruby's `date` likewise work without daylight saving.
+That is each library's ordinary way to handle a zoneless timestamp, but it is
+not the same amount of work. Times of day are between 06:00 and 21:59 and years
+stay within 1950 to 2100, so daylight-saving gaps cannot change the answer in
+whichever zone the process runs. Packages run with their default
 settings as installed. Time zone databases, parsing of zones and offsets, and
 durations in hours or smaller are outside the contract. All inputs are
 preconstructed strings; no result is cached between calls.

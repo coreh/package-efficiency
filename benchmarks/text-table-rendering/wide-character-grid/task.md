@@ -9,7 +9,8 @@ cases have between 3 and 60 rows. Unlike the aligned-grid task, the point is
 that columns line up by display width, not by character count: wide characters
 take two terminal columns and combining marks take none.
 
-Cell text is compared after Unicode NFC normalization of both sides (some packages compose accents), so canonically equivalent spellings are accepted.
+Cell text is compared after Unicode NFC normalization of both sides (some
+packages compose accents), so canonically equivalent spellings are accepted.
 
 A correct output has one line per table row, the header first, with each cell's
 text exactly as `String(cell)` spells it and nothing but padding and border
@@ -27,8 +28,9 @@ default settings as installed. `cliui` needs column widths up front: it is given
 twice the longest cell's length plus one for each column (an upper bound on
 display width, so nothing wraps) and measures and pads by display width itself.
 So for the two `cliui` entries the column sizing is a few lines of adapter code
-over UTF-16 lengths, while `comfy-table` and `@cliffy/table` size the columns
-themselves from the display width of every cell: `cliui` is a column layout
+over UTF-16 lengths, while the table renderers (`comfy-table`,
+`@cliffy/table` and the others) size the columns themselves from the display
+width of every cell: `cliui` is a column layout
 tool, not an auto-sizing table renderer, and is given slightly less to do.
 `comfy-table`'s default preset draws a full box with a separator line between
 every row, about twice the lines of the others.

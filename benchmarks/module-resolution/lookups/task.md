@@ -1,6 +1,6 @@
 # Resolve specifiers to files in a node_modules tree
 
-One operation is given a base directory and a list of specifiers (13 to 19 of
+One operation is given a base directory and a list of specifiers (12 to 20 of
 them) and returns, for each specifier in order, the absolute path of the file
 it resolves to, as Node's `require` would find it from that directory.
 

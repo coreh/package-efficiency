@@ -19,8 +19,9 @@ There are 48 fixtures, built deterministically. The first ten reuse the secret
 `12345678901234567890` of the RFC 4226 and RFC 6238 appendices, including the
 ten RFC 4226 counters 0-9 and the six RFC 6238 times (59 to 20000000000). The
 rest use pseudo-random secrets, times (some on the first or last second of a
-step), counters (below 2^31, so that 32-bit signed arithmetic is enough) and candidates that are in the window (steps
--1, 0, +1), just outside it (-2, +2, +3) or wrong.
+step), counters (below 2^31, so that 32-bit signed arithmetic is enough) and
+candidates that are in the window (steps -1, 0, +1), just outside it (-2, +2,
++3) or wrong.
 
 The expected values come from a short HMAC-SHA-1 implementation on
 `node:crypto` in the scenario, which is first checked against the published RFC

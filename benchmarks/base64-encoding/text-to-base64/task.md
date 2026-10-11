@@ -11,10 +11,12 @@ The output must equal the reference encoding exactly. No equivalences are
 accepted: the alphabet, padding and absence of line breaks are part of the
 contract. Decoding is not measured, and neither are URL-safe or other alphabets.
 
-The input is a string, because fixtures are shared with the Rust runner as JSON.
+The input is a string, because fixtures are shared with the native runners as
+JSON.
 Every adapter therefore does the same two steps inside the measured call: turn
 the string into UTF-8 bytes, then encode them. JavaScript adapters whose package
 takes bytes call a shared module-level `TextEncoder`; packages and built-ins that
 accept a string (and encode it as UTF-8 themselves) are called with the string.
-Rust adapters use `str::as_bytes()`, which is free. Packages run with default
+Rust adapters use `str::as_bytes()`, which is free; Python adapters call
+`str.encode()`. Packages run with default
 settings as installed, with no cached results between calls.

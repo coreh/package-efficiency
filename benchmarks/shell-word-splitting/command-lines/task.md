@@ -14,8 +14,9 @@ whitespace, and empty or blank lines. Outputs must equal the expected list exact
 
 This is word splitting only. No variable, command or glob expansion happens, and
 options are not parsed. Packages do not agree on those, so the inputs keep shell
-metacharacters (`| & ; < > ( ) $ ` # * ? ~ !`) inside quotes, where every package
-treats them as literal text, and double quotes never escape anything but `"` and `\`.
+metacharacters (``| & ; < > ( ) $ ` # * ? ~ !``) inside quotes, where every
+package treats them as literal text, and double quotes never escape anything but
+`"` and `\`.
 Empty quoted words and malformed (unterminated) lines are not part of the task.
 
 `shell-quote` returns a list of strings for these inputs, which is the same shape as

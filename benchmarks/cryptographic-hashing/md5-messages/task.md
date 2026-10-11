@@ -35,9 +35,9 @@ to turn the bytes into a list of integers for the verifier, outside the timed
 call.
 
 The JavaScript packages that take bytes encode the text to UTF-8 inside the
-call with `TextEncoder`; `node:crypto` takes the string directly. Rust, Python,
-Ruby and Go strings are already UTF-8 bytes, so no encoding step is needed
-there.
+call with `TextEncoder`; `node:crypto` takes the string directly. The Python
+adapters encode the string to UTF-8 inside the call too. Rust, Ruby and Go
+strings are already UTF-8 bytes, so no encoding step is needed there.
 
 Every package runs with default settings as installed, in its plain one-shot
 form. No result is cached. Streaming, HMAC, other algorithms and hashing very
@@ -64,7 +64,7 @@ call.
 
 ## Left out
 
-- No Go module is in the cluster: Go's `crypto/md5` is the one everyone uses,
-  and it is here as `builtin/go-md5`.
+- No Go module: Go's `crypto/md5` is the one everyone uses, and it is here as
+  `builtin/go-md5`.
 - No RubyGems package: `Digest::MD5` is in the standard library and is here as
   `builtin/ruby-digest`.

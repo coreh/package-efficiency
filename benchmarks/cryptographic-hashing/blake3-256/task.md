@@ -48,8 +48,9 @@ Every package runs in its plain one-shot form on one thread, with the
 32-byte default output. Implementations differ in how they use the CPU, and
 that is part of what is measured: the Rust crate (and the Python package,
 which wraps it) dispatch to SIMD code (NEON on arm64, SSE/AVX on x86-64)
-that hashes several chunks at once; the JavaScript packages run plain
-JavaScript or WebAssembly. Multithreading is off everywhere: the Rust crate
+that hashes several chunks at once; the Go module uses assembly on x86-64
+and plain Go on arm64; the JavaScript packages run plain JavaScript or
+WebAssembly. Multithreading is off everywhere: the Rust crate
 is built with its default features (no `rayon`, so `blake3::hash` uses one
 thread), and the Python package's `max_threads` stays at its default of 1.
 No result is cached. Keyed hashing, key derivation, extended (XOF) output,

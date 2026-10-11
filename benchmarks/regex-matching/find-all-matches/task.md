@@ -2,8 +2,8 @@
 
 One operation receives `{ pattern, text }`: a regular expression as source text
 and an ASCII text of a few kilobytes (log lines, prose, emails, URLs, addresses,
-dates, prices, colors, quoted strings). The operation returns the list of all non-overlapping matches, in order, as strings. No match
-gives an empty list.
+dates, prices, colors, quoted strings). The operation returns the list of all
+non-overlapping matches, in order, as strings. No match gives an empty list.
 
 The 40 cases are 20 patterns, each on two different texts. The patterns use
 only syntax that JavaScript, Rust `regex`, Python, Ruby and Go share: literals,
@@ -16,8 +16,8 @@ reference computed with JavaScript `RegExp`.
 Compiling is not what is measured. Every entry, in every language, compiles
 each of the 20 patterns the first time it sees it and reuses the compiled
 pattern afterwards, the way code that matches repeatedly is written. That first
-use happens during warm-up, so the figures are for matching.
-Packages run with their default settings as installed. Only matched text is
+use happens during warm-up, so the figures are for matching. Packages run
+with their default settings as installed. Only matched text is
 compared, not offsets, because string offsets differ between UTF-16, UTF-8 and
 code points; engines that report offsets are mapped to the matched text inside
 the call.
@@ -25,5 +25,7 @@ the call.
 Rust crates return `Vec<String>`; `describe` (to JSON for the verifier) is not
 timed. `@rregex/rregex` is Rust `regex` compiled to WebAssembly; its 20 compiled
 objects are kept for the life of the process.
+
 `@shahriyardx/regex` (ready-made email/URL validators) and the `matchers` crate
-(boolean matching for tracing filters) do not offer this operation and are left out.
+(boolean matching for tracing filters) do not offer this operation and are left
+out.

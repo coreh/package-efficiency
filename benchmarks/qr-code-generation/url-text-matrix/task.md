@@ -19,18 +19,29 @@ Accepted differences, because they are all valid QR codes:
 
 - Mask pattern, segment splitting and the chosen version may differ.
 - A library may use a higher error-correction level than requested when the
-  data still fits the same version (`@libs/qrcode` documents this); a lower level fails.
+  data still fits the same version (`@libs/qrcode` documents this); a lower
+  level fails.
 - The matrix may carry a light quiet zone of 0 or 2 modules on every side.
-  `@libs/qrcode` always adds 2 and returns it as is, with no stripping.
+  `@libs/qrcode` always adds 2 and returns it as is, with no stripping. A
+  wider quiet zone fails.
 
-Packages run with their default settings as installed. Setup done once by the
-libraries themselves is not part of this task; nothing is cached by the adapters.
+Packages run with their default settings as installed, except where an entry
+says otherwise. Setup done once by the libraries themselves is not part of
+this task; nothing is cached by the adapters.
 
 ## Entries
 
 - `@libs/qrcode`: `qrcode(text, { output: 'array', ecl })`, returning `boolean[][]`.
-- `@levischuck/tiny-qr`: `qrCode({ data: text, ec }).matrix`, taking the `matrix`
-  property of the result object (a property read, no copy).
+- `@levischuck/tiny-qr`: `qrCode({ data: text, ec }).matrix`, taking the
+  `matrix` property of the result object (a property read, no copy).
+- `qrcode` (PyPI): `QRCode(error_correction=level).add_data(text)`, then
+  `get_matrix()`. Its default border is 4 modules, which the check does not
+  accept, so it is recorded as not passing; `qrcode-border-0` is the same call
+  with `border=0`.
+- `rqrcode` and `rqrcode_core` (RubyGems): `QRCode.new(text, level:).modules`,
+  rows of booleans; `rqrcode` delegates to `rqrcode_core`.
+- `boombuler/barcode` (Go): `qr.Encode(text, level, qr.Auto)`, with the image
+  read into a `[][]bool` inside the call.
 
 ## Left out
 

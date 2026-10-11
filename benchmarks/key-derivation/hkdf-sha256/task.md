@@ -71,9 +71,6 @@ PBKDF2 is the task `pbkdf2-sha256`.
 | PyPI `pycryptodome` | `HKDF(ikm, length, salt, SHA256, context=info)` from `Crypto.Protocol.KDF`, `Crypto.Hash.SHA256` |
 | cargo `hkdf` | `Hkdf::<Sha256>::new(Some(salt), ikm).expand(info, &mut okm)` into a `Vec<u8>` of `length` zero bytes (RustCrypto, with `sha2`) |
 
-The package entries are written separately; this list says what each is to
-call.
-
 ## Left out
 
 - Python has no HKDF in its standard library (`hashlib` and `hmac` offer only

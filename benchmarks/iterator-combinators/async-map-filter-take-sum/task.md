@@ -14,12 +14,13 @@ package's async combinators. The unit of work is the same in every adapter:
 5. reduce them to their sum, starting from 0, and await it;
 6. return `{ sum, pulled }`, with `pulled` read after the sum has resolved.
 
-The 49 fixtures are those of the synchronous task: arrays of 50 to 5,000
+The 49 fixtures are those of the synchronous task: arrays of 50 to 5,066
 integers (a small, a medium and a large size class, built by a fixed
 linear-congruential generator, no randomness) and limits that cut the stream
-short, equal the exact number of survivors, exceed it, or are 0. Expected sums
-are computed by a plain loop and compared exactly, so an adapter that returns
-a constant, ignores `limit`, or skips the filter fails.
+short, equal the exact number of survivors or exceed it, and one three-element
+array with a limit of 0. Expected sums are computed by a plain loop and
+compared exactly, so an adapter that returns a constant, ignores `limit`, or
+skips the filter fails.
 
 `pulled` checks laziness: when take has what it needs, the source must not be
 read any further. Two counts are accepted, and nothing else:
@@ -37,8 +38,9 @@ needed, but it still stops, and the extra work is the package's own and is in
 its figure. An adapter that reads the whole source when take cut it short
 (an eager step, or a take that drains its input) fails, and so does one that
 reports a count it did not observe. At least half the fixtures stop before
-the end of the source. When the limit reaches the number of survivors or
-exceeds it, both counts are the length of `data`.
+the end of the source. When the limit exceeds the number of survivors,
+both counts are the length of `data`; when it equals it, the look-ahead count
+is.
 
 This is an asynchronous task on **one thread** (`load.threads` is 1,
 `load.concurrency` is 1: one chain, one value in flight). Each operation is

@@ -4,8 +4,9 @@ One operation takes `{ seed, count, min, max }`: a seed (an integer from 0 to
 2^32 - 1), a number of draws (1024, 2048 or 4096) and an inclusive range of
 integers. It creates a new pseudo-random number generator from the seed and
 returns a list of `count` integers, each drawn uniformly from `min` to `max`
-inclusive, using the library's own bounded-integer function. Creating the generator is part of the measured call; with
-at least 1024 draws per call it is a small part. This differs from the
+inclusive, using the library's own bounded-integer function. Creating the
+generator is part of the measured call; with at least 1024 draws per call it
+is a small part. This differs from the
 `seeded-u32` task, which draws raw full-width integers: here the cost is mostly
 the bounded-sampling routine, over spans from 6 values to about 2^31.
 
@@ -14,9 +15,10 @@ widen-and-multiply so that every value in the range is equally likely.
 `@std/random`'s `randomIntegerBetween` does not: it takes one float from the
 generator, scales it into the range (`min * (1 - x) + max * x`) and floors it,
 which is cheaper and is not free of bias on wide ranges. The entries also
-differ in generator: ChaCha12 (`rand`'s `StdRng`) and ChaCha8 (`rand_chacha`)
-are cryptographic generators and cost more per draw than the wyrand, xorshift,
-xoroshiro, PCG and Mersenne Twister generators the other entries use. The
+differ in generator: ChaCha12 (`rand`'s `StdRng`), ChaCha8 (`rand_chacha`)
+and HC-128 (`rand_hc`) are cryptographic generators and cost more per draw
+than the wyrand, xorshift, xoshiro, xoroshiro, PCG and Mersenne Twister
+generators the other entries use. The
 ranking is of each library's documented way to get seeded integers in a range,
 not of one algorithm implemented several times.
 

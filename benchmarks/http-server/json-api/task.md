@@ -19,8 +19,11 @@ The exact requests and expected responses are in `scenario.mjs`.
 - Use the package's own router and its documented way of reading a route
   parameter, parsing a JSON body and sending JSON. No hand-rolled shortcuts
   around the package.
-- Default configuration unless the adapter notes state otherwise. No request logging, no compression, no clustering.
-- Native Python and Ruby servers use one process, so every server thread is included in CPU/RSS accounting. Uvicorn uses asyncio/h11 on both CPython and PyPy. Go uses its default scheduler.
+- Default configuration unless the adapter notes state otherwise. No request
+  logging, no compression, no clustering.
+- Python and Ruby servers use one process, so every server thread is included
+  in CPU and RSS accounting. Uvicorn uses asyncio and h11 on both CPython and
+  PyPy. Go uses its default scheduler.
 - **Default and tuned variants.** The entry named for a package runs it exactly
   as installed. A package may also have one tuned variant, a separate entry
   tagged `non-default-options` whose name states the setting. Tuned results
@@ -39,15 +42,18 @@ The exact requests and expected responses are in `scenario.mjs`.
   `scripts/sweep-setting.mjs`; its note records the value. A tuned variant is
   only kept if it is better than the default. Still not tunable: alternative
   event loops or parsers that are separate packages, and build flags.
-- Server-only packages (Uvicorn, Waitress, Puma) use a minimal ASGI, WSGI or Rack application; framework entries use the framework’s router and responses.
+- Server-only packages (Uvicorn, Waitress, Puma) use a minimal ASGI, WSGI or
+  Rack application; framework entries use the framework's router and
+  responses.
 - JSON body parsing may be attached to the `POST /echo` route only, or
   globally, whichever the package's documentation shows first.
 - Built-in adapters (`builtin/`) route by hand, since there is no router.
 
 ## Load
 
-Closed loop, 64 keep-alive connections, equal thirds of the three routes with
-`id` varying. An initial warm-up, a full three-round rehearsal in the same process, then three measured rounds; a forced collection
+Closed loop, 64 keep-alive connections (four load workers of 16), equal thirds
+of the three routes with `id` varying. An initial warm-up, a full three-round
+rehearsal in the same process, then three measured rounds; a forced collection
 after each round gives the retained heap.
 
 ## What is graded

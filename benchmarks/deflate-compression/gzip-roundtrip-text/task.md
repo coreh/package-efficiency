@@ -23,20 +23,24 @@ entropy coding cannot shrink those), the compressed size must be smaller than
 the input (27 of the 40 fixtures). Limits: the size comes from a second,
 untimed call written next to the timed one, not from the timed call itself, so
 it shows that the library call compresses, and review is still what ties it to
-the timed code; and the Go adapter (`compress/gzip`) returns only the text, because a
-Go adapter has no untimed hook, so it gets the round-trip check alone. What is
+the timed code; and the Go adapters (`compress/gzip` and `klauspost/pgzip`)
+return only the text, because a Go adapter has no untimed hook, so they get the
+round-trip check alone. What is
 timed is unchanged: the measured call returns the restored text only.
 
 Framing: gzip wherever the package offers it. A package with no gzip layer
 (`miniz_oxide`) uses zlib framing, which is the same deflate stream with a
 shorter header and an Adler-32 instead of a CRC-32 trailer; this is accepted as
 equivalent. Packages run with their default settings as installed (default
-level, no dictionary, no streaming API chosen, no threads). The default
-level is 6 for every entry but one: `node:zlib`, pako, fflate, flate2, Go
-`compress/gzip` and Ruby `Zlib` default to 6, and `miniz_oxide` is passed 6
-explicitly because its function requires a level. Python's `gzip.compress`
+level, no dictionary, no streaming API chosen). `klauspost/pgzip` compresses
+blocks in parallel goroutines by default, and runs that way here. The default
+level is 6 for every entry but one: `node:zlib`, minizlib (which wraps Node's
+zlib binding), pako, fflate, flate2, Go `compress/gzip`, `klauspost/pgzip` and
+Ruby `Zlib` default to 6, and `miniz_oxide` and `zlib-rs` are passed 6
+explicitly because their functions require a level. Python's `gzip.compress`
 defaults to level 9, so the Python rows do more compression work per call than
-the others. The cost of the default is what is measured. Zopfli, fdeflate and similar specialised encoders
-are left out: they compress only, or are not the plain case.
+the others. The cost of the default is what is measured. Zopfli, fdeflate and
+similar specialised encoders are left out: they compress only, or are not the
+plain case.
 
 See [shared methodology](../../README.md) for timing and reproduction.

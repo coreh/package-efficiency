@@ -21,9 +21,10 @@ encodings, streaming parsers that need a stream, file readers) are not
 included. Error handling is not exercised: all inputs are valid.
 
 The measured call consumes only the length of the parsed array, so the
-parsed value is built in full but not walked again. Standard-library baselines are included for JavaScript (`JSON.parse`), Python
-(`json.loads`), Ruby (`JSON.parse`) and Go (`encoding/json`), and Rust is
-represented by `serde_json` parsing into its untyped `Value`. Native results
-are converted to JSON for the verifier outside measured work.
+parsed value is built in full but not walked again. Standard-library baselines
+are included for JavaScript (`JSON.parse`), Python (`json.loads`), Ruby
+(`JSON.parse`) and Go (`encoding/json`), and Rust is represented by
+`serde_json` parsing into its untyped `Value`. Native results are converted to
+JSON for the verifier outside measured work.
 
 See [shared methodology](../../README.md) for timing and reproduction.

@@ -16,7 +16,9 @@ the encoding; no adapter normalizes names inside the call.
 A correct answer is one that reads the bytes as the original text: the
 verifier decodes the buffer with the encoding the library named (through the
 WHATWG decoder, which knows the common aliases) and compares the result with
-the text the fixture was made from. So GB2312, GBK and GB18030 are all accepted
+the text the fixture was made from. Code-page names that Python and ICU
+detectors use and the WHATWG decoder does not know (`cp932`, `cp949`, `uhc`,
+`cp936` and the like) are first mapped to the encoding they mean. So GB2312, GBK and GB18030 are all accepted
 for Chinese text, ISO-8859-1 or ISO-8859-9 for windows-1252 text that uses no
 character where they differ, and KOI8-U for Russian text in KOI8-R. An encoding
 that reads the bytes as different text (EUC-JP detected as GBK), an unknown
@@ -29,6 +31,4 @@ Packages run with their default settings as installed.
 
 - `html-encoding-sniffer` (npm) does not guess: it reads a BOM, a transport
   label or a `<meta>` declaration, and otherwise falls back to a fixed default.
-- PyPI, RubyGems and Go packages (charset-normalizer, chardet, cchardet,
-  rchardet, charlock_holmes) cannot be synchronous-task adapters yet.
 - No JavaScript, Python, Ruby or Go standard library detects encodings.

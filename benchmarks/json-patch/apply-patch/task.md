@@ -54,7 +54,9 @@ See [shared methodology](../../README.md) for timing and reproduction.
 
 ## The lenient task
 
-This is the strict task of a pair. [apply-patch-lenient](../apply-patch-lenient/task.md) runs the same
-adapters on the same inputs with a check that leaves out or forgives one
-stated kind of difference. It has the 30 fixtures whose patch applies, and accepts a `copy` that shares its value with its source. `fast-json-patch` with defaults, `rfc6902`, `hana` and the `json-patch` gem pass there; `immutable-json-patch` does not.
+This is the strict task of a pair.
+[apply-patch-lenient](../apply-patch-lenient/task.md) runs the same adapters on
+the 30 fixtures whose patch applies, and also accepts a `copy` that shares its
+value with its source. `fast-json-patch` with defaults, `rfc6902`, `hana` and
+the `json-patch` gem pass there; `immutable-json-patch` does not.
 See "Strict and lenient tasks" in the [shared methodology](../../README.md).

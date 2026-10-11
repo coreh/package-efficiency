@@ -13,7 +13,7 @@ A correct output deep-equals the input: same keys and values, same types
 Handing the input back is not a round trip, and the check guards against it as
 far as the harness allows. For JavaScript adapters, which are verified in
 process, an object or array result must not be the same object as the input.
-For Rust, Python and Ruby adapters the verifier sees only JSON, so object
+For Rust, Python, Ruby and Go adapters the verifier sees only JSON, so object
 identity cannot be checked; instead the untimed describe step reports the
 decoded value together with `encodedBytes`, the length of the byte buffer the
 adapter's encoder produces for it, which must be a positive integer. Limit: the
@@ -25,15 +25,15 @@ Scope: numbers are either integers within 2^53 or non-integral doubles; NaN,
 infinities, negative zero, dates, binary blobs and big integers are excluded
 because formats and libraries differ on them.
 
-Packages may use different formats (MessagePack, CBOR) or the language's own
+Packages may use different formats (MessagePack, CBOR, BSON) or the language's own
 binary format (V8 serialize, Python pickle, Ruby Marshal). Each is a compact
 binary encoding that round trips this data, and the task accepts any of them;
 the format is not compared. Schema-based formats (Protocol Buffers, Borsh,
 rkyv) and formats that cannot decode a self-describing value (bincode) are left
 out because they cannot decode arbitrary JSON-shaped data without a schema.
 Packages run with default settings as installed. The timed output is the
-decoded value, of which only a length is read; the Rust describe step is not
-timed. See [shared methodology](../../README.md).
+decoded value, of which only a length is read; the describe step of the native
+adapters is not timed. See [shared methodology](../../README.md).
 
 The fixtures are not equal in size. One fixture is a single 70,000-character
 ASCII string; measured as JSON text it is 70,011 of the 99,609 bytes across all

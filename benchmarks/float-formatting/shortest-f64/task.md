@@ -5,7 +5,10 @@ are finite, non-integral doubles (or integral ones of 1e21 and above, so every
 language's JSON reader sees a float): prices, coordinates, sensor readings,
 results of `sin`, `sqrt`, `exp` and division with full 17-digit mantissas, tiny
 and huge magnitudes, subnormals and the largest double. NaN, infinities and
-negative zero are outside the task. The harness hands fixtures to Rust as JSON, and the JSON reader there does not guarantee correctly rounded parsing of 17-digit numbers, so the inputs were chosen so that every language reads exactly the same double; this is checked, because a misread input fails verification.
+negative zero are outside the task. The harness hands fixtures to Rust as
+JSON, and the JSON reader there does not guarantee correctly rounded parsing of
+17-digit numbers, so the inputs were chosen so that every language reads
+exactly the same double. A misread input would fail verification.
 
 A correct output is a string that reads back to exactly the input double and has
 as few significant decimal digits as any string that does (the count JavaScript's
@@ -15,8 +18,8 @@ significant digits as the reference, so a fixed-precision or over-long result
 fails. Differences in spelling are accepted as equivalent because the value is
 the same: `1e21`, `1E21`, `1e+21` and `1.0e21`; `5` vs `5.0`; positional versus
 exponent notation. Where several strings of the minimal length read back to the
-input, any is accepted. Normalization happens only in the
-verifier, never in the timed call.
+input, any is accepted. Normalization happens only in the verifier, never in
+the timed call.
 
 Packages run with their default settings as installed. Each adapter returns what
 its library produces: the standard-library calls allocate and return a fresh
@@ -28,7 +31,7 @@ before timing, the Rust text is taken from the buffer (`lexical-core`) or
 formatted again from the same input (`ryu` and `zmij`, whose buffer type does not
 expose its bytes). So the Rust figures do not include a heap allocation that the
 other languages' strings do; that is what each library does when asked for the
-text. Inputs are preconstructed.
+text.
 
 Standard-library adapters: JavaScript `String(x)`, Python `repr(x)`, Ruby
 `Float#to_s`, Go `strconv.FormatFloat(x, 'g', -1, 64)`.

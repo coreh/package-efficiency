@@ -17,15 +17,16 @@ Signatures and keys are filler bytes: nothing is verified.
 
 The fixtures are stored as lowercase hex; each adapter decodes them to bytes
 once, in its untimed `prepare` step, so hex decoding is not measured. Each library
-is asked for its full decoded tree (not a typed X.509 view), and the
-adapter maps that tree to the common list inside the call, in every language.
+decodes the generic element tree (not a typed X.509 view), either whole in one
+call or element by element in the adapter's loop, and the adapter maps it to
+the common list inside the call, in every language.
 Libraries that interpret values while decoding (integers, OIDs, times,
 strings) do that work; lazier ones do less. Both are accepted, since
 the answer is the same. A correct output equals the generator's expected list
 exactly. Packages run with their default settings, as installed.
 
-Rust crates return their own trees (`der::AnyRef`, `DerObject`,
-`ASN1Block`); the list is built inside the measured call and its length is
+Rust crates return their own types (`der::AnyRef`, `asn1_rs::Any`,
+`DerObject`, `ASN1Block`); the list is built inside the measured call and its length is
 read to consume it. Conversion to JSON for the verifier happens once per
 fixture, outside measured work.
 
@@ -37,5 +38,10 @@ See [shared methodology](../../README.md) for timing and reproduction.
 ## Packages
 
 - JSR: `@wildboar/asn1` `DERElement`.
-- Rust: `der` `AnyRef`, `der-parser` `parse_der`, `simple_asn1` `from_der`.
+- Rust: `der` `AnyRef`, `asn1-rs` `Any::from_der`, `der-parser` `parse_der`,
+  `simple_asn1` `from_der`.
+- PyPI: `asn1crypto` `parser.parse`, `pyasn1` `der.decoder.decode` without a
+  spec.
+- Go: `github.com/go-asn1-ber/asn1-ber` and `gopkg.in/asn1-ber.v1`
+  `DecodePacketErr`.
 - Standard library: Go `encoding/asn1` `RawValue`, Ruby `OpenSSL::ASN1.decode`.

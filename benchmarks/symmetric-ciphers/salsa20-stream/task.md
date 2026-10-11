@@ -66,9 +66,6 @@ applied to the plaintext into a new `Vec<u8>` and returns it.
 | cargo `salsa20` | `Salsa20::new(key, nonce)` (RustCrypto, `KeyIvInit`; `Salsa20` is the 20-round type), then the keystream applied from the plaintext into a new `Vec<u8>` (`apply_keystream_b2b`, or a copy and `apply_keystream`) |
 | Go `golang.org/x/crypto` | `salsa20.XORKeyStream(out, in, nonce, key)` from `golang.org/x/crypto/salsa20` with the 8-byte nonce and a `*[32]byte` key, into a new slice |
 
-There is no builtin entry. The package entries are written separately; this
-list says what each is to call.
-
 ## Left out
 
 - Node, Bun, Deno, Python, Ruby and Go have no Salsa20 in their standard

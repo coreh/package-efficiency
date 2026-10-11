@@ -31,4 +31,8 @@ everything. Packages run with their default settings as installed.
 
 `bit-vec` is left out: it has no iterator over set bits (only over every bit as a
 bool), so an adapter would implement the listing itself.
-Only Rust has packages in this category.
+
+Python (`bitarray`, `pyroaring`) and Go (`bits-and-blooms/bitset`) have entries
+too; they form each result as a new set rather than in a copy of `a`.
+`pyroaring` is a compressed roaring bitmap, not a fixed-size set, so `size` is
+unused there.

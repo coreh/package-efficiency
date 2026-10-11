@@ -1,19 +1,285 @@
-# Benchmark tasks
+# Benchmarks
 
-Run a task on Node, Bun and Deno (three fresh processes per adapter):
+Every task is a folder, `benchmarks/<category>/<task>/`:
+
+- `task.md` says what one operation is, what counts as correct and what is
+  left out; `task.json` holds the load settings and the metrics.
+- `scenario.mjs` makes the fixtures and checks every result.
+- One folder per adapter: `npm/`, `jsr/`, `cargo/`, `pypi/`, `rubygems/`,
+  `gomod/`, and `builtin/` for a language's standard library.
+
+The scripts install each package under the seven-day rule, run every adapter
+on every runtime of its language in fresh processes, check its results, and
+write the measurements under `results/`. `npm run build` turns them into the
+site.
 
 ```sh
-npm_config_cache="$PWD/.cache/npm" npm run measure -- deep-equality/nested-json
-npm_config_cache="$PWD/.cache/npm" npm run measure -- stable-json-stringify/nested-records
-npm_config_cache="$PWD/.cache/npm" npm run measure -- html-escaping/text-attributes
+npm run measure -- deep-equality/nested-json
 npm run build
 ```
 
-Use `--force` to replace cached results, `--runtimes=node` to narrow runtimes,
-`--only=dequal` to select an adapter, or `--reps=1` for a smoke run. Full runs
-should use the default three repetitions. Run tasks sequentially on an idle
-machine. On macOS the supervisor needs permission to run `ps` and
-`/usr/bin/time -l` against its child processes.
+`--check` runs the correctness checks and one short round and records
+nothing: use it while writing a task. `--force` replaces kept results,
+`--runtimes=node` narrows the runtimes, `--only=dequal` picks one adapter and
+`--reps=1` makes a quick smoke run; full runs keep the default three. Measure
+one task at a time, on an otherwise idle machine. Keep npm's cache inside the
+repository with `export npm_config_cache="$PWD/.cache/npm"` (on Linux,
+`.cache/toolchains/env.sh` does it).
+
+Contents:
+
+- Running: [Running things](#running-things),
+  [Setting up a machine](#setting-up-a-machine),
+  [How results are measured](#how-results-are-measured),
+  [Type checks](#type-checks)
+- Writing tasks: [Synchronous operations](#synchronous-operations),
+  [Adapters for PyPI, RubyGems and Go modules](#adapters-for-pypi-rubygems-and-go-modules),
+  [Asynchronous operations](#asynchronous-operations),
+  [Tasks on the file system](#tasks-on-the-file-system),
+  [Tasks whose output differs between packages](#tasks-whose-output-differs-between-packages),
+  [Strict and lenient tasks](#strict-and-lenient-tasks),
+  [Client tasks](#client-tasks)
+- Adapters on the site: [Adapter notes](#adapter-notes), [Reviews](#reviews),
+  [Release lines](#release-lines),
+  [Registry identity and JSR](#registry-identity-and-jsr),
+  [Best and All views](#best-and-all-views)
+
+The web framework tasks have their own guide,
+[web-application-frameworks/README.md](web-application-frameworks/README.md).
+Categories without a task yet are in [BACKLOG.md](BACKLOG.md).
+
+## Running things
+
+| Command | What it does |
+| --- | --- |
+| `npm run setup` | Gets a machine ready: installs the pinned tools and packages under the seven-day rule, and says which language toolchains are missing. Safe to run again. |
+| `npm run status` | Reports what is measured and what is not, without measuring: missing adapters, failures, results from an older harness, adapters changed since they were measured, packages without a type check. |
+| `npm run refresh` | Runs everything in order: setup, every task, the type checks, the site build, the tests. Stops at the first failure. `--only=measure,build` and `--skip=setup` choose steps; other flags (`--force`, `--reps=5`, `--runtimes=node,bun`, `--tasks=…`) go to the measurements. |
+| `npm run measure-all` | Measures every task found under `benchmarks/`, one after another. `--shard=<i>/<n>` measures one machine's share of the tasks (see [Several machines](#several-machines)). |
+| `npm run measure -- <category>/<task>` | Measures one task. |
+| `npm run measure-checks` | Re-measures the type checks: TypeScript, `cargo check` and the native checkers. |
+| `npm run build` | Builds the site into `dist/`. `npm run preview` serves it on port 4173. |
+| `npm test` | Runs the harness and site tests. |
+| `npm run update-popularity` | Refreshes downloads, versions and ranks of the listed packages. |
+
+Everything graded is CPU time, so measure on an otherwise idle machine.
+With `--incremental` the type-check step measures only what has no result
+yet, instead of every package again (which takes over an hour). `--retry-failed`
+measures failed results again.
+
+`npm run refresh` refuses to start while another measurement is running or the
+machine is busy, unless given `--anyway`. Measurements already on disk are kept
+and skipped unless `--force` is given, so an interrupted run can be resumed.
+
+### What is measured again
+
+A result is kept and skipped on the next run only while everything it depended
+on is unchanged. Entries in a task are graded against each other, so when any
+of the following changes, the whole task is measured again, not just the part
+that changed: the harness, the task's load settings or fixtures, the source of
+any adapter in the task, the version of any runtime or toolchain, the machine,
+or the pinned version of any package the task uses. The run says why, for
+example `measuring again: an adapter in the task changed`. A result that
+failed (a crash or a timeout) is kept as failed; pass `--retry-failed` to try
+those again.
+
+Two flags override this. `--force` measures everything again, whatever is
+already there. `--keep-existing` does the reverse: it keeps every result that
+is already there and measures only what is missing, without checking whether
+anything changed. Use it to finish a run without redoing work, knowing that
+kept results may no longer match the code.
+
+## Setting up a machine
+
+`npm run setup` installs everything the measurements use, under the
+repository's rules (nothing published in the last seven days, no install
+scripts), and says which language toolchains are missing. It is safe to run
+again: every step skips what is already in place. The toolchains come from:
+
+| | macOS (Apple silicon) | Linux (Ubuntu, x86-64 or ARM64) |
+| --- | --- | --- |
+| Node.js | yours | pinned, by `scripts/setup-linux.sh` |
+| Bun, Deno, TypeScript | pinned npm packages in `toolchains/` | the same |
+| Rust 1.96.1 | rustup | pinned archive |
+| Go 1.25.3 | Homebrew | pinned archive |
+| CPython 3.14.3 | Homebrew | python-build-standalone |
+| PyPy 8.0.0 | pinned archive | pinned archive |
+| CRuby 4.0.1, with YJIT | Homebrew `ruby` | built from its source release |
+
+`runtimes.json` names each binary per kind of machine and checks its
+version; a different version stops the run and says which was expected. The
+pinned archives are listed in `toolchains/native.json` with their SHA-256 and
+release dates, installed under `.cache/toolchains/` by
+`scripts/setup-native.mjs` (part of `npm run setup`), and used only once at
+least seven days old.
+
+### Linux
+
+On a fresh Ubuntu machine (24.04 and 26.04 have been tried), from the
+repository:
+
+```
+sh scripts/setup-linux.sh     # system packages (sudo), pinned Node.js, then npm run setup
+. .cache/toolchains/env.sh    # in every shell that measures: Node.js and cargo on PATH
+```
+
+What differs in the measurement:
+
+- CPU time is read with the process's CPU clock (`clock_gettime` on the
+  pid's clock), to the nanosecond, like `proc_pid_rusage` on macOS.
+- Memory is the anonymous and shared part of the resident size
+  (`RssAnon + RssShmem` in `/proc/<pid>/status`), Linux's nearest figure to
+  macOS's physical footprint.
+- Wheels, platform gems and the Sorbet build are this machine's: the locks
+  gain a `linux-x64` (or `linux-arm64`) entry beside the macOS one, at the
+  versions already settled.
+
+Results record the machine, so results from different machines are never
+compared as if they came from one. Measure on the machine's own processor:
+under emulation (an x86-64 virtual machine on Apple silicon runs everything
+through Rosetta) memory figures are inflated and JIT runtimes are noisy.
+
+### Several machines
+
+Tasks do not depend on one another, so identical machines can share a full
+run, each measuring its part alone and one task at a time:
+
+```
+node scripts/measure-all.mjs --shard=3/8    # on the third of eight machines
+```
+
+Every machine computes the same split from the same commit. Tasks are weighed
+by how long they took last time (from the `measuredAt` of their results), and
+tasks that share files stay together: a lenient task with the strict task
+whose adapters it borrows, and the web framework tasks with their `_shared`
+apps. Each machine prints its share and its expected time, and its results
+and lock entries are its own tasks' files, so the shares are put together by
+copying them into one checkout. The exception is the idle baselines
+(`results/_baseline/<runtime>.json`), which every machine measures for
+itself: keep one machine's.
+
+Use machines of one model (check `lscpu` on each), since the site puts the
+tasks side by side. Different hardware would make one task look faster than
+another only because of where it ran.
+
+### Priority
+
+The measuring scripts ask for a higher priority than other work on the
+machine (`nice -15`), so that background activity disturbs a measurement
+less. The processes they start take that priority. Raising a priority needs
+root. Either run as root, or let your user run `renice` without a password:
+
+```
+sudo visudo -f /etc/sudoers.d/renice
+# add this line, with your user name:
+# yourname ALL=(root) NOPASSWD: /usr/bin/renice
+```
+
+Without it the scripts print one line that says the priority was not raised,
+and measure as before. `BENCH_PRIORITY=-10` sets another value; `0` turns it
+off.
+
+## How results are measured
+
+The built-in rows describe specific APIs, not whole languages, and only the
+fixtures define equivalence: Python and Ruby equality, for example, have
+different numeric semantics outside the JSON-compatible data the fixtures
+use. `runtimes.json` records each runtime's exact version and its interpreter
+or JIT flags.
+
+Every process, compiled ones included, runs a short warm-up and then one full
+rehearsal of the measured rounds before the rounds that are scored, in the
+same process: warming one process and measuring another would throw away JIT
+state. The rehearsal does not prove that a JIT has converged; its rounds are
+kept as `warmupRounds` for inspection. HTTP servers follow the same rule.
+
+Memory is the process's physical footprint: what it has written to and still
+holds (macOS `phys_footprint`, the figure Activity Monitor shows; on Linux the
+anonymous and shared-memory part of the resident size). Resident size is
+recorded too but not graded: it also counts the runtime's own binary, and on
+macOS pages a runtime has already released that the system has not yet taken
+back, which made runtimes that free eagerly look as if they held their
+high-water mark.
+
+Each raw result embeds its baseline, so measuring a baseline again later
+does not change what an old result means. An operation task uses a warm
+baseline: the same runtime running the harness over the task's own fixtures
+and rounds with a do-nothing adapter, measured once per task and runtime
+(`results/_baseline/<task>/<runtime>.json`). What a runtime holds after that
+(its warmed-up machinery, the fixtures, the harness) is not the package's.
+Server tasks use the runtime's idle process (`results/_baseline/<runtime>.json`).
+
+- Package memory is graded on the footprint after the last round and a
+  settled garbage collection, above that baseline. A negative difference
+  counts as zero for grading; `memoryAboveBaselineBytes` keeps the signed
+  value.
+- Runtime comparisons (labels and tables) use the total footprint after the
+  task, the runtime itself included.
+- The footprint after garbage collection includes allocator pages kept for
+  reuse and JIT code, not only live objects.
+- Peak RSS over the process's life is kept as an ungraded diagnostic. It
+  includes start-up and warm-up, so it is not the task's own peak; peak task
+  demand is not measured.
+- `heapAboveBaselineBytes` is an ungraded settled-heap difference, by each
+  language's own accounting: the JavaScript heap plus external memory, Rust's
+  requested live allocator bytes, Go's `HeapAlloc`, Ruby's
+  `ObjectSpace.memsize_of_all`, PyPy's GC bytes. CPython has none, because
+  allocation tracing would distort its timed CPU work. Subtracting a baseline
+  does not make these accountings equivalent, and none of them is exact
+  process memory.
+
+User plus system CPU already counts the work of every thread, so there is no
+extra multiplier for threads. Elapsed time is kept separately.
+
+## Type checks
+
+Each package also gets the cost of type-checking an adapter that uses it:
+the added process CPU seconds times the added memory in MB, in MB·s, above an
+empty baseline. Each class boundary is the CPU boundary times the memory
+boundary. Memory has its own scale (1.5, 2.5, 4, 6.5, 10, 16 times the best)
+because memory results sit closer together than CPU results (1.5, 3, 6, 12,
+25, 50). The CPU score uses a 10 ms floor for timing and baseline noise, and
+negative deltas count as zero. TypeScript, Rust and each native checker have
+their own anchors. `npm run measure-checks` measures them all again;
+`--incremental` measures only what has no result yet.
+
+TypeScript projects and their empty baseline load the same pinned
+`@types/node`, `@types/bun` and `@types/deno`. This is a common ambient-type
+baseline, not a measurement of `deno check` or of a runtime-specific
+application. `skipLibCheck` stays on: this measures declaration loading, not
+full checking of dependency implementation bodies. The type pins are kept in
+`data/types.json`; changing them invalidates every cached package check.
+
+Native type checkers are pinned in `toolchains/checkers.json` and
+`toolchains/checkers-requirements.txt`. `npm run setup` installs them
+(`scripts/setup-checkers.mjs`) and `node scripts/measure-native-checks.mjs`
+measures them: eleven
+fresh-process runs of each adapter and an empty baseline, recording process
+CPU (user + system), elapsed time, and checker peak RSS through `wait4`.
+This memory measure is not the runtime benchmark's settled RSS or the
+TypeScript compiler's reported heap; each checker has separate grade anchors.
+
+- Python: mypy strict, targeting Python 3.12, with bundled typeshed. It checks
+  the actual adapter body with generated parameter/return annotations and a
+  recursive JSON alias, with all incremental caching disabled. The same
+  measurement applies to CPython and PyPy; mypy itself runs under CPython.
+  HTTP adapters carry their own annotations and load the installed framework
+  types. Waitress uses a small local API stub; WSGI/ASGI payload values remain
+  dynamic, so these checks do not prove request-body shapes.
+- Ruby: native Sorbet checks the actual bodies with generated method signatures,
+  bundled core/JSON RBI, and the checked-in CGI signature. Nested JSON contents
+  remain `T.untyped`; this is partial static coverage, not a claim of full typing.
+  Results apply to both CRuby configurations, independently of YJIT. HTTP
+  checks cover the adapter with a local Roda boundary RBI; routing DSL values,
+  Rack input and parsed JSON remain dynamic. Puma itself is not type-checked.
+- Go: a `go/types` driver parses and checks the actual adapter and loads prepared
+  standard-library and framework export data. Export preparation, compilation and linking
+  are outside the measured process; import loading is included.
+
+Each checker must reject a deliberately invalid return type before measurements
+are accepted. Raw runs, source hashes, baselines and checker versions live in
+`data/native-checks.json`. Small differences either way are measurement
+noise, which the 10 ms CPU floor absorbs.
 
 ## Synchronous operations
 
@@ -30,9 +296,10 @@ comes first, followed by a full three-round unmeasured rehearsal and three
 measured rounds. A round runs batches until `minRoundMs` (250 ms) has elapsed;
 a batch is about a tenth of that, never more than `operationsPerRound`
 calls, and always a whole number of passes over the fixtures, so every round
-of every adapter covers the same mix of inputs. Counts are recorded per round, so costs use
-the actual count rather than assuming every adapter did equal work. CPU is child
-user plus system CPU from `process.cpuUsage()`. GC can occur naturally inside a
+of every adapter covers the same mix of inputs. Counts are recorded per
+round, so costs use the actual count rather than assuming every adapter did
+equal work. CPU is the adapter process's user plus system time
+(`process.cpuUsage()` in JavaScript). GC can occur naturally inside a
 batch; forced settled GC runs outside timing. Heap includes external memory.
 Peak RSS covers the whole process, including fixture construction and validation;
 it is not solely package allocation. No individual-call latency is measured.
@@ -79,9 +346,10 @@ contracts; they do not rank a library's entire API. Tiny differences and memory
 near the 4 MB grading floor should not be over-interpreted. CPU grading uses
 four decimal places for microsecond operation costs to avoid zero anchors.
 
-New adapter versions use the existing seven-day release-age filter, disabled
-install scripts, and shared `versions.json`. Raw results include runtime and
-machine versions. Adapter metadata records authorship and unreviewed status.
+Packages are installed under the seven-day rule with install scripts off, at
+the version in `versions.json`, which every task shares. Raw results record
+the runtime, its version and the machine; `adapter.json` records who wrote
+the adapter and whether it has been reviewed.
 
 ## Adapters for PyPI, RubyGems and Go modules
 
@@ -267,16 +535,19 @@ tasks are being checked. What the other lines mean:
 | `verify-failed: …` | Your adapter's results differ from the task's. Fix the adapter, not the task. |
 | `crashed` or `expected phase …` | Run the runner by hand to see the error (below). |
 
-To see an error in full, start the runner as the script does, with the
-interpreter that `runtimes.json` names (`bin`), from the repository's root.
-`<hash>` is the folder the package was installed in: the newest one under
-`.cache/native-packages/pypi/` or `.cache/native-packages/rubygems/`.
+To see an error in full, start the runner as the script does, from the
+repository's root, with the interpreter that `runtimes.json` names for this
+machine (`$PYTHON` and `$RUBY` below: on macOS `/opt/homebrew/bin/python3`
+and `/opt/homebrew/opt/ruby/bin/ruby`, on Linux the ones under
+`.cache/toolchains/`). `<hash>` is the folder the package was installed in:
+the newest one under `.cache/native-packages/pypi/` or
+`.cache/native-packages/rubygems/`.
 
 ```sh
 # Python
-PYTHONPATH=.cache/native-packages/pypi/<hash> /opt/homebrew/bin/python3 -B harness/python/runner.py benchmarks/<category>/<task>/pypi/<name>/adapter.py .cache/work/<category>/<task>/fixtures.json </dev/null
+PYTHONPATH=.cache/native-packages/pypi/<hash> $PYTHON -B harness/python/runner.py benchmarks/<category>/<task>/pypi/<name>/adapter.py .cache/work/<category>/<task>/fixtures.json </dev/null
 # Ruby
-GEM_HOME=$PWD/.cache/native-packages/rubygems/<hash> /opt/homebrew/opt/ruby/bin/ruby harness/ruby/runner.rb benchmarks/<category>/<task>/rubygems/<name>/adapter.rb .cache/work/<category>/<task>/fixtures.json </dev/null
+GEM_HOME=$PWD/.cache/native-packages/rubygems/<hash> $RUBY harness/ruby/runner.rb benchmarks/<category>/<task>/rubygems/<name>/adapter.rb .cache/work/<category>/<task>/fixtures.json </dev/null
 # Go: the build error is printed by --check itself.
 ```
 
@@ -636,7 +907,6 @@ node scripts/measure-native-checks.mjs --verify --only=<category>/<task>
 
 Not covered yet: a Rust standard-library entry (there is no `builtin` path
 for Rust, so `std::sync::mpsc` or `std::sync::Mutex` cannot be listed).
-
 
 ## Tasks on the file system
 
@@ -1146,38 +1416,6 @@ harness change; say in `task.md` that this is on purpose (the child is the
 same in every entry), give an absolute path to a program that exists on every
 machine, and raise `minRoundMs`, because a round holds few calls.
 
-### Decisions for the categories that waited for one
-
-Each of these was put aside for a design decision, a check, or a reason that
-did not hold. "Written" means the task exists and is the example to copy.
-For the others the decision is made and the task is still to write; the
-gaps are those of `BACKLOG.md` (a: PyPI, RubyGems and Go-module adapters, b:
-asynchronous operations, c: files, d: a local peer).
-
-| Category | One task measures | Correct means | Kind, pattern | State |
-| --- | --- | --- | --- | --- |
-| `uri-template-expansion` | Parse and expand one RFC 6570 template with a variable set | Equal to the scenario's reference expander; both orders of a map's pairs accepted | sync, 6 | Written: `rfc6570-expansion` |
-| `syntax-highlighting` | Highlight one source file to HTML, language given | Visible text is the source; comment, string, keyword and number never share a styling | sync, 2 | Written: `highlight-to-html` |
-| `xml-building` | Build a document from an element tree and serialize it | Read back with a strict reader: same elements, attributes as a set, exact text | sync, 1 | Written: `build-document` |
-| `sql-parsing` | Parse one statement | Kind, tables, columns, counts and the WHERE tree, in a common shape | sync, 3 | Written: `parse-statements` |
-| `image-processing` | Decode a PNG, scale down by a whole factor, encode a PNG | Decoded: exact size, mean error from the block average at most 2 levels | sync, 4 | Written: `png-thumbnail`. `sharp`, `jimp`, `imagescript`, `@cross/image` need b |
-| `source-map-generation` | Add every mapping, produce the encoded map | Mappings decoded and resolved through the output's own lists equal the fixture's | sync, 1 | Written: `record-mappings`. `magic-string` is another job: a second task `track-edits` with the same check |
-| `graph-algorithms` | Build a DAG from an edge list, return a topological order | Every node once, every edge forward | sync, 5 | Written: `topological-sort`. A second task for components: compare as a set of sets |
-| `process-execution` | Run `/bin/echo` with arguments, collect output and status | Exact output (final newline optional) and status 0 | sync; the caller's CPU only | Written: `spawn-collect`. The asynchronous forms need b, same fixtures |
-| `expression-evaluation` | Parse one expression and evaluate it against 8 variable sets | Each value within 1e-9 of the scenario's own evaluation of the tree it generated | sync, 6 | To write. Arithmetic (`+ - * /`, unary minus, parentheses), comparisons, `min`, `max`, `abs`; every literal and variable a float. Left out because the libraries disagree: power (`^` or `**`), `and`/`or` spellings, integer division, modulo. npm `expr-eval`, `mathjs`, `jexl` (`evalSync`), `filtrex`; crates `evalexpr`, `meval`, `fasteval`. `cexpr`, `cfg-expr` and `boolean.py` do other jobs and stay out. `govaluate`, `cel-go`, `simpleeval` need a |
-| `pdf-generation` | Write 20 pages of positioned lines of text and a ruled table, standard Helvetica, A4 | Decoded: page count, page size within a point, and the text shown on each page (`Tj`, `TJ`, `'`, `"` strings of the inflated content streams, WinAnsi) equal to the fixture's lines in order | sync, 4 | To write. Lines come already broken and positioned, because line breaking differs. ASCII and Latin-1 text only, no embedded fonts. npm `jspdf`, crate `printpdf` now; `reportlab`, `fpdf2`, `prawn`, `gofpdf` need a; `pdfkit`, `pdf-lib`, `pdfmake` need b. HTML to PDF (`weasyprint`, `wicked_pdf`) is another job; `wicked_pdf` runs an external program and stays out. `combine_pdf` and `pydyf` (no text layout) stay out |
-| `chart-rendering` | Render a line chart of 5 series of 500 points to SVG at a given size | Parsed SVG: the size asked for; for each series one path or polyline of 450 to 500 vertices that is an affine image of the data (residual at most one pixel, so whole-pixel coordinates pass) with the y axis flipped, and any point it leaves out within one pixel of the line drawn; one mapping for all series; everything inside the canvas | sync, 1 and 5 | To write; the hardest here. The reader must handle path commands (absolute and relative) and `transform` on groups. npm `echarts` (server-side SVG string), crates `plotters`, `charts-rs` now; `matplotlib`, `leather`, `gonum/plot` need a. PNG output is not benchmarkable: rasterizers and fonts differ and no pixel check is fair. `svgo` (drawing primitives), `sparklines` (terminal) and `seaborn` (a layer over matplotlib) stay out; `plotly` and `altair` need an external renderer for SVG |
-| `fake-data-generation` | With a given seed, generate 100 records of name, email, street and date | Every record has the shape (non-empty strings, an email by pattern, an ISO date in range); two fixtures with the same seed give the same records; different seeds differ; at least half the names are distinct | sync, 5 | To write. State that the libraries do not produce the same data. npm `@faker-js/faker`, `chance`; crate `fake`; `faker` (PyPI, RubyGems) and `ffaker` need a. `factory-boy` builds objects from factories and stays out; `@laura/testdata-generator` only if it can be seeded |
-| `dataframes` | On a 20,000-row table built once per fixture in `prepare`: filter, group by a key, sum and mean | Rows compared as a set by key; integer sums exact, means within 1e-9 | sync, 1 | To write. Building the table is not timed and `task.md` says so. npm `arquero`, `data-forge`, `nodejs-polars`; crate `polars`. `pandas`, `polars`, `pyarrow`, `duckdb`, `agate` need a; `@nshiab/simple-data-analysis` needs b. `arrow` alone has no group-by; `narwhals`, `pyspark`, `dask` stay out |
-| `embedded-script-interpreters` | Run one script in a fresh context and read its result back | Exact value (a number, a string) | sync, exact | To write, **one task per guest language**: the script is the input, so a Lua run is never compared with a JavaScript run. `javascript-guest`: `quickjs-emscripten`, crates `boa_engine`, `rquickjs`; `goja` needs a. `lua-guest`: `fengari`, crates `mlua`, `piccolo`; `gopher-lua` needs a. Starlark: crate `starlark`; `go.starlark.net` needs a. Scripts: recursive `fib(22)`, sorting 2,000 numbers, building a string. `@eyurtsev/pyodide-sandbox` runs Python, alone, asynchronously: out |
-| `message-translation` | 50 lookups with interpolation and plural selection against a catalog loaded once per fixture | Exact strings | sync, 6 | To write, as **two tasks**, because there are two models. `gettext-catalog` (msgid and plural forms; the scenario writes the `.mo` bytes): `jed`, `node-gettext`, crate `gettext`; `fast_gettext`, `gettext`, `babel`, `gettext-go` need a. `keyed-messages` (key, named placeholders, CLDR plural categories; the scenario gives a neutral catalog and each adapter converts it in `prepare`): `i18next`, `node-polyglot`, `@locale-kit/locale-kit`; `i18n`, `universal-translator` need a. Locales en and ru, whole numbers only, so gettext's and CLDR's plural rules agree. `@moductor/libintl` (binds the system library) and `@axhxrx/internationalization` (TypeScript modules as catalogs) stay out |
-| `subword-tokenization` | Encode one text to token ids with `cl100k_base` and decode it back | Ids equal to recorded ones; decoding gives the text | sync, 6 with recorded outputs | To write. The vocabulary is too large for a reference in the scenario: record the ids once, only where two independent implementations agree, and say in `task.md` where they came from. npm `gpt-tokenizer`, `js-tiktoken`, `tiktoken`; crate `tiktoken-rs` (all carry the vocabulary). PyPI `tiktoken` fetches it over the network on first use and needs a and c; `tokenizers` and `sentencepiece` need a model file (c) and a task of their own. `@wangb/vibrato-deno` is a morphological analyzer: out |
-| `ruby-parsing` | Parse one Ruby source file | A common shape: the classes, modules and methods defined, in order, with nesting path, line and parameter names | sync, 3 | To write. Standard library Ripper and Prism (bundled since Ruby 3.3), npm `@ruby/prism` (WebAssembly), crate `lib-ruby-parser` now; gems `parser`, `ruby_parser`, `prism` need a. Do not count call nodes: the parsers disagree on what a call is |
-| `typed-object-mapping` | Turn plain nested data into declared record objects and back | The round trip equals the input (dates as ISO text), and `describe` reports the class of the object at three places, so returning the input fails | sync, 1 and 3 | To write. npm `class-transformer`, `serializr`; crate `serde_json` (`from_value`, `to_value`) now. `cattrs`, `mashumaro`, `typedload`, `marshmallow`, `dataclasses-json`, `dry-struct`, `virtus` need a. `dacite` and `mapstructure` only load: a second task `load-records`. `proto-plus`, `py-serializable`, `coercible`, `envconfig` stay out |
-| `object-json-serialization` | Serialize 50 records (ten attributes, a nested list) through a serializer declared once | The JSON text, parsed, equals the expected structure | sync, 1 | Needs a: every package is a gem (`representable`, `jbuilder`, `active_model_serializers`, `grape-entity`). A Ruby-only comparison, which is fine. `jsonapi-renderer` writes JSON:API documents, another shape: out |
-| `dynamic-attribute-objects` | Wrap a nested hash, read 200 and write 50 attributes by method call, convert back | Exact values and final hash (keys compared as text) | sync, exact | Needs a: `hashie`, `recursive-open-struct`, `snaky_hash`, beside the standard library's OpenStruct. A Ruby-only comparison. `objx` (Go) reads by path string, a different interface: out. Wrapping is inside the call: some wrap eagerly, some on first read, and both must be counted |
-| `object-pickling` | Serialize and restore a graph of 2,000 class instances with shared references and a cycle | `describe` walks the restored graph: field values, and which references are the same object | sync, 3 | Needs a: `cloudpickle`, `dill`, `jsonpickle`, beside the standard library's `pickle`. A Python-only comparison; no other ecosystem serializes closures. A second task `closures` (restore functions and call them): `cloudpickle`, `dill`; `pickle` is recorded as not passing. `tblib` (tracebacks): out |
-
 ## Strict and lenient tasks
 
 A strict check turns a package away for one edge case, and the package then
@@ -1648,12 +1886,13 @@ running). None of that is built; this is the plan.
 | Kafka | **No.** Every client negotiates its own version of some forty APIs, and produce, fetch and the group protocol are large. | Apache Kafka in KRaft mode, one node. It needs a JVM, which is a second pinned download (an Eclipse Temurin archive with its SHA-256) beside the Kafka archive (SHA-512 published). Redpanda has no macOS build. Slow to start, several hundred MB of memory. The heaviest peer on this list, and the brief has no npm or Rust package: last in line. |
 | SSH server | **No**: the transport is real cryptography (key exchange, host key, an AEAD cipher), so a "stub" is an SSH server. | Two ways. (a) A peer built in the harness crate on the `russh` crate, pinned by Cargo.lock under the age rule like any crate: an `exec` handler with fixed output and an SFTP subsystem, a few hundred lines. Preferred: portable and pinned. (b) The system's OpenSSH `sshd`, run unprivileged with its own config (`ListenAddress 127.0.0.1`, a port the harness picks, a host key and one authorized key made for the run, `PasswordAuthentication no`, a `ForceCommand`), with its version recorded like the system Python's (`expectedVersion`). Either way the server's config must fix one key exchange, one host key type and one cipher, so every client does the same cryptography; a client that lacks them fails visibly. |
 
-### Verdicts for the categories that need a peer
+### Categories still waiting for a peer
+
+`BACKLOG.md` lists every category without a task. For those that need a
+peer, the packages and the work:
 
 | Category | Verdict |
 | --- | --- |
-| `http-client` | **Ready for the fan-out.** Two tasks exist (`get-json`, `post-json`) on the `http` peer. More adapters: npm gaxios, superagent, needle, the JSR clients; PyPI httpx (its blocking client), httplib2; RubyGems httparty, httpclient, faraday with a persistent adapter; crates isahc, attohttpc. More tasks need no harness work while they stay within what the peer speaks (a large body, many headers, a new connection per request with `keepAlive: false` and small rounds). |
-| `redis-client` | **Ready for the fan-out** for stateless commands, on the `redis` stub (`get-set` exists). PyPI `redis`, RubyGems `redis`, `redis-client` and Go modules can be added now. Stateful tasks need the real server. |
 | `websocket-messaging` | **Needs a stub peer** (about 250 lines), then ready: built-in `WebSocket` on the three JavaScript runtimes, npm ws, crates tungstenite and tokio-tungstenite, PyPI websockets and websocket-client. One lane per connection: send a message, wait for its echo. The in-memory codec idea in the backlog is a different, synchronous task. |
 | `smtp-client` | **Needs a stub peer** (about 200 lines), then ready: Python `smtplib` and Go `net/smtp` built in, npm nodemailer, RubyGems net-smtp, crate lettre. |
 | `socks-proxy-client` | **Needs a stub peer** (about 200 lines). Few packages (npm socks and socks-proxy-agent, PyPI pysocks, RubyGems socksify, Go modules); low priority. |
@@ -1664,7 +1903,6 @@ running). None of that is built; this is the plan.
 | `kafka-client` | **Needs real server software** and a JVM. Last in line. |
 | `ssh-client` | **Needs real server software**, best as a peer on the `russh` crate. Every package in the brief is on PyPI, RubyGems or Go. |
 | `background-job-queues` | **Needs real server software, and is not a client task.** celery, huey, kombu, sidekiq and resque need a real Redis (lists, blocking pops, scripts: state a stub cannot fake), delayed_job a SQL database. What is measured is a worker draining a queue, in one or several processes, which is nearer the asynchronous operation kind with a server beside it. The packages also promise different things (retries, scheduling, acknowledgement), so "the same job" needs care. Low priority; possibly not comparable. |
-| `object-relational-mapping` | **Fits an existing kind, not this one.** With SQLite in memory there is no peer and no network: a synchronous task with PyPI adapters (SQLAlchemy, peewee, SQLModel over the standard library's `sqlite3`) and Go modules (gorm with a pure-Go SQLite driver). It belongs to the work on PyPI and Go adapters. Against PostgreSQL it would need that peer. |
 | `http-application-servers` | **Fits the existing `http-server` kind, not this one.** uvicorn and puma already run in `http-server/json-api` through `scripts/lib/native-http.mjs`; a task with a bare callback would add webrick, thin, actix-http and hyper the same way. gunicorn and unicorn fork worker processes, and the supervisor measures one process: they need CPU and memory summed over a process tree first. |
 
 ### Not there yet
@@ -1673,15 +1911,33 @@ running). None of that is built; this is the plan.
   `harness/python/client-runner.py` runs a lane as a thread. An asyncio mode
   (lanes as tasks on one loop when `operation` is a coroutine function) is
   about thirty lines there.
-- **Type-check cost of Python, Ruby and Go client adapters.**
-  `scripts/measure-native-checks.mjs` wraps an adapter as `operation(input)`;
-  a client adapter's `connect` and `operation(state, input)` need their own
-  wrapper in `scripts/lib/native-wrappers.mjs`. Until then
-  `harness/tests/native-checkers.test.mjs` lists them as unchecked.
 - **TLS, HTTP/2, chunked and compressed bodies** in the HTTP peer.
 - **One-thread variants** of the asynchronous Rust clients, as the servers
   have.
 - **Peers for WebSocket, SMTP, SOCKS and gRPC**, and every real server above.
+
+## Adapter notes
+
+In `adapter.json`, `notes` is shared across runtimes. Optional `runtimeNotes`
+adds a note for one runtime, keyed by its id in `runtimes.json` (`node`,
+`bun`, `deno`, `cpython`, `ruby-yjit`, `rust` and so on):
+
+```json
+{
+  "notes": "Shared context for every runtime.",
+  "runtimeNotes": {
+    "node": "Uses a Node-specific adapter.",
+    "bun": "Uses the native server API."
+  }
+}
+```
+
+Label footers show the shared note first, followed by the current runtime's
+note, with automatic wrapping and height. Either field may be omitted. Other
+runtimes' notes are never included on that label. Package adapter details list
+shared notes and label each applicable runtime note by runtime name. Run
+`npm run build` to update inline cards and downloadable SVGs; measurements do
+not need to be rerun.
 
 ## Reviews
 
@@ -1706,121 +1962,26 @@ A review is of the adapter as it was then: when an adapter changes in a way
 that matters, set it back to `"unreviewed"`. Another version of a package
 under `versions` in `adapter.json` has its own `review`.
 
+## Release lines
 
-## Adapter notes
-
-In `adapter.json`, `notes` is shared across runtimes. Optional `runtimeNotes`
-adds a note keyed by runtime ID (`node`, `bun`, `deno`, or `rust`):
+Each package has one default release, pinned in `versions.json`. Other exact
+releases listed under `activeVersions` get their own rows, scores, labels and
+version links beside it, for example an older major or a beta named
+explicitly:
 
 ```json
-{
-  "notes": "Shared context for every runtime.",
-  "runtimeNotes": {
-    "node": "Uses a Node-specific adapter.",
-    "bun": "Uses the native server API."
-  }
-}
+"activeVersions": { "npm": { "express": ["4.22.3"], "elysia": ["2.0.0-beta.19"] } }
 ```
 
-Label footers show the shared note first, followed by the current runtime's
-note, with automatic wrapping and height. Either field may be omitted. Other
-runtimes' notes are never included on that label. Package adapter details list
-shared notes and label each applicable runtime note by runtime name. Run
-`npm run build` to update inline cards and downloadable SVGs; measurements do
-not need to be rerun.
-
-## Cross-language edition (harness 2)
-
-Run `node scripts/setup-native.mjs` to restore the pinned PyPy download locally.
-The other native binaries must match the paths/versions in `runtimes.json`.
-
-The suite now includes standard-library adapters for Go, CPython, PyPy, CRuby
-and CRuby with YJIT. `runtimes.json` records exact required native runtime
-versions and interpreter/JIT flags. The built-in rows describe specific APIs,
-not blanket language rankings. Only the current fixtures define equivalence:
-Python/Ruby equality, for example, has different numeric semantics outside the
-JSON-compatible corpus. Ruby's sorted JSON adapter recursively copies/sorts
-on every call; Go and Python include their own sorting in serialization.
-
-Every process, including native compiled implementations, executes its initial
-short warm-up followed by one full rehearsal of the measured round schedule.
-Only subsequent rounds are scored. This happens in the SAME process: warming
-one process and measuring a fresh process would discard JIT state. The extra
-run does not prove complete JIT convergence; its rounds are retained as
-`warmupRounds` for inspection. HTTP servers follow the same full-rehearsal
-policy. Cached results from an older harness are automatically refreshed.
-`npm run measure-all` runs all tasks sequentially.
-
-Memory is the process's physical footprint: what it has written to and still
-holds (macOS `phys_footprint`, the figure Activity Monitor shows; on Linux the
-anonymous and shared-memory part of the resident size). Resident size is
-recorded too but not graded: it also counts the runtime's own binary, and on
-macOS pages a runtime has already released that the system has not yet taken
-back, which made runtimes that free eagerly look as if they held their
-high-water mark.
-
-Each raw result embeds its baseline, preventing a later baseline refresh from
-changing its interpretation. For operation tasks that is a warm baseline: the
-same runtime running the harness over the task's own fixtures and rounds with
-a do-nothing adapter, measured once per task and runtime
-(`results/_baseline/<task>/<runtime>.json`). What a runtime holds after that
-(its warmed-up machinery, the fixtures, the harness) is not the package's.
-Server tasks still use the runtime's idle process. Package memory grades use
-the footprint after the final task round and settled GC, above that baseline.
-Runtime comparison labels and tables instead use the total footprint after
-the task, including the runtime itself. Lifetime peak RSS remains an ungraded
-diagnostic: it includes startup and warm-up and is not a task-only peak. The
-footprint after GC includes retained allocator pages and JIT code, not only
-live objects. We do not claim to measure peak task demand.
-The detailed table shows both. `memoryAboveBaselineBytes` retains the signed
-incremental difference, while negative package deltas are clamped for grading.
-`heapAboveBaselineBytes` is an additional ungraded
-settled-heap delta; subtracting a baseline does not make different heap
-accounting systems equivalent. JS includes heap and external allocations;
-Rust counts requested live allocator bytes; Go uses HeapAlloc; Ruby uses
-ObjectSpace.memsize_of_all; PyPy uses GC bytes (the pinned runtime's raw stats).
-CPython's field is unavailable: allocation tracing would distort its timed CPU
-work. None of these should be presented as universally exact process memory.
-
-Type-check cost is added process CPU seconds × added memory MB, in MB·s.
-Each of its class boundaries is the CPU boundary times the memory boundary.
-Memory has its own scale (1.5, 2.5, 4, 6.5, 10, 16 times the best) because
-memory results sit closer together than CPU results (1.5, 3, 6, 12, 25, 50).
-User + system CPU already accounts for work across threads, so there is NO
-additional thread-count multiplier. Elapsed time is retained separately.
-Refresh existing compiler measurements with `node scripts/refresh-checks.mjs`.
-The CPU score uses a 10 ms floor for timing/baseline noise; negative deltas
-are clamped to zero for grading. TypeScript and Rust have separate anchors.
-
-Native type checkers are pinned in `toolchains/checkers.json` and
-`toolchains/checkers-requirements.txt`. Run `node scripts/setup-checkers.mjs`,
-then `node scripts/measure-native-checks.mjs`. The latter performs eleven
-fresh-process runs of each adapter and an empty baseline, recording process
-CPU (user + system), elapsed time, and checker peak RSS through `wait4`.
-This memory measure is not the runtime benchmark's settled RSS or the
-TypeScript compiler's reported heap; each checker has separate grade anchors.
-
-- Python: mypy strict, targeting Python 3.12, with bundled typeshed. It checks
-  the actual adapter body with generated parameter/return annotations and a
-  recursive JSON alias, with all incremental caching disabled. The same
-  measurement applies to CPython and PyPy; mypy itself runs under CPython.
-  HTTP adapters carry their own annotations and load the installed framework
-  types. Waitress uses a small local API stub; WSGI/ASGI payload values remain
-  dynamic, so these checks do not prove request-body shapes.
-- Ruby: native Sorbet checks the actual bodies with generated method signatures,
-  bundled core/JSON RBI, and the checked-in CGI signature. Nested JSON contents
-  remain `T.untyped`; this is partial static coverage, not a claim of full typing.
-  Results apply to both CRuby configurations, independently of YJIT. HTTP
-  checks cover the adapter with a local Roda boundary RBI; routing DSL values,
-  Rack input and parsed JSON remain dynamic. Puma itself is not type-checked.
-- Go: a `go/types` driver parses and checks the actual adapter and loads prepared
-  standard-library and framework export data. Export preparation, compilation and linking
-  are outside the measured process; import loading is included.
-
-Each checker must reject a deliberately invalid return type before measurements
-are accepted. Raw runs, source hashes, baselines and checker versions live in
-`data/native-checks.json`. Small positive/negative deltas are measurement noise;
-negative deltas clamp to zero and scoring uses the existing 10 ms CPU floor.
+`scripts/measure.mjs` measures each listed version of an npm adapter after
+the default one, and the TypeScript checks do the same. The lines share one
+package page and catalog identity; the unversioned package URL opens the
+default release. A version measured with `--version=` alone, and not listed,
+stays in the package's history and is not ranked. Every release, betas
+included, passes the seven-day rule. Notes and settings for one version go
+under `versions` in `adapter.json`, as Elysia 2's do (they record why it
+does not run on Node: `@elysiajs/node` imports a module the beta no longer
+exports).
 
 ## Registry identity and JSR
 
@@ -1831,11 +1992,7 @@ same published module artifact for Node, Bun and Deno; this does not create a
 second npm package entry. Downloads and transpilation occur before measurement.
 The same seven-day release gate and disabled install scripts apply, including
 transitive dependencies. Lockfiles remain in each adapter's isolated workdir.
-
-The first JSR entries are `@std/html` (HTML escaping), `@std/assert` (boolean
-`equal`, not throwing assertions), and `@oak/oak` (HTTP). All use the existing
-shared fixtures and correctness checks. TypeScript checker measurements load
-these same canonical package aliases at the pinned JSR versions.
+TypeScript checks load the same packages at their pinned JSR versions.
 
 ## Best and All views
 
@@ -1846,153 +2003,3 @@ coverage before comparing class and relative cost. All combines packages from
 all languages, always uses Best, and includes language and runtime columns.
 These are views over existing measurements; they do not add duplicate entries
 to the underlying data or affect anchors. Type-check grades remain checker-specific.
-
-
-## Native HTTP servers and the Elysia beta
-
-`node scripts/setup-http-servers.mjs` restores the pinned Python, Ruby and Go
-HTTP dependencies into workspace caches. PyPI packages use binary wheels;
-Ruby gems are SHA-256 checked and their native extensions built locally.
-Go modules retain `go.mod`/`go.sum` per adapter and checksum-database validation.
-All selected releases and Go dependencies pass the seven-day age gate.
-`toolchains/http-servers.json` records exact pins. Run the HTTP task with
-`--only=uvicorn,starlette,waitress,puma,roda,go-net-http,chi,gin`.
-
-Elysia 2 beta uses the existing Elysia version history: run
-`node scripts/measure.mjs http-server/json-api --only=elysia --version=2.0.0-beta.19`.
-Stable 1.4 remains the pinned ranked version. The beta and its dependencies
-follow the same seven-day release-age rule.
-Per-version adapter notes record its Node adapter incompatibility.
-
-TypeScript projects and their empty baseline load the same pinned
-`@types/node`, `@types/bun` and `@types/deno`. This is a common ambient-type
-baseline, not a measurement of `deno check` or a runtime-specific application.
-`skipLibCheck` stays enabled: this measures declaration loading, not full
-checking of dependency implementation bodies. Runtime type pins are retained
-in `data/types.json`; changing them invalidates all cached package checks.
-
-
-## Parallel release lines
-
-The existing `versions.json` registry maps still select one default full release
-per package. Optional `activeVersions` marks additional exact full releases for
-ranking, for example `{"npm":{"express":["4.22.3"]}}` alongside a default Express
-5 pin. Only enable a line after benchmarking it with the current harness.
-This is configuration support; historical Express 4 has not been promoted.
-Prereleases are rejected in `activeVersions` and remain version-history results.
-
-Active lines share one canonical package page and catalog identity, but receive
-separate version rows, scores, labels and version links. The unversioned package
-URL opens the default full release. `--version` alone never promotes a release.
-TypeScript checks accept `--version` too and keep version-specific measurements.
-
-
-## Priority
-
-The measuring scripts ask for a higher priority than other work on the
-machine (`nice -15`), so that background activity disturbs a measurement
-less. The processes they start take that priority. Raising a priority needs
-root. Either run as root, or let your user run `renice` without a password:
-
-```
-sudo visudo -f /etc/sudoers.d/renice
-# add this line, with your user name:
-# yourname ALL=(root) NOPASSWD: /usr/bin/renice
-```
-
-Without it the scripts print one line that says the priority was not raised,
-and measure as before. `BENCH_PRIORITY=-10` sets another value; `0` turns it
-off.
-
-## Linux machines
-
-The harness runs on macOS (Apple silicon) and on Ubuntu 24.04 (x86-64 or
-ARM64). On a fresh Linux machine, from the repository:
-
-```
-sh scripts/setup-linux.sh     # system packages (sudo), pinned Node.js, then npm run setup
-. .cache/toolchains/env.sh    # in every shell that measures: Node.js and cargo on PATH
-```
-
-On Linux every toolchain is pinned in `toolchains/native.json` and installed
-under `.cache/toolchains/`: Rust, Go, CPython (a python-build-standalone
-build), PyPy, and CRuby built from its source release with YJIT. Each is used
-only when at least seven days old and matching its SHA-256. `runtimes.json`
-names a binary per kind of machine (`darwin-arm64`, `linux`) and checks its
-version. What differs in the measurement:
-
-- CPU time is read with the process's CPU clock (`clock_gettime` on the
-  pid's clock), to the nanosecond, like `proc_pid_rusage` on macOS.
-- Memory is the anonymous and shared part of the resident size
-  (`RssAnon + RssShmem` in `/proc/<pid>/status`), Linux's nearest figure to
-  macOS's physical footprint.
-- Wheels, platform gems and the Sorbet build are this machine's: the locks
-  gain a `linux-x64` (or `linux-arm64`) entry beside the macOS one, at the
-  versions already settled.
-
-Results record the machine, so results from different machines are never
-compared as if they came from one.
-
-### Several machines
-
-Tasks do not depend on one another, so identical machines can share a full
-run, each measuring its part alone and one task at a time:
-
-```
-node scripts/measure-all.mjs --shard=3/8    # on the third of eight machines
-```
-
-Every machine computes the same split from the same commit. Tasks are weighed
-by how long they took last time (from the `measuredAt` of their results), and
-tasks that share files stay together: a lenient task with the strict task
-whose adapters it borrows, and the web framework tasks with their `_shared`
-apps. Each machine prints its share and its expected time, and its results
-and lock entries are its own tasks' files, so the shares are put together by
-copying them into one checkout. The exception is the idle baselines
-(`results/_baseline/<runtime>.json`), which every machine measures for
-itself: keep one machine's.
-
-Use machines of one model (check `lscpu` on each), since the site puts the
-tasks side by side. Different hardware would make one task look faster than
-another only because of where it ran.
-
-## Running things
-
-| Command | What it does |
-| --- | --- |
-| `npm run setup` | Gets a machine ready: installs the pinned tools and packages under the seven-day rule, and says which language toolchains are missing. Safe to run again. |
-| `npm run status` | Reports what is measured and what is not, without measuring: missing adapters, failures, results from an older harness, adapters changed since they were measured, packages without a type check. |
-| `npm run refresh` | Runs everything in order: setup, every task, the type checks, the site build, the tests. Stops at the first failure. `--only=measure,build` and `--skip=setup` choose steps; other flags (`--force`, `--reps=5`, `--runtimes=node,bun`, `--tasks=…`) go to the measurements. |
-| `npm run measure-all` | Measures every task found under `benchmarks/`, one after another. `--shard=<i>/<n>` measures one machine's share of the tasks (see [Several machines](#several-machines)). |
-| `npm run measure -- <category>/<task>` | Measures one task. |
-| `npm run measure-checks` | Re-measures the type checks: TypeScript, `cargo check` and the native checkers. |
-| `npm run build` | Builds the site into `dist/`. `npm run preview` serves it on port 4173. |
-| `npm test` | Runs the harness and site tests. |
-| `npm run update-popularity` | Refreshes downloads, versions and ranks of the listed packages. |
-
-Everything graded is CPU time, so measure on an otherwise idle machine.
-With `--incremental` the type-check step measures only what has no result
-yet, instead of every package again (which takes over an hour). `--retry-failed`
-measures failed results again.
-
-`npm run refresh` refuses to start while another measurement is running or the
-machine is busy, unless given `--anyway`. Measurements already on disk are kept
-and skipped unless `--force` is given, so an interrupted run can be resumed.
-
-### What is measured again
-
-A result is kept and skipped on the next run only while everything it depended
-on is unchanged. Entries in a task are graded against each other, so when any
-of the following changes, the whole task is measured again, not just the part
-that changed: the harness, the task's load settings or fixtures, the source of
-any adapter in the task, the version of any runtime or toolchain, the machine,
-or the pinned version of any package the task uses. The run says why, for
-example `measuring again: an adapter in the task changed`. A result that
-failed (a crash or a timeout) is kept as failed; pass `--retry-failed` to try
-those again.
-
-Two flags override this. `--force` measures everything again, whatever is
-already there. `--keep-existing` does the reverse: it keeps every result that
-is already there and measures only what is missing, without checking whether
-anything changed. Use it to finish a run without redoing work, knowing that
-kept results may no longer match the code.

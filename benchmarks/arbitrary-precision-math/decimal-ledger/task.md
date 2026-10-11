@@ -86,8 +86,9 @@ dropped or added pass.
   `Add`, then `RoundBank(2)` and `String()`.
 - `github.com/cockroachdb/apd` (Go): `apd.NewFromString`, `Context.Mul`,
   `Context.Add`, then `Context.Quantize` to exponent -2 with a context whose
-  rounding is `apd.RoundHalfEven` and whose precision holds 28 digits, and
-  `String()`.
+  rounding is `apd.RoundHalfEven` and whose precision is 34 digits (the
+  default `BaseContext` rounds half up and, at precision 0, cannot `Quantize`),
+  and `String()`.
 - `gopkg.in/inf.v0` (Go): `new(inf.Dec).SetString`, `Mul`, `Add`, then
   `Round(z, x, 2, inf.RoundHalfEven)` and `String()`.
 - `bigdecimal` (RubyGems): `BigDecimal(amount) * BigDecimal(rate)`, `+`,

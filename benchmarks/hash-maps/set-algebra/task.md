@@ -50,8 +50,10 @@ package's default and is measured as it is.
 - Ruby `Set` (builtin `ruby-set`): `Set.new(a)`, `Set.new(b)`, then `|`, `&`,
   `-`.
 - `ordered-set` (PyPI): `OrderedSet(a)`, `OrderedSet(b)`, then `|`, `&`, `-`.
-- `sorted_set` (RubyGems): `SortedSet.new(a)`, `SortedSet.new(b)`, then `|`,
-  `&`, `-`.
+- `sorted_set` (RubyGems): `SortedSet.new(a)`, `SortedSet.new(b)`, then
+  `a | b.to_a`, `&`, `-`. On Ruby 4.0, `|` with a `SortedSet` argument returns
+  only the receiver's members (the gem predates the core `Set`), so the union
+  takes the documented enumerable form, with the `to_a` inside the call.
 - `github.com/deckarep/golang-set/v2` (Go): `mapset.NewSet[int](a...)`,
   `mapset.NewSet[int](b...)`, then `Union`, `Intersect`, `Difference`.
 - `hashbrown` (Rust): `HashSet<i64>` collected from each list, then

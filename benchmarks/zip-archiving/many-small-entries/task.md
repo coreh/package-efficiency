@@ -8,7 +8,8 @@ order.
 
 This is the second ZIP task. `deflate-roundtrip` is dominated by a few large
 entries, so it mostly measures deflate throughput. Here each of the 36 inputs
-is a project-like tree of 40 to 390 small files (growing by 10 per input), 100 bytes to a few kilobytes each, 25 KB to 260 KB per archive:
+is a project-like tree of 40 to 390 small files (every multiple of 10 in that
+range once), 100 bytes to a few kilobytes each, 25 KB to 260 KB per archive:
 source code, JSON configuration and locale files, Markdown, CSV, logs, nested
 directories, Unicode text and non-ASCII path names, and an empty file in every
 sixth input. Per-entry costs (headers, the central directory, compressor and
@@ -51,6 +52,8 @@ See [shared methodology](../../README.md) for timing and reproduction.
 - Rust: `zip` (`ZipWriter` and `ZipArchive` over a `Cursor`).
 - Python standard library: `zipfile` over `BytesIO`.
 - Go standard library: `archive/zip` over `bytes.Buffer`.
+- Ruby: `rubyzip` (`Zip::OutputStream.write_buffer` over `StringIO`, then
+  `Zip::InputStream`).
 
 Left out: `@zip-js/zip-js`, `@quentinadam/zip` and `@deno-library/compress`
 expose only asynchronous (Web Streams, Promise) or file-system APIs. Node, Bun

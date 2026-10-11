@@ -36,8 +36,8 @@ and numbers or booleans as values, are not covered.
 
 Each package is used the way its documentation shows, with default options.
 The variables are handed over in the form the package takes: a plain object in
-JavaScript; in Rust the crate's own context or value type, built once per
-fixture outside the timed call, which is the same footing.
+JavaScript, a dict in Python; in Rust the crate's own context or value type,
+built once per fixture outside the timed call, which is the same footing.
 
 - `url-template`: `parseTemplate(template).expand(vars)`
 - `uri-templates`: `uriTemplates(template).fill(vars)`
@@ -45,14 +45,13 @@ fixture outside the timed call, which is the same footing.
 - `@std-uritemplate/std-uritemplate`: `StdUriTemplate.expand(template, vars)`
 - `uri-template-lite`: `UriTemplate.expand(template, vars)`. Not passing: it
   gets one of the RFC's examples wrong (`X{.keys*}`).
+- `@fedify/uri-template` (JSR): `new Template(template).expand(vars)`
+- `uritemplate` (Python): `URITemplate(template).expand(vars)`
+- `uri-template` (Python): `URITemplate(template).expand(**vars)`
 - `iri-string` (Rust): `UriTemplateStr::new(template)?.expand::<UriSpec, _>(&context)?.to_string()`
 - `uritemplate-next` (Rust): `UriTemplate::new(template)`, `set` for each
   variable, `build()`. The crate stores the variables in the template, so they
   are copied in on every call. Not passing: it cuts a prefix (`{title:12}`) by
   bytes of UTF-8 where the RFC counts characters.
-
-Not included: `@fedify/uri-template` (JSR) has only pre-release versions, which
-this site does not install. PyPI `uritemplate` and `uri-template` can be added
-when PyPI packages can be adapters; the fixtures need no change.
 
 See [shared methodology](../../README.md) for timing and reproduction.

@@ -23,4 +23,9 @@ nothing is serialized or walked. See [shared methodology](../../README.md) for
 timing and reproduction.
 
 No standard library in the benchmarked languages has a recursive object merge,
-and the brief lists no crates, so only npm and JSR packages are included.
+so there are no built-in entries, and the brief lists no crates. Outside npm
+and JSR the entries are `mergedeep` (PyPI), `deep_merge` (RubyGems) and
+`dario.cat/mergo` (Go, `mergo.Merge` with `WithOverride` so that later sources
+win). `deep_merge` with default options never lets `nil` override an earlier
+value, so it is recorded as not passing; its variant passes
+`merge_nil_values: true`.

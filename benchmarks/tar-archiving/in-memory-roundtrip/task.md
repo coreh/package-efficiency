@@ -47,7 +47,8 @@ See [shared methodology](../../README.md) for timing and reproduction.
 ## Packages
 
 - Rust: `tar` (`Builder` and `Archive` over a `Vec` and a `Cursor`).
-- Python: standard library `tarfile` over `BytesIO`.
+- Python: standard library `tarfile` over `BytesIO`, and `backports.tarfile`
+  (PyPI), its backport, with the same calls.
 - Go: standard library `archive/tar` over `bytes.Buffer`.
 - Ruby: `minitar` (`Minitar::Output` and `Minitar::Reader` over `StringIO`).
 

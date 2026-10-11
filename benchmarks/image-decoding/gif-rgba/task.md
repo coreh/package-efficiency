@@ -28,7 +28,7 @@ from 64 by 64 to 512 by 128 (100 by 300 and 131 by 77 among them); four small
 files (1 by 1 opaque and transparent, 17 by 9 and 3 by 5 interlaced, where
 some passes hold no row) cover the edges. Files run from 35 bytes to 74 KB.
 The pictures are integer arithmetic only, so Node, Bun and Deno write the
-same bytes; the Rust, Go and Python entries read the files Node wrote.
+same bytes; the Go and Python entries read the files Node wrote.
 
 ## What counts as correct
 
@@ -46,8 +46,8 @@ that ignored the transparent index, used the global table where a local one
 overrides it, left interlaced rows in stored order, swapped red and blue, put
 the rows upside down, or returned the palette indices as grey levels.
 
-Each library returns what it naturally returns (a Rust `Vec<u8>` or
-`RgbaImage`, a Go `*image.Paletted`, a Pillow `Image`); the adapter reads
+Each library returns what it naturally returns (a Go `*image.Paletted`, a
+Pillow `Image`); the adapter reads
 width, height and the pixel bytes from it inside the call, and nothing is
 serialized, hashed or copied for the harness. Where a library decodes to
 palette indices (Go, Pillow), the expansion to RGBA is part of the call, since
@@ -58,16 +58,6 @@ from the colour output the task asks for.
 
 ## Packages
 
-- Rust: `gif` (`DecodeOptions::new()`, `set_color_output(ColorOutput::RGBA)`,
-  `read_info(Cursor::new(bytes))`, then the frame's RGBA bytes, read by
-  `next_frame_info()` and `read_into_buffer` into a `Vec` of
-  `buffer_size()` bytes, or taken from `read_next_frame()`; width and height
-  from the frame).
-- Rust: `image` (`load_from_memory_with_format(bytes, ImageFormat::Gif)`,
-  then `into_rgba8()`). `image` decodes GIF through the `gif` crate, so this
-  entry measures that decoder behind the `image` API, with whatever it adds
-  (it can compose the frame onto a canvas the size of the logical screen;
-  here the two are the same size).
 - PyPI: `pillow` (`Image.open(BytesIO(bytes)).convert("RGBA")`; `open` reads
   the header and `convert` forces the decode of the palette image, then
   expands it with the transparency).
@@ -85,6 +75,8 @@ from the colour output the task asks for.
 - Pixels outside the colour table's used entries, a missing colour table, a
   truncated stream: decoders differ in what they do with a damaged file (an
   error, black, the background colour), and the job is to decode a valid one.
+- The Rust crates `gif` and `image` (which decodes GIF through `gif`) are not
+  compared: this task has no adapter for them.
 - `image-js` (npm) decodes PNG, JPEG, TIFF and BMP, not GIF. `sharp`, `jimp`
   and other npm decoders that only decode asynchronously belong to an
   asynchronous task.

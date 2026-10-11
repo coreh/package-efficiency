@@ -22,7 +22,8 @@ Left out on purpose: dates. Libraries spell an ISO datetime differently (`Z` or 
 
 - Rust's `serde_json` has no classes: derived structs are the records, `Order::deserialize(&Value)` reads the fixture without copying it, and `to_value` dumps.
 - marshmallow builds objects through `@post_load` on schemas it validates with, and does more checking per field than the others. dry-struct checks strict types.
+- cattrs generates its per-class hooks on first use, so one load and dump runs when the adapter loads, like a class declaration; mashumaro generates its code when the class is created.
 - Virtus is entered with its defaults and does not pass: `to_h` is shallow, so nested records come back as objects. It has no option for a recursive dump.
 - Python and Ruby have no builtin entry (the standard libraries do not map plain data to declared classes), nor does Go: `encoding/json` would need a text round trip, a different job.
 
-Left out of the task: `mapstructure`, `dacite` (they only load; no dump), `coercible`, `envconfig`, `proto-plus`, `py-serializable` (other jobs), `cattrs` and `mashumaro` (beyond the three most used PyPI packages that do the job).
+Left out of the task: `mapstructure`, `dacite` (they only load; no dump), `coercible`, `envconfig`, `proto-plus`, `py-serializable` (other jobs).

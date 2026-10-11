@@ -12,7 +12,7 @@ The result must equal an independent bitwise reference exactly. The task shape
 is one whole buffer in, one number out; incremental updates, very large buffers,
 CRC-32C, Adler-32 and other polynomials are not measured.
 
-Fixtures are shared with the Rust runner as JSON, so an input is a string and
+Fixtures are shared with the native runners as JSON, so an input is a string and
 its bytes are its UTF-8 encoding. Packages and built-ins that accept strings
 (`buffer-crc32`, `@deno-library/crc32`, Node `zlib.crc32`) are called with the
 string and encode it themselves; Python encodes explicitly; Ruby's and Go's

@@ -22,13 +22,14 @@ The message is built from the description inside the timed call in every adapter
 names and addresses into the library's types is part of the work), then encoded once.
 Packages run with their default settings as installed.
 
-There are two entries, in two languages: Ruby's `resolv` and the Rust crate
-`hickory-proto`. The task is therefore a comparison across languages only; no
-package is graded against a peer in its own language.
+There are four entries, one per language: Ruby's `resolv`, the Rust crate
+`hickory-proto`, Python's `dnspython` and the Go module `miekg/dns`. The task is
+therefore a comparison across languages only; no package is graded against a
+peer in its own language.
 
 Left out: `hickory-resolver` and `@layered/dns-records` query name servers over the
 network and have no message codec, so they are out of scope for a synchronous call.
-No npm package of this category offers wire-format encoding. Python and Go standard libraries
-have no DNS message encoder; Ruby's `resolv` library does. Decoding and re-encoding
+No npm package of this category offers wire-format encoding. Python and Go
+standard libraries have no DNS message encoder; Ruby's `resolv` library does. Decoding and re-encoding
 are not measured here, because feeding wire bytes into a call needs an input conversion
 that every language would pay differently.

@@ -66,6 +66,8 @@ the content otherwise, are stated in that adapter's notes:
 - `quick-xml` reports a reference in text as an event of its own and leaves
   resolving it to the caller, so the adapter calls the crate's own resolving
   functions for each one. Its attribute values are decoded by the crate.
+- `@libs/xml` is given `flatten: { text: false, empty: false }`, so that
+  text-only and empty elements stay nodes instead of becoming strings or null.
 
 ## Accepted differences
 

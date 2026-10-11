@@ -29,7 +29,9 @@ formatted again from the same input (`ryu` and `zmij`, whose buffer type does no
 expose its bytes).
 
 Entries: Rust `ryu`, `zmij` and `lexical-core`, and Go
-`strconv.FormatFloat(x, 'g', -1, 32)`. `dtoa` is left out: for some inputs it returns a correct but longer f32 string (`-3.1415901` for the f32 nearest -3.14159). `lexical-write-float` is left out because it
-is the engine underneath `lexical-core`. JavaScript, Python and Ruby have no f32
+`strconv.FormatFloat(x, 'g', -1, 32)`. `dtoa` is left out: for some inputs it
+returns a correct but longer f32 string (`-3.1415901` for the f32 nearest
+-3.14159). `lexical-write-float` is left out because it is the engine
+underneath `lexical-core`. JavaScript, Python and Ruby have no f32
 formatting in their standard library (they only format doubles), and no npm or JSR
 package in the brief offers this operation.

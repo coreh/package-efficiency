@@ -30,12 +30,16 @@ Packages are used with default options. The lock guards a plain integer in
 every language (a `Mutex<u64>` where the crate owns its data); the lock is the
 only synchronization. Only mutual exclusion is used: read-write locks,
 condition variables, thread parking and async locks are other jobs and are not
-here. Left out: `parking_lot_core`, `parking`, `event-listener` and
-`async-lock` (building blocks or async notification, not a lock to take and
-release around a counter). `std::sync::Mutex` cannot be listed, as Rust has no
-standard-library entry yet. No npm or JSR package takes part. The Ruby `sync` gem (its exclusive mode)
-and the Go module `moby/locker` (one named lock) also take part; both do more
-per lock than a plain mutex, as their notes say.
+here.
+
+The entries are the crates `parking_lot` and `spin` (which spins while it
+waits and never parks), the Ruby `sync` gem (its exclusive mode), the Go module
+`moby/locker` (one named lock), and the standard locks of Go, Python and Ruby.
+`sync` and `moby/locker` do more per lock than a plain mutex, as their notes
+say. No npm or JSR package takes part. Left out: `parking_lot_core`,
+`parking`, `event-listener` and `async-lock` (building blocks or async
+notification, not a lock to take and release around a counter).
+`std::sync::Mutex` cannot be listed, as Rust has no standard-library entry yet.
 
 Threads, as recorded with each result:
 

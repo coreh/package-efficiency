@@ -40,5 +40,5 @@ object_class: OpenStruct)` does). Nothing is cached between calls.
 
 Left out: `github.com/stretchr/objx` (Go) reads and writes by path string
 (`m.Get("a.b")`), not by attribute or method; it is a different interface.
-Python's `SimpleNamespace` and JavaScript proxies are not in the brief's
-comparison, which is Ruby-only.
+Python's `SimpleNamespace` and JavaScript proxies are left out: this comparison
+is Ruby-only.

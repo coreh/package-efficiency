@@ -13,6 +13,11 @@ package sees are the same. Packages run with default settings as installed.
 - `imurmurhash` (npm): `MurmurHash3(input).result()`, normalized with `>>> 0`
   (it returns a signed or unsigned number depending on version).
 - `hash32` (crates.io): `Murmur3Hasher` fed the key bytes, then `finish32()`.
+- `mmh3` (PyPI): `mmh3.hash(input, 0, False)`, unsigned.
+- `murmurhash` (PyPI): `murmurhash.hash(input)`, a signed 32-bit integer that
+  the check reads as unsigned.
+- `murmurhash3` (RubyGems): `MurmurHash3::V32.str_hash(input, 0)`.
+- `spaolacci/murmur3` (Go): `murmur3.Sum32` on the string's bytes.
 
 SipHash, FNV, xxHash and others from the category are not compared: they are
 different algorithms with different outputs. See [shared methodology](../../README.md).

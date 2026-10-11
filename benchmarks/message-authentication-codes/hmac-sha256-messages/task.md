@@ -12,9 +12,9 @@ fixture is called equally often, so by bytes the mix leans to the long ones:
 the 38 short messages are about a quarter of the roughly 124,000 bytes hashed
 in one pass, and the six of 8 KB and more are a little over half (the largest
 alone is 13%). The figure is therefore a blend of per-call key setup and
-SHA-256 throughput, not either alone. Text is
-ASCII so every language turns it into the same bytes; the conversion from
-string to bytes happens inside the call, as the packages' documentation shows.
+SHA-256 throughput, not either alone. Text is ASCII so every language turns it
+into the same bytes; the conversion from string to bytes happens inside the
+call, as the packages' documentation shows.
 
 A correct output is exactly the bytes Node's `crypto.createHmac('sha256', ...)`
 produces for the same key and message. HMAC is deterministic, so the bytes must be

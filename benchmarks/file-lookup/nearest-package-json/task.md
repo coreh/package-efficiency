@@ -49,8 +49,8 @@ user and system time. The system part is the kernel answering the lookups; how
 many calls a package makes (one `stat` per level, or a directory listing per
 level that is then searched for the name) is its own choice and is counted,
 which is why classes are closer together here than in a task on memory. The
-time depends on the operating system and file system (macOS and APFS for the
-published results).
+time depends on the operating system and file system of the machine, which is
+recorded with each result.
 
 Packages run with their default options and the starting directory in the
 option their documentation gives (`cwd`; `escalade` and `find-root` take it as

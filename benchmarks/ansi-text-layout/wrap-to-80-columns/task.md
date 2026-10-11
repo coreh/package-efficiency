@@ -5,8 +5,9 @@ codes (basic, bright, bold, underline, 256-color, truecolor, resets) between som
 and returns it word-wrapped to 80 visible columns, as one string with `\n` between lines.
 The 40 cases are paragraphs of about 90 to 900 visible characters made of ASCII and
 accented Latin words (1 to 14 characters, so no word is wider than a line), separated by
-single spaces (no slashes or hyphens, where `textwrap` may break a word by Unicode line-break rules and `wrap-ansi` does not). Wrapping is the only operation; stripping, slicing and width measurement
-are separate tasks.
+single spaces. There are no slashes or hyphens, where `textwrap` may break a word by
+Unicode line-break rules and `wrap-ansi` does not. Wrapping is the only operation;
+stripping, slicing and width measurement are separate tasks.
 
 The escape codes must not count toward the width, so a package that counts them fails.
 Packages are allowed to differ in what they do with the codes at a break: `wrap-ansi`

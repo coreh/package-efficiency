@@ -13,10 +13,19 @@ A correct output has four finite numbers in non-decreasing order. Sketches are
 approximate and define percentile ranks slightly differently, so each value is
 accepted if it lies between the exact sample two ranks below the target rank
 (minus 2%) and the exact sample two ranks above it (plus 2%). This admits the
-1% relative error both sketches are configured for, and rejects a wrong percentile, a swapped order or a
-mean/max in place of a quantile.
+1% relative error the sketches are configured for, and rejects a wrong
+percentile, a swapped order or a mean/max in place of a quantile.
 
-Both sketches run at about 1% relative accuracy: DDSketch by its default
-configuration, and HDR Histogram, which has no default, with 2 significant
-figures. A fresh sketch is built for each call. Each Rust adapter returns plain numbers
-mapped to the common `[f64; 4]` shape inside the call.
+Every entry is set for about 1% accuracy:
+
+- `sketches-ddsketch` (Rust) by its default configuration;
+- HDR Histogram, which has no default, with 2 significant figures (Rust
+  `hdrhistogram`, Go `HdrHistogram/hdrhistogram-go`);
+- Go `influxdata/tdigest` with compression 5000 and `VividCortex/gohistogram`
+  with 5000 bins, because smaller settings (the t-digest default of 1000; 160
+  or 1000 bins) miss the bound on some fixtures;
+- Go `beorn7/perks`, a biased-quantile stream, with a rank error of 0.0001 for
+  each of the four targets.
+
+Each adapter returns the four values as plain numbers, mapped to the common
+shape inside the call.

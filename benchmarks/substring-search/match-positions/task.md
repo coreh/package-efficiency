@@ -8,7 +8,7 @@ on larger texts, for one needle at a time.
 
 The 48 cases are deterministic word-salad texts (log-like, prose-like and header-like)
 with eight needle shapes per kind: one byte (a newline), two bytes, a short word,
-a 12-byte literal, a 20-25 byte phrase that is rare, a word, a literal that
+a 12-byte literal, a rare phrase of 19 to 25 bytes, a word, a literal that
 never occurs, and a short literal ending in a space. Match counts range from 0 to several thousand.
 Outputs must equal an independent oracle that tests every start position, so
 a count, a constant or an unchanged input fails.
