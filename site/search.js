@@ -185,7 +185,7 @@ function meter(relevance) {
   const cell = el('td', null, 'adv-score')
   if (relevance == null) return cell
   const filled = Math.max(1, Math.round(relevance / 10))
-  const bar = el('span', null, 'adv-meter')
+  const bar = el('span', null, relevance > 80 ? 'adv-meter high' : 'adv-meter')
   bar.setAttribute('role', 'img')
   bar.setAttribute('aria-label', `Relevance ${relevance} of 100`)
   bar.title = `Relevance ${relevance} of 100`
