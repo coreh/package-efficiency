@@ -1933,6 +1933,29 @@ version. What differs in the measurement:
 Results record the machine, so results from different machines are never
 compared as if they came from one.
 
+### Several machines
+
+Tasks do not depend on one another, so identical machines can share a full
+run, each measuring its part alone and one task at a time:
+
+```
+node scripts/measure-all.mjs --shard=3/8    # on the third of eight machines
+```
+
+Every machine computes the same split from the same commit. Tasks are weighed
+by how long they took last time (from the `measuredAt` of their results), and
+tasks that share files stay together: a lenient task with the strict task
+whose adapters it borrows, and the web framework tasks with their `_shared`
+apps. Each machine prints its share and its expected time, and its results
+and lock entries are its own tasks' files, so the shares are put together by
+copying them into one checkout. The exception is the idle baselines
+(`results/_baseline/<runtime>.json`), which every machine measures for
+itself: keep one machine's.
+
+Use machines of one model (check `lscpu` on each), since the site puts the
+tasks side by side. Different hardware would make one task look faster than
+another only because of where it ran.
+
 ## Running things
 
 | Command | What it does |
@@ -1940,7 +1963,7 @@ compared as if they came from one.
 | `npm run setup` | Gets a machine ready: installs the pinned tools and packages under the seven-day rule, and says which language toolchains are missing. Safe to run again. |
 | `npm run status` | Reports what is measured and what is not, without measuring: missing adapters, failures, results from an older harness, adapters changed since they were measured, packages without a type check. |
 | `npm run refresh` | Runs everything in order: setup, every task, the type checks, the site build, the tests. Stops at the first failure. `--only=measure,build` and `--skip=setup` choose steps; other flags (`--force`, `--reps=5`, `--runtimes=node,bun`, `--tasks=…`) go to the measurements. |
-| `npm run measure-all` | Measures every task found under `benchmarks/`, one after another. |
+| `npm run measure-all` | Measures every task found under `benchmarks/`, one after another. `--shard=<i>/<n>` measures one machine's share of the tasks (see [Several machines](#several-machines)). |
 | `npm run measure -- <category>/<task>` | Measures one task. |
 | `npm run measure-checks` | Re-measures the type checks: TypeScript, `cargo check` and the native checkers. |
 | `npm run build` | Builds the site into `dist/`. `npm run preview` serves it on port 4173. |

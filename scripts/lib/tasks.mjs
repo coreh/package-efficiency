@@ -152,3 +152,60 @@ export function runStep(title, command, args = [], options = {}) {
 }
 
 export const duration = (seconds) => (seconds >= 3600 ? `${Math.floor(seconds / 3600)} h ${Math.round((seconds % 3600) / 60)} min` : seconds >= 60 ? `${Math.floor(seconds / 60)} min ${seconds % 60} s` : `${seconds} s`)
+
+// How long each task took last time, in milliseconds, from its results.
+function lastRunTimes() {
+  const stamps = []
+  for (const file of globSync('**/*.json', { cwd: fromRoot('results') })) {
+    const parts = file.split(path.sep)
+    if (parts.length < (parts[0] === '_baseline' ? 4 : 3)) continue
+    const taskId = (parts[0] === '_baseline' ? parts.slice(1, 3) : parts.slice(0, 2)).join('/')
+    let measuredAt
+    try { measuredAt = Date.parse(JSON.parse(readFileSync(fromRoot('results', file), 'utf8')).measuredAt) } catch { continue }
+    if (measuredAt) stamps.push({ taskId, measuredAt })
+  }
+  // Each gap between one result and the next, in the order they were
+  // measured, goes to the task of the later one: so a task's installs and
+  // builds before its first result count as its own.
+  stamps.sort((a, b) => a.measuredAt - b.measuredAt)
+  const times = new Map()
+  for (const [i, { taskId, measuredAt }] of stamps.entries()) {
+    const gap = i ? measuredAt - stamps[i - 1].measuredAt : Infinity
+    times.set(taskId, (times.get(taskId) ?? 0) + (gap < 3600e3 ? gap : 0))
+  }
+  return times
+}
+
+// Splits the tasks over `count` machines and returns the ones for machine
+// `index` (1 to count), so several machines can measure at once, each alone.
+// Every machine computes the same split from the same commit. A task's weight
+// is how long it took last time, read from the measuredAt of its results and
+// warm baselines (a gap of an hour or more counts as a pause, not as work); a
+// task never measured, or with no time on record, weighs the median. Tasks
+// that share files stay on one machine: a lenient task with the strict task
+// whose adapters it borrows, and the web framework tasks, whose apps are in
+// their category's _shared folder.
+// The heaviest groups are placed first, each on the machine with least so far.
+let weightOf
+export function shardTasks(tasks, index, count) {
+  weightOf ??= lastRunTimes()
+  const known = tasks.filter((t) => weightOf.get(t) > 0).map((t) => weightOf.get(t)).sort((a, b) => a - b)
+  const fallback = known[known.length >> 1] ?? 1
+  const groupOf = (taskId) => (taskId.startsWith('web-application-frameworks/') ? 'web-application-frameworks' : adaptersTaskOf(taskId))
+  const groups = new Map()
+  for (const taskId of tasks) {
+    const group = groups.get(groupOf(taskId)) ?? { tasks: [], weight: 0 }
+    group.tasks.push(taskId)
+    group.weight += weightOf.get(taskId) || fallback
+    groups.set(groupOf(taskId), group)
+  }
+  const ordered = [...groups.entries()].sort(([a, x], [b, y]) => y.weight - x.weight || (a < b ? -1 : 1))
+  const machines = Array.from({ length: count }, () => ({ tasks: [], weight: 0 }))
+  for (const [, group] of ordered) {
+    const lightest = machines.reduce((least, m) => (m.weight < least.weight ? m : least))
+    lightest.tasks.push(...group.tasks)
+    lightest.weight += group.weight
+  }
+  const chosen = machines[index - 1]
+  return { tasks: tasks.filter((t) => chosen.tasks.includes(t)), seconds: Math.round(chosen.weight / 1000) }
+}
