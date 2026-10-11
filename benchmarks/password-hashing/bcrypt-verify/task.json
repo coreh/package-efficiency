@@ -4,9 +4,6 @@
   "title": "bcrypt hash and verify",
   "summary": "Hash a password with bcrypt at cost 8 and a fresh random salt, then check two candidate passwords against the hash.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 30,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Each operation runs bcrypt three times at cost 8 (256 rounds of the key schedule), so the load is far smaller than in the fast string tasks."
 }

@@ -4,9 +4,6 @@
   "title": "Adler-32 of byte buffers",
   "summary": "Compute the Adler-32 checksum (RFC 1950, as used by zlib streams) of a buffer of bytes as an unsigned 32-bit number.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 103,
   "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing, so the measured call checksums bytes only."
 }

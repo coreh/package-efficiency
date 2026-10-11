@@ -4,9 +4,6 @@
   "title": "Insert and remove in the middle of small vectors",
   "summary": "Fill short inline-capacity vectors by inserting at generated positions, remove elements from generated positions, and read the remaining elements in order.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 48,
   "notes": "Cargo only: no npm or JSR package in this category. Each call builds 64 to 512 vectors with inline capacity 8 using insert at a position, then remove and pop, which shift elements. Rust allocation-counting overhead is included in CPU figures."
 }

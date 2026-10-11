@@ -4,10 +4,6 @@
   "title": "Writing CSV records",
   "summary": "Serialize rows of string fields into CSV text, quoting fields that contain commas, quotes or line breaks.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "jsr",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Each adapter returns the CSV text its library produces. The verifier parses it with a strict reference parser, so the quoting style and line terminator may differ between libraries."
 }

@@ -4,10 +4,6 @@
   "title": "PNG thumbnail, awaited",
   "summary": "Decode a PNG of 0.07 to 0.5 megapixels, scale it down by a factor of 2 to 8 and encode the result as PNG, through each package's awaited API.",
   "kind": "async-operation",
-  "ecosystems": [
-    "npm",
-    "jsr"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -29,6 +25,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 12,
   "notes": "The files and check of png-thumbnail, through each package's promise API with one operation at a time: one decode, one resize and one encode per operation, awaited before the next starts. The figure is the package's decoding, resampling and encoding plus the promise turns needed to settle it. sharp and @napi-rs/image do that work on helper threads of their own (libuv's pool, and libvips's for sharp) while the JavaScript thread waits, so for them more than one thread is involved; CPU is that of the whole process, every thread included. No timer or sleep is involved."
 }

@@ -289,6 +289,9 @@ created once and reused. Correctness checks run before warm-up; their work is
 excluded from timing. The timed loop invokes the adapter and folds every output
 into a checksum. This includes a shared loop, indexing and consumption overhead.
 
+The site counts a task's fixtures (the length of the scenario's `cases`)
+and its registries (the adapter folders); `task.json` does not list them.
+
 Every adapter gets the same time, whatever one call costs, so the length of
 a run is predictable. A few probe calls give the rough cost of a call. The
 warm-up is then the task's `warmup` calls (10,000) or two seconds, whichever
@@ -1277,7 +1280,7 @@ is short. What follows is what they have in common and the mistakes to avoid.
 8. **A tolerance is measured, not guessed.** Run every candidate, in every
    mode it has, and print the error of each against the reference. Put the
    limit in a gap, and write both sides of the gap in `task.md`
-   (`png-thumbnail`: area filters 0.4 to 1.3, the limit 2, point sampling 3.3
+   (`png-thumbnail`: area filters 0.25 to 1.3, the limit 2, point sampling 3.3
    and up). No gap means the fixtures do not separate right from wrong yet:
    change the fixtures, not the limit.
 9. **Different work for the same job is reported, not hidden.** A highlighter
@@ -1509,8 +1512,8 @@ benchmarks/<category>/<task>-lenient/scenario.mjs
 ```
 
 `task.json` of the lenient task is the strict one's (`kind`, `load`,
-`metrics`) with its own `task`, `title` ("…, lenient"), `summary`,
-`fixtureCount`, and three fields:
+`metrics`) with its own `task`, `title` ("…, lenient"), `summary`, and
+three fields:
 
 ```json
 "strictness": "lenient",
@@ -1759,9 +1762,9 @@ everything outside the script, and it gets a test in
    `connections`, `warmup`, `rounds` (3), `requestsPerRound`. Both counts are
    multiples of the number of fixtures. Choose `requestsPerRound` so that the
    slowest adapter's round takes under ten seconds (a phase times out at
-   thirty). `metrics` as in the example (`key: "cpuMs"`, shown as µs of CPU per request). `fixtureCount`
-   is the number of fixtures. `notes` says in one or two sentences that the
-   server is the harness's and what the task fixes.
+   thirty). `metrics` as in the example (`key: "cpuMs"`, shown as µs of CPU
+   per request). `notes` says in one or two sentences that the server is the
+   harness's and what the task fixes.
 4. `scenario.mjs` exports `peer = { program, script }` (a peer from the table
    above; the script is plain JSON) and `cases`, a list of
    `{ input, expected }`. Fixture `i` performs exchange `i` of the script

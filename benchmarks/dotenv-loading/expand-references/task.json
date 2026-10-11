@@ -4,11 +4,6 @@
   "title": "Parse .env text with variable references",
   "summary": "Parse .env text in which values refer to earlier assignments with ${NAME} and return the key-value map with every reference expanded.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Each adapter returns the library's own expanded result (an object, or dotenvy's list of pairs); the verifier compares its entries with the expected, fully expanded pairs."
 }

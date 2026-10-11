@@ -4,11 +4,6 @@
   "title": "Basic entity unescaping",
   "summary": "Decode the five basic HTML entities and numeric apostrophe/quote references in text.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 65,
   "notes": "Single-pass decoding of &amp; &lt; &gt; &quot; &apos; &#39; &#34;. Rust returns owned strings or Cow as the crate does; verification runs outside timing."
 }

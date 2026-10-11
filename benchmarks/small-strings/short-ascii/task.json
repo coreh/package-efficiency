@@ -4,9 +4,6 @@
   "title": "Build, clone and compare short strings",
   "summary": "Build a string value from a slice (mostly short ASCII, with some longer and some non-ASCII strings), clone it and compare the clone with a second value built from another slice.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 76,
   "notes": "Rust only. Each call builds the library's string type from the text, clones it, builds a second value from the fixture's second string (equal in half the cases), compares the clone with it, and returns the clone and the comparison result."
 }

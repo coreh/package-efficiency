@@ -4,10 +4,6 @@
   "title": "MurmurHash3 of long text",
   "summary": "Hash ASCII documents of 1 KB to 256 KB with 32-bit MurmurHash3 (x86, seed 0) to an unsigned 32-bit value.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Same algorithm and seed as the short-keys task, but the cost is the per-byte loop over long inputs rather than per-call overhead. Inputs are ASCII so that byte and UTF-16 code unit views agree."
 }

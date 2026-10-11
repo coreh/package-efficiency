@@ -17,7 +17,8 @@ same fixtures in every format's large-buffer task.
 
 Every entry runs at Brotli quality 11 with a 22-bit window (`lgwin` 22), generic mode, no size hint and no dictionary. That is the default of both libraries, checked in the installed sources: `node:zlib` (`BROTLI_DEFAULT_QUALITY` 11, `BROTLI_DEFAULT_WINDOW` 22) and the `brotli` crate (`BrotliEncoderParams::default()`: `quality: 11`, `lgwin: 22`), so both run as installed and no setting is passed. Python's `brotli` and
 `cramjam` are called with their defaults; `andybalholm/brotli` defaults to
-quality 6, so its adapter passes quality 11. `node:zlib` is a different encoder on each runtime (Node and Bun link the C library, Deno the Rust `brotli` crate, version 6 in Deno 2.9.6 by its source, called through the crate's C-compatible interface; the crate entry here is version 9, so on Deno the two entries are two versions of the same encoder); on all three the no-options output is byte-identical to the output with quality 11 and window 22 passed explicitly.
+quality 6, so its adapter passes quality 11 and its entry is tagged as running
+with non-default options. `node:zlib` is a different encoder on each runtime (Node and Bun link the C library, Deno the Rust `brotli` crate, version 6 in Deno 2.9.6 by its source, called through the crate's C-compatible interface; the crate entry here is version 9, so on Deno the two entries are two versions of the same encoder); on all three the no-options output is byte-identical to the output with quality 11 and window 22 passed explicitly.
 
 ## What is checked
 

@@ -26,6 +26,7 @@ No standard library in the benchmarked languages has a recursive object merge,
 so there are no built-in entries, and the brief lists no crates. Outside npm
 and JSR the entries are `mergedeep` (PyPI), `deep_merge` (RubyGems) and
 `dario.cat/mergo` (Go, `mergo.Merge` with `WithOverride` so that later sources
-win). `deep_merge` with default options never lets `nil` override an earlier
+win; by default it keeps earlier values, so its entry is tagged as running with
+non-default options). `deep_merge` with default options never lets `nil` override an earlier
 value, so it is recorded as not passing; its variant passes
 `merge_nil_values: true`.

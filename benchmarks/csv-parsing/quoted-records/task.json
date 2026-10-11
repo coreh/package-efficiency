@@ -4,10 +4,6 @@
   "title": "Quoted CSV records",
   "summary": "Parse comma-separated text with quoted fields, escaped quotes and embedded line breaks into rows of string fields.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "jsr",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Every adapter returns the rows as its library produces them; Rust adapters return the crate's own records and convert them to JSON for the check outside measured work."
 }

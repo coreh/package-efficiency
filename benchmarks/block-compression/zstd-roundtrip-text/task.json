@@ -4,9 +4,6 @@
   "title": "Zstandard compress and decompress text",
   "summary": "Compress a buffer of text with Zstandard (level 3) and decompress it again, returning the original text.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 40,
   "notes": "One operation is a full Zstandard compress-then-decompress round trip of an in-memory buffer. Compressed bytes differ between implementations, so only the restored text is compared; the compressed size, reported outside timing, must also be smaller than the input for the fixtures the format can shrink."
 }

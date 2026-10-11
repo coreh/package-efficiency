@@ -4,9 +4,6 @@
   "title": "LZW compress and decompress text",
   "summary": "Compress a buffer of text with LZW (least significant bit first, 8-bit literals) and decompress it again, returning the original text.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 40,
   "notes": "One operation is a full LZW compress-then-decompress round trip of an in-memory buffer. Both entries write the same variant, so only the restored text and the compressed size, reported outside timing, are checked."
 }

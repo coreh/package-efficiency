@@ -14,7 +14,7 @@ same fixtures in every format's large-buffer task.
 
 ## Settings
 
-Every entry runs at bzip2 level 9 (900 KB blocks), passed explicitly by every adapter. The libraries' defaults differ, checked in the installed sources: `bzip2::Compression::default()` is level 6, `cramjam`'s is 6, and Python's `bz2.compress` has `compresslevel=9` on CPython and on PyPy. All entries are set to one level, 9, which is Python's default and the `bzip2` command's. For the `bzip2` crate that is not its default, and its entry is tagged as running with non-default options. The level is the block size, so on inputs smaller than 100 KB it changes memory use more than output.
+Every entry runs at bzip2 level 9 (900 KB blocks), passed explicitly by every adapter. The libraries' defaults differ, checked in the installed sources: `bzip2::Compression::default()` is level 6, `cramjam`'s is 6, and Python's `bz2.compress` has `compresslevel=9` on CPython and on PyPy. All entries are set to one level, 9, which is Python's default and the `bzip2` command's. For the `bzip2` crate and `cramjam` that is not their default, and their entries are tagged as running with non-default options. The level is the block size, so on inputs smaller than 100 KB it changes memory use more than output.
 
 ## What is checked
 

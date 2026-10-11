@@ -4,11 +4,6 @@
   "title": "Whole application: handle a request among 100 routes",
   "summary": "The whole framework works. It is handed a request and awaited: it builds its own request and context, routes among the same 100 routes and runs the handler. Routing is one part of the cost. Frameworks whose router cannot be asked on its own are measured here.",
   "kind": "async-operation",
-  "ecosystems": [
-    "npm",
-    "jsr",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -30,6 +25,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 60,
   "notes": "An asynchronous task on one thread: each operation is one request given to the application's own in-memory entry point and awaited. No socket, no HTTP parsing and no timer is involved. The figure is the framework's whole dispatch (its request and context objects, routing, parameter decoding, calling the handler, and its own 404 on a miss) plus one await of the runtime per request; handlers do no work and build no response body. Rust runs on a single-thread executor."
 }

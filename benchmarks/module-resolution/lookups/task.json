@@ -4,9 +4,6 @@
   "title": "Resolve specifiers to files in a node_modules tree",
   "summary": "From each of four base directories of a fixture project, resolve a list of relative and bare specifiers (files, directories, packages with main, scoped packages, subpaths, nested node_modules) to absolute file paths, as Node's require does.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 4,
   "notes": "A task on the file system: the project is a real directory, created anew before each process and already in the operating system's cache. enhanced-resolve and unrs-resolver cache file system answers in the resolver, so their adapters build the resolver inside every call; Node's own cache cannot be dropped and stays. CPU time includes the kernel's part."
 }

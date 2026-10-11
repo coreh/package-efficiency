@@ -4,11 +4,6 @@
   "title": "Group values under string keys in a multimap",
   "summary": "Insert 10,000 key-value pairs into a multimap that keeps every value of a key in order, remove 100 keys, then read the values of 500 keys.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo",
-    "pypi",
-    "gomod"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 8,
   "notes": "Every entry builds its multimap of 10,000 pairs inside the call, so insertion and growth are most of each figure; the 500 reads and 100 removals are the rest. Rust adapters copy each list they read into a new vector, because the map is dropped when the call returns. Rust allocation-counting overhead is included in CPU figures."
 }

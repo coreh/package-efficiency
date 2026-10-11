@@ -4,9 +4,6 @@
   "title": "Component stylesheets",
   "summary": "Parse generated component stylesheets (rules, media queries, keyframes, font faces, custom properties, comments) into each package's own syntax tree.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Each adapter returns the package's own tree. The verifier reads the top-level rule count and searches the tree for every class name, keyframes name, custom property and string literal of the fixture; that check runs outside measured work."
 }

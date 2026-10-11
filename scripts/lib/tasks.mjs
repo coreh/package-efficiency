@@ -209,3 +209,24 @@ export function shardTasks(tasks, index, count) {
   const chosen = machines[index - 1]
   return { tasks: tasks.filter((t) => chosen.tasks.includes(t)), seconds: Math.round(chosen.weight / 1000) }
 }
+
+// How many fixtures a task has: the length of its scenario's `cases`, so that
+// no file has to keep the number by hand. Loading a scenario builds its
+// fixtures (a second or more for a few), so the counts are kept in
+// .cache/fixture-counts.json by a digest of the scenario files and a
+// scenario is loaded again only after it changes.
+import { pathToFileURL } from 'node:url'
+let fixtureCounts
+export async function fixtureCount(taskId) {
+  const file = fromRoot('.cache/fixture-counts.json')
+  fixtureCounts ??= existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {}
+  const key = createHash('sha256').update(scenarioFiles(taskId).map((f) => readFileSync(f)).join('\0')).digest('hex')
+  if (fixtureCounts[taskId]?.key !== key) {
+    // A task on the file system builds its paths from BENCH_FILES; the count does not depend on them.
+    process.env.BENCH_FILES ??= '/BENCH_FILES-is-not-set'
+    const { cases } = await import(pathToFileURL(fromRoot('benchmarks', taskId, 'scenario.mjs')).href)
+    fixtureCounts[taskId] = { key, count: Array.isArray(cases) ? cases.length : null }
+    writeFileSync(file, JSON.stringify(fixtureCounts, null, 1))
+  }
+  return fixtureCounts[taskId].count
+}

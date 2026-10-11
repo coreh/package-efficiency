@@ -4,10 +4,6 @@
   "title": "Precompiled include set",
   "summary": "Test a list of path strings against a fixed set of already-compiled glob patterns, true when any pattern matches.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "The ten include patterns are compiled once at adapter load, outside the measured call, in every adapter but one: Ruby File.fnmatch? has no compile step and interprets the patterns for every path. Each operation tests 250 paths and returns a list of booleans (matches any pattern). Rust describes results as JSON outside timing."
 }

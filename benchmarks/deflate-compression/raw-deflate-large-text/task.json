@@ -2,12 +2,8 @@
   "category": "deflate-compression",
   "task": "raw-deflate-large-text",
   "title": "Raw deflate of large text",
-  "summary": "Compress a 10 to 200 KB text buffer with raw deflate at the library's default level and return the compressed bytes.",
+  "summary": "Compress an 8 to 420 KB text buffer with raw deflate at the library's default level and return the compressed bytes.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 32,
   "notes": "Compression only, on large inputs; the existing task round-trips small ones. Compressed bytes differ between implementations, so the verifier inflates them with node:zlib and compares to the input."
 }

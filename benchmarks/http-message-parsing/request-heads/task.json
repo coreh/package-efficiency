@@ -4,9 +4,6 @@
   "title": "Browser request heads",
   "summary": "Parse the head of an HTTP/1.1 request (request line and headers) from an in-memory message into method, target, version and headers.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 48,
   "notes": "Only Rust crates and the Go standard library are measured: no npm or JSR package in this category parses raw HTTP messages. httparse is zero-copy but the harness result cannot borrow from its input, so its adapter copies into owned strings."
 }

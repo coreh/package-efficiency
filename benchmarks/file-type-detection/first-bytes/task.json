@@ -4,9 +4,6 @@
   "title": "Type of a file from its first bytes",
   "summary": "Identify the media type of a file from the first bytes held in memory.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 56,
   "notes": "Each call gives the library the first 64 to 4096 bytes of a file (14 formats) and returns the media type string it names, from bytes decoded from hex before timing. No file name or extension is given."
 }

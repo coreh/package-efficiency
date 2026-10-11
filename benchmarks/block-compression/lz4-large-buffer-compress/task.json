@@ -4,10 +4,6 @@
   "title": "LZ4 compress large buffers",
   "summary": "Compress 4 to 214 KB buffers of text and mixed content with LZ4 (no level setting); compression only, no decompression.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 33,
   "notes": "One operation compresses one in-memory buffer with LZ4 and returns the compressed bytes. Decompression is left out of the timed call and used only by the verifier."
 }

@@ -4,9 +4,6 @@
   "title": "Pipe chunks through a chain of passthrough streams",
   "summary": "Write 200 to 2,000 fixed-size Buffer chunks into the head of a chain of 1, 3 or 8 passthrough streams and count them, with a checksum, at the tail.",
   "kind": "async-operation",
-  "ecosystems": [
-    "npm"
-  ],
   "load": {
     "warmup": 300,
     "rounds": 3,
@@ -28,6 +25,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 6,
   "notes": "An asynchronous task on one thread: each operation is one awaited call that ends when the tail of the chain has emitted 'end'. The figure is the stream classes' own cost (buffering, pipe, backpressure, event emission) plus the event loop's scheduling; the chunk allocation and the per-chunk checksum are the same few operations in every adapter. No timer is involved."
 }

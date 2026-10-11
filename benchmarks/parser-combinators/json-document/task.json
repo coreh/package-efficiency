@@ -4,9 +4,6 @@
   "title": "JSON grammar on in-memory documents",
   "summary": "Parse JSON documents with the JSON grammar written in each library's own combinators or grammar syntax, building a generic value tree.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 40,
   "notes": "Rust adapters return serde_json::Value built by a JSON grammar written in the crate under test; converting it for the check happens outside measured work."
 }

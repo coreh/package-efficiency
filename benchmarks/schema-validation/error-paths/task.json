@@ -4,11 +4,6 @@
   "title": "Locating the first error",
   "summary": "Validate mostly invalid nested JSON user documents and report the path of the first validation error.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "jsr",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 72,
   "notes": "Each operation validates one document against a schema built or compiled once, outside the measured call, and returns the path of the first error as a string (\"\" when valid)."
 }

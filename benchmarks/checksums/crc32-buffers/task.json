@@ -4,11 +4,6 @@
   "title": "CRC-32 of byte buffers",
   "summary": "Compute the CRC-32 (IEEE 802.3, as used by gzip, zlib and PNG) of a buffer of bytes as an unsigned 32-bit number.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 51,
   "notes": "Inputs are strings, because fixtures are shared as JSON; every adapter checksums the string's UTF-8 bytes. Rust reads them with str::as_bytes() at no cost."
 }

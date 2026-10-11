@@ -4,10 +4,6 @@
   "title": "Convert UTC instants to wall-clock time in named zones",
   "summary": "Convert 200 UTC instants to the local date-time and UTC offset in one IANA time zone, across daylight-saving transitions and half- and quarter-hour offsets.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 12,
   "notes": "One operation is 200 conversions in one zone, each with its formatting into a local date-time string and the offset in seconds; the zone is looked up by name once per fixture, outside timing. Each entry uses its own copy of the tz database (the system's files, ICU's, or one it bundles); the instants lie in 2012-2024, where these zones' rules agree in every recent release."
 }

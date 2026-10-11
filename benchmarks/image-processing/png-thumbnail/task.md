@@ -23,13 +23,19 @@ verifier decodes each output with its own PNG reader and checks that
 - the pixels are, on average, within 2 levels (of 255) of a reference
   thumbnail: the plain average of each block of source pixels.
 
-Every filter that takes account of the whole area a thumbnail pixel covers
-lands within 0.4 to 1.3 levels of the reference on these pictures, whichever it
-is. Taking one source pixel per thumbnail pixel (nearest neighbour) leaves the
-grain in and lands at 3.3 to 4.6; interpolating between only the four nearest
-source pixels at 2.3 to 6.3. A cropped, shifted, flipped or channel-swapped
-picture is far outside. So the limit separates a downscale from a subsample
-without preferring one filter to another.
+Measured on these files: a filter that takes account of the whole area a
+thumbnail pixel covers lands within 0.25 to 1.3 levels of the reference (an
+exact block average is 0.25 away, the rounding to whole levels; the Lanczos3 filter of the Rust `image` crate is 0.4
+to 1.3). Taking one source pixel per thumbnail pixel lands at 3.3 to 6.6,
+whichever pixel of the block it takes. Interpolating between the nearest
+source pixels depends on where it samples: on source pixels it is the same as
+taking one, and at pixel centres a bilinear resize matches the block average
+on a halving (0.25) but lands at 1.6 to 4.3 at larger reductions, outside the
+limit on the reductions by 3 and 5. The limit of 2 lies between the area
+filters and taking one pixel, and every fixture must pass, so only a resize
+that averages passes. A cropped, shifted, flipped or channel-swapped picture
+is far outside. So the limit separates a downscale from a subsample without
+preferring one filter to another.
 
 ## Packages
 

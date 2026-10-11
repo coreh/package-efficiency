@@ -4,12 +4,10 @@
   "title": "Registrable domain of a host",
   "summary": "Find the registrable domain of one host name with the Public Suffix List.",
   "kind": "sync-operation",
-  "ecosystems": ["npm", "pypi", "rubygems", "gomod"],
   "load": { "warmup": 10000, "rounds": 3, "operationsPerRound": 100000, "minRoundMs": 250 },
   "metrics": {
     "cpu": { "key": "cpuMs", "displayUnit": "µs", "headline": "µs of CPU per operation" },
     "memory": { "key": "memoryBytes", "displayUnit": "MB", "headline": "MB after GC, above baseline", "floor": 4000000 }
   },
-  "fixtureCount": 720,
   "notes": "Each operation returns the registrable domain as a string, or null for a host that is only a public suffix."
 }

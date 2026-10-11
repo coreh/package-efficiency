@@ -4,9 +4,6 @@
   "title": "Shortest round-trip f32 formatting",
   "summary": "Format finite 32-bit floats as the shortest decimal string that reads back as the same f32.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 20000,
   "notes": "Go returns the string its API allocates; the Rust entries return the digits in a stack buffer with their length. Output spelling (exponent style, trailing .0) is normalized during verification only."
 }

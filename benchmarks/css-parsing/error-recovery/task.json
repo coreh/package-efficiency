@@ -4,9 +4,6 @@
   "title": "Stylesheets with errors",
   "summary": "Parse hand-edited stylesheets that contain mistakes (old-IE hacks, missing colons, empty values, IE expressions, unknown at-rules) and keep every rule that is still valid.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 32,
   "notes": "Each adapter returns the package's own tree. The verifier reads the top-level rule count, checks that no text of the source survives as an unparsed block, and searches the tree for every class name, string literal and unique number belonging to the valid parts of the fixture; that check runs outside measured work."
 }

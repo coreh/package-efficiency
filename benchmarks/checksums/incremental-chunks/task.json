@@ -4,11 +4,6 @@
   "title": "CRC-32 over a stream of chunks",
   "summary": "Compute the CRC-32 of a message that arrives as a list of chunks, feeding the chunks one after another into a running checksum and returning the final unsigned 32-bit number.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 41,
   "notes": "Inputs are arrays of strings (chunks); every adapter feeds the UTF-8 bytes of each chunk, in order, into a running CRC-32."
 }

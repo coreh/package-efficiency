@@ -4,10 +4,6 @@
   "title": "Mixed glob patterns",
   "summary": "Compile a glob pattern and test a list of path strings against it.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Each operation compiles one pattern and tests 240 paths (one compile per 240 matches), returning a list of booleans; compilation is inside the measured call for every package. Rust describes results as JSON outside timing."
 }

@@ -4,12 +4,6 @@
   "title": "Orders to records and back",
   "summary": "Turn a plain nested order (a customer record and a list of line records) into declared record objects, then turn the objects back into plain data.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo",
-    "pypi",
-    "rubygems"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -29,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 32,
   "notes": "Each call loads one plain order into record objects and dumps them back to plain data; both halves are measured. Class declarations are made once, at import."
 }

@@ -4,10 +4,6 @@
   "title": "POST a JSON document",
   "summary": "Send POST requests with small JSON bodies to a local HTTP/1.1 server over keep-alive connections, eight in flight at a time, and parse each JSON response.",
   "kind": "client",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "concurrency": 8,
     "connections": 16,
@@ -28,6 +24,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 8,
   "notes": "The server is a scripted program in its own process, the same for every entry; its work is not counted. It accepts a request only if its body is, byte for byte, the task's document. An entry keeps its connections open and reuses them; the server counts them. Only the client's process is measured: time spent waiting for the server is not CPU time."
 }

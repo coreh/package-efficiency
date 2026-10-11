@@ -4,10 +4,6 @@
   "title": "Run a command and collect its output",
   "summary": "Start a small program with 1 to 40 arguments, wait for it, and return what it printed and its exit status.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 8,
   "notes": "CPU is that of the calling process only: the library's work and the kernel's work on its behalf to create the child, read the pipe and wait. The child's own CPU and memory are the same program in every entry and are not counted. The wait for the child is elapsed time, not CPU."
 }

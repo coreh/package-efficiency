@@ -4,9 +4,6 @@
   "title": "X.509 certificate fields",
   "summary": "Parse DER-encoded X.509 certificates with a typed parser and read their main fields.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 40,
   "notes": "Each call takes a certificate's DER bytes (decoded from hex before timing), parses them with the library's typed X.509 parser and returns nine fields in one common shape, in every language."
 }

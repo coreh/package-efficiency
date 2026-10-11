@@ -4,10 +4,6 @@
   "title": "List every file and directory under a root",
   "summary": "Walk one of four directory trees on disk (a source project, three wide directories, a chain 40 levels deep, an installed-modules folder; 5,158 files in 451 directories in all) and return the path of every file and directory in it.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 4,
   "notes": "A task on the file system: the trees are real directories, created anew before each process and already in the operating system's cache, so no disk is read. CPU time includes the time the kernel spends listing directories for the process, which is the same floor for every entry on a machine. readdirp has no synchronous interface and is not part of this task."
 }

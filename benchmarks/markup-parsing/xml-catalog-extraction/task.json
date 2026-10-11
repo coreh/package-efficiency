@@ -4,11 +4,6 @@
   "title": "XML catalog extraction",
   "summary": "Parse a data-style XML product catalog (declaration, CDATA, single-quoted attributes, entities) and pull out the figures a program would use: counts, a sum of prices and the length of the descriptions.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 36,
   "notes": "Every adapter returns { products, inStock, cents, tags, descriptionChars } computed from a product catalog: the number of product elements, how many have the attribute stock=\"true\", the sum of the integer text of all price elements, the number of tag elements, and the number of Unicode code points other than space, tab, line feed and carriage return in the decoded character data (CDATA included) of all description elements. Unlike the XHTML summary task, the figures depend on which element and attribute each piece of data is in, so the adapter reads structure as well as content."
 }

@@ -4,10 +4,6 @@
   "title": "scrypt hash and verify",
   "summary": "Hash a password with scrypt and a fresh random salt, then check the right and a wrong password against the hash.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo",
-    "jsr"
-  ],
   "load": {
     "warmup": 30,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 32,
   "notes": "Each operation runs scrypt three times at N=4096, r=8, p=1, so the load is far smaller than in the fast string tasks."
 }

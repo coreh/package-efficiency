@@ -4,11 +4,6 @@
   "title": "Run a command and collect its output, awaited",
   "summary": "Start a small program with 1 to 40 arguments through an asynchronous API, await it, and return what it printed and its exit status.",
   "kind": "async-operation",
-  "ecosystems": [
-    "npm",
-    "jsr",
-    "cargo"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -30,6 +25,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 8,
   "notes": "The fixtures and check of spawn-collect, through each library's awaited API on one thread: one child at a time, awaited before the next starts. CPU is that of the calling process only, every thread in it included: the library's work, the event loop or executor that waits for the child and reads its pipe, and the kernel's work on the caller's behalf. The child's own CPU and memory are the same program in every entry and are not counted. The wait for the child is elapsed time, not CPU."
 }

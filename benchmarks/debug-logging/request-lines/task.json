@@ -4,10 +4,6 @@
   "title": "Namespaced request lines",
   "summary": "Log one formatted message through a named logger, where half of 100 namespaces are enabled by a pattern.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -27,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 100,
   "notes": "The sink is an in-memory capture, not stderr, so no system call is timed. Each call returns the line the library produced (empty when the namespace is disabled)."
 }

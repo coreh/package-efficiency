@@ -4,9 +4,6 @@
   "title": "Unsigned LEB128 varints",
   "summary": "Encode 1,000 unsigned 64-bit integers as concatenated unsigned LEB128 varints and decode them back, one value per call of the package.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 6,
   "notes": "Inputs are decimal strings, because JSON numbers lose precision above 2^53; every adapter parses them into unsigned 64-bit integers in prepare, before any timing. Every adapter runs the same two loops (encode each value and append, then decode from offset 0 to the end), so the figure is 1,000 encodes and 1,000 decodes plus the loop."
 }

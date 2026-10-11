@@ -4,12 +4,6 @@
   "title": "HKDF-SHA-256 extract and expand",
   "summary": "Derive a 16 to 255 byte key from input keying material, a salt and info with HKDF-SHA-256 (RFC 5869).",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm",
-    "jsr",
-    "cargo",
-    "pypi"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -29,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "notes": "One HKDF-Extract (one HMAC-SHA-256) and one to eight HMAC-SHA-256 blocks of HKDF-Expand per call, so the figure is mostly HMAC set-up and the SHA-256 compression function, plus the call's own overhead.",
-  "fixtureCount": 40
+  "notes": "One HKDF-Extract (one HMAC-SHA-256) and one to eight HMAC-SHA-256 blocks of HKDF-Expand per call, so the figure is mostly HMAC set-up and the SHA-256 compression function, plus the call's own overhead."
 }

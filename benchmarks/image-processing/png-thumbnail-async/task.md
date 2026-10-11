@@ -30,14 +30,18 @@ refuses a bad CRC, a bit depth other than 8 and interlacing) and checks that
 - the pixels are, on average, within 2 levels (of 255) of a reference
   thumbnail: the plain average of each block of source pixels.
 
-Measured on these files: every filter that takes account of the whole area a
+Measured on these files: a filter that takes account of the whole area a
 thumbnail pixel covers lands within 0.25 to 1.3 levels of the reference (an
-exact block average, as jimp's default resize computes, is 0.25 away: the
+exact block average, as jimp's default resize computes, is 0.25 away, the
 rounding to whole levels; the Lanczos3 filter of the Rust `image` crate is 0.4
-to 1.3). Taking one source pixel per thumbnail pixel lands at 3.3 to 6.6, and
-so does interpolating between the nearest source pixels (bilinear or bicubic
-over 4 or 16 pixels), because at a whole-number reduction those sample points
-fall exactly on source pixels. The limit of 2 sits in that gap.
+to 1.3). Taking one source pixel per thumbnail pixel lands at 3.3 to 6.6,
+whichever pixel of the block it takes. Interpolating between the nearest
+source pixels depends on where it samples: on source pixels it is the same as
+taking one, and at pixel centres a bilinear resize matches the block average
+on a halving (0.25) but lands at 1.6 to 4.3 at larger reductions, outside the
+limit on the reductions by 3 and 5. The limit of 2 lies between the area
+filters and taking one pixel, and every fixture must pass, so only a resize
+that averages passes.
 
 The scenario asserts at load that a block-averaged thumbnail passes, as bytes
 in a `Buffer` or a plain `Uint8Array`, and that each of these is refused: a

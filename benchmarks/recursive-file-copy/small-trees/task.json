@@ -4,9 +4,6 @@
   "title": "Copy a directory tree",
   "summary": "Copy a directory tree on disk to a destination that does not exist yet: a project of 302 small files in 39 directories, or 24 binary files of 3 MB in all.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "npm"
-  ],
   "load": {
     "warmup": 40,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 2,
   "notes": "A task on the file system: the source trees are real directories, created anew before each process, and the harness removes each destination before every operation, outside what is timed. Nearly all of the CPU time is spent in the kernel, creating files, so the entries differ by which system calls they make, not by their own code. CPU time does not include waiting for the disk."
 }

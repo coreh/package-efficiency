@@ -4,11 +4,6 @@
   "title": "Jaro-Winkler similarity of string pairs",
   "summary": "Compute the Jaro-Winkler similarity (prefix scale 0.1, prefix up to 4) of a batch of 200 string pairs: names, identifiers and addresses with typos.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo",
-    "pypi",
-    "rubygems"
-  ],
   "load": {
     "warmup": 2000,
     "rounds": 3,
@@ -28,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 6,
   "notes": "One operation is 200 similarity calls plus the loop and the output list, which every adapter has alike. Strings are 3 to 28 characters, so per-call overhead (argument conversion in Python and Ruby extensions) is a large part of each figure."
 }

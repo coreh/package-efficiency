@@ -3,6 +3,7 @@
 // Usage: node scripts/build-data.mjs
 import { ecosystem, ecosystemIds, goPackageName } from './lib/ecosystems.mjs'
 import { releaseState, releaseEntryId } from './lib/releases.mjs'
+import { fixtureCount } from './lib/tasks.mjs'
 import { globSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
@@ -278,6 +279,10 @@ for (const taskFile of globSync('benchmarks/*/*/task.json', { cwd: fromRoot() })
   // no figures to grade, so it stays out of the site until its first results.
   const resultFiles = globSync('**/*.json', { cwd: fromRoot('results', taskId) })
   if (!resultFiles.length) { unmeasured.push(taskId); continue }
+  // Counted, not written down: the fixtures of its scenario and the registries of its adapters.
+  const fixtures = await fixtureCount(taskId)
+  if (fixtures != null) task.fixtureCount = fixtures
+  task.ecosystems = [...ecosystemIds, 'builtin'].filter((id) => globSync(`${id}/**/adapter.json`, { cwd: adaptersDir }).length)
 
   for (const file of resultFiles) {
     const result = await readJson(fromRoot('results', taskId, file))

@@ -4,9 +4,6 @@
   "title": "Count one byte in a buffer",
   "summary": "Count the newline bytes (0x0a) in a buffer of 1 KiB to 8 MiB of text or binary data.",
   "kind": "sync-operation",
-  "ecosystems": [
-    "cargo"
-  ],
   "load": {
     "warmup": 10000,
     "rounds": 3,
@@ -26,6 +23,5 @@
       "floor": 4000000
     }
   },
-  "fixtureCount": 23,
   "notes": "Inputs are hex strings, because fixtures are shared as JSON; every adapter turns them into bytes in prepare, before any timing. No npm or JSR package in the category offers this operation; only crates and standard-library baselines are measured."
 }
