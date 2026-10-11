@@ -7,21 +7,23 @@
 // Usage: node scripts/setup.mjs
 import { execFileSync } from 'node:child_process'
 import { duration, runStep } from './lib/tasks.mjs'
-import { fromRoot } from './lib/util.mjs'
+import { fromRoot, nativeBin } from './lib/util.mjs'
 
 // The measurements start these programs; say plainly which are missing.
+// The ones runtimes.json names per machine are looked for where it says.
+const bin = (group, id) => { try { return nativeBin(group, id) } catch { return id } }
 const needed = [
-  ['node', ['--version'], 'runs the scripts and the JavaScript adapters'],
-  ['cargo', ['--version'], 'builds the Rust adapters'],
-  ['go', ['version'], 'builds the Go adapters'],
-  ['python3', ['--version'], 'runs the Python adapters and type checker'],
-  ['ruby', ['--version'], 'runs the Ruby adapters'],
+  ['node', 'node', ['--version'], 'runs the scripts and the JavaScript adapters'],
+  ['cargo', 'cargo', ['--version'], 'builds the Rust adapters'],
+  ['go', bin('toolchains', 'go'), ['version'], 'builds the Go adapters'],
+  ['python3', bin('runtimes', 'cpython'), ['--version'], 'runs the Python adapters and type checker'],
+  ['ruby', bin('runtimes', 'ruby'), ['--version'], 'runs the Ruby adapters'],
 ]
 const missing = []
 console.error('=== toolchains on this machine ===')
-for (const [command, args, purpose] of needed) {
+for (const [command, file, args, purpose] of needed) {
   try {
-    console.error(`  ${command.padEnd(8)} ${execFileSync(command, args, { encoding: 'utf8' }).trim().split('\n')[0]}`)
+    console.error(`  ${command.padEnd(8)} ${execFileSync(file, args, { encoding: 'utf8' }).trim().split('\n')[0]}`)
   } catch {
     missing.push(command)
     console.error(`  ${command.padEnd(8)} NOT FOUND (${purpose})`)
@@ -32,7 +34,7 @@ const npmFlags = ['install', '--min-release-age=7', '--ignore-scripts', '--no-au
 const steps = [
   runStep('site and script dependencies (npm)', 'npm', npmFlags),
   runStep('pinned runtimes and compilers: Bun, Deno, TypeScript (npm)', 'npm', npmFlags, { cwd: fromRoot('toolchains') }),
-  runStep('pinned PyPy', process.execPath, ['scripts/setup-native.mjs']),
+  runStep('pinned native toolchains (PyPy; on Linux also Rust, Go, CPython, CRuby)', process.execPath, ['scripts/setup-native.mjs']),
   runStep('type checkers: mypy, Sorbet', process.execPath, ['scripts/setup-checkers.mjs']),
   runStep('Python, Ruby and Go server packages', process.execPath, ['scripts/setup-http-servers.mjs']),
   runStep('age of the locked Rust crates', process.execPath, ['scripts/check-cargo-age.mjs']),

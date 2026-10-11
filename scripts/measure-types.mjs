@@ -33,7 +33,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { eligibleJsrVersions, installPinned, installedVersion, MIN_RELEASE_AGE_DAYS } from './lib/npm.mjs'
-import { fromRoot, loadConfig, median, readJson, writeJson } from './lib/util.mjs'
+import { fromRoot, loadConfig, median, nativeBin, readJson, writeJson } from './lib/util.mjs'
 import { raisePriority } from './lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
@@ -109,7 +109,7 @@ async function diagnose(compiler, dir) {
   // prints CPU only to 10 ms, both coarser than what a small package adds. So
   // the run is timed with harness/checkers/time.py, which waits on the child
   // and reads its CPU time to the microsecond.
-  const timed = await exec('/opt/homebrew/bin/python3', [fromRoot('harness/checkers/time.py'), compiler.bin, '-p', dir, '--extendedDiagnostics'], { maxBuffer: 64 << 20 }).catch((e) => e)
+  const timed = await exec(nativeBin('runtimes', 'cpython'), [fromRoot('harness/checkers/time.py'), compiler.bin, '-p', dir, '--extendedDiagnostics'], { maxBuffer: 64 << 20 }).catch((e) => e)
   let run
   try { run = JSON.parse(timed.stdout) } catch { throw new Error(`CPU timing unavailable for ${compiler.title}`) }
   const { stdout, cpuMs, timeMs: wallMs } = run

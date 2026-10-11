@@ -123,10 +123,10 @@ const selected = (runtimeId) => !onlyRuntimes || onlyRuntimes.includes(runtimeId
 // --- Rust -------------------------------------------------------------------
 
 let cargoChecked = false
-// A finer CPU clock for the supervisor on macOS (see cpuSeconds there): a
-// small helper, built once and again when its source changes. Without cargo
-// the supervisor reads `ps`, to a hundredth of a second.
-if (process.platform === 'darwin' && !process.env.BENCH_CPUTIME) {
+// A finer CPU clock for the supervisor (see cpuSeconds there): a small
+// helper, built once and again when its source changes. Without cargo the
+// supervisor reads `ps` or /proc, to a hundredth of a second.
+if (['darwin', 'linux'].includes(process.platform) && !process.env.BENCH_CPUTIME) {
   const helper = fromRoot('.cache/cargo-target/release/cputime'), source = fromRoot('harness/rust/src/bin/cputime.rs')
   try {
     if (!existsSync(helper) || statSync(helper).mtimeMs < statSync(source).mtimeMs) {

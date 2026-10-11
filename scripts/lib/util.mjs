@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { globSync } from 'node:fs'
+import { globSync, readFileSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -32,21 +32,50 @@ export function median(values) {
 const versionOf = (bin, args = ['--version']) =>
   /\d+\.\d+\.\d+/.exec(execFileSync(bin, args, { encoding: 'utf8' }))?.[0] ?? null
 
+// The kind of machine: a `bin` in runtimes.json is one path for every
+// machine, or one per machine keyed by `linux-x64` (platform and processor)
+// or `linux` (any processor), as setup-native.mjs installs them.
+export const PLATFORM = `${process.platform}-${process.arch}`
+function resolveBin(bin) {
+  if (typeof bin !== 'string') {
+    const chosen = bin[PLATFORM] ?? bin[process.platform]
+    if (!chosen) throw new Error(`runtimes.json names no binary for ${PLATFORM}`)
+    bin = chosen
+  }
+  if (path.isAbsolute(bin)) return bin
+  if (bin === 'node') return process.execPath
+  if (!bin.includes('/')) return bin
+  const [match] = globSync(bin, { cwd: ROOT })
+  if (!match) throw new Error(`no binary matches ${bin}; run node scripts/setup.mjs`)
+  return fromRoot(match)
+}
+
+// One binary of runtimes.json for this machine, without running it: for the
+// scripts that only need its path (`nativeBin('runtimes', 'cpython')`).
+let runtimesFile
+export function nativeBin(group, id) {
+  runtimesFile ??= JSON.parse(readFileSync(fromRoot('runtimes.json'), 'utf8'))
+  return resolveBin(runtimesFile[group][id].bin)
+}
+// A program installed beside a runtime, such as Ruby's `gem` and `rbs`.
+export const besideBin = (group, id, name) => path.join(path.dirname(nativeBin(group, id)), name)
+
+// The Sorbet gem for this machine from toolchains/checkers.json: its platform
+// and SHA-256, keyed like a runtimes.json binary.
+export function sorbetPin(lock) {
+  const pin = lock.sorbetPlatforms[PLATFORM] ?? lock.sorbetPlatforms[process.platform]
+  if (!pin) throw new Error(`toolchains/checkers.json pins no Sorbet for ${PLATFORM}`)
+  return pin
+}
+export const sorbetBin = (lock) => fromRoot(`.cache/checkers/ruby/gems/sorbet-static-${lock.sorbet}-${sorbetPin(lock).platform}/libexec/sorbet`)
+
 // runtimes.json with every `bin` resolved to an absolute path and its actual
 // version filled in. Versions are pinned by toolchains/package.json, not here.
 export async function loadConfig() {
   const config = await readJson(fromRoot('runtimes.json'))
-  const resolve = (bin) => {
-    if (path.isAbsolute(bin)) return bin
-    if (bin === 'node') return process.execPath
-    if (!bin.includes('/')) return bin
-    const [match] = globSync(bin, { cwd: ROOT })
-    if (!match) throw new Error(`no binary matches ${bin}; run npm install in toolchains/`)
-    return fromRoot(match)
-  }
   for (const group of ['runtimes', 'compilers', 'toolchains']) {
     for (const entry of Object.values(config[group])) {
-      entry.bin = resolve(entry.bin)
+      entry.bin = resolveBin(entry.bin)
       entry.version = versionOf(entry.bin, entry.versionArgs)
       if (entry.expectedVersion && entry.version !== entry.expectedVersion) throw new Error(`${entry.title}: expected ${entry.expectedVersion}, got ${entry.version}`)
     }

@@ -7,6 +7,7 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nativeBin } from '../lib/util.mjs'
 
 // promisify(execFile), except that it never settles before the child has
 // exited: on a timeout or an overflowing maxBuffer, execFile kills the child
@@ -72,7 +73,7 @@ export const spread = (values) => round(Math.max(...values) - Math.min(...values
 // harness/checkers/time.py: wait4 on the child, so CPU (user + system, all
 // threads, reaped descendants included) to the microsecond and peak RSS of the
 // largest process in the tree.
-const TIMER = ['/opt/homebrew/bin/python3', fromRoot('harness/checkers/time.py')]
+const TIMER = [nativeBin('runtimes', 'cpython'), fromRoot('harness/checkers/time.py')]
 export async function timed(argv, options = {}) {
   const { stdout } = await exec(TIMER[0], [TIMER[1], ...argv], { maxBuffer: 256 << 20, ...options })
   return JSON.parse(stdout)

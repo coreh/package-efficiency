@@ -9,7 +9,7 @@ import { globSync } from 'node:fs'
 import { readFile, rm, utimes } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
-import { ROOT, fromRoot, loadConfig, median, readJson, writeJson } from './lib/util.mjs'
+import { ROOT, fromRoot, loadConfig, median, nativeBin, readJson, writeJson } from './lib/util.mjs'
 import { raisePriority } from './lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
@@ -19,7 +19,7 @@ const WARM_RUNS = 3
 // Timed with harness/checkers/time.py: wait4 on the child, which reports CPU
 // to the microsecond and the peak memory of the largest process in the tree
 // (rustc). /usr/bin/time prints CPU only to 10 ms, too coarse for a small crate.
-const TIMER = ['/opt/homebrew/bin/python3', fromRoot('harness/checkers/time.py')]
+const TIMER = [nativeBin('runtimes', 'cpython'), fromRoot('harness/checkers/time.py')]
 
 async function check(crate, bin, targetDir) {
   const { stdout } = await exec(TIMER[0], [TIMER[1], 'cargo', 'check', '--locked', '--quiet', '-p', crate, ...(bin ? ['--bin', bin] : [])], {

@@ -21,6 +21,7 @@ import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nativeBin } from '../../../../../scripts/lib/util.mjs'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const MIN_AGE_MS = 7 * 864e5
@@ -98,7 +99,7 @@ export async function prepare({ root, runtime, variant, helpers }) {
     const requirements = path.join(packages, 'requirements.txt')
     await writeFile(requirements, lock.map(({ name, version, sha256 }) => `${name}==${version} --hash=sha256:${sha256}\n`).join(''))
     // pip runs under CPython; what it installs is pure Python and serves PyPy too.
-    const python = JSON.parse(await readFile(path.join(root, 'runtimes.json'), 'utf8')).runtimes.cpython.bin
+    const python = nativeBin('runtimes', 'cpython')
     execFileSync(python, ['-m', 'pip', 'install', '--disable-pip-version-check', '--no-cache-dir', '--upgrade', '--only-binary=:all:', '--no-deps', '--no-compile', '--require-hashes', '--target', packages, '-r', requirements], { cwd: root, stdio: ['ignore', 'ignore', 'pipe'] })
     await writeFile(stamp, wanted)
     if (!complete()) throw new Error('pip did not install every locked package')

@@ -81,6 +81,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, statfs, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { goProxy } from '../lib/native-packages.mjs'
+import { nativeBin } from '../lib/util.mjs'
 import { MIN_RELEASE_AGE_DAYS, args, discard, exec, fromRoot, loadTargets, median, oldEnough, removeDir, round, spread, sweep, timed } from './lib.mjs'
 
 const { names, value, has } = args('Usage: node scripts/sweep-types/gomod.mjs <module>... | --top=N [--force] [--retry-failed] [--runs=11] [--cold-runs=3] [--build-runs=1] [--graded=check|build] [--keep] [--out=file]')
@@ -99,7 +100,7 @@ const MIN_FREE_GB = 6
 const TIMEOUT_MS = 15 * 60_000
 const WORK = fromRoot('.cache/sweep-types/gomod')
 const OUT = value('out') ? path.resolve(value('out')) : fromRoot('data/gomod/types.json')
-const GO = '/opt/homebrew/bin/go'
+const GO = nativeBin('toolchains', 'go')
 const MODCACHE = path.join(WORK, 'mod')
 const BUILDCACHE = path.join(WORK, 'build')
 const CHECKER = path.join(WORK, 'bin', 'gomod-typecheck')

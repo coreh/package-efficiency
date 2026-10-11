@@ -99,7 +99,7 @@ import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { raisePriority } from '../lib/util.mjs'
+import { besideBin, nativeBin, raisePriority, sorbetBin } from '../lib/util.mjs'
 // Above the usual priority where the machine allows it (see raisePriority).
 raisePriority()
 import { CUTOFF, MIN_RELEASE_AGE_DAYS, args, discard, duMb, exec, fetchJson, fromRoot, loadTargets, measure, oldEnough, readJson, removeDir, round, spread, sweep, timed, writeJson } from './lib.mjs'
@@ -113,8 +113,8 @@ const WORK = fromRoot('.cache/sweep-types/rubygems')
 const OUT = value('out') ? path.resolve(value('out')) : has('scan') ? path.join(WORK, 'scan.json') : fromRoot('data/rubygems/types.json')
 const GEMS = path.join(WORK, 'gems')
 const SIGS = path.join(WORK, 'sigs')
-const RUBY = '/opt/homebrew/opt/ruby/bin/ruby'
-const RBS = '/opt/homebrew/opt/ruby/bin/rbs'
+const RUBY = nativeBin('runtimes', 'ruby')
+const RBS = besideBin('runtimes', 'ruby', 'rbs')
 // --scan: classify only (one run of each checker, no timing), for coverage
 // counts. It writes to .cache/, never to the data file.
 const SCAN = has('scan')
@@ -295,7 +295,7 @@ console.error(`rbs ${rbsVersion} baseline: ${baseline.cpuMs} ms CPU (spread ${sp
 
 // Sorbet, the second checker, only for gems with real Sorbet types.
 const lock = await readJson(fromRoot('toolchains/checkers.json'))
-const SORBET_BIN = fromRoot(`.cache/checkers/ruby/gems/sorbet-static-${lock.sorbet}-${lock.sorbetPlatform}/libexec/sorbet`)
+const SORBET_BIN = sorbetBin(lock)
 if (!existsSync(SORBET_BIN)) throw new Error('Run node scripts/setup-checkers.mjs first')
 const SORBET = [SORBET_BIN, '--no-config', '--no-error-sections']
 const ENTRY = (requireName) => `# typed: true\n${requireName ? `require ${JSON.stringify(requireName)}\n` : ''}`

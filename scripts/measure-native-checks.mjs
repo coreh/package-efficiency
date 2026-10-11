@@ -5,7 +5,7 @@ import {globSync,readFileSync,rmSync} from 'node:fs'
 import {mkdir,readFile,writeFile} from 'node:fs/promises'
 import path from 'node:path'
 import {createHash} from 'node:crypto'
-import {fromRoot,readJson,writeJson,median,loadConfig,machine} from './lib/util.mjs'
+import {fromRoot,readJson,writeJson,median,loadConfig,machine,nativeBin,sorbetBin} from './lib/util.mjs'
 import {wrapPython,wrapRuby,goImports} from './lib/native-wrappers.mjs'
 import { raisePriority } from './lib/util.mjs'
 import { NATIVE_REGISTRIES, PACKAGE_TASK_KINDS, lockNativePackage, prepareNativePackage } from './lib/native-packages.mjs'
@@ -77,7 +77,7 @@ for(const file of globSync(fromRoot('benchmarks/*/*/{pypi,rubygems,gomod}/*/adap
 const exportsFile=`${work}/exports-${process.pid}.json`
 process.on('exit',()=>{try{rmSync(exportsFile,{force:true})}catch{}})
 await writeJson(exportsFile,exports)
-const sorbet=fromRoot(`.cache/checkers/ruby/gems/sorbet-static-${lock.sorbet}-${lock.sorbetPlatform}/libexec/sorbet`)
+const sorbet=sorbetBin(lock)
 if(!sorbet)throw new Error('Run node scripts/setup-checkers.mjs first')
 const tools={
  python:{tool:'mypy',version:lock.mypy,ext:'py',command:[fromRoot('.cache/checkers/python/bin/python'),'-m','mypy','--strict','--no-incremental','--cache-dir=/dev/null','--python-version','3.12',
@@ -87,7 +87,7 @@ const tools={
  go:{tool:'go-types',version:config.toolchains.go.version,ext:'go',command:[`${work}/go-types`,exportsFile],baseline:'package main\n',bad:'package main\nfunc bad() int { return "wrong" }\n',notes:'go/types checks the actual adapter source, including parsing and loading prepared standard-library and framework export data. Preparing export data, compilation, code generation and linking are excluded.'},
 }
 // `packages` is the folder a PyPI adapter's package is installed in: mypy reads the package's own types from there.
-async function once(args,packages){const raw=execFileSync('/opt/homebrew/bin/python3',[fromRoot('harness/checkers/time.py'),...args],{encoding:'utf8',maxBuffer:16<<20,env:{...process.env,MYPYPATH:fromRoot('harness/checkers/stubs'),PYTHONPATH:packages??fromRoot('.cache/http-servers/python')}});return JSON.parse(raw)}
+async function once(args,packages){const raw=execFileSync(nativeBin('runtimes', 'cpython'),[fromRoot('harness/checkers/time.py'),...args],{encoding:'utf8',maxBuffer:16<<20,env:{...process.env,MYPYPATH:fromRoot('harness/checkers/stubs'),PYTHONPATH:packages??fromRoot('.cache/http-servers/python')}});return JSON.parse(raw)}
 async function measure(args,packages){const runs=[];for(let i=0;i<11;i++){const r=await once(args,packages);if(r.status!==0)throw new Error(r.stdout+'\n'+r.stderr);runs.push({cpuMs:r.cpuMs,timeMs:r.timeMs,peakRssMb:r.peakRssMb})}return {runs,...Object.fromEntries(['cpuMs','timeMs','peakRssMb'].map(k=>[k,median(runs.map(r=>r[k]))]))}}
 const dependencyPins=await readFile(fromRoot('toolchains/checkers-requirements.txt'),'utf8')
 const methodologySha256=createHash('sha256').update(await readFile(fromRoot('scripts/measure-native-checks.mjs'))).update(await readFile(fromRoot('scripts/lib/native-wrappers.mjs'))).update(await readFile(fromRoot('harness/checkers/http.rbi'))).update(await readFile(fromRoot('harness/checkers/stdlib.rbi'))).update(await readFile(fromRoot('harness/checkers/stubs/waitress/__init__.pyi'))).update(await readFile(fromRoot('toolchains/http-servers.json'))).digest('hex')

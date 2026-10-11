@@ -1904,6 +1904,35 @@ Without it the scripts print one line that says the priority was not raised,
 and measure as before. `BENCH_PRIORITY=-10` sets another value; `0` turns it
 off.
 
+## Linux machines
+
+The harness runs on macOS (Apple silicon) and on Ubuntu 24.04 (x86-64 or
+ARM64). On a fresh Linux machine, from the repository:
+
+```
+sh scripts/setup-linux.sh     # system packages (sudo), pinned Node.js, then npm run setup
+. .cache/toolchains/env.sh    # in every shell that measures: Node.js and cargo on PATH
+```
+
+On Linux every toolchain is pinned in `toolchains/native.json` and installed
+under `.cache/toolchains/`: Rust, Go, CPython (a python-build-standalone
+build), PyPy, and CRuby built from its source release with YJIT. Each is used
+only when at least seven days old and matching its SHA-256. `runtimes.json`
+names a binary per kind of machine (`darwin-arm64`, `linux`) and checks its
+version. What differs in the measurement:
+
+- CPU time is read with the process's CPU clock (`clock_gettime` on the
+  pid's clock), to the nanosecond, like `proc_pid_rusage` on macOS.
+- Memory is the anonymous and shared part of the resident size
+  (`RssAnon + RssShmem` in `/proc/<pid>/status`), Linux's nearest figure to
+  macOS's physical footprint.
+- Wheels, platform gems and the Sorbet build are this machine's: the locks
+  gain a `linux-x64` (or `linux-arm64`) entry beside the macOS one, at the
+  versions already settled.
+
+Results record the machine, so results from different machines are never
+compared as if they came from one.
+
 ## Running things
 
 | Command | What it does |

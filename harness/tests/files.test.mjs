@@ -8,10 +8,13 @@ import { spawn, execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nativeBin } from '../../scripts/lib/util.mjs'
 import { FIXED_MTIME, SCRATCH, announceFiles, filesRoot, fixtureFiles } from '../files.mjs'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const config = JSON.parse(await readFile(path.join(root, 'runtimes.json'), 'utf8'))
+// This machine's binary where runtimes.json names one per kind of machine.
+for (const group of ['runtimes', 'toolchains']) for (const [id, entry] of Object.entries(config[group])) if (typeof entry.bin !== 'string') try { entry.bin = nativeBin(group, id) } catch { entry.bin = '/nonexistent' }
 const TASK = 'harness-test/files'
 const scratch = filesRoot(TASK)
 const scenario = (extra = {}) => ({
@@ -83,13 +86,17 @@ async function run(command, args, input, env) {
   const code = await new Promise((resolve, reject) => { child.on('error', reject); child.on('close', resolve) })
   return { code, stderr, messages: stdout.trim().split('\n').filter(l => l.startsWith('@@')).map(l => JSON.parse(l.slice(2))) }
 }
+// The system share is the kernel's split of the CPU time, which Linux
+// estimates from timer ticks: over a short round it may exceed the precise
+// total by up to one tick.
+const SPLIT_SLACK_MS = process.platform === 'linux' ? 10 : 0
 function checkRounds(result) {
   assert.equal(result.code, 0, result.stderr)
   const rounds = result.messages.filter(m => m.phase === 'round')
   assert.equal(rounds.length, 2)
   assert.equal(rounds[0].operations, 3)
   assert.ok(rounds[1].operations >= 2 && rounds[1].wallMs >= 1)
-  for (const round of rounds) assert.ok(round.cpuMs >= round.systemCpuMs && round.systemCpuMs >= 0, 'system CPU is reported, within the total')
+  for (const round of rounds) assert.ok(round.cpuMs + SPLIT_SLACK_MS >= round.systemCpuMs && round.systemCpuMs >= 0, 'system CPU is reported, within the total')
 }
 async function withFiles(work) {
   const fixtures = fixtureFiles(TASK, scenario())

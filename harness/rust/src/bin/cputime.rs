@@ -1,7 +1,7 @@
 //! Prints the CPU time a process has used so far, user and system, on all
-//! its threads, in nanoseconds. For the supervisor on macOS, where `ps` only
-//! tells hundredths of a second: a server that starts in a few milliseconds
-//! read as zero. Usage: cputime <pid>
+//! its threads, in nanoseconds. For the supervisor, where `ps` (macOS) and
+//! /proc/<pid>/stat (Linux) only tell hundredths of a second: a server that
+//! starts in a few milliseconds read as zero. Usage: cputime <pid>
 
 #[cfg(target_os = "macos")]
 mod mac {
@@ -43,6 +43,32 @@ mod mac {
     }
 }
 
+#[cfg(target_os = "linux")]
+mod linux {
+    use std::os::raw::{c_int, c_long};
+
+    #[repr(C)]
+    #[derive(Default)]
+    struct Timespec {
+        tv_sec: i64,
+        tv_nsec: c_long,
+    }
+    unsafe extern "C" {
+        fn clock_gettime(clock: c_int, time: *mut Timespec) -> c_int;
+    }
+
+    // The CPU clock of a whole process, threads that have ended included: the
+    // clock id glibc's clock_getcpuclockid gives (CPUCLOCK_SCHED of the pid).
+    pub fn nanoseconds(pid: i32) -> Option<u128> {
+        let clock = (!pid << 3) | 2;
+        let mut time = Timespec::default();
+        if unsafe { clock_gettime(clock, &mut time) } != 0 {
+            return None;
+        }
+        Some(time.tv_sec as u128 * 1_000_000_000 + time.tv_nsec as u128)
+    }
+}
+
 fn main() {
     let pid: i32 = match std::env::args().nth(1).and_then(|arg| arg.parse().ok()) {
         Some(pid) => pid,
@@ -50,6 +76,11 @@ fn main() {
     };
     #[cfg(target_os = "macos")]
     if let Some(ns) = mac::nanoseconds(pid) {
+        println!("{ns}");
+        return;
+    }
+    #[cfg(target_os = "linux")]
+    if let Some(ns) = linux::nanoseconds(pid) {
         println!("{ns}");
         return;
     }

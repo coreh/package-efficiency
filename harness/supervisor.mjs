@@ -29,19 +29,19 @@ const TIME = process.platform === 'darwin' ? ['/usr/bin/time', '-l'] : ['/usr/bi
 
 // Total CPU seconds (user + system, all threads) the process has used so far.
 function cpuSeconds(pid) {
-  if (process.platform === 'linux') {
-    const fields = readFileSync(`/proc/${pid}/stat`, 'utf8').split(') ')[1].split(' ')
-    return (Number(fields[11]) + Number(fields[12])) / 100
-  }
-  // macOS: `ps` only tells hundredths of a second, which is the whole CPU
-  // time of a fast server's start, and several per cent of a round. The
-  // helper named by BENCH_CPUTIME (harness/rust/src/bin/cputime.rs, built by
-  // scripts/measure.mjs) reads nanoseconds; `ps` stands in where it is absent.
+  // `ps` and /proc/<pid>/stat only tell hundredths of a second, which is the
+  // whole CPU time of a fast server's start, and several per cent of a round.
+  // The helper named by BENCH_CPUTIME (harness/rust/src/bin/cputime.rs, built
+  // by scripts/measure.mjs) reads nanoseconds; they stand in where it is absent.
   if (process.env.BENCH_CPUTIME) {
     try {
       const ns = Number(execFileSync(process.env.BENCH_CPUTIME, [String(pid)], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }))
       if (Number.isFinite(ns)) return ns / 1e9
     } catch {}
+  }
+  if (process.platform === 'linux') {
+    const fields = readFileSync(`/proc/${pid}/stat`, 'utf8').split(') ')[1].split(' ')
+    return (Number(fields[11]) + Number(fields[12])) / 100
   }
   // [[hh:]mm:]ss.cc
   const parts = execFileSync('ps', ['-o', 'time=', '-p', String(pid)], { encoding: 'utf8' }).trim().split(':')

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {execFileSync} from 'node:child_process'
 import {readFileSync,globSync} from 'node:fs'
 import {createHash} from 'node:crypto'
-import {fromRoot} from '../../scripts/lib/util.mjs'
+import {fromRoot,nativeBin} from '../../scripts/lib/util.mjs'
 const data=JSON.parse(readFileSync(fromRoot('data/native-checks.json')))
 for(const language of ['python','ruby','go'])test(`${language}: measured source bodies, validated checker and complete CPU/RSS samples`,()=>{
  const checker=data.checkers[language]
@@ -29,6 +29,6 @@ for(const language of ['python','ruby','go'])test(`${language}: measured source 
  }
 })
 test('wait4 timing preserves child failures and measures actual CPU',()=>{
- const output=execFileSync('/opt/homebrew/bin/python3',[fromRoot('harness/checkers/time.py'),'/opt/homebrew/bin/python3','-c','sum(range(100000)); raise SystemExit(7)'],{encoding:'utf8'})
+ const output=execFileSync(nativeBin('runtimes', 'cpython'),[fromRoot('harness/checkers/time.py'),nativeBin('runtimes', 'cpython'),'-c','sum(range(100000)); raise SystemExit(7)'],{encoding:'utf8'})
  const sample=JSON.parse(output);assert.equal(sample.status,7);assert.ok(sample.cpuMs>0);assert.ok(sample.peakRssMb>0)
 })

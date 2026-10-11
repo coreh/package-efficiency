@@ -7,8 +7,11 @@ import { spawn, execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nativeBin } from '../../scripts/lib/util.mjs'
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const config = JSON.parse(await readFile(path.join(root, 'runtimes.json'), 'utf8'))
+// This machine's binary where runtimes.json names one per kind of machine.
+for (const group of ['runtimes', 'toolchains']) for (const [id, entry] of Object.entries(config[group])) if (typeof entry.bin !== 'string') try { entry.bin = nativeBin(group, id) } catch { entry.bin = '/nonexistent' }
 const fixtures = [{ input: '[1,2,3]' }, { input: '{"a":1,"b":[true,null]}' }, { input: '[]' }]
 const parsed = fixtures.map((c) => JSON.parse(c.input))
 const lengths = [3, 2, 0]
